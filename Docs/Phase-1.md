@@ -23,8 +23,8 @@ Each task belongs to exactly one category.
 #### Edit Task
     As a user, I want to edit my existing tasks (title, description, category, date, estimated time, recurrence settings, etc.) so that I can keep my schedule up to date if circumstances change.
 
-#### Delete Task (Soft Delete)
-    As a user, I want to delete tasks so they no longer appear in the main list, while remaining in the system as soft-deleted, allowing the administrator to manage or permanently remove them if needed.
+#### Delete Task
+    As a user, I want to delete a task so it no longer appears in my list. If the task belongs to a plan that gets deleted, the task is also deleted (cascade delete).
 
 ### 1.1.3 – Priority
 
@@ -66,6 +66,7 @@ Each task belongs to exactly one category.
 #### Filter Tasks
     As a user, I want to filter tasks by:
     - Category
+    - Plan
     - Date or date range
     - Status (Done / Not Done)
     - Priority
@@ -134,13 +135,33 @@ In future versions, notifications may be extended to email or other channels.
 ### 1.1.12 – Soft Delete Behavior
 
 #### Soft Delete & Admin Management
-    As a system administrator, I want deleted tasks to be stored as soft-deleted so that I can restore them if needed or permanently remove them (Hard Delete).
+    Soft deletion is only used for User accounts. Categories, tasks, and plans are hard-deleted. If a plan is deleted, all tasks within that plan are also cascade-deleted. If a category is deleted, tasks referencing it are prevented from deletion unless they are reassigned first.
+
+### 1.1.13 – Plan Management
+
+#### Create Plan
+    As a user, I want to create a plan with a name and optional description so that I can group related tasks under a common goal or project.
+
+#### Edit Plan
+    As a user, I want to edit my plan's name, description, or date range so that I can keep my plans up to date.
+
+#### Delete Plan
+    As a user, I want to delete a plan so it no longer appears in my list. Deleting a plan also deletes all its tasks (cascade delete).
+
+#### View Plan and Its Tasks
+    As a user, I want to view a plan and see all the tasks assigned to it so that I can track progress on that project or goal.
+
+#### Assign / Remove Task from Plan
+    As a user, I want to assign a task to a plan or remove it from a plan so that I can organize tasks under the appropriate project.
+
+#### Plan Progress
+    As a user, I want to see the progress of a plan based on how many of its tasks are completed so that I can track how close I am to finishing a project.
 
 ## 1.2 – Functional Requirements
 
 The system must:
-- Allow creating, editing, and soft deleting categories.
-- Allow creating, editing, and soft deleting tasks.
+- Allow creating, editing, and deleting categories.
+- Allow creating, editing, and deleting tasks.
 - Each task:
     - Must belong to exactly one category.
     - Must have exactly one scheduled date (day).
@@ -151,6 +172,15 @@ The system must:
 - The system must:
     - Calculate total task time for each day.
     - Determine and display the appropriate color and contextual message for each day.
+- Regarding plans:
+    - Allow creating, editing, and deleting plans.
+    - Each plan must have a name, start date, and finish date, and belong to exactly one user.
+    - A task may optionally belong to a plan (zero or one plan per task).
+    - A plan can contain multiple tasks.
+    - Deleting a plan also deletes all its tasks (cascade delete).
+    - Plans and categories have no direct relationship.
+    - The system must display plan progress based on completed vs. total tasks.
+    - Plans have a "done" boolean to mark completion.
 - Display tasks in:
     - Daily view
     - Weekly view
@@ -165,7 +195,7 @@ The system must:
 - Display a list of overdue tasks.
 - Identify upcoming tasks based on today’s date and the defined notification window.
 - Display upcoming tasks on the main page or in a dedicated section.
-- Never hard-delete tasks automatically; permanent deletion is only allowed by an admin or management tool.
+- Never soft-delete tasks or plans; permanent deletion is immediate for both. Only User accounts use soft deletion for account management.
 - Automatically consider tasks as “Not Done” if the user does not update their status by the end of the day (for reporting and overdue logic).
 
 ## 1.3 – Non-Functional Requirements
@@ -182,6 +212,7 @@ The system must:
 - The codebase must be layered and modular, separating:
     - Task management
     - Category management
+    - Plan management
     - Daily workload & color logic
     - Reporting logic
     - Simple notification (Upcoming) logic

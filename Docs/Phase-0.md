@@ -2,7 +2,7 @@
 
 ## 0.1 – Product Vision
 
-A daily/weekly task management system designed to replace writing tasks in Telegram; enabling users to categorize tasks, assign them to specific calendar days, control daily workload, view completed and incomplete tasks across different days, and generate performance reports over selected time periods.
+A daily/weekly task management system designed to replace writing tasks in Telegram; enabling users to categorize tasks, organize them into plans/projects, assign them to specific calendar days, control daily workload, view completed and incomplete tasks across different days, and generate performance reports over selected time periods.
 
 ## 0.2 – User Roles
 
@@ -13,7 +13,7 @@ A daily/weekly task management system designed to replace writing tasks in Teleg
 - Access personal performance reports
 
 ### Admin
-- Perform high-level system management (e.g., manage deleted tasks, permanent cleanup)
+- Perform high-level system management (e.g., manage user accounts, data cleanup)
 - In future versions: manage plans, manage users, and more
 
 In the MVP, the primary focus is on the Regular User role.
@@ -27,6 +27,14 @@ In the first version, the system must include at least the following features:
 - Create categories and assign each task to a category
 - Add tasks for a specific day (without specifying time)
 - Specify estimated duration for each task
+
+### Plan Management
+- Create plans to group related tasks under a common goal or project
+- Assign a name and optional description to each plan
+- Assign tasks to a plan (optional — tasks can exist without a plan)
+- View all tasks within a plan
+- Track plan progress based on completed vs. total tasks
+- Edit or delete plans (deleting a plan also deletes all its tasks — cascade delete)
 
 ### Daily Workload Calculation
 - Calculate the total estimated time of tasks per day
@@ -63,4 +71,4 @@ In the first version, the system must include at least the following features:
 ### Task Operations
 - Add
 - Edit
-- Delete (Soft Delete – only visible to Admin for permanent removal)
+- Delete

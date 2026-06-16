@@ -1,13 +1,13 @@
 # Conceptual Domain Design
 
 ## 1. Domain Entities
-We have three main entities in the system.
+We have four main entities in the system.
 
 ### 1.1 User
 Represents each user of the system.
 
 Role in the system:
-- Owner of their own tasks and categories
+- Owner of their own tasks, categories, and plans
 - Responsible for authentication, profile management, and personal settings
 
 ### 1.2 Category
@@ -24,6 +24,15 @@ Role in the system:
 - Appears in daily, weekly, and monthly views
 - Contributes to daily workload calculations
 - Used in performance reports, overdue tasks, and upcoming tasks
+- Optionally belongs to a plan for project-level grouping
+
+### 1.4 Plan
+Represents a higher-level grouping of tasks under a common goal or project.
+
+Role in the system:
+- Groups related tasks into meaningful projects (e.g., "Build Portfolio Website", "Learn Laravel")
+- Provides progress tracking based on task completion
+- Each user has their own plans; plans are not shared between users
 
 ## 2. Relationships Between Entities
 Textual representation of the relationships:
@@ -52,6 +61,24 @@ Each Task belongs to exactly one Category.
 Relationship type:
 - Category (1) ——— (N) Task
 
+### User – Plan
+A User can have multiple Plans.
+
+Each Plan belongs to exactly one User.
+
+Relationship type:
+- User (1) ——— (N) Plan
+
+### Plan – Task
+A Plan can contain multiple Tasks.
+
+Each Task belongs to zero or one Plan (optional association).
+
+Relationship type:
+- Plan (0..1) ——— (0..N) Task
+
+Note: Category and Plan have no direct relationship. They are independent organizational dimensions. Category classifies tasks by type/subject, while Plan groups tasks under a project or goal.
+
 ## 3. Main Use Cases
 A Use Case represents a complete scenario of interaction between a user and the system.
 
@@ -64,7 +91,7 @@ Actor: User (guest who is not logged in)
 
 Description:
 
-The user logs into the system and views today’s tasks.
+The user logs into the system and views today's tasks.
 
 Main Flow
 
@@ -74,7 +101,7 @@ Main Flow
     - Clicks the Login button on the homepage.
 - The user enters email/username and password.
 - The system validates the credentials:
-    - If successful → the user is logged in and redirected to the Today’s Tasks page.
+    - If successful → the user is logged in and redirected to the Today's Tasks page.
     - If unsuccessful → an error message is shown and the user can try again.
 
 #### UC‑02 – Register
@@ -151,7 +178,7 @@ Main Flow
 - If valid:
     - The account deletion process begins
     - Related data may be soft-deleted or hard-deleted (to be finalized later)
-- The user is logged out and sees a message such as:“Your account has been deleted.”
+- The user is logged out and sees a message such as:"Your account has been deleted."
 
 ### 3.2 Task Management
 
@@ -164,21 +191,22 @@ The user creates a new task for a specific day.
 
 Main Flow
 
-- The user is on the Today’s Tasks page or another day.
+- The user is on the Today's Tasks page or another day.
 - The user clicks Add Task.
 - A task creation form appears containing fields such as:
     - Title
     - Description
     - Category
+    - Plan (optional)
     - Date (default = currently viewed day)
     - Estimated duration
     - Priority (High / Medium / Low)
     - Notification days before deadline
     - Recurrence settings
 - The user submits the form.
-- The system stores the task and associates it with the corresponding User and Category.
-- The task appears in that day’s task list.
-- The system recalculates the daily workload and updates the day’s color and message.
+- The system stores the task and associates it with the corresponding User, Category, and optionally a Plan.
+- The task appears in that day's task list.
+- The system recalculates the daily workload and updates the day's color and message.
 
 #### UC‑07 – Edit Task
 Actor: Logged-in user
@@ -200,29 +228,29 @@ Main Flow
     - Title
     - Description
     - Category
+    - Plan (optional)
     - Estimated time
     - Priority
     - Notification days before
     - Recurrence settings
 - The date field is locked.
 - The user clicks Save.
-- The system saves changes and recalculates the day’s workload if necessary.
+- The system saves changes and recalculates the day's workload if necessary.
 
 #### UC‑08 – Delete Task
 Actor: Logged-in user
 
 Description:
 
-The user deletes a task (Soft Delete).
+The user deletes a task.
 
 Main Flow
 
 - The user clicks Delete next to a task.
 - The system optionally displays a confirmation dialog.
 - The user confirms deletion.
-- The system marks the task as Soft Deleted (e.g., fills deleted_at).
-- The task disappears from the user’s list but remains in the database.
-- The system recalculates the daily workload and updates the day’s color/message.
+- The system permanently deletes the task.
+- The system recalculates the daily workload and updates the day's color/message.
 
 #### UC‑09 – Change Task Status (Done / Not Done)
 Actor: Logged-in user
@@ -269,11 +297,9 @@ Edit Category:
 Tasks linked to the category remain linked to the same category record.
 
 Delete Category:
-In future phases the behavior must be defined. Possible options:
 
-- Prevent deletion if tasks exist
-- Move tasks to a default category
-- Soft delete the category with its tasks
+- Deletion is prevented if the category still has tasks assigned (restrict on delete).
+- User must reassign or delete all tasks in the category before it can be deleted.
 
 ### 3.4 Views and Reporting
 
@@ -315,6 +341,7 @@ Flow
 The user can filter tasks by:
 
 - Category
+- Plan
 - Date / date range
 - Status (Done / Not Done)
 - Priority
@@ -399,6 +426,88 @@ Flow
     - completion rate
 - The results are shown using numbers, simple charts, or tables.
 
+### 3.5 Plan Management
+
+#### UC‑19 – Create Plan
+Actor: Logged-in user
+
+Description:
+
+The user creates a new plan to group related tasks under a project or goal.
+
+Main Flow
+
+- The user navigates to the Plans page.
+- Clicks Create Plan.
+- A form appears with fields such as:
+    - Name
+    - Description
+    - Start Date (required)
+    - End Date (required)
+- The user fills in the fields and submits.
+- The system stores the plan and associates it with the user.
+- The plan appears in the user's plan list.
+
+#### UC‑20 – Edit Plan
+Actor: Logged-in user
+
+Description:
+
+The user edits an existing plan.
+
+Main Flow
+
+- The user opens the Plans page.
+- Clicks Edit next to a plan.
+- The edit form opens with current values pre-filled.
+- The user modifies fields (name, description, date range) and saves.
+- The system updates the plan.
+
+#### UC‑21 – Delete Plan
+Actor: Logged-in user
+
+Description:
+
+The user deletes a plan. All tasks assigned to the plan are also deleted (cascade delete).
+
+Main Flow
+
+- The user clicks Delete next to a plan.
+- The system shows a confirmation dialog warning that all tasks in the plan will be deleted.
+- The user confirms.
+- The system deletes the plan and all its associated tasks.
+- The plan and its tasks disappear from the user's lists.
+
+#### UC‑22 – View Plan and Its Tasks
+Actor: Logged-in user
+
+Description:
+
+The user views a specific plan and all tasks assigned to it.
+
+Main Flow
+
+- The user navigates to the Plans page.
+- Clicks on a plan or selects View.
+- The system shows plan details (name, description, date range, progress).
+- Below the details, all tasks assigned to the plan are displayed.
+- The user can create, edit, delete, or mark tasks as Done/Not Done from this view.
+- The system calculates and displays plan progress as a percentage (completed tasks / total tasks).
+
+#### UC‑23 – Assign / Remove Task from Plan
+Actor: Logged-in user
+
+Description:
+
+The user assigns a task to a plan or removes it from a plan.
+
+Main Flow
+
+- The user opens a task creation or edit form.
+- The form includes a Plan dropdown (optional, defaults to "No Plan").
+- The user selects a plan (or changes to "No Plan") and saves.
+- The system associates the task with the selected plan, or clears the association.
+
 ## 4. Conceptual Domain Model
 At this level we define only the core attributes, not database types.
 
@@ -435,12 +544,25 @@ Conceptual fields:
 - Description
 - Owner User (reference to User)
 - Category (reference to Category)
+- Plan (optional, reference to Plan)
 - Task date (scheduled day)
 - Estimated duration
 - Priority (High / Medium / Low)
 - Status (Done / Not Done)
 - Notification days before deadline
-- Soft delete flag (e.g., deleted_at)
+- Creation date
+- Last update date
+
+### 4.4 Plan
+Conceptual fields:
+
+- Plan ID
+- Plan Name
+- Description (optional)
+- Start Date (required)
+- End Date (required)
+- Done (boolean, default false)
+- Owner User (reference to User)
 - Creation date
 - Last update date
 
@@ -448,7 +570,7 @@ Conceptual fields:
 Since the system supports selecting multiple days for a task, there are two possible designs.
 
 #### Option 1 – Simple MVP Model (Recommended)
-When the user selects multiple days, the system creates separate independent tasks for each date.
+When the user selects multiple seeds, the system creates separate independent tasks for each date.
 
 Advantages:
 
