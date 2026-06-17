@@ -584,3 +584,94 @@ Introduce a separate entity such as TaskPattern or recurrence configuration.
 For Phase 2 and MVP, we choose Option 1.
 
 Therefore, no recurrence pattern field is included in the domain model for now; recurrence will be handled in the service logic/UI layer.
+
+## 5. Module Boundaries
+
+The system is decomposed into the following modules. Each module has a clear responsibility and communicates with others through well-defined service classes.
+
+### 5.1 Authentication Module
+
+**Responsibility:**
+- User registration, login, logout
+- Password management
+- Session handling
+
+**Depends on:** User model, Laravel's built-in Auth system  
+**Used by:** All other modules (user must be authenticated)
+
+### 5.2 Task Management Module
+
+**Responsibility:**
+- Create, read, update, delete tasks
+- Toggle task status (Done / Not Done)
+- Filtering and sorting tasks
+- Assign / remove task from plan
+
+**Depends on:** User, Category, Plan models  
+**Interacts with:** Category Management (for category assignment), Plan Management (for plan assignment), Workload & Color Module (recalculates after changes)
+
+### 5.3 Category Management Module
+
+**Responsibility:**
+- Create, read, update, delete categories
+- Enforce restrict-on-delete when category has tasks
+
+**Depends on:** User, Task models  
+**Interacts with:** Task Management (tasks reference categories)
+
+### 5.4 Plan Management Module
+
+**Responsibility:**
+- Create, read, update, delete plans
+- Calculate plan progress (% completed)
+- Cascade delete tasks when plan is deleted
+
+**Depends on:** User, Task models  
+**Interacts with:** Task Management (tasks reference plans)
+
+### 5.5 Daily Workload & Color Module
+
+**Responsibility:**
+- Calculate total estimated minutes per day for a user
+- Map total time to color and message
+- Recalculate when tasks are created, updated, or deleted
+
+**Depends on:** Task model  
+**Interacts with:** Task Management (triggered by task changes), View Layer (provides color/message data)
+
+### 5.6 Overdue Tasks Module
+
+**Responsibility:**
+- Detect tasks where `task_date < today` and `done = false`
+- Provide overdue list scoped to the authenticated user
+
+**Depends on:** Task model  
+**Interacts with:** Task Management (status changes remove tasks from overdue)
+
+### 5.7 Upcoming Tasks Module
+
+**Responsibility:**
+- Detect tasks within the notification window (today → today + `day_before_alarm`)
+- Provide upcoming list
+
+**Depends on:** Task model  
+**Interacts with:** Task Management (date/task changes affect upcoming)
+
+### 5.8 Reporting Module
+
+**Responsibility:**
+- Generate performance reports for a given date range
+- Calculate: total tasks, completed tasks, completion rate, overdue count
+
+**Depends on:** Task model  
+**Interacts with:** View Layer (display results in tables/charts)
+
+### 5.9 View / Presentation Layer
+
+**Responsibility:**
+- Render UI using Laravel Blade and Livewire components
+- Handle user interactions via Livewire method calls
+- Compose data from service classes for display
+
+**Depends on:** All modules (orchestrates data for views)  
+**Technology:** Laravel Blade layouts + Livewire full-page / nested components
