@@ -1,4 +1,4 @@
-# Conceptual Domain Design
+# Phase 2 – Conceptual Domain Design
 
 ## 1. Domain Entities
 We have four main entities in the system.
@@ -596,7 +596,7 @@ The system is decomposed into the following modules. Each module has a clear res
 - Password management
 - Session handling
 
-**Depends on:** User model, Laravel's built-in Auth system  
+**Depends on:** User model, Laravel's built-in Auth system
 **Used by:** All other modules (user must be authenticated)
 
 ### 5.2 Task Management Module
@@ -607,7 +607,7 @@ The system is decomposed into the following modules. Each module has a clear res
 - Filtering and sorting tasks
 - Assign / remove task from plan
 
-**Depends on:** User, Category, Plan models  
+**Depends on:** User, Category, Plan models
 **Interacts with:** Category Management (for category assignment), Plan Management (for plan assignment), Workload & Color Module (recalculates after changes)
 
 ### 5.3 Category Management Module
@@ -616,7 +616,7 @@ The system is decomposed into the following modules. Each module has a clear res
 - Create, read, update, delete categories
 - Enforce restrict-on-delete when category has tasks
 
-**Depends on:** User, Task models  
+**Depends on:** User, Task models
 **Interacts with:** Task Management (tasks reference categories)
 
 ### 5.4 Plan Management Module
@@ -626,7 +626,7 @@ The system is decomposed into the following modules. Each module has a clear res
 - Calculate plan progress (% completed)
 - Cascade delete tasks when plan is deleted
 
-**Depends on:** User, Task models  
+**Depends on:** User, Task models
 **Interacts with:** Task Management (tasks reference plans)
 
 ### 5.5 Daily Workload & Color Module
@@ -636,7 +636,7 @@ The system is decomposed into the following modules. Each module has a clear res
 - Map total time to color and message
 - Recalculate when tasks are created, updated, or deleted
 
-**Depends on:** Task model  
+**Depends on:** Task model
 **Interacts with:** Task Management (triggered by task changes), View Layer (provides color/message data)
 
 ### 5.6 Overdue Tasks Module
@@ -645,7 +645,7 @@ The system is decomposed into the following modules. Each module has a clear res
 - Detect tasks where `task_date < today` and `done = false`
 - Provide overdue list scoped to the authenticated user
 
-**Depends on:** Task model  
+**Depends on:** Task model
 **Interacts with:** Task Management (status changes remove tasks from overdue)
 
 ### 5.7 Upcoming Tasks Module
@@ -654,7 +654,7 @@ The system is decomposed into the following modules. Each module has a clear res
 - Detect tasks within the notification window (today → today + `day_before_alarm`)
 - Provide upcoming list
 
-**Depends on:** Task model  
+**Depends on:** Task model
 **Interacts with:** Task Management (date/task changes affect upcoming)
 
 ### 5.8 Reporting Module
@@ -663,7 +663,7 @@ The system is decomposed into the following modules. Each module has a clear res
 - Generate performance reports for a given date range
 - Calculate: total tasks, completed tasks, completion rate, overdue count
 
-**Depends on:** Task model  
+**Depends on:** Task model
 **Interacts with:** View Layer (display results in tables/charts)
 
 ### 5.9 View / Presentation Layer
@@ -673,5 +673,5 @@ The system is decomposed into the following modules. Each module has a clear res
 - Handle user interactions via Livewire method calls
 - Compose data from service classes for display
 
-**Depends on:** All modules (orchestrates data for views)  
+**Depends on:** All modules (orchestrates data for views)
 **Technology:** Laravel Blade layouts + Livewire full-page / nested components

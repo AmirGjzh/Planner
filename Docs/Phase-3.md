@@ -1,12 +1,10 @@
 # Phase 3 – Detailed Design
 
-Phase 3 covers five areas of detailed design:
+Phase 3 covers three areas of design:
 
 1. **Logical Data Model (Completed)** — Tables, columns, keys, constraints, enums, factories, seeders
-2. **Livewire Component & Interaction Layer Design (Planned)** — Livewire components, routes, page layouts
-3. **Domain Layer & Service Design (Planned)** — Services, Actions, Form Requests
-4. **Design Pattern Planning (Planned)** — Patterns to apply, where and why
-5. **Error Handling & Logging Strategy (Planned)** — Error structures, log levels, visibility policy
+2. **Architecture Principles & Patterns (Overview)** — Conventions and patterns to follow during implementation
+3. **Error Handling & Logging Principles (Overview)** — Error types, log levels, visibility policy
 
 ---
 
@@ -14,7 +12,7 @@ Phase 3 covers five areas of detailed design:
 
 ### Overview
 
-The database layer consists of 4 models, 4 migrations, 2 enums, 4 factories, and 2 seeders.  
+The database layer consists of 4 models, 4 migrations, 2 enums, 4 factories, and 2 seeders.
 All entities are user-scoped — each user owns their own tasks, categories, and plans.
 
 ### Entity Summary
@@ -175,222 +173,134 @@ Used by `User.gender` column with automatic cast.
 
 ---
 
-## 3.2 — Livewire Component & Interaction Layer Design (Planned)
+## 3.2 — Architecture Principles & Patterns (Overview)
 
-*This section will be completed during implementation.*
+*This section defines the conventions and patterns we will follow during Phase 4 implementation. These are guiding principles, not concrete code — the actual services, actions, and components will be created during Phase 4 as each use case is implemented.*
 
-### Page / Component Structure
-
-The UI is built with Laravel Blade layouts and Livewire components (no API layer). Each major view has a full-page Livewire component.
-
-#### Layout Hierarchy
+### Code Organization
 
 ```
-layouts/
-├── app.blade.php          # Main authenticated layout (sidebar + navbar)
-└── guest.blade.php        # Guest layout (login/register pages)
+app/
+├── Actions/          # Single-purpose operations (one class = one action)
+├── Enums/            # Backed enums for fixed value sets
+├── Exceptions/       # Domain-specific exception classes
+├── Http/
+│   ├── Controllers/  # Thin controllers (if any)
+│   └── Livewire/     # Full-page and nested Livewire components
+├── Models/           # Eloquent models
+├── Services/         # Business logic grouped by domain concern
+└── View/             # View composers or presenters (if needed)
 ```
 
-#### Full-Page Livewire Components (Routes)
+### Layer Separation Principle
 
-| Route | Component | Description |
-|-------|-----------|-------------|
-| `/` or `/today` | `App\Http\Livewire\TodayTasks` | Today's task list with workload indicator |
-| `/week` | `App\Http\Livewire\WeeklyView` | Weekly grid view |
-| `/calendar` | `App\Http\Livewire\CalendarView` | Monthly calendar with clickable days |
-| `/tasks/{task}/edit` | `App\Http\Livewire\TaskEdit` | Edit task form (date locked) |
-| `/categories` | `App\Http\Livewire\CategoryManager` | Category CRUD page |
-| `/plans` | `App\Http\Livewire\PlanList` | Plan list with progress |
-| `/plans/{plan}` | `App\Http\Livewire\PlanShow` | Plan detail with its tasks |
-| `/overdue` | `App\Http\Livewire\OverdueTasks` | Overdue tasks list |
-| `/upcoming` | `App\Http\Livewire\UpcomingTasks` | Upcoming tasks list |
-| `/reports` | `App\Http\Livewire\PerformanceReport` | Report with date range selector |
-| `/profile` | `App\Http\Livewire\ProfileEditor` | Edit profile info |
-| `/login` | — | Blade view (Laravel Breeze/Jetstream) |
-| `/register` | — | Blade view |
-
-#### Nested / Inline Livewire Components
-
-| Component | Used In | Purpose |
-|-----------|---------|---------|
-| `task-card` | All task lists | Render a single task row with toggle, edit, delete buttons |
-| `workload-indicator` | Daily/Weekly/Calendar views | Display color + message for a day |
-| `category-selector` | Task forms | Dropdown to pick category |
-| `plan-selector` | Task forms | Dropdown to pick plan (or "No Plan") |
-| `filter-bar` | All task lists | Category / Plan / Status / Priority / Date range filters |
-| `confirm-dialog` | Delete actions | Confirmation modal |
-
-### Route Design
-
-All routes are grouped under `auth` middleware. Guest routes (login, register) use `guest` middleware.
+The system follows a simple layered architecture:
 
 ```
-// Guest routes
-Route::get('/login')->uses([...])->name('login');
-Route::get('/register')->uses([...])->name('register');
-
-// Authenticated routes
-Route::middleware('auth')->group(function () {
-    Route::get('/', TodayTasks::class)->name('today');
-    Route::get('/week', WeeklyView::class)->name('week');
-    Route::get('/calendar', CalendarView::class)->name('calendar');
-    Route::get('/categories', CategoryManager::class)->name('categories');
-    Route::get('/plans', PlanList::class)->name('plans');
-    Route::get('/plans/{plan}', PlanShow::class)->name('plans.show');
-    Route::get('/overdue', OverdueTasks::class)->name('overdue');
-    Route::get('/upcoming', UpcomingTasks::class)->name('upcoming');
-    Route::get('/reports', PerformanceReport::class)->name('reports');
-    Route::get('/profile', ProfileEditor::class)->name('profile');
-});
+Livewire Component (UI state + user interaction)
+       ↓
+Service / Action (business logic)
+       ↓
+Model (data access via Eloquent)
 ```
 
-### Input Validation Contracts
+**Rules:**
+- **Livewire components** should be thin — handle UI state, validation, and delegate to Services/Actions. No raw Eloquent queries in components.
+- **Services** own business logic for a domain area (e.g., Task, Category, Plan, Workload). Can group related operations.
+- **Actions** are single-purpose classes for operations with side effects (e.g., deleting a plan also recalculates workload). Use when an operation does more than one thing.
+- **Models** handle data access only — no business logic beyond scopes and accessors.
 
-Each form has a corresponding Form Request or Livewire validation rules:
+### Pattern Decisions
 
-| Form | Rules |
-|------|-------|
-| Create Category | `name` required, string, max:255, unique per user |
-| Create Task | `title` required, `category_id` required + exists, `estimated_minutes` required + integer + min:1, `task_date` required + date, `priority` optional + in:low,medium,high |
-| Create Plan | `name` required, `start_date` required + date, `finish_date` required + date + after_or_equal:start_date |
-| Profile | `first_name`, `last_name` optional strings, `birth_date` optional date, `country` optional string, `gender` optional + in:male,female |
+| Pattern | Decision | When to Apply |
+|---------|----------|---------------|
+| **Service Layer** | ✅ Use | Group related business logic. One service per domain area (e.g., `TaskService`, `WorkloadService`). |
+| **Action Classes** | ✅ Use | Extract any operation that triggers side effects (e.g., recalculating workload after deleting a task). |
+| **Backed Enums** | ✅ Use | Already in place for fixed value sets. Extend as new value sets appear. |
+| **Repository** | ❌ Defer | Start with Eloquent scopes. Only extract repositories if query logic becomes unmanageable. |
+| **Form Request** | ❌ Defer | Livewire components handle validation natively via `rules()` and `$this->validate()`. |
+| **View Composer** | ❌ Defer | Format data directly in Livewire component properties. |
+
+### Naming Conventions
+
+| Layer | Naming | Example |
+|-------|--------|---------|
+| Service | `{Domain}Service` | `TaskService`, `WorkloadService` |
+| Action | `{Verb}{Noun}Action` | `CreateTaskAction`, `ToggleTaskDoneAction` |
+| Livewire (full-page) | `{View}Page` | `TodayTasksPage`, `PlanListPage` |
+| Livewire (nested) | `{ComponentName}` | `TaskCard`, `FilterBar` |
+| Exception | `{Description}Exception` | `CategoryHasTasksException` |
+
+### Service Boundaries (Planned)
+
+*These service areas will be fleshed out during Phase 4. Listed here as a map of responsibilities.*
+
+| Domain Area | Responsibilities |
+|-------------|-----------------|
+| **Task** | Task CRUD, toggle done, workload recalculation trigger |
+| **Category** | Category CRUD, delete protection check |
+| **Plan** | Plan CRUD, progress calculation |
+| **Workload** | Daily total calculation, color/message mapping |
+| **Overdue** | Query tasks past their date and not done |
+| **Upcoming** | Query tasks within their notification window |
+| **Report** | Aggregate performance data over a date range |
+
+### When to Create an Action vs. a Service Method
+
+- **Service method** — when the operation is straightforward and belongs clearly to one domain (e.g., `TaskService::update()`).
+- **Action class** — when the operation has significant side effects or crosses domain boundaries (e.g., `DeletePlanAction` also cascade-deletes tasks and recalculates workload).
 
 ---
 
-## 3.3 — Domain Layer & Service Design (Planned)
+## 3.3 — Error Handling & Logging Principles (Overview)
 
-*This section will be completed during implementation.*
+*This section defines the conventions for handling errors and logging. Actual exception classes and logger calls will be added during Phase 4 implementation.*
 
-### Service Layer
+### Error Types
 
-Services contain business logic extracted from controllers/Livewire components. Each service class is responsible for one domain area.
+| Type | How It's Raised | Example |
+|------|-----------------|---------|
+| **Validation error** | Livewire `$this->validate()` | Missing title, past date |
+| **Authorization failure** | `$this->authorize()` or `Gate` | Editing another user's task |
+| **Domain exception** | Custom exception class | Deleting a category that still has tasks |
+| **System error** | PHP/Laravel exception | Database connection lost |
 
-| Service | Methods | Responsibility |
-|---------|---------|----------------|
-| `TaskService` | `create()`, `update()`, `delete()`, `toggleDone()` | Task CRUD + workload recalculation trigger |
-| `CategoryService` | `create()`, `update()`, `delete()` | Category CRUD with delete protection check |
-| `PlanService` | `create()`, `update()`, `delete()`, `progress()` | Plan CRUD + progress calculation |
-| `WorkloadService` | `calculateForDay()`, `calculateForRange()`, `color()`, `message()` | Daily workload math + color/message mapping |
-| `OverdueService` | `getOverdueTasks()` | Query tasks past due and not done |
-| `UpcomingService` | `getUpcomingTasks()` | Query tasks within notification window |
-| `ReportService` | `generate()` | Aggregate data for performance reports |
+### Domain Exception Convention
 
-### Action Classes
-
-Single-purpose action classes for operations that deserve their own class:
-
-| Action | Input | Output | Side Effects |
-|--------|-------|--------|--------------|
-| `CreateTaskAction` | Validated data, User | Task | Recalculates workload |
-| `DeleteTaskAction` | Task | void | Recalculates workload |
-| `ToggleTaskDoneAction` | Task | bool (new status) | Recalculates overdue/upcoming |
-| `DeletePlanAction` | Plan | void | Cascade deletes tasks, recalculates workload |
-| `AssignTaskToPlanAction` | Task, Plan|null | void | — |
-| `DeleteCategoryAction` | Category | void | Throws if tasks exist |
-
-### Form Requests
-
-| Form Request | Rules |
-|--------------|-------|
-| `StoreTaskRequest` | Validation for task creation |
-| `UpdateTaskRequest` | Validation for task editing (date locked) |
-| `StoreCategoryRequest` | Validation for category creation |
-| `StorePlanRequest` | Validation for plan creation |
-| `UpdatePlanRequest` | Validation for plan editing |
-| `ProfileUpdateRequest` | Validation for profile editing |
-
-### Interaction Flow
-
-```
-Livewire Component
-    ↓ calls
-Service / Action class
-    ↓ uses
-Model (Eloquent)
-    ↓ persist
-Database
-    ↓ return
-Result to Livewire Component
-    ↓ update
-UI via Livewire re-render
-```
-
----
-
-## 3.4 — Design Pattern Planning (Planned)
-
-*This section will be completed during implementation.*
-
-### Patterns to Apply
-
-| Pattern | Where to Use | Rationale |
-|---------|-------------|-----------|
-| **Service Layer** | `App\Services\*` | Encapsulates business logic outside controllers/components. Each service owns one domain concern. |
-| **Action Class** | `App\Actions\*` | Single-purpose classes for operations with side effects (e.g., `CreateTaskAction` also recalculates workload). Keeps Livewire components thin. |
-| **Form Request** | `App\Http\Requests\*` | Centralized validation rules with authorization gates. Keeps validation out of components. |
-| **Repository (Consider)** | `App\Repositories\*` | If query logic becomes complex (e.g., filtered/sorted task lists with pagination). May be overkill for MVP — start with scopes on the model. |
-| **Enum (Backed)** | `App\Enums\*` | Already using for `TaskPriority` and `UserGender`. Provides type safety and a single source of truth for fixed value sets. |
-| **View Composer / Presenter** | `App\View\Composers\*` | If view data formatting becomes repetitive. For MVP, format data directly in Livewire component properties. |
-| **Factory** | `Database\Factories\*` | Already implemented for all 4 models. Used for seeding and testing. |
-
-### Decision Log
-
-| Decision | Choice | Rationale |
-|----------|--------|-----------|
-| Service vs direct Eloquent in components | Services | Keeps Livewire components testable and focused on UI state |
-| Actions vs Services for operations | Both | Services for grouped operations, Actions for single-purpose operations with side effects |
-| Repository pattern | Defer to MVP+1 | Start with Eloquent scopes and query builders; extract Repository only if needed |
-| Form Request vs inline validation | Form Request | Keeps Livewire component `rules()` method clean; reusable if validation is needed elsewhere |
-
----
-
-## 3.5 — Error Handling & Logging Strategy (Planned)
-
-*This section will be completed during implementation.*
-
-### Error Design
-
-#### Domain-Specific Exceptions
-
-Custom exceptions in `App\Exceptions\`:
+Create a custom exception class when a business rule is violated and the user needs a specific message:
 
 | Exception | When Thrown |
 |-----------|-------------|
 | `CategoryHasTasksException` | Attempting to delete a category that still has tasks |
 | `TaskDateLockedException` | Attempting to change the date of an existing task |
-| `PlanNotEmptyException` | (Optional) Attempting operations on a plan with active constraints |
 
-#### Exception Handling Strategy
+*Add more as new rules emerge during Phase 4.*
 
-| Layer | How Errors Are Handled |
-|-------|----------------------|
-| **Livewire Component** | Catch exceptions, set `$this->addError()` for field-level messages, or `session()->flash('error')` for general messages |
-| **Service / Action** | Throw domain exceptions or return Result objects |
-| **Form Request** | Automatic validation error response (Livewire catches and displays per-field) |
-| **Global Handler** | `App\Exceptions\Handler` — log unexpected errors, return generic user-friendly message |
+### Handling Strategy
 
-### Logging Strategy
+| Layer | How to Handle |
+|-------|---------------|
+| **Livewire Component** | Catch domain exceptions → show user-friendly message via `session()->flash()` or `$this->addError()`. For validation → automatic per-field messages. |
+| **Service / Action** | Throw domain exceptions for rule violations. Don't catch Laravel system exceptions — let them propagate to the global handler. |
+| **Global Handler** | `App\Exceptions\Handler` — log unexpected errors with full stack trace, return a generic "Something went wrong" message. |
 
-#### Log Levels
+### Logging Conventions
 
-| Level | When to Use |
+| Level | When to Log |
 |-------|-------------|
-| `info` | Task created, updated, deleted; plan operations; user login/logout |
-| `warning` | Failed validation attempts, unauthorized access attempts |
-| `error` | Unexpected exceptions, database failures, service errors |
-| `critical` | (Future) Payment failures, data corruption events |
+| `info` | Successful operations (task created, plan deleted, etc.) |
+| `warning` | Failed attempts (validation failures, unauthorized access) |
+| `error` | Unexpected system errors, database failures, service exceptions |
 
-#### Log Channels
+- Use `Log::info()`, `Log::warning()`, `Log::error()` directly in Services/Actions.
+- Don't log in Livewire components — delegate to the Service/Action layer.
+- Local development uses stack logging; production can use daily files.
 
-- **Local development:** `stack` (single log file)
-- **Production:** Daily log files with separate channels for specific concerns if needed
+### Error Visibility for Users
 
-### Error Visibility Policy
-
-| Error Type | User Sees | Logged? |
-|------------|-----------|---------|
-| Validation error | Per-field message (Livewire) | No |
-| Authorization failure | "You are not authorized to perform this action" | `warning` |
-| Domain exception (e.g., category has tasks) | User-friendly message: "This category still has tasks. Reassign or delete them first." | `info` |
-| Unexpected system error | "Something went wrong. Please try again." | `error` with full stack trace |
-| Database connection failure | "Service temporarily unavailable" | `error` |
+| Error Type | User Sees |
+|------------|-----------|
+| Validation error | Per-field message (Livewire handles this) |
+| Authorization failure | "You are not authorized to perform this action." |
+| Domain exception (e.g., category has tasks) | User-friendly explanation: "This category still has tasks. Reassign or delete them first." |
+| Unexpected system error | "Something went wrong. Please try again." |

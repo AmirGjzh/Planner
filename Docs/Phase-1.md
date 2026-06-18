@@ -1,4 +1,4 @@
-# Requirements Analysis
+# Phase 1 – Requirements Analysis
 
 ## 1.1 – User Stories
 
@@ -230,62 +230,62 @@ The system must:
 
 ### AC‑01 – Create Category
 
-**Given** the user is logged in and on the Category Management page,  
-**When** they enter a unique category name and submit,  
-**Then** the category is created and appears in the category list.  
+**Given** the user is logged in and on the Category Management page,
+**When** they enter a unique category name and submit,
+**Then** the category is created and appears in the category list.
 **And** if the name is empty or duplicate, an error is shown and the category is not created.
 
 ### AC‑02 – Create Task
 
-**Given** the user is logged in and viewing a specific day,  
-**When** they fill in the title, select a category, set an estimated duration, and submit,  
-**Then** the task appears in that day's task list.  
-**And** the daily workload is recalculated.  
+**Given** the user is logged in and viewing a specific day,
+**When** they fill in the title, select a category, set an estimated duration, and submit,
+**Then** the task appears in that day's task list.
+**And** the daily workload is recalculated.
 **And** if required fields (title, category, duration) are missing, submission is rejected.
 
 ### AC‑03 – Mark Task as Done / Not Done
 
-**Given** the user is viewing tasks for a day,  
-**When** they toggle the status of a task,  
-**Then** the task's `done` field updates immediately.  
+**Given** the user is viewing tasks for a day,
+**When** they toggle the status of a task,
+**Then** the task's `done` field updates immediately.
 **And** the change is reflected in the UI without a page reload (Livewire).
 
 ### AC‑04 – Daily Workload Display
 
-**Given** the user is viewing a day,  
-**When** tasks exist for that day,  
-**Then** the total estimated minutes is summed and displayed.  
-**And** the day shows the correct color indicator based on thresholds (White / Green / Yellow / Red / Black).  
+**Given** the user is viewing a day,
+**When** tasks exist for that day,
+**Then** the total estimated minutes is summed and displayed.
+**And** the day shows the correct color indicator based on thresholds (White / Green / Yellow / Red / Black).
 **And** the contextual message matches the color level.
 
 ### AC‑05 – Filter Tasks
 
-**Given** the user is on a task list view,  
-**When** they select a filter (category, plan, status, priority, or date range),  
-**Then** only matching tasks are displayed.  
-**And** multiple filters can be combined.  
+**Given** the user is on a task list view,
+**When** they select a filter (category, plan, status, priority, or date range),
+**Then** only matching tasks are displayed.
+**And** multiple filters can be combined.
 **And** clearing filters restores the full list.
 
 ### AC‑06 – Delete Plan with Cascade
 
-**Given** the user is viewing a plan that has tasks,  
-**When** they delete the plan and confirm the warning dialog,  
-**Then** the plan is permanently deleted.  
-**And** all tasks assigned to that plan are also deleted.  
+**Given** the user is viewing a plan that has tasks,
+**When** they delete the plan and confirm the warning dialog,
+**Then** the plan is permanently deleted.
+**And** all tasks assigned to that plan are also deleted.
 **And** the daily workload is recalculated for affected days.
 
 ### AC‑07 – Overdue Tasks Detection
 
-**Given** tasks exist with `task_date < today` and `done = false`,  
-**When** the user opens the Overdue section,  
-**Then** all such tasks are listed.  
+**Given** tasks exist with `task_date < today` and `done = false`,
+**When** the user opens the Overdue section,
+**Then** all such tasks are listed.
 **And** tasks marked as done are excluded from the list.
 
 ### AC‑08 – Performance Report
 
-**Given** the user selects a date range,  
-**When** they request a report,  
-**Then** the system displays: total tasks created, total completed, completion rate (%), and overdue count.  
+**Given** the user selects a date range,
+**When** they request a report,
+**Then** the system displays: total tasks created, total completed, completion rate (%), and overdue count.
 **And** the data is scoped to the authenticated user only.
 
 ## 1.5 – Requirements Prioritization (MoSCoW)

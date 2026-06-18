@@ -1,4 +1,4 @@
-# Vision and Scope of the MVP
+# Phase 0 – Vision and Scope of the MVP
 
 ## 0.1 – Product Vision
 
