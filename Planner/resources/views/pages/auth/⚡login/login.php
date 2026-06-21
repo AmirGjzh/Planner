@@ -1,33 +1,39 @@
 <?php
 
+use App\Actions\Auth\LoginUserAction;
+use App\Enums\LoginResult;
+use Livewire\Attributes\Validate;
 use Livewire\Component;
 
 new class extends Component
 {
+    #[Validate(['required', 'email'], onUpdate: false)]
     public string $email = '';
+
+    #[Validate(['required', 'string'], onUpdate: false)]
     public string $password = '';
-    public bool $remember = false;
 
-    public function login()
+    #[Validate(['boolean'], onUpdate: false)]
+    public bool $remember = true;
+
+    public function login(LoginUserAction $loginUserAction)
     {
-        $credentials = $this->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required', 'string'],
-            'remember' => ['boolean'],
-        ]);
-
-        if (Auth::attempt(
-            [
-                'email' => $credentials['email'],
-                'password' => $credentials['password'],
-            ],
-            $this->remember
-        )) {
-            request()->session()->regenerate();
-
-            return redirect()->intended('/dashboard');
+        $credentials = $this->validate();
+        $result = $loginUserAction->execute(
+            $credentials['email'],
+            $credentials['password'],
+            $this->remember,
+            request()
+        );
+        if ($result === LoginResult::Success) {
+            return $this->redirectRoute('dashboard', navigate: true);
         }
+        if ($result === LoginResult::RateLimited) {
+            $this->addError('login', 'Too many login attempts. Please try again in a minute.');
 
-        $this->addError('email', 'ایمیل یا رمز عبور اشتباه است.');
+            return;
+        }
+        $this->reset(['password']);
+        $this->addError('login', 'Wrong email or password');
     }
 };

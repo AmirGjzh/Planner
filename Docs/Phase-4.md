@@ -192,3 +192,41 @@ The phase is complete when:
 - All tests pass
 - Documentation is current
 - The application is deployable
+
+---
+
+## Completed Use Cases
+
+### UC-01 – Login
+
+**Status:** Completed
+
+**Goal:** Allow a guest user to sign in with email and password, receive validation or credential errors when needed, and enter the authenticated area after successful login.
+
+**Routes:**
+- `GET /login` → Livewire page `pages::auth.login`, guest-only route.
+- `GET /dashboard` → temporary authenticated destination after login, auth-only route.
+
+**Implementation Files:**
+- `Planner/routes/web.php` — defines guest login route and authenticated dashboard route.
+- `Planner/resources/views/pages/auth/⚡login/login.php` — Livewire page state, validation, action call, error handling, and redirect.
+- `Planner/resources/views/pages/auth/⚡login/login.blade.php` — login form UI, field errors, credential/rate-limit error display, remember-me option.
+- `Planner/app/Actions/Auth/LoginUserAction.php` — login business action; handles rate limiting, authentication attempt, session regeneration, and logging.
+- `Planner/app/Enums/LoginResult.php` — result enum returned by the login action (`Success`, `Fail`, `RateLimited`).
+
+**Testing Files:**
+- `Planner/resources/views/pages/auth/⚡login/login.test.php` — co-located Livewire tests for rendering, validation, failed login, successful login, and rate limiting.
+- `Planner/tests/Feature/Auth/LoginAccessTest.php` — route/middleware tests for guest and authenticated access.
+- `Planner/tests/Feature/Actions/Auth/LoginUserActionTest.php` — action tests for result states and login logging.
+- `Planner/tests/Pest.php` — Pest base setup for Feature and co-located Livewire tests with `LazilyRefreshDatabase`.
+- `Planner/phpunit.xml` — adds the `Components` test suite for `resources/views/**/*.test.php`.
+
+**Security & Reliability Notes:**
+- Password validation is handled server-side by Livewire.
+- Failed credentials use a generic error message.
+- Login attempts are rate-limited by normalized email and IP address.
+- Successful login regenerates the session.
+- Login success, failed attempts, and rate-limited attempts are logged in the action layer.
+- Blade output remains escaped; no raw user-controlled HTML is rendered.
+
+**Acceptance Result:** UC-01 is accepted. Dashboard content and the future homepage/root route are intentionally deferred to later use cases.

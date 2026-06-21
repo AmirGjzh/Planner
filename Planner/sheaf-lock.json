@@ -7,7 +7,13 @@
     "helpers": [],
     "internalDependencies": {
         "icon": [
-            "button"
+            "button",
+            "input",
+            "error",
+            "alerts"
+        ],
+        "heading": [
+            "alerts"
         ]
     }
 }

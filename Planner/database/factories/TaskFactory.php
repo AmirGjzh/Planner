@@ -31,7 +31,7 @@ class TaskFactory extends Factory
             'day_before_alarm' => fake()->numberBetween(0, 30),
             'user_id' => User::factory(),
             'plan_id' => Plan::factory(),
-            'category_id' => Category::factory()
+            'category_id' => Category::factory(),
         ];
     }
 }

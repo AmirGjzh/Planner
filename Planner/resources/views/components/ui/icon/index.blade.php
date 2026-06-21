@@ -46,7 +46,7 @@
 
 <x-dynamic-component
     :component="$component"
-    {{ $attributes->class(['text-neutral-700 dark:text-neutral-300']) }}
+    {{ $attributes->class(['text-neutral-700 dark:text-neutral-300 opacity-50']) }}
     data-slot="icon"
 />
 
