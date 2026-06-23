@@ -10,7 +10,7 @@ new class extends Component
     #[Validate(['required', 'email'], onUpdate: false)]
     public string $email = '';
 
-    #[Validate(['required', 'string'], onUpdate: false)]
+    #[Validate(['required'], onUpdate: false)]
     public string $password = '';
 
     #[Validate(['boolean'], onUpdate: false)]
@@ -34,6 +34,6 @@ new class extends Component
             return;
         }
         $this->reset(['password']);
-        $this->addError('login', 'Wrong email or password');
+        $this->addError('login', 'Wrong email or password.');
     }
 };

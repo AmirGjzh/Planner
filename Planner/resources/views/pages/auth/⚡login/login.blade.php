@@ -24,7 +24,7 @@
             <x-ui.button color="slate" type="submit"
                 class="w-full rounded-lg bg-gradient-to-r from-slate-800 to-slate-600">Sign in</x-ui.button>
         </form>
-        <x-ui.text class="text-base text-center mt-5">Don't have an account? <x-ui.link href="" :primary="true"
-                variant="ghost" class="text-sm">Sign up</x-ui.link></x-ui.text>
+        <x-ui.text class="text-base text-center mt-5">Don't have an account? <x-ui.link href="{{ route('register') }}" :primary="true"
+                variant="ghost" class="text-sm" wire:navigate>Sign up</x-ui.link></x-ui.text>
     </x-ui.card>
 </div>

@@ -230,3 +230,40 @@ The phase is complete when:
 - Blade output remains escaped; no raw user-controlled HTML is rendered.
 
 **Acceptance Result:** UC-01 is accepted. Dashboard content and the future homepage/root route are intentionally deferred to later use cases.
+
+### UC-02 – Register
+
+**Status:** Completed
+
+**Goal:** Allow a guest user to create a new account with a username, email, password, and password confirmation, then redirect them to login after successful registration.
+
+**Routes:**
+- `GET /register` → Livewire page `pages::auth.register`, guest-only route.
+- `GET /login` → existing guest login route, used as the post-registration destination.
+
+**Implementation Files:**
+- `Planner/routes/web.php` — defines the guest-only register route.
+- `Planner/resources/views/pages/auth/⚡register/register.php` — Livewire page state, validation, action call, result handling, password reset on failure, and redirect.
+- `Planner/resources/views/pages/auth/⚡register/register.blade.php` — registration form UI, field errors, register-level error display, password reveal inputs, and login navigation link.
+- `Planner/app/Actions/Auth/RegisterUserAction.php` — registration business action; handles rate limiting, username/email uniqueness checks after the limiter gate, user creation, race-condition duplicate handling, and logging.
+- `Planner/app/Enums/RegisterResult.php` — result enum returned by the register action (`Success`, `UsernameTaken`, `EmailTaken`, `RateLimited`).
+- `Planner/resources/views/pages/auth/⚡login/login.blade.php` — adds navigation from login to register.
+- `Planner/resources/views/pages/auth/⚡login/login.php` — small validation/message cleanup kept aligned with the auth flow.
+
+**Testing Files:**
+- `Planner/resources/views/pages/auth/⚡register/register.test.php` — co-located Livewire tests for rendering, validation, duplicate username/email errors, successful registration, guest state after registration, and rate limiting.
+- `Planner/tests/Feature/Auth/RegisterAccessTest.php` — route/middleware tests for guest and authenticated access.
+- `Planner/tests/Feature/Actions/Auth/RegisterUserActionTest.php` — action tests for success, duplicate results, rate limiting, password hashing, and logging.
+
+**Security & Reliability Notes:**
+- Registration validation is handled server-side by Livewire.
+- Email inputs are validated as RFC email addresses without browser-only validation.
+- Passwords are stored through the `User` model's hashed cast.
+- Username and email uniqueness are checked inside the action after rate-limit checks to avoid unnecessary database reads while an IP is limited.
+- Database unique constraints remain the final protection against duplicate accounts.
+- Race-condition duplicate failures are caught from database integrity exceptions and converted into user-friendly username/email errors.
+- Failed duplicate attempts are rate-limited by IP address.
+- Registration success, duplicate failures, and rate-limited attempts are logged in the action layer.
+- Blade output remains escaped; no raw user-controlled HTML is rendered.
+
+**Acceptance Result:** UC-02 is accepted. Registration creates an account, redirects guests to login, does not auto-login the new user, handles duplicate data cleanly, and is covered by passing tests.
