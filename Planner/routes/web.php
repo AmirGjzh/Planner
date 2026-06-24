@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->group(function () {
     Route::livewire('/dashboard', 'pages::dashboard')->name('dashboard');
+    Route::livewire('/profile', 'pages::profile')->name('profile');
 });
 
 Route::middleware(['guest'])->group(function () {

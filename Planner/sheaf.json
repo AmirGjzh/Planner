@@ -38,7 +38,34 @@
             "installationTime": 1781965847
         },
         "text": {
-            "installationTime": 1782041067
+            "installationTime": 1782230552
+        },
+        "layout": {
+            "installationTime": 1782211502
+        },
+        "navbar": {
+            "installationTime": 1782211617
+        },
+        "badge": {
+            "installationTime": 1782211619
+        },
+        "separator": {
+            "installationTime": 1782212672
+        },
+        "modal": {
+            "installationTime": 1782213681
+        },
+        "select": {
+            "installationTime": 1782230550
+        },
+        "popup": {
+            "installationTime": 1782230550
+        },
+        "date-picker": {
+            "installationTime": 1782224841
+        },
+        "calendar": {
+            "installationTime": 1782225360
         }
     }
 }

@@ -267,3 +267,38 @@ The phase is complete when:
 - Blade output remains escaped; no raw user-controlled HTML is rendered.
 
 **Acceptance Result:** UC-02 is accepted. Registration creates an account, redirects guests to login, does not auto-login the new user, handles duplicate data cleanly, and is covered by passing tests.
+
+### UC-03 – View and Edit Profile
+
+**Status:** Completed
+
+**Goal:** Allow an authenticated user to view account/profile information and update editable profile fields from a modal form.
+
+**Routes:**
+- `GET /profile` → Livewire page `pages::profile`, auth-only route.
+
+**Implementation Files:**
+- `Planner/routes/web.php` — defines the authenticated profile route.
+- `Planner/resources/views/pages/⚡profile/profile.php` — Livewire page state, authenticated user lookup, profile validation, action call, result handling, form reset/cancel behavior, and country list data.
+- `Planner/resources/views/pages/⚡profile/profile.blade.php` — profile display UI, edit modal, form fields, field errors, profile-level rate-limit error display, and cancel/apply controls.
+- `Planner/app/Actions/Profile/UpdateProfileAction.php` — profile update business action; handles rate limiting, username uniqueness checks after the limiter gate, profile persistence, race-condition duplicate handling, and logging.
+- `Planner/app/Enums/UpdateProfileResult.php` — result enum returned by the profile update action (`Success`, `UsernameTaken`, `RateLimited`).
+- `Planner/app/Enums/UserGender.php` — enum used by profile validation and the `User.gender` cast.
+- `Planner/app/Models/User.php` — stores editable profile fields and casts `birth_date` and `gender`.
+
+**Testing Files:**
+- `Planner/resources/views/pages/⚡profile/profile.test.php` — co-located Livewire tests for rendering, initial form state, validation, successful updates, nullable fields, username-taken errors, rate limiting, time-travel retry, and cancel behavior.
+- `Planner/tests/Feature/Auth/ProfileAccessTest.php` — route/middleware tests for guest redirect and authenticated profile access.
+- `Planner/tests/Feature/Actions/Profile/UpdateProfileActionTest.php` — action tests for success, duplicate username result, keeping the current username, nullable cleanup, rate limiting, time-travel retry, and logging.
+
+**Security & Reliability Notes:**
+- Profile access is protected by the `auth` middleware.
+- Livewire validation handles required username, username format, text lengths, enum-backed gender values, valid country codes, and non-future birth dates.
+- Username uniqueness is checked inside the action after rate-limit checks to avoid unnecessary database reads while the profile update key is limited.
+- Database unique constraints remain the final protection against duplicate usernames.
+- Race-condition duplicate failures are caught from database integrity exceptions and converted into a user-friendly username error.
+- Profile update attempts are rate-limited by authenticated user ID and IP address.
+- Profile update success, duplicate username failures, and rate-limited attempts are logged in the action layer.
+- Blade output remains escaped; no raw user-controlled HTML is rendered.
+
+**Acceptance Result:** UC-03 is accepted. Authenticated users can view and edit profile information, invalid input is rejected, duplicate usernames are handled cleanly, rate limiting is enforced, and the use case is covered by passing tests.

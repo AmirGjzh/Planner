@@ -13,7 +13,16 @@
 </head>
 
 <body>
-    {{ $slot }}
+
+    <x-ui.layout variant="header-sidebar">
+        <x-ui.layout.header class="bg-gradient-to-r from-slate-100 to-slate-50">
+            <x-ui.navbar></x-ui.navbar>
+        </x-ui.layout.header>
+
+        <x-ui.layout.main>
+            {{ $slot }}
+        </x-ui.layout.main>
+    </x-ui.layout>
 
     @livewireScripts
 </body>
