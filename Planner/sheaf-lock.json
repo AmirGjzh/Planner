@@ -79,7 +79,8 @@
             "badge",
             "navbar",
             "select",
-            "date-picker"
+            "date-picker",
+            "dropdown"
         ],
         "heading": [
             "alerts"

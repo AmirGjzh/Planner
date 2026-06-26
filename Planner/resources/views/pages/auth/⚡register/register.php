@@ -2,10 +2,11 @@
 
 use App\Actions\Auth\RegisterUserAction;
 use App\Enums\RegisterResult;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
-new class extends Component
+new #[Layout('layouts::auth')] class extends Component
 {
     #[Validate(['required'], onUpdate: false)]
     #[Validate('regex:/^[a-zA-Z][a-zA-Z0-9_-]{2,29}$/', message: 'Username must start with a letter and contain only letters, numbers, underscores and hyphens.', onUpdate: false)]

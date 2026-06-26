@@ -14,6 +14,9 @@ class UpdateProfileAction
 {
     public function execute(User $user, array $data, Request $request): UpdateProfileResult
     {
+        if ($user->isNot(auth()->user())) {
+            abort(403);
+        }
         $rateLimitKey = $this->rateLimitKey($user, $request);
         if (RateLimiter::tooManyAttempts($rateLimitKey, 5)) {
             Log::warning('Profile update rate limited.', [

@@ -1,6 +1,8 @@
 <?php
 
+use App\Actions\Auth\DeleteAccountAction;
 use App\Actions\Profile\UpdateProfileAction;
+use App\Enums\DeleteAccountResult;
 use App\Enums\UpdateProfileResult;
 use App\Enums\UserGender;
 use App\Models\User;
@@ -26,6 +28,8 @@ new class extends Component
     public ?string $country = null;
 
     public ?string $birth_date = null;
+
+    public string $password = '';
 
     public function mount(): void
     {
@@ -56,14 +60,41 @@ new class extends Component
         unset($this->user);
         $this->fillForm();
         $this->resetValidation();
-        $this->dispatch('close-modal', id: 'edit-profile-form');
+        // $this->dispatch('close-modal', id: 'edit-profile-form');
     }
 
     public function cancelEdit(): void
     {
         $this->fillForm();
         $this->resetValidation();
-        $this->dispatch('close-modal', id: 'edit-profile-form');
+        // $this->dispatch('close-modal', id: 'edit-profile-form');
+    }
+
+    public function deleteAccount(DeleteAccountAction $deleteAccountAction): void
+    {
+        $data = $this->validate([
+            'password' => ['required'],
+        ]);
+        $result = $deleteAccountAction->execute($this->user, $data['password'], request());
+        if ($result === DeleteAccountResult::RateLimited) {
+            $this->addError('password', 'Too many attempts. Please try again in a minute.');
+
+            return;
+        }
+        if ($result === DeleteAccountResult::WrongPassword) {
+            $this->reset('password');
+            $this->addError('password', 'Wrong password');
+
+            return;
+        }
+        $this->reset('password');
+        $this->redirectRoute('login', navigate: true);
+    }
+
+    public function cancelDelete(): void
+    {
+        $this->reset('password');
+        $this->resetValidation();
     }
 
     private function fillForm(): void

@@ -302,3 +302,59 @@ The phase is complete when:
 - Blade output remains escaped; no raw user-controlled HTML is rendered.
 
 **Acceptance Result:** UC-03 is accepted. Authenticated users can view and edit profile information, invalid input is rejected, duplicate usernames are handled cleanly, rate limiting is enforced, and the use case is covered by passing tests.
+
+### UC-04 – Logout
+
+**Status:** Completed
+
+**Goal:** Allow an authenticated user to log out, ending their session, and transition back to the login page using an SPA navigation without a full page reload.
+
+**Routes:**
+- `POST /logout` — plain POST route within the `auth` middleware group, returns 204 No Content.
+
+**Implementation Files:**
+- `Planner/routes/web.php` — defines the authenticated POST `/logout` route with a named route `logout`; executes `LogoutUserAction` and returns `response()->noContent()`.
+- `Planner/resources/views/layouts/app.blade.php` — user dropdown menu; the Log out item uses Alpine `fetch()` to POST to the logout route with the CSRF token, then calls `Livewire.navigate()` for an SPA transition to the login page.
+- `Planner/app/Actions/Auth/LogoutUserAction.php` — logout business action; retrieves the authenticated user ID, calls `Auth::logout()`, invalidates the session, regenerates the CSRF token, and logs the event.
+
+**Testing Files:**
+- `Planner/tests/Feature/Auth/LogoutAccessTest.php` — route/middleware tests for successful logout (asserts 204 No Content and guest state) and guest redirect to login.
+
+**Security & Reliability Notes:**
+- Logout is protected by the `auth` middleware; guests are redirected to login.
+- Session is invalidated and the CSRF token is regenerated after logout to prevent session fixation.
+- Logout events are logged with the user ID and IP address.
+- The Alpine fetch approach avoids a full page reload — the 204 response is consumed silently and `Livewire.navigate()` provides an SPA transition to the login page.
+- Blade output remains escaped; no raw user-controlled HTML is rendered.
+
+**Acceptance Result:** UC-04 is accepted. Authenticated users can log out with a single click, the session is properly invalidated, and the user is transitioned to the login page without a full browser refresh.
+
+### UC-05 – Delete Account
+
+**Status:** Completed
+
+**Goal:** Allow an authenticated user to permanently delete their account, requiring password confirmation, with rate limiting to prevent brute-force attacks.
+
+**Routes:**
+- `GET /profile` → Livewire page `pages::profile`, auth-only route (existing UC-03 route).
+
+**Implementation Files:**
+- `Planner/resources/views/pages/⚡profile/profile.php` — Livewire page state; `deleteAccount()` method validates the password field, calls `DeleteAccountAction`, handles all three result states (`Success`, `WrongPassword`, `RateLimited`), and redirects to login on success; `cancelDelete()` resets form state.
+- `Planner/resources/views/pages/⚡profile/profile.blade.php` — profile display UI with a "Delete Account" button that opens a confirmation modal with a password field and submit/cancel controls (unchanged from UC-03).
+- `Planner/app/Actions/Auth/DeleteAccountAction.php` — account deletion business action; checks rate limiting (5 attempts per minute per user ID/IP), verifies the password against the user's hashed password, logs the user out, obfuscates email and username to free unique constraints, soft-deletes the user record, and logs the event.
+- `Planner/app/Enums/DeleteAccountResult.php` — result enum returned by the delete account action (`Success`, `WrongPassword`, `RateLimited`).
+
+**Testing Files:**
+- `Planner/tests/Feature/Actions/Auth/DeleteAccountActionTest.php` — action tests for successful deletion, email/username obfuscation, wrong password result, rate limiting, time-travel retry, and logging for all outcomes.
+
+**Security & Reliability Notes:**
+- Account deletion is protected by the `auth` middleware via the profile route.
+- Password verification is performed inside the action layer, not the Livewire component — ensuring the guard applies regardless of caller.
+- Rate limiting (5 attempts per minute) prevents brute-force password guessing on the delete account flow.
+- Email and username are obfuscated with `deleted-user-{id}` / `deleted_user_{id}` before soft-deleting, freeing unique constraints for future registrations without leaking the original values.
+- Database unique constraints remain the final protection against duplicate data for the obfuscated values (rare but safe).
+- Deletion success, wrong password attempts, and rate-limited attempts are logged in the action layer.
+- The action logs the user out and invalidates the session before deleting the user record.
+- Blade output remains escaped; no raw user-controlled HTML is rendered.
+
+**Acceptance Result:** UC-05 is accepted. Authenticated users can delete their account with password confirmation, wrong passwords are rejected with a clear error, brute-force attempts are rate-limited, the account is properly obfuscated and soft-deleted, and the use case is covered by passing tests.

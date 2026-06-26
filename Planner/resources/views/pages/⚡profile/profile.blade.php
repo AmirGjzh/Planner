@@ -44,14 +44,18 @@
                 <x-ui.button class="mt-4 w-full rounded-lg bg-gradient-to-r from-slate-800 to-slate-600">Edit
                     Profile</x-ui.button>
             </x-ui.modal.trigger>
+            <x-ui.modal.trigger id="delete-account-confirmation">
+                <x-ui.button class="mt-4 w-full rounded-lg bg-gradient-to-r from-red-800 to-red-600">Delete
+                    Account</x-ui.button>
+            </x-ui.modal.trigger>
         </div>
     </div>
     <x-ui.modal bare backdrop="dark" position="center" width="3xl" id="edit-profile-form"
-        heading="Edit your information" :close-by-clicking-away="false">
+        :close-by-clicking-away="false">
         <div class="flex flex-col m-5">
             <div class="flex justify-between items-center px-1">
                 <x-ui.heading level="h2" size="md">Edit your information</x-ui.heading>
-                <x-ui.icon wire:click="cancelEdit" name="x-mark"
+                <x-ui.icon x-on:click="$data.close(); $wire.cancelEdit()" name="x-mark"
                     class="size-7 opacity-80 hover:cursor-pointer"></x-ui.icon>
             </div>
             <x-ui.separator class="mt-4 mb-8" />
@@ -107,10 +111,35 @@
                     <x-ui.error name="profile" />
                 </div>
                 <div class="flex justify-between items-center gap-5">
-                    <x-ui.button type="button" wire:click="cancelEdit"
+                    <x-ui.button type="button" x-on:click="$data.close(); $wire.cancelEdit()"
                         class="w-full rounded-lg bg-gradient-to-r from-red-800 to-red-600">Cancel</x-ui.button>
                     <x-ui.button type="submit" wire:target="editProfile"
                         class="w-full rounded-lg bg-gradient-to-r from-slate-800 to-slate-600">Apply</x-ui.button>
+                </div>
+            </form>
+        </div>
+    </x-ui.modal>
+    <x-ui.modal bare backdrop="dark" position="center" width="3xl" id="delete-account-confirmation">
+        <div class="flex flex-col m-5">
+            <div class="flex justify-between items-center px-1">
+                <x-ui.heading level="h2" size="md">Give your password to delet your account</x-ui.heading>
+                <x-ui.icon x-on:click="$data.close(); $wire.cancelDelete()" name="x-mark"
+                    class="size-7 opacity-80 hover:cursor-pointer"></x-ui.icon>
+            </div>
+            <x-ui.separator class="mt-4 mb-8" />
+            <form class="p-2" wire:submit="deleteAccount">
+                <div class="flex justify-between items-center gap-5 mb-4">
+                    <x-ui.field>
+                        <x-ui.label>Password</x-ui.label>
+                        <x-ui.input wire:model="password" type="password" placeholder="" leftIcon="" />
+                        <x-ui.error name="password" />
+                    </x-ui.field>
+                </div>
+                <div class="flex justify-between items-center gap-5">
+                    <x-ui.button type="button" x-on:click="$data.close(); $wire.cancelDelete()"
+                        class="w-full rounded-lg bg-gradient-to-r from-red-800 to-red-600">Cancel</x-ui.button>
+                    <x-ui.button type="submit" wire:target="deleteAccount"
+                        class="w-full rounded-lg bg-gradient-to-r from-slate-800 to-slate-600">Submit</x-ui.button>
                 </div>
             </form>
         </div>

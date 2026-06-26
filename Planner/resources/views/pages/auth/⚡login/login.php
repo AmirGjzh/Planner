@@ -2,10 +2,11 @@
 
 use App\Actions\Auth\LoginUserAction;
 use App\Enums\LoginResult;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
-new class extends Component
+new #[Layout('layouts::auth')] class extends Component
 {
     #[Validate(['required', 'email'], onUpdate: false)]
     public string $email = '';

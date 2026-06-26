@@ -22,6 +22,7 @@ it('returns success and updates profile fields', function () {
     $user = User::factory()->create([
         'user_name' => 'old_user',
     ]);
+    $this->actingAs($user);
 
     RateLimiter::clear(profileRateLimitKey($user));
 
@@ -54,6 +55,7 @@ it('returns username taken when username belongs to another user', function () {
     $user = User::factory()->create([
         'user_name' => 'amir_user',
     ]);
+    $this->actingAs($user);
 
     RateLimiter::clear(profileRateLimitKey($user));
 
@@ -69,6 +71,7 @@ it('allows keeping the current username', function () {
     $user = User::factory()->create([
         'user_name' => 'amir_user',
     ]);
+    $this->actingAs($user);
 
     RateLimiter::clear(profileRateLimitKey($user));
 
@@ -86,6 +89,7 @@ it('stores blank optional strings as null', function () {
         'first_name' => 'Amir',
         'last_name' => 'Planner',
     ]);
+    $this->actingAs($user);
 
     RateLimiter::clear(profileRateLimitKey($user));
 
@@ -111,7 +115,7 @@ it('stores blank optional strings as null', function () {
 
 it('returns rate limited after repeated profile update attempts', function () {
     $user = User::factory()->create();
-
+    $this->actingAs($user);
     RateLimiter::clear(profileRateLimitKey($user));
 
     foreach (range(1, 5) as $attempt) {
@@ -131,7 +135,7 @@ it('returns rate limited after repeated profile update attempts', function () {
 
 it('allows profile updates again after one minute', function () {
     $user = User::factory()->create();
-
+    $this->actingAs($user);
     RateLimiter::clear(profileRateLimitKey($user));
 
     foreach (range(1, 5) as $attempt) {
@@ -162,7 +166,7 @@ it('logs failed, limited, and successful profile update events', function () {
     $user = User::factory()->create([
         'user_name' => 'amir_user',
     ]);
-
+    $this->actingAs($user);
     RateLimiter::clear(profileRateLimitKey($user));
 
     app(UpdateProfileAction::class)->execute($user, [

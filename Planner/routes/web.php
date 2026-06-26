@@ -1,10 +1,16 @@
 <?php
 
+use App\Actions\Auth\LogoutUserAction;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->group(function () {
     Route::livewire('/dashboard', 'pages::dashboard')->name('dashboard');
     Route::livewire('/profile', 'pages::profile')->name('profile');
+    Route::post('/logout', function (LogoutUserAction $logoutUserAction) {
+        $logoutUserAction->execute(request());
+
+        return response()->noContent();
+    })->name('logout');
 });
 
 Route::middleware(['guest'])->group(function () {

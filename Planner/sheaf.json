@@ -66,6 +66,15 @@
         },
         "calendar": {
             "installationTime": 1782225360
+        },
+        "avatar": {
+            "installationTime": 1782372924
+        },
+        "dropdown": {
+            "installationTime": 1782373494
+        },
+        "kbd": {
+            "installationTime": 1782373612
         }
     }
 }
