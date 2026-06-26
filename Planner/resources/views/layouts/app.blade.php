@@ -15,25 +15,41 @@
 <body>
 
     <x-ui.layout variant="header-sidebar">
-        <x-ui.layout.header class="flex justify-end bg-gradient-to-r from-slate-100 to-slate-50">
+        <x-ui.layout.header class="flex bg-gradient-to-r from-slate-100 to-slate-50">
             @auth
-            <x-ui.dropdown>
-                <x-slot:button class="bg-slate-100 p-1 rounded-lg mr-1">
-                    <x-ui.icon name="user-circle" class="size-8"></x-ui.icon>
-                </x-slot:button>
-                <x-slot:menu>
-                    <x-ui.dropdown.item wire:navigate href="/profile" icon="user">Profile</x-ui.dropdown.item>
-                    <x-ui.dropdown.item variant="danger" icon="arrow-left-start-on-rectangle"
-                        x-on:click="
-                            fetch('{{ route('logout') }}', {
-                                method: 'POST',
-                                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                            }).then(() => Livewire.navigate('{{ route('login') }}'));
-                        ">
-                        Log out
-                    </x-ui.dropdown.item>
-                </x-slot:menu>
-            </x-ui.dropdown>
+                {{-- Desktop --}}
+                <div class="hidden md:w-full md:flex md:justify-between md:items-center md:gap-4 md:mx-4">
+                    <x-ui.brand class="text-slate-800 mr-8" href="{{ route('home') }}" name="Planner" />
+                    <x-ui.navbar class="flex-1">
+                        <livewire:layouts.partials.nav-links variant="navbar" />
+                    </x-ui.navbar>
+                    <livewire:layouts.partials.user-dropdown />
+                </div>
+                {{-- Mobile --}}
+                <div class="md:hidden w-full flex mx-4 justify-between items-center gap-4 ">
+                    <x-ui.brand class="text-slate-600" href="{{ route('home') }}" name="Planner" />
+                    <x-ui.modal.trigger id="mobile-menu">
+                        <x-ui.icon name="bars-3" class="size-8 opacity-80 hover:cursor-pointer"></x-ui.icon>
+                    </x-ui.modal.trigger>
+                </div>
+                <livewire:layouts.partials.mobile-menu auth />
+            @else
+                {{-- Desktop --}}
+                <div class="hidden md:w-full md:flex md:justify-between md:items-center md:gap-4 md:mx-4">
+                    <x-ui.brand class="text-slate-800 mr-8" href="{{ route('home') }}" name="Planner" />
+                    <x-ui.navbar class="flex-1">
+                        <livewire:layouts.partials.nav-links variant="navbar" />
+                    </x-ui.navbar>
+                    <livewire:layouts.partials.guest-action />
+                </div>
+                {{-- Mobile --}}
+                <div class="md:hidden w-full flex mx-4 justify-between items-center gap-4 ">
+                    <x-ui.brand class="text-slate-600" href="{{ route('home') }}" name="Planner" />
+                    <x-ui.modal.trigger id="mobile-menu">
+                        <x-ui.icon name="bars-3" class="size-8 opacity-80 hover:cursor-pointer"></x-ui.icon>
+                    </x-ui.modal.trigger>
+                </div>
+                <livewire:layouts.partials.mobile-menu />
             @endauth
         </x-ui.layout.header>
 

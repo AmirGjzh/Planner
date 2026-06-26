@@ -80,17 +80,20 @@
             "navbar",
             "select",
             "date-picker",
-            "dropdown"
+            "dropdown",
+            "navlist"
         ],
         "heading": [
             "alerts"
         ],
         "button": [
             "badge",
-            "navbar"
+            "navbar",
+            "navlist"
         ],
         "badge": [
-            "navbar"
+            "navbar",
+            "navlist"
         ],
         "text": [
             "select"

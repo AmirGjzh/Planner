@@ -153,12 +153,12 @@
         close() {
             if (this.persistent) return;
             // clean the global $modal store (mandantory even for isolated modals)
-            $modal.close(this.modalId);
+            // $modal.close(this.modalId);
             this.isOpen = false;
         },
         forseClose() {
             // clean the global $modal store (mandantory even for isolated modals)
-            $modal.close(this.modalId);
+            // $modal.close(this.modalId);
             this.isOpen = false;
         },
 

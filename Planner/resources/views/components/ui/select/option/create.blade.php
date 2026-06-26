@@ -9,7 +9,7 @@
 
 <li 
     data-slot="create-option" 
-    x-data="CreateNewOptionActivator"
+    x-data="CreateNewOptionActivator({livewireId: @js(isset($__livewire) ? $__livewire->getId() : null)})"
     wire:key="create-option"
     {{ $attributes->class($classes) }}
 
