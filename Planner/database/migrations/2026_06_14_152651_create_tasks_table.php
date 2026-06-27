@@ -21,8 +21,11 @@ return new class extends Migration
             $table->boolean('done')->default(false);
             $table->integer('day_before_alarm')->default(0);
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->index('user_id');
             $table->foreignId('plan_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->index('plan_id');
             $table->foreignId('category_id')->constrained()->restrictOnDelete();
+            $table->index('category_id');
             $table->index('task_date');
             $table->timestamps();
         });

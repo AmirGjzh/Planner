@@ -32,7 +32,7 @@ class UserFactory extends Factory
             'first_name' => fake()->firstName(),
             'last_name' => fake()->lastName(),
             'birth_date' => fake()->date(),
-            'country' => fake()->country(),
+            'country' => fake()->countryCode(),
             'gender' => fake()->randomElement(UserGender::cases()),
             'email_verified_at' => now(),
             'remember_token' => Str::random(10),

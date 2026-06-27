@@ -13,12 +13,14 @@ return new class extends Migration
     {
         Schema::create('plans', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
+            $table->string('name');
             $table->text('description')->nullable();
             $table->date('start_date');
             $table->date('finish_date');
             $table->boolean('done')->default(false);
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->index('user_id');
+            $table->unique(['user_id', 'name']);
             $table->timestamps();
         });
     }

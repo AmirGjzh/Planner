@@ -8,8 +8,6 @@
     <title>{{ $title ?? config('app.name') }}</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-    @livewireStyles
 </head>
 
 <body>
@@ -57,8 +55,6 @@
             {{ $slot }}
         </x-ui.layout.main>
     </x-ui.layout>
-
-    @livewireScripts
 </body>
 
 </html>
