@@ -7,6 +7,7 @@ Route::middleware(['auth'])->group(function () {
     Route::livewire('/dashboard', 'pages::dashboard')->name('dashboard');
     Route::livewire('/profile', 'pages::profile')->name('profile');
     Route::livewire('/category-page', 'pages::category-page')->name('category-page');
+    Route::livewire('/plan-page', 'pages::plan-page')->name('plan-page');
     Route::post('/logout', function (LogoutUserAction $logoutUserAction) {
         $logoutUserAction->execute(request());
 

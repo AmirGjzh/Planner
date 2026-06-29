@@ -16,4 +16,4 @@ import './globals/modals.js';
 import './components/calendar/index.js';
 import './components/date-picker/index.js';
 
-// Livewire.start() — called automatically via DOMContentLoaded in livewire.esm.js
+Livewire.start()

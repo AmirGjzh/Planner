@@ -365,5 +365,7 @@ const CreateNewOptionActivator = ({ livewireId } = {}) => ({
         this.deactivate();
     }
 });
-Alpine.data('selectComponent', selectComponent);
-Alpine.data('CreateNewOptionActivator', CreateNewOptionActivator);
+document.addEventListener('alpine:init', () => {
+    Alpine.data('selectComponent', selectComponent);
+    Alpine.data('CreateNewOptionActivator', CreateNewOptionActivator);
+});

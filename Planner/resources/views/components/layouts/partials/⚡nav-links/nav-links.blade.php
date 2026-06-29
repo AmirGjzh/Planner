@@ -2,7 +2,7 @@
     $links = [
         ['label' => 'Dashboard', 'route' => 'dashboard', 'icon' => ''],
         ['label' => 'Categories', 'route' => 'category-page', 'icon' => ''],
-        ['label' => 'Plans', 'route' => 'dashboard', 'icon' => ''],
+        ['label' => 'Plans', 'route' => 'plan-page', 'icon' => ''],
         ['label' => 'Tasks', 'route' => 'dashboard', 'icon' => ''],
     ];
 @endphp

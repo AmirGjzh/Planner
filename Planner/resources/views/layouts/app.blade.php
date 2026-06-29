@@ -7,7 +7,9 @@
 
     <title>{{ $title ?? config('app.name') }}</title>
 
+    @livewireScriptConfig
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
 </head>
 
 <body>

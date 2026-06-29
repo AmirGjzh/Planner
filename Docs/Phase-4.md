@@ -402,3 +402,77 @@ The phase is complete when:
 - Blade output remains escaped; no raw user-controlled HTML is rendered.
 
 **Acceptance Result:** UC-10 is accepted. Authenticated users can create categories (with duplicate detection and rate limiting), rename categories inline (with duplicate detection and rate limiting), delete categories (blocked if tasks exist), view task counts per category, navigate paginated results, and the use case is covered by 31 passing tests (14 Livewire + 6 create action + 7 edit action + 4 delete action).
+
+### UC-19 – Create Plan
+
+**Status:** Completed
+
+**Goal:** Allow an authenticated user to create a plan with a name, optional description, and a required date range (start/end), then see it appear in their plan list.
+
+**Routes:**
+- `GET /plan-page` → Livewire page `pages::plan-page`, auth-only route.
+
+**Implementation Files:**
+- `Planner/routes/web.php` — defines the authenticated plan-page route.
+- `Planner/resources/views/pages/⚡plan-page/plan-page.php` — Livewire page state, validation via `$this->validate()`, action call for create (and edit/delete), result handling for `AlreadyExists`/`RateLimited`, computed `plans` property with `withCount('tasks')`, form reset with `DateRange` reset on success.
+- `Planner/resources/views/pages/⚡plan-page/plan-page.blade.php` — plan creation form with `wire:model` binding (plan name, description, date picker range), plan list with task count display, delete buttons, edit button that opens a modal with pre-filled fields, and empty state.
+- `Planner/app/Actions/Plan/CreatePlanAction.php` — create plan business action; authorization through `abort_unless($user->can('create', ...), 403)`, rate limiting (5 attempts/minute per user+IP) checked before the duplicate-name DB query, checks user-scoped name uniqueness, creates the plan, returns `Created`, `AlreadyExists`, or `RateLimited`.
+- `Planner/app/Policies/PlanPolicy.php` — policy with `create` (always true), `update` (ownership), `delete` (ownership) methods. Enforced in Action classes.
+- `Planner/app/Enums/CreatePlanResult.php` — result enum (`Created`, `AlreadyExists`, `RateLimited`).
+
+**Testing Files:**
+- `Planner/tests/Feature/Actions/Plan/CreatePlanActionTest.php` — 6 action tests covering: successful creation, duplicate detection per user, cross-user same-name tolerance, rate limiting, time-travel retry, and logging for all outcomes.
+
+### UC-20 – Edit Plan
+
+**Status:** Completed
+
+**Goal:** Allow an authenticated user to edit a plan's name, description, or date range from a modal form, with duplicate-name detection and rate limiting.
+
+**Routes:**
+- `GET /plan-page` → Livewire page `pages::plan-page`, auth-only route (same page as UC-19).
+
+**Implementation Files:**
+- `Planner/resources/views/pages/⚡plan-page/plan-page.php` — Livewire page state; `startEditing()` loads plan data into edit-scoped properties (`editName`, `editDescription`, `editRange`), `cancelEditing()` resets them, `updatePlan()` validates edit fields, calls `EditPlanAction`, handles `RateLimited`/`AlreadyExists`, dispatches `close-modal` on success, and refreshes the plan list.
+- `Planner/resources/views/pages/⚡plan-page/plan-page.blade.php` — edit modal with `x-on:click` dispatching `open-modal` instantly then `$wire.startEditing()` async to populate fields; form with `wire:model` for edit fields, Cancel button calling `$data.close(); $wire.cancelEditing()`, Save button submitting `updatePlan`.
+- `Planner/app/Actions/Plan/EditPlanAction.php` — edit plan business action; authorization through `abort_unless($user->can('update', ...), 403)`, rate limiting (5 attempts/minute per user+IP) checked before the duplicate-name DB query, checks uniqueness excluding the current plan, updates name/description/date range, returns `Updated`, `AlreadyExists`, or `RateLimited`.
+- `Planner/app/Policies/PlanPolicy.php` — policy with `update` ownership check. Enforced in Action class.
+- `Planner/app/Enums/EditPlanResult.php` — result enum (`Updated`, `AlreadyExists`, `RateLimited`).
+
+**Testing Files:**
+- `Planner/tests/Feature/Actions/Plan/EditPlanActionTest.php` — 7 action tests covering: successful update (name, description, dates), duplicate detection, keeping the same name, cross-user ownership blocked via `ModelNotFoundException` from `$user->plans()->findOrFail()`, rate limiting, time-travel retry, and logging for all outcomes.
+
+### UC-21 – Delete Plan
+
+**Status:** Completed
+
+**Goal:** Allow an authenticated user to delete a plan. Deletion is blocked if the plan still has tasks assigned (restrict on delete).
+
+**Routes:**
+- `GET /plan-page` → Livewire page `pages::plan-page`, auth-only route (same page as UC-19).
+
+**Implementation Files:**
+- `Planner/resources/views/pages/⚡plan-page/plan-page.php` — Livewire page state; `deletePlan()` calls `DeletePlanAction`, handles `HasTasks` result by showing an error message, refreshes plan list on success.
+- `Planner/resources/views/pages/⚡plan-page/plan-page.blade.php` — delete button with `wire:click="deletePlan(plan.id)"` per plan.
+- `Planner/app/Actions/Plan/DeletePlanAction.php` — delete plan business action; authorization through `abort_unless($user->can('delete', ...), 403`), checks for assigned tasks via a single `count()` query before deletion (avoids N+1), logs warning with task count if blocked, logs info on success, returns `Deleted` or `HasTasks`.
+- `Planner/app/Policies/PlanPolicy.php` — policy with `delete` ownership check. Enforced in Action class.
+- `Planner/app/Enums/DeletePlanResult.php` — result enum (`Deleted`, `HasTasks`).
+- `Planner/database/migrations/2026_06_14_152651_create_tasks_table.php` — `plan_id` foreign key uses `restrictOnDelete` to enforce the DB-level guard.
+
+**Testing Files:**
+- `Planner/tests/Feature/Actions/Plan/DeletePlanActionTest.php` — 4 action tests covering: successful deletion, cross-user ownership blocked via `ModelNotFoundException`, has-tasks prevention, and logging for all outcomes.
+
+### Shared Security & Reliability Notes (UC-19, UC-20, UC-21)
+
+- Plan access is protected by the `auth` middleware.
+- Ownership is verified at two independent layers: (1) relationship-scoped `$user->plans()->findOrFail()` in the Action (throws `ModelNotFoundException` if the plan belongs to another user), (2) `PlanPolicy` enforced via `$user->can()` in each Action as defense-in-depth.
+- Plan name uniqueness is scoped per user (checked inside the Action).
+- Create and edit actions are rate-limited (5 attempts per minute per user+IP) with distinct keys (`create-plan:`, `edit-plan:`). The rate limiter is checked **before** the duplicate-name DB query — preventing unnecessary database hits while rate-limited. All rate-limit hits and failures are logged. Delete is not rate-limited (infrequent, destructive action).
+- Deleting a plan with tasks is blocked by a server-side `count()` check before the database call, avoiding an unhandled `QueryException` from the `restrictOnDelete` constraint.
+- The `#[Locked]` attribute on `$userId` prevents client-side tampering.
+- Edit modal opens instantly (UX-first) with a brief empty state, then `$wire.startEditing()` populates fields asynchronously — no loading spinner needed for typical response times.
+- The edit modal is closed on successful save via `$this->dispatch('close-modal', ...)` before resetting edit state.
+- On errors (rate limit, duplicate, has-tasks), inline error messages are shown via `$this->addError()` and displayed with `<x-ui.error>` components.
+- Blade output remains escaped; no raw user-controlled HTML is rendered.
+
+**Acceptance Result:** UC-19, UC-20, and UC-21 are accepted. Authenticated users can create plans (with duplicate detection and rate limiting), edit plans from a modal (with duplicate detection and rate limiting), delete plans (blocked if tasks exist due to restrict-on-delete), and all three use cases are covered by 17 passing action tests (6 create + 7 edit + 4 delete).

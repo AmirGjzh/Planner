@@ -22,7 +22,7 @@ return new class extends Migration
             $table->integer('day_before_alarm')->default(0);
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->index('user_id');
-            $table->foreignId('plan_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignId('plan_id')->nullable()->constrained()->restrictOnDelete();
             $table->index('plan_id');
             $table->foreignId('category_id')->constrained()->restrictOnDelete();
             $table->index('category_id');

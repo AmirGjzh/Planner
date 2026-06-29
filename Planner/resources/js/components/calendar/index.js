@@ -653,5 +653,5 @@ const calendar = ({
     };
 };
 
-Alpine.data('calendarComponent', calendar);
+document.addEventListener('alpine:init', () => Alpine.data('calendarComponent', calendar));
 export default calendar;

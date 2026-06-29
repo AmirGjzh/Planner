@@ -251,6 +251,6 @@ const datePicker = ({
     };
 };
 
-Alpine.data('datePickerComponent', datePicker);
+document.addEventListener('alpine:init', () => Alpine.data('datePickerComponent', datePicker));
 
 export default datePicker;

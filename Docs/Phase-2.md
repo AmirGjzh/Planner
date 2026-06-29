@@ -468,15 +468,15 @@ Actor: Logged-in user
 
 Description:
 
-The user deletes a plan. All tasks assigned to the plan are also deleted (cascade delete).
+The user deletes a plan. Deletion is prevented if the plan still has tasks assigned (restrict on delete).
 
 Main Flow
 
 - The user clicks Delete next to a plan.
-- The system shows a confirmation dialog warning that all tasks in the plan will be deleted.
-- The user confirms.
-- The system deletes the plan and all its associated tasks.
-- The plan and its tasks disappear from the user's lists.
+- The system checks whether the plan has any tasks assigned.
+- If the plan has tasks, deletion is blocked and an error message is shown.
+- If the plan has no tasks, deletion proceeds.
+- The plan is permanently removed from the user's list.
 
 #### UC‑22 – View Plan and Its Tasks
 Actor: Logged-in user
@@ -624,7 +624,7 @@ The system is decomposed into the following modules. Each module has a clear res
 **Responsibility:**
 - Create, read, update, delete plans
 - Calculate plan progress (% completed)
-- Cascade delete tasks when plan is deleted
+- Prevent deletion when plan has tasks (restrict on delete)
 
 **Depends on:** User, Task models
 **Interacts with:** Task Management (tasks reference plans)
