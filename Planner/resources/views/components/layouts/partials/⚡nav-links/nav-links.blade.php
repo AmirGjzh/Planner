@@ -3,7 +3,7 @@
         ['label' => 'Dashboard', 'route' => 'dashboard', 'icon' => ''],
         ['label' => 'Categories', 'route' => 'category-page', 'icon' => ''],
         ['label' => 'Plans', 'route' => 'plan-page', 'icon' => ''],
-        ['label' => 'Tasks', 'route' => 'dashboard', 'icon' => ''],
+        ['label' => 'Tasks', 'route' => 'task-page', 'icon' => ''],
     ];
 @endphp
 
