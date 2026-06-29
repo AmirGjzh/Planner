@@ -5,6 +5,9 @@
 .env.production
 .phpactor.json
 .phpunit.result.cache
+AGENTS.md
+boost.json
+opencode.json
 /.codex
 /.cursor/
 /.idea
@@ -12,6 +15,7 @@
 /.phpunit.cache
 /.vscode
 /.zed
+/.agent
 /auth.json
 /node_modules
 /public/build
