@@ -28,7 +28,7 @@ In the first version, the system must include at least the following features:
 ### Task and Category Management
 
 - Create categories and assign each task to a category
-- Add tasks for a specific day (without specifying time)
+- Add tasks for a specific day (date only, no starting time)
 - Specify estimated duration for each task
 
 ### Plan Management
@@ -38,7 +38,7 @@ In the first version, the system must include at least the following features:
 - Assign tasks to a plan (optional — tasks can exist without a plan)
 - View all tasks within a plan
 - Track plan progress based on completed vs. total tasks
-- Edit or delete plans (deleting a plan also deletes all its tasks — cascade delete)
+- Edit or delete plans (deleting a plan is blocked if it still has tasks — restrict on delete)
 
 ### Daily Workload Calculation
 
@@ -56,6 +56,11 @@ In the first version, the system must include at least the following features:
 - Daily view
 - Weekly view
 - Monthly calendar view
+
+### Filtering and Sorting
+
+- Filter tasks by category, plan, date range, status, or priority
+- Sort tasks by date, priority, or estimated time
 
 ### Recurring and Multi-Day Tasks
 
@@ -85,3 +90,9 @@ In the first version, the system must include at least the following features:
 - Add
 - Edit
 - Delete
+
+### Soft Delete
+
+- User accounts are soft-deleted with obfuscated credentials
+- Plans and categories are hard-deleted
+- Plans with tasks cannot be deleted; categories with tasks cannot be deleted

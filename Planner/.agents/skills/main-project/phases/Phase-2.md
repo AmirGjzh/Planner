@@ -240,16 +240,15 @@ Main Flow:
 
 Actor: Logged-in user
 
-Description: The user modifies an existing task. In this version, the task date cannot be changed for simplicity.
+Description: The user modifies an existing task.
 
 Main Flow:
 1. The user opens a day view or task list.
 2. The user clicks Edit next to a task.
 3. The edit form opens with current values pre-filled.
-4. The user can modify: Title, Description, Category, Plan (optional), Estimated time, Priority, Notification days before.
-5. The date field is locked.
-6. The user clicks Save.
-7. The system saves changes and recalculates the day's workload if necessary.
+4. The user can modify: Title, Description, Date, Category, Plan (optional), Estimated time, Priority, Notification days before.
+5. The user clicks Save.
+6. The system saves changes and recalculates the day's workload if necessary.
 
 #### UC-12 – Delete Task
 
@@ -483,7 +482,7 @@ Note: For the MVP, Option 1 (simple model) is used. No recurrence pattern field 
 Description: Soft deletion is only used for User accounts. Categories, tasks, and plans are hard-deleted.
 
 Rules:
-- If a plan is deleted, all tasks within that plan are also cascade-deleted.
+- Deleting a plan is blocked if it still has tasks assigned (restrict on delete).
 - If a category is deleted, tasks referencing it are prevented from deletion unless they are reassigned first.
 - The Admin role handles user account cleanup in future versions.
 

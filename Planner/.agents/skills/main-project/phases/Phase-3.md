@@ -38,7 +38,7 @@ Plan (0..1) ——— (0..N) Task
 | Foreign Key | On Delete Behavior | Rationale |
 |-------------|--------------------|-----------|
 | `user_id` on all child tables | `cascadeOnDelete` | Deleting a user removes all their data |
-| `plan_id` on `tasks` | `cascadeOnDelete` | Deleting a plan also removes all its tasks |
+| `plan_id` on `tasks` | `restrictOnDelete` | Cannot delete a plan that still has tasks |
 | `category_id` on `tasks` | `restrictOnDelete` | Cannot delete a category that still has tasks |
 
 ### Tables and Columns
@@ -95,7 +95,7 @@ Plan (0..1) ——— (0..N) Task
 | `done` | `boolean` | Default `false` |
 | `day_before_alarm` | `integer` | Default `0` |
 | `user_id` | `bigint unsigned` | Foreign key → `users.id`, cascade on delete |
-| `plan_id` | `bigint unsigned` | Foreign key → `plans.id`, cascade on delete, nullable |
+| `plan_id` | `bigint unsigned` | Foreign key → `plans.id`, restrict on delete, nullable |
 | `category_id` | `bigint unsigned` | Foreign key → `categories.id`, restrict on delete |
 | `created_at` / `updated_at` | `timestamp` | Auto-managed |
 
@@ -153,7 +153,7 @@ Used by `User.gender` column with automatic cast.
 
 - **Only `User`** uses soft deletes (`SoftDeletes` trait + `deleted_at` column).
 - **Category, Task, and Plan** are hard-deleted immediately.
-- Deleting a Plan cascade-deletes all its Tasks.
+- Deleting a Plan is blocked if it still has Tasks (restrictOnDelete).
 - Deleting a Category with active tasks is rejected by the database (`restrictOnDelete`).
 
 ### Factories
@@ -247,7 +247,7 @@ These service areas are defined as a map of responsibilities. They will be flesh
 ### When to Create an Action vs. a Service Method
 
 - **Service method** — when the operation is straightforward and belongs clearly to one domain (e.g., `TaskService::update()`).
-- **Action class** — when the operation has significant side effects or crosses domain boundaries (e.g., `DeletePlanAction` also cascade-deletes tasks and recalculates workload).
+- **Action class** — when the operation has significant side effects or crosses domain boundaries (e.g., `DeletePlanAction` checks for tasks and blocks deletion if any exist).
 
 ---
 
@@ -271,7 +271,6 @@ Create a custom exception class when a business rule is violated and the user ne
 | Exception | When Thrown |
 |-----------|-------------|
 | `CategoryHasTasksException` | Attempting to delete a category that still has tasks |
-| `TaskDateLockedException` | Attempting to change the date of an existing task |
 
 Add more as new rules emerge during implementation.
 
@@ -280,8 +279,7 @@ Add more as new rules emerge during implementation.
 | Layer | How to Handle |
 |-------|---------------|
 | **Livewire Component** | Catch domain exceptions → show user-friendly message via `session()->flash()` or `$this->addError()`. For validation → automatic per-field messages. |
-| **Service / Action** | Throw domain exceptions for rule violations. Do not catch Laravel system exceptions — let them propagate to the global handler. |
-| **Global Handler** | `App\Exceptions\Handler` — log unexpected errors with full stack trace, return a generic "Something went wrong" message. |
+| **Service / Action** | Return result enums for all outcomes (success, failure, rate-limited). Do not throw exceptions for expected failures. |
 
 ### Logging Conventions
 
