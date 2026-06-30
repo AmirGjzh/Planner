@@ -1,6 +1,6 @@
 ---
 name: main-project
-description: "Use this skill for all tasks in the Planner project. Auto-loads each session to provide project context, UC numbering, phase progress, and implementation status."
+description: "Activate this skill at the start of every session — it provides project context, UC numbering, phase progress, and implementation status for the Planner project."
 license: MIT
 metadata:
   author: planner-team
@@ -52,11 +52,11 @@ A Laravel 13 + Livewire 4 task planner application. Users manage tasks, categori
 
 ## Phases
 
-- `phases/Phase-0.md` — Vision & Scope
-- `phases/Phase-1.md` — Requirements (27 UCs, NFRs, ACs)
-- `phases/Phase-2.md` — Domain Design + UC Specs
-- `phases/Phase-3.md` — Data Model & Architecture
-- `phases/Phase-4.md` — Implementation Process & Logs
+- `phases/phase-0.md` — Vision & Scope
+- `phases/phase-1.md` — Requirements (27 UCs, NFRs, ACs)
+- `phases/phase-2.md` — Domain Design + UC Specs
+- `phases/phase-3.md` — Data Model & Architecture
+- `phases/phase-4.md` — Implementation Process & Logs
 
 ## Key Decisions
 
