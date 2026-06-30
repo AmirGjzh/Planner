@@ -15,6 +15,7 @@ A Laravel 13 + Livewire 4 task planner application. Users manage tasks, categori
 ## UC Numbering (Topological Order)
 
 | # | UC | Description |
+
 |---|-----|-------------|
 | 01 | Login | Email + password authentication |
 | 02 | Register | Username, email, password |

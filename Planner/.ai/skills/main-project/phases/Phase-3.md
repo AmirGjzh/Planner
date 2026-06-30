@@ -181,14 +181,22 @@ This section defines the conventions and patterns to follow during implementatio
 ```
 app/
 ├── Actions/          # Single-purpose operations (one class = one action)
+
 ├── Enums/            # Backed enums for fixed value sets
+
 ├── Exceptions/       # Domain-specific exception classes
+
 ├── Http/
 │   ├── Controllers/  # Thin controllers (if any)
+
 │   └── Livewire/     # Full-page and nested Livewire components
+
 ├── Models/           # Eloquent models
+
 ├── Services/         # Business logic grouped by domain concern
+
 └── View/             # View composers or presenters (if needed)
+
 ```
 
 ### Layer Separation Principle

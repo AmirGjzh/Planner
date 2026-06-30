@@ -5,23 +5,29 @@
 ### Authentication and Profile
 
 #### Login
+
 As a user, I want to log into the system with my email and password so that I can access my tasks and plans.
 
 #### Register
+
 As a user, I want to create a new account with a username, email, and password so that I can start managing my tasks.
 
 #### View and Edit Profile
+
 As a user, I want to view and edit my profile information (name, date of birth, country, gender) so that I can keep my account details up to date.
 
 #### Logout
+
 As a user, I want to log out of the system so that my session is securely ended.
 
 #### Delete Account
+
 As a user, I want to permanently delete my account with password confirmation so that I can remove all my data from the system.
 
 ### Category Management
 
 #### Manage Categories
+
 As a user, I want to create, rename, and delete categories so that I can organize my tasks by topic (e.g., university, work, personal).
 
 Each task belongs to exactly one category.
@@ -29,39 +35,49 @@ Each task belongs to exactly one category.
 ### Plan Management
 
 #### Create Plan
+
 As a user, I want to create a plan with a name, optional description, and a date range so that I can group related tasks under a common goal.
 
 #### Edit Plan
+
 As a user, I want to edit my plan's name, description, or date range so that I can keep my plans up to date.
 
 #### Delete Plan
+
 As a user, I want to delete a plan so it no longer appears in my list. Deleting a plan is blocked if it still has tasks assigned (restrict on delete).
 
 ### Task Management
 
 #### Create Task
+
 As a user, I want to create a task for a specific day with a title, category, estimated duration, and priority so that I know what needs to be done on that day.
 
 #### Edit Task
+
 As a user, I want to edit my existing tasks (title, description, category, estimated time, priority, alarm days) so that I can keep my schedule up to date if circumstances change.
 
 #### Delete Task
+
 As a user, I want to delete a task so it no longer appears in my list.
 
 ### Task Status
 
 #### Mark Task as Done / Not Done
+
 As a user, I want to mark tasks as completed or revert them to not done so I can track my progress.
 
 #### Automatic Not Done Status
+
 As a user, if I do not specify a task's status by the end of the day, I want the system to automatically consider it not done so that performance reports remain accurate.
 
 ### Workload and Indicators
 
 #### Daily Workload Calculation
+
 As a user, I want the system to calculate the total estimated time of tasks for each day so I know how much work I have assigned to myself.
 
 #### Color-Coded Day Indicators
+
 As a user, I want each day in the calendar or daily view to have a status color based on total workload:
 - Total time = 0 hours → White
 - Total time < 3 hours → Green
@@ -74,48 +90,59 @@ In this version, thresholds are global and fixed. In future versions, they may b
 ### Views
 
 #### Calendar View (Daily, Weekly, Monthly)
+
 As a user, I want to see tasks displayed in daily, weekly, and monthly calendar views so that I can have both detailed and overview perspectives of my schedule.
 
 #### View Day Details
+
 As a user, I want to click on a specific day in the calendar to view its tasks and total workload so that I can drill down into any day.
 
 ### Filtering and Sorting
 
 #### Filter and Sort Tasks
+
 As a user, I want to filter tasks by category, plan, date range, status, or priority, and sort them by date, priority, or estimated time so that I can quickly find specific tasks.
 
 ### Overdue and Notifications
 
 #### Overdue Tasks
+
 As a user, I want the system to identify tasks whose due date has passed and are still not marked as done so that I can plan to catch up.
 
 #### Upcoming Tasks
+
 As a user, I want to see tasks that are approaching within a defined window (today + X days) so that I can prepare for what's coming.
 
 ### Reports
 
 #### Performance Reports
+
 As a user, I want to select a time range and see total tasks created, completed, completion rate, and overdue count so that I can analyze my performance.
 
 ### Plan Tracking
 
 #### View Plan Tasks
+
 As a user, I want to view a specific plan and see all tasks assigned to it so that I can track progress on that project.
 
 #### Plan Progress
+
 As a user, I want to see the progress of a plan based on how many of its tasks are completed so that I can track how close I am to finishing a project.
 
 #### Plan Progress Tracking
+
 As a user, I want to see real-time plan progress updates as I mark tasks done so that I always know the current status.
 
 ### Recurring Tasks
 
 #### Recurring / Multi-Day Tasks
+
 As a user, I want to assign a task to multiple selected days (e.g., specific weekdays or multiple dates) so that I don't have to create repetitive tasks separately for each day.
 
 ### Soft Delete Behavior
 
 #### Soft Delete and Admin Management
+
 Soft deletion is only used for User accounts. Categories, tasks, and plans are hard-deleted. Deleting a plan is blocked if it still has tasks (restrict on delete). If a category is deleted, tasks referencing it are prevented from deletion unless they are reassigned first.
 
 ## 1.2 – Non-Functional Requirements
@@ -409,5 +436,3 @@ Soft deletion is only used for User accounts. Categories, tasks, and plans are h
 - Profile editing (name, DOB, country, gender)
 - Account deletion
 - Admin panel for user management
-
-
