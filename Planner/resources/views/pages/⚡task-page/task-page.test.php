@@ -651,6 +651,55 @@ it('renders workload on the page', function () {
         ->assertSee('Medium');
 });
 
+it('workload updates after creating a task', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+
+    $component = Livewire::actingAs($user)
+        ->test('pages::task-page');
+
+    expect($component->instance()->workload())->toBeNull();
+
+    $component
+        ->set('task_title', 'New task')
+        ->set('task_date', now()->format('Y-m-d'))
+        ->set('task_estimated_minutes', 120)
+        ->set('task_priority', 'medium')
+        ->set('task_category_id', $category->id)
+        ->call('addTask')
+        ->assertHasNoErrors();
+
+    expect($component->instance()->workload())->toEqual([
+        'total_minutes' => 120,
+        'hours' => 2,
+        'minutes' => 0,
+        'label' => 'Medium',
+    ]);
+});
+
+it('workload updates after deleting a task', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $task = $user->tasks()->create([
+        'title' => 'To delete', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 30,
+        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
+    ]);
+
+    $component = Livewire::actingAs($user)
+        ->test('pages::task-page');
+
+    expect($component->instance()->workload())->toEqual([
+        'total_minutes' => 30,
+        'hours' => 0,
+        'minutes' => 30,
+        'label' => 'Light',
+    ]);
+
+    $component->call('deleteTask', $task->id)->assertHasNoErrors();
+
+    expect($component->instance()->workload())->toBeNull();
+});
+
 it('filters with end date only', function () {
     $user = User::factory()->create();
     $category = $user->categories()->create(['name' => 'Work']);

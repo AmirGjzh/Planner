@@ -114,7 +114,7 @@ new class extends Component
 
     public function applyDateFilter(): void
     {
-        unset($this->tasks);
+        unset($this->tasks, $this->workload);
     }
 
     #[Computed]
@@ -184,14 +184,14 @@ new class extends Component
         $this->task_priority = 'medium';
         $this->task_category_id = null;
         $this->task_plan_id = null;
-        unset($this->tasks);
+        unset($this->tasks, $this->workload);
     }
 
     public function deleteTask(int $taskId, DeleteTaskAction $action): void
     {
         $action->execute($this->user, $taskId);
 
-        unset($this->tasks);
+        unset($this->tasks, $this->workload);
     }
 
     public function startEditing(int $taskId): void
@@ -265,7 +265,7 @@ new class extends Component
 
         $this->dispatch('close-modal', id: 'edit-task-modal');
         $this->cancelEditing();
-        unset($this->tasks);
+        unset($this->tasks, $this->workload);
     }
 
     public function toggleTask(int $taskId, ToggleTaskDoneAction $action): void
@@ -278,6 +278,6 @@ new class extends Component
             return;
         }
 
-        unset($this->tasks);
+        unset($this->tasks, $this->workload);
     }
 };
