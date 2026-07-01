@@ -12,12 +12,12 @@ use App\Models\Category;
 use App\Models\Plan;
 use App\Models\Task;
 use App\Models\User;
+use App\View\Components\DateRange;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-new class extends Component
-{
+new class extends Component {
     #[Locked]
     public int $userId;
 
@@ -55,10 +55,13 @@ new class extends Component
 
     public ?int $editPlanId = null;
 
+    public DateRange $date_filter;
+
     public function mount()
     {
         $this->task_date = now()->format('Y-m-d');
         $this->userId = auth()->id() ?? abort(403);
+        $this->date_filter = DateRange::today();
     }
 
     #[Computed]
@@ -70,11 +73,26 @@ new class extends Component
     #[Computed]
     public function tasks()
     {
-        return Task::query()
+        $query = Task::query()
             ->with('category', 'plan')
-            ->where('user_id', $this->userId)
+            ->where('user_id', $this->userId);
+
+        if ($this->date_filter->hasStart()) {
+            $query->where('task_date', '>=', $this->date_filter->getStart());
+        }
+
+        if ($this->date_filter->hasEnd()) {
+            $query->where('task_date', '<=', $this->date_filter->getEnd());
+        }
+
+        return $query->orderBy('task_date', 'desc')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
+    }
+
+    public function applyDateFilter(): void
+    {
+        unset($this->tasks);
     }
 
     #[Computed]

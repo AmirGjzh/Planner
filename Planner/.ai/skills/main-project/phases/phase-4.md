@@ -518,3 +518,29 @@ The phase is complete when:
 - Blade output remains escaped; no raw user-controlled HTML is rendered.
 
 **Acceptance Result:** UC-13 is accepted. Authenticated users can toggle task done status with a single click, ownership is enforced, rate limiting prevents abuse, and the use case is covered by 10 passing tests (6 action + 2 Livewire + 2 access).
+
+### UC-19 – Calendar View (Date Range Filter)
+
+**Status:** Completed (simplified — full daily/weekly/monthly views deferred to Layer 2)
+
+**Goal:** Allow users to filter tasks by a custom date range using a range datepicker and a Filter button.
+
+**Routes:**
+- `GET /task-page` → Livewire page `pages::task-page`, auth-only route (same page as UC-10).
+
+**Implementation Files:**
+- `resources/views/pages/⚡task-page/task-page.php` — `$date_filter` property (DateRange object, defaults to today), `applyDateFilter()` method refreshes task list with the selected range scoping, `tasks()` computed applies `task_date >= start` and `task_date <= end` when the respective dates are present.
+- `resources/views/pages/⚡task-page/task-page.blade.php` — range datepicker with `wire:model="date_filter"` and a Filter button with `wire:click="applyDateFilter"`.
+- `app/Livewire/Synthesizers/DateRangeSynthesizer.php` — existing synthesizer handles hydration/dehydration of the DateRange value object between JS and Livewire.
+
+**Testing Files:**
+- `resources/views/pages/⚡task-page/task-page.test.php` — 4 co-located Livewire tests covering: default filter shows only today's tasks, applyDateFilter scopes to a date range, filter with start date only, filter with end date only.
+
+**Security and Reliability Notes:**
+- Task access is protected by the `auth` middleware.
+- Ownership is enforced at the query level by `where('user_id', $this->userId)` in the `tasks()` computed.
+- The `#[Locked]` attribute on `$userId` prevents client-side tampering.
+- Date filtering is safe against SQL injection (uses Eloquent parameter binding via `where`).
+- The date filter applies only to the displayed list — it does not affect task creation, editing, or deletion.
+
+**Acceptance Result:** UC-19 is accepted (Layer 1 simplified). Authenticated users can filter their tasks by a custom date range using a range datepicker and Filter button. The default view shows today's tasks. The use case is covered by 6 passing tests (4 Livewire + 2 access). Full daily/weekly/monthly calendar views with workload colors are deferred to Layer 2.
