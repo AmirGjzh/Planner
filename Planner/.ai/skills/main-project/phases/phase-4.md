@@ -544,3 +544,29 @@ The phase is complete when:
 - The date filter applies only to the displayed list — it does not affect task creation, editing, or deletion.
 
 **Acceptance Result:** UC-19 is accepted (Layer 1 simplified). Authenticated users can filter their tasks by a custom date range using a range datepicker and Filter button. The default view shows today's tasks. The use case is covered by 6 passing tests (4 Livewire + 2 access). Full daily/weekly/monthly calendar views with workload colors are deferred to Layer 2.
+
+### UC-14 – Workload
+
+**Description:** Display total estimated time per day with a workload level (Light/Medium/Heavy).
+
+**Implementation:** Added a `workload` computed property to the existing task-page Livewire component (`task-page.php:93-110`). It sums `estimated_minutes` from the already-filtered `$this->tasks` collection and returns `null` when zero, or an array with `total_minutes`, `hours`, `minutes`, and `label`.
+
+**Workload levels:**
+- Light: 1–59 minutes
+- Medium: 60–179 minutes
+- Heavy: 180+ minutes
+
+**Blade Display:** A minimal `<x-ui.text>` snippet was added above the task list showing `Workload: {h}h {m}m · {label}`. The user can reposition this snippet as needed.
+
+**Files changed:**
+- `resources/views/pages/⚡task-page/task-page.php` — added `workload` computed property
+- `resources/views/pages/⚡task-page/task-page.blade.php` — added workload display line
+- `resources/views/pages/⚡task-page/task-page.test.php` — added 7 workload tests
+
+**Security and Reliability Notes:**
+- The workload is computed from the same filtered `$this->tasks` query, so it automatically respects the date filter.
+- Returns `null` instead of `['total_minutes' => 0, ...]` when no tasks exist / no tasks match the filter, making it easy to conditionally render with `@if`.
+- No new routes, actions, or models — purely a computed aggregation on existing data.
+- No rate limiting needed — it's a read-only in-memory calculation, not a write operation.
+
+**Acceptance Result:** UC-14 is accepted. Authenticated users see their daily workload total (hours + minutes) and a categorical label (Light/Medium/Heavy) automatically reflecting the current date filter. The use case is covered by 7 passing tests (all Livewire). Color indicators (UC-15) and calendar grid views (UC-19 full) remain Layer 2.

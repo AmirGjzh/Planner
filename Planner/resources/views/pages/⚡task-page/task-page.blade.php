@@ -82,6 +82,9 @@
                 <x-ui.heading level="h2" size="md">Your Tasks</x-ui.heading>
                 <x-ui.separator class="my-4"></x-ui.separator>
                 <x-ui.error name="toggle_task" class="mb-4"></x-ui.error>
+                @if ($this->workload)
+                    <x-ui.text class="mb-4">Workload: {{ $this->workload['hours'] }}h {{ $this->workload['minutes'] }}m · {{ $this->workload['label'] }}</x-ui.text>
+                @endif
                 @forelse ($this->tasks as $task)
                     <div class="flex justify-between gap-20 bg-slate-200 shadow-lg rounded-lg py-2 px-4 mb-4">
                         <div class="flex flex-col justify-between gap-2">

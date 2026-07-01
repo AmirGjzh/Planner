@@ -46,8 +46,8 @@ A Laravel 13 + Livewire 4 task planner application. Users manage tasks, categori
 
 ## Implementation Status
 
-- **Completed:** UC-01 through UC-13, UC-19
-- **Remaining:** UC-14 through UC-18, UC-20 through UC-27
+- **Completed:** UC-01 through UC-14, UC-19
+- **Remaining:** UC-15 through UC-18, UC-20 through UC-27
 
 ## Phases
 

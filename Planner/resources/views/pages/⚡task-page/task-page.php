@@ -17,7 +17,8 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     #[Locked]
     public int $userId;
 
@@ -88,6 +89,27 @@ new class extends Component {
         return $query->orderBy('task_date', 'desc')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
+    }
+
+    #[Computed]
+    public function workload(): ?array
+    {
+        $total = $this->tasks->sum('estimated_minutes');
+
+        if ($total === 0) {
+            return null;
+        }
+
+        return [
+            'total_minutes' => $total,
+            'hours' => intdiv($total, 60),
+            'minutes' => $total % 60,
+            'label' => match (true) {
+                $total < 120 => 'Light',
+                $total < 240 => 'Medium',
+                default => 'Heavy',
+            },
+        ];
     }
 
     public function applyDateFilter(): void

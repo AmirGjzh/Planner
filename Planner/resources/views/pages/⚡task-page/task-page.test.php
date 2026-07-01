@@ -523,6 +523,134 @@ it('filters with start date only', function () {
         ->assertDontSee('Old task');
 });
 
+it('returns null workload when no tasks exist', function () {
+    $user = User::factory()->create();
+
+    $component = Livewire::actingAs($user)
+        ->test('pages::task-page');
+
+    expect($component->instance()->workload())->toBeNull();
+});
+
+it('returns Light workload for tasks under 60 minutes', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $user->tasks()->create([
+        'title' => 'Quick task', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 30,
+        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
+    ]);
+
+    $component = Livewire::actingAs($user)
+        ->test('pages::task-page');
+
+    expect($component->instance()->workload())->toEqual([
+        'total_minutes' => 30,
+        'hours' => 0,
+        'minutes' => 30,
+        'label' => 'Light',
+    ]);
+});
+
+it('returns Medium workload at 120 minute boundary', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $user->tasks()->create([
+        'title' => 'Hour task', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 120,
+        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
+    ]);
+
+    $component = Livewire::actingAs($user)
+        ->test('pages::task-page');
+
+    expect($component->instance()->workload())->toEqual([
+        'total_minutes' => 120,
+        'hours' => 2,
+        'minutes' => 0,
+        'label' => 'Medium',
+    ]);
+});
+
+it('returns Heavy workload at 240 minute boundary', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $user->tasks()->create([
+        'title' => 'Long task', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 240,
+        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
+    ]);
+
+    $component = Livewire::actingAs($user)
+        ->test('pages::task-page');
+
+    expect($component->instance()->workload())->toEqual([
+        'total_minutes' => 240,
+        'hours' => 4,
+        'minutes' => 0,
+        'label' => 'Heavy',
+    ]);
+});
+
+it('sums workload across multiple tasks', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $user->tasks()->create([
+        'title' => 'Task A', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 90,
+        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
+    ]);
+    $user->tasks()->create([
+        'title' => 'Task B', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 45,
+        'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'category_id' => $category->id,
+    ]);
+
+    $component = Livewire::actingAs($user)
+        ->test('pages::task-page');
+
+    expect($component->instance()->workload())->toEqual([
+        'total_minutes' => 135,
+        'hours' => 2,
+        'minutes' => 15,
+        'label' => 'Medium',
+    ]);
+});
+
+it('workload respects date filter', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $user->tasks()->create([
+        'title' => 'In range', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 120,
+        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
+    ]);
+    $user->tasks()->create([
+        'title' => 'Out of range', 'task_date' => now()->subMonth()->format('Y-m-d'), 'estimated_minutes' => 240,
+        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
+    ]);
+
+    $component = Livewire::actingAs($user)
+        ->test('pages::task-page')
+        ->set('date_filter', ['start' => now()->subWeek()->format('Y-m-d'), 'end' => now()->addWeek()->format('Y-m-d')])
+        ->call('applyDateFilter');
+
+    expect($component->instance()->workload())->toEqual([
+        'total_minutes' => 120,
+        'hours' => 2,
+        'minutes' => 0,
+        'label' => 'Medium',
+    ]);
+});
+
+it('renders workload on the page', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $user->tasks()->create([
+        'title' => 'Workload test task', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 150,
+        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
+    ]);
+
+    Livewire::actingAs($user)
+        ->test('pages::task-page')
+        ->assertSee('2h 30m')
+        ->assertSee('Medium');
+});
+
 it('filters with end date only', function () {
     $user = User::factory()->create();
     $category = $user->categories()->create(['name' => 'Work']);
