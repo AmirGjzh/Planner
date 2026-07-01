@@ -487,3 +487,34 @@ The phase is complete when:
 - Blade output remains escaped; no raw user-controlled HTML is rendered.
 
 **Acceptance Result:** UC-12 is accepted. Authenticated users can delete tasks with a single click, ownership is enforced to prevent cross-user deletion, and the use case is covered by 6 passing tests (3 action + 1 Livewire + 2 access).
+
+### UC-13 – Toggle Done
+
+**Status:** Completed
+
+**Goal:** Allow an authenticated user to mark a task as done or not done with a single toggle switch.
+
+**Routes:**
+- `GET /task-page` → Livewire page `pages::task-page`, auth-only route (same page as UC-10).
+
+**Implementation Files:**
+- `resources/views/pages/⚡task-page/task-page.php` — Livewire page state; `toggleTask()` calls `ToggleTaskDoneAction`, handles `RateLimited` result with inline error message, refreshes task list via `unset($this->tasks)`.
+- `resources/views/pages/⚡task-page/task-page.blade.php` — switch component with `wire:click="toggleTask(task.id)"` and `:checked="$task->done"` per task in the list.
+- `app/Actions/Task/ToggleTaskDoneAction.php` — toggle done business action; rate limited at 20 attempts per minute, retrieves the task via `$user->tasks()->findOrFail()` for ownership scoping, authorization through `abort_unless($user->can('toggleDone', $task), 403)`, toggles `done` field, logs info on success, returns `Toggled` or `RateLimited`.
+- `app/Policies/TaskPolicy.php` — policy with `toggleDone` ownership check. Enforced in Action class.
+- `app/Enums/ToggleTaskDoneResult.php` — result enum (`Toggled`, `RateLimited`).
+
+**Testing Files:**
+- `tests/Feature/Actions/Task/ToggleTaskDoneActionTest.php` — 6 action tests covering: toggle from not-done to done, toggle from done to not-done, cross-user ownership blocked via `ModelNotFoundException`, logging for successful toggle, rate limiting at 20 attempts, and recovery after rate limit expires.
+- `resources/views/pages/⚡task-page/task-page.test.php` — co-located Livewire tests covering (toggle portions): toggle from not-done to done and toggle from done to not-done.
+- `tests/Feature/Auth/TaskPageAccessTest.php` — 2 access tests covering: guest redirect to login and authenticated page access.
+
+**Security and Reliability Notes:**
+- Task access is protected by the `auth` middleware.
+- Ownership is verified at two independent layers: (1) relationship-scoped `$user->tasks()->findOrFail()` in the Action (throws `ModelNotFoundException` if the task belongs to another user), (2) `TaskPolicy` enforced via `$user->can()` in each Action as defense-in-depth.
+- Toggle is rate-limited at 20 attempts per minute to prevent abuse.
+- Database foreign key constraints (`restrictOnDelete` on `category_id` and `plan_id`) ensure that toggling a task does not affect its category or plan.
+- The `#[Locked]` attribute on `$userId` prevents client-side tampering.
+- Blade output remains escaped; no raw user-controlled HTML is rendered.
+
+**Acceptance Result:** UC-13 is accepted. Authenticated users can toggle task done status with a single click, ownership is enforced, rate limiting prevents abuse, and the use case is covered by 10 passing tests (6 action + 2 Livewire + 2 access).

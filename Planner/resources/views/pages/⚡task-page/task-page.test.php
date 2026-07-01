@@ -432,3 +432,35 @@ it('shows all tasks on the page', function () {
         ->assertSee('Task A')
         ->assertSee('Task B');
 });
+
+it('toggles a task from not done to done', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $task = $user->tasks()->create([
+        'title' => 'Test task', 'task_date' => '2026-06-01', 'estimated_minutes' => 30,
+        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
+    ]);
+
+    Livewire::actingAs($user)
+        ->test('pages::task-page')
+        ->call('toggleTask', $task->id)
+        ->assertHasNoErrors();
+
+    expect($task->fresh()->done)->toBeTrue();
+});
+
+it('toggles a task from done to not done', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $task = $user->tasks()->create([
+        'title' => 'Test task', 'task_date' => '2026-06-01', 'estimated_minutes' => 30,
+        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id, 'done' => true,
+    ]);
+
+    Livewire::actingAs($user)
+        ->test('pages::task-page')
+        ->call('toggleTask', $task->id)
+        ->assertHasNoErrors();
+
+    expect($task->fresh()->done)->toBeFalse();
+});

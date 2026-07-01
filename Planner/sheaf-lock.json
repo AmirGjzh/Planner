@@ -81,7 +81,8 @@
             "select",
             "date-picker",
             "dropdown",
-            "navlist"
+            "navlist",
+            "switch"
         ],
         "heading": [
             "alerts"

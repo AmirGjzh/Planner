@@ -3,9 +3,11 @@
 use App\Actions\Task\CreateTaskAction;
 use App\Actions\Task\DeleteTaskAction;
 use App\Actions\Task\EditTaskAction;
+use App\Actions\Task\ToggleTaskDoneAction;
 use App\Enums\CreateTaskResult;
 use App\Enums\EditTaskResult;
 use App\Enums\TaskPriority;
+use App\Enums\ToggleTaskDoneResult;
 use App\Models\Category;
 use App\Models\Plan;
 use App\Models\Task;
@@ -223,6 +225,19 @@ new class extends Component
 
         $this->dispatch('close-modal', id: 'edit-task-modal');
         $this->cancelEditing();
+        unset($this->tasks);
+    }
+
+    public function toggleTask(int $taskId, ToggleTaskDoneAction $action): void
+    {
+        $result = $action->execute($this->user, $taskId, request());
+
+        if ($result === ToggleTaskDoneResult::RateLimited) {
+            $this->addError('toggle_task', 'Too many attempts. Please try again later.');
+
+            return;
+        }
+
         unset($this->tasks);
     }
 };

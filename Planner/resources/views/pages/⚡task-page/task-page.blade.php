@@ -75,6 +75,7 @@
         <div class="flex flex-col bg-gradient-to-r from-slate-50 to-slate-100 w-full flex-2 rounded-lg p-5">
             <x-ui.heading level="h2" size="md">Your Tasks</x-ui.heading>
             <x-ui.separator class="my-4"></x-ui.separator>
+            <x-ui.error name="toggle_task" class="mb-4"></x-ui.error>
             @forelse ($this->tasks as $task)
                 <div class="flex justify-between gap-20 bg-slate-200 shadow-lg rounded-lg py-2 px-4 mb-4">
                     <div class="flex flex-col justify-between gap-2">
@@ -88,12 +89,17 @@
                             <x-ui.text class="text-slate-700">Takes {{ $task->estimated_minutes }} minutes</x-ui.text>
                         </div>
                     </div>
-                    <div class="flex flex-col gap-4">
-                        <div class="flex">
+                    <div class="flex flex-col justify-between gap-4">
+                        <div class="self-end">
+                            <x-ui.switch size="md" wire:click="toggleTask({{ $task->id }})" label="Finished task" name="" :checked="$task->done" />
+                        </div>
+                        <div class="flex justify-end">
+                            <x-ui.text class="text-black! text-right pr-2">{{ $task->plan->name ?? 'No plan'
+                                    }}</x-ui.text>
                             <x-ui.text class="text-black! text-right pr-2">{{ $task->category->name
-                                }}</x-ui.text>
+                                    }}</x-ui.text>
                             <x-ui.text class="text-black/60! text-right pr-2">{{ $task->priority
-                                }}</x-ui.text>
+                                    }}</x-ui.text>
                         </div>
                         <div class="flex flex-col gap-2 items-end">
                             <x-ui.button size="sm" wire:click="deleteTask({{ $task->id }})"
@@ -110,8 +116,7 @@
         </div>
     </div>
 
-    <x-ui.modal bare backdrop="dark" position="center" width="3xl" id="edit-task-modal"
-        :close-by-clicking-away="false">
+    <x-ui.modal bare backdrop="dark" position="center" width="3xl" id="edit-task-modal" :close-by-clicking-away="false">
         <div class="flex flex-col m-5">
             <div class="flex justify-between items-center px-1">
                 <x-ui.heading level="h2" size="md">Edit Task</x-ui.heading>
