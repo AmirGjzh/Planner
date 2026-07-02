@@ -58,6 +58,20 @@ new class extends Component
 
     public DateRange $date_filter;
 
+    public ?int $filterCategoryId = null;
+
+    public ?int $filterPlanId = null;
+
+    public ?string $filterStatus = null;
+
+    public ?string $filterPriority = null;
+
+    public ?bool $sortByDate = null;
+
+    public ?bool $sortByPriority = null;
+
+    public ?bool $sortByEstimatedMinutes = null;
+
     public function mount()
     {
         $this->task_date = now()->format('Y-m-d');
@@ -86,9 +100,45 @@ new class extends Component
             $query->where('task_date', '<=', $this->date_filter->getEnd());
         }
 
-        return $query->orderBy('task_date', 'desc')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        if ($this->filterCategoryId !== null) {
+            $query->where('category_id', $this->filterCategoryId);
+        }
+
+        if ($this->filterPlanId !== null) {
+            $query->where('plan_id', $this->filterPlanId);
+        }
+
+        if ($this->filterStatus === 'done') {
+            $query->where('done', true);
+        } elseif ($this->filterStatus === 'not_done') {
+            $query->where('done', false);
+        }
+
+        if ($this->filterPriority !== null) {
+            $query->where('priority', $this->filterPriority);
+        }
+
+        if ($this->sortByDate === true) {
+            $query->orderBy('task_date');
+        }
+
+        if ($this->sortByPriority === true) {
+            $query->orderBy('priority');
+        }
+
+        if ($this->sortByEstimatedMinutes === true) {
+            $query->orderBy('estimated_minutes');
+        }
+
+        $hasCustomSort = $this->sortByDate === true
+            || $this->sortByPriority === true
+            || $this->sortByEstimatedMinutes === true;
+
+        if (! $hasCustomSort) {
+            $query->orderBy('task_date', 'desc')->orderBy('created_at', 'desc');
+        }
+
+        return $query->paginate(10);
     }
 
     #[Computed]

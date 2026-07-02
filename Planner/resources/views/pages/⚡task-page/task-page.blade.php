@@ -2,7 +2,55 @@
     <div class="flex flex-col">
         <div class="flex p-4 gap-4">
             <x-ui.date-picker mode="range" wire:model="date_filter"></x-ui.date-picker>
+            <x-ui.field>
+                <x-ui.select placeholder="Priority" wire:model="filterPriority">
+                    <x-ui.select.option value="low">
+                        Low
+                    </x-ui.select.option>
+                    <x-ui.select.option value="medium">
+                        Medium
+                    </x-ui.select.option>
+                    <x-ui.select.option value="high">
+                        High
+                    </x-ui.select.option>
+                </x-ui.select>
+            </x-ui.field>
+            <x-ui.field>
+                <x-ui.select placeholder="Category" wire:model="filterCategoryId">
+                    @foreach ($this->categories as $category)
+                        <x-ui.select.option value="{{ $category->id }}">
+                            {{ $category->name }}
+                        </x-ui.select.option>
+                    @endforeach
+                </x-ui.select>
+            </x-ui.field>
+            <x-ui.field>
+                <x-ui.select placeholder="Plan" wire:model="filterPlanId">
+                    @foreach ($this->plans as $plan)
+                        <x-ui.select.option value="{{ $plan->id }}">
+                            {{ $plan->name }}
+                        </x-ui.select.option>
+                    @endforeach
+                </x-ui.select>
+            </x-ui.field>
+            <x-ui.field>
+                <x-ui.select placeholder="Status" wire:model="filterStatus">
+                    <x-ui.select.option value="done">
+                        Done
+                    </x-ui.select.option>
+                    <x-ui.select.option value="not_done">
+                        Not Done
+                    </x-ui.select.option>
+                </x-ui.select>
+            </x-ui.field>
             <x-ui.button wire:click="applyDateFilter" class="rounded-xl bg-slate-700">Filter</x-ui.button>
+        </div>
+        <div class="flex p-4 gap-4 items-center">
+            <x-ui.text class="text-lg font-medium">Sort By</x-ui.text>
+            <x-ui.checkbox wire:model="sortByDate" label="Date" />
+            <x-ui.checkbox wire:model="sortByPriority" label="Priority" />
+            <x-ui.checkbox wire:model="sortByEstimatedMinutes" label="Workload" />
+            <x-ui.button wire:click="applyDateFilter" class="rounded-xl bg-slate-700">Sort</x-ui.button>
         </div>
         <div class="flex flex-col md:flex-row p-4 gap-4">
             <div class="flex flex-col bg-gradient-to-r from-slate-50 to-slate-100 w-full flex-2 rounded-lg p-5">
@@ -111,7 +159,7 @@
                     @endif
                 @endif
                 @forelse ($this->tasks as $task)
-                    <div class="flex justify-between gap-20 bg-slate-200 shadow-lg rounded-lg py-2 px-4 mb-4">
+                    <div wire:key="{{ $task->id }}" class="flex justify-between gap-20 bg-slate-200 shadow-lg rounded-lg py-2 px-4 mb-4">
                         <div class="flex flex-col justify-between gap-2">
                             <div>
                                 <x-ui.text class="font-medium text-lg mb-2">{{ $task->title }}</x-ui.text>
@@ -130,11 +178,11 @@
                             </div>
                             <div class="flex justify-end">
                                 <x-ui.text class="text-black! text-right pr-2">{{ $task->plan->name ?? 'No plan'
-                                                }}</x-ui.text>
+                                                            }}</x-ui.text>
                                 <x-ui.text class="text-black! text-right pr-2">{{ $task->category->name
-                                                }}</x-ui.text>
+                                                            }}</x-ui.text>
                                 <x-ui.text class="text-black/60! text-right pr-2">{{ $task->priority
-                                                }}</x-ui.text>
+                                                            }}</x-ui.text>
                             </div>
                             <div class="flex flex-col gap-2 items-end">
                                 <x-ui.button size="sm" wire:click="deleteTask({{ $task->id }})"

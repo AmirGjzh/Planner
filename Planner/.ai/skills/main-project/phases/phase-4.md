@@ -575,3 +575,31 @@ The phase is complete when:
 - Single-day guard uses simple string comparison — no SQL or complex logic.
 
 **Acceptance Result:** UC-14 and UC-15 are accepted. Authenticated users see color-coded workload alerts (Rest/Light/Medium/Heavy) when viewing a single day. For multi-day ranges, no alerts are shown (deferred to Layer 2). The use case is covered by 12 passing tests (all Livewire).
+
+### UC-24 – Filter & Sort
+
+**Status:** Completed
+
+**Goal:** Allow authenticated users to filter their task list by category, plan, status (done/not done), and priority, and sort by date, priority, or estimated minutes (or any combination).
+
+**Routes:**
+- `GET /task-page` → Livewire page `pages::task-page`, auth-only route (same page as UC-10).
+
+**Implementation Files:**
+- `resources/views/pages/⚡task-page/task-page.php` — 7 new properties (`$filterCategoryId`, `$filterPlanId`, `$filterStatus`, `$filterPriority`, `$sortByDate`, `$sortByPriority`, `$sortByEstimatedMinutes`), updated `tasks()` computed query with filter conditions (`where` clauses for category, plan, status, priority) and dynamic sort (`orderBy` for date, priority, estimated_minutes). Default sort is `task_date desc, created_at desc` when no custom sort is selected.
+- `resources/views/pages/⚡task-page/task-page.blade.php` — filter bar with select dropdowns for Priority, Category, Plan, and Status (done/not done). Sort bar with checkboxes for Date, Priority, and Workload. Both bars have a Filter/Sort button that calls `applyDateFilter`. No new Blade components — reuses existing `<x-ui.select>`, `<x-ui.checkbox>`, and `<x-ui.button>`.
+- `app/Enums/TaskPriority.php` — existing priority enum (`Low`, `Medium`, `High`), used for filter comparison.
+
+**Testing Files:**
+- `resources/views/pages/⚡task-page/task-page.test.php` — 13 filter and sort tests covering: filters by category, plan, status (done), status (not done), priority, all filters combined, filters + sort combination, sorts by date, sorts by priority, sorts by estimated minutes, stacks multiple sort criteria, defaults to date descending sort, and resetting filters clears all selections.
+
+**Security and Reliability Notes:**
+- Task access is protected by the `auth` middleware.
+- Ownership is enforced at the query level by `where('user_id', $this->userId)` in the `tasks()` computed — all filters and sorts operate within the user's scope.
+- The `#[Locked]` attribute on `$userId` prevents client-side tampering.
+- Filtering uses Eloquent parameter binding via `where` — safe against SQL injection.
+- Sort properties are `?bool` (not `?string`) so unchecked checkboxes send `false` instead of `""` — checked with `=== true`.
+- No new routes, actions, enums, or models — purely query modifications on the existing `tasks()` computed property.
+- Sort direction is ASC only (no DSC toggle) — direction control deferred to Layer 2.
+
+**Acceptance Result:** UC-24 is accepted. Authenticated users can filter tasks by category, plan, status, and priority using dropdown selects. They can sort by date, priority, or estimated minutes using checkboxes (multiple sorts stack). All filters and sorts operate within the user's task scope. The view defaults to date-descending sort when no custom sort is selected. The use case is covered by 228 total passing tests (575 assertions), including 13 filter/sort tests within the 89 task-page Livewire tests.

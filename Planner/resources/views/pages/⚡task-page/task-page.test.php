@@ -773,3 +773,199 @@ it('filters with end date only', function () {
         ->assertSee('Old task')
         ->assertDontSee('Future task');
 });
+
+it('filters by category', function () {
+    $user = User::factory()->create();
+    $catA = $user->categories()->create(['name' => 'Work']);
+    $catB = $user->categories()->create(['name' => 'Personal']);
+    $user->tasks()->create(['title' => 'Work task', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 30, 'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $catA->id]);
+    $user->tasks()->create(['title' => 'Personal task', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 15, 'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'category_id' => $catB->id]);
+
+    Livewire::actingAs($user)
+        ->test('pages::task-page')
+        ->set('filterCategoryId', $catA->id)
+        ->call('applyDateFilter')
+        ->assertSee('Work task')
+        ->assertDontSee('Personal task');
+});
+
+it('filters by plan', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $planA = $user->plans()->create(['name' => 'Sprint 1', 'start_date' => now()->format('Y-m-d'), 'finish_date' => now()->addMonth()->format('Y-m-d')]);
+    $planB = $user->plans()->create(['name' => 'Sprint 2', 'start_date' => now()->format('Y-m-d'), 'finish_date' => now()->addMonth()->format('Y-m-d')]);
+    $user->tasks()->create(['title' => 'Sprint 1 task', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 30, 'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id, 'plan_id' => $planA->id]);
+    $user->tasks()->create(['title' => 'Sprint 2 task', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 15, 'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'category_id' => $category->id, 'plan_id' => $planB->id]);
+
+    Livewire::actingAs($user)
+        ->test('pages::task-page')
+        ->set('filterPlanId', $planA->id)
+        ->call('applyDateFilter')
+        ->assertSee('Sprint 1 task')
+        ->assertDontSee('Sprint 2 task');
+});
+
+it('filters by done status', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $user->tasks()->create(['title' => 'Done task', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 30, 'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id, 'done' => true]);
+    $user->tasks()->create(['title' => 'Pending task', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 15, 'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'category_id' => $category->id, 'done' => false]);
+
+    Livewire::actingAs($user)
+        ->test('pages::task-page')
+        ->set('filterStatus', 'done')
+        ->call('applyDateFilter')
+        ->assertSee('Done task')
+        ->assertDontSee('Pending task');
+});
+
+it('filters by not-done status', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $user->tasks()->create(['title' => 'Done task', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 30, 'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id, 'done' => true]);
+    $user->tasks()->create(['title' => 'Pending task', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 15, 'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'category_id' => $category->id, 'done' => false]);
+
+    Livewire::actingAs($user)
+        ->test('pages::task-page')
+        ->set('filterStatus', 'not_done')
+        ->call('applyDateFilter')
+        ->assertDontSee('Done task')
+        ->assertSee('Pending task');
+});
+
+it('filters by priority', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $user->tasks()->create(['title' => 'High priority', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 30, 'priority' => TaskPriority::High, 'day_before_alarm' => 0, 'category_id' => $category->id]);
+    $user->tasks()->create(['title' => 'Low priority', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 15, 'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'category_id' => $category->id]);
+
+    Livewire::actingAs($user)
+        ->test('pages::task-page')
+        ->set('filterPriority', 'low')
+        ->call('applyDateFilter')
+        ->assertDontSee('High priority')
+        ->assertSee('Low priority');
+});
+
+it('combines multiple filters', function () {
+    $user = User::factory()->create();
+    $catA = $user->categories()->create(['name' => 'Work']);
+    $catB = $user->categories()->create(['name' => 'Personal']);
+    $user->tasks()->create(['title' => 'Work high', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 30, 'priority' => TaskPriority::High, 'day_before_alarm' => 0, 'category_id' => $catA->id]);
+    $user->tasks()->create(['title' => 'Work low', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 15, 'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'category_id' => $catA->id]);
+    $user->tasks()->create(['title' => 'Personal high', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 45, 'priority' => TaskPriority::High, 'day_before_alarm' => 0, 'category_id' => $catB->id]);
+
+    Livewire::actingAs($user)
+        ->test('pages::task-page')
+        ->set('filterCategoryId', $catA->id)
+        ->set('filterPriority', 'high')
+        ->call('applyDateFilter')
+        ->assertSee('Work high')
+        ->assertDontSee('Work low')
+        ->assertDontSee('Personal high');
+});
+
+it('sorts by date', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $user->tasks()->create(['title' => 'Older', 'task_date' => now()->subWeek()->format('Y-m-d'), 'estimated_minutes' => 30, 'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id]);
+    $user->tasks()->create(['title' => 'Newer', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 15, 'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'category_id' => $category->id]);
+
+    $component = Livewire::actingAs($user)
+        ->test('pages::task-page')
+        ->set('date_filter', ['start' => now()->subMonth()->format('Y-m-d'), 'end' => now()->addDay()->format('Y-m-d')])
+        ->call('applyDateFilter')
+        ->set('sortByDate', true)
+        ->call('applyDateFilter');
+
+    $html = $component->html();
+    expect(strpos($html, 'Older'))->toBeLessThan(strpos($html, 'Newer'));
+});
+
+it('sorts by priority', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $user->tasks()->create(['title' => 'High task', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 30, 'priority' => TaskPriority::High, 'day_before_alarm' => 0, 'category_id' => $category->id]);
+    $user->tasks()->create(['title' => 'Low task', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 15, 'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'category_id' => $category->id]);
+
+    $component = Livewire::actingAs($user)
+        ->test('pages::task-page')
+        ->set('date_filter', ['start' => now()->subMonth()->format('Y-m-d'), 'end' => now()->addDay()->format('Y-m-d')])
+        ->call('applyDateFilter')
+        ->set('sortByPriority', true)
+        ->call('applyDateFilter');
+
+    $html = $component->html();
+    expect(strpos($html, 'High task'))->toBeLessThan(strpos($html, 'Low task'));
+});
+
+it('sorts by estimated minutes', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $user->tasks()->create(['title' => 'Short task', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 15, 'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id]);
+    $user->tasks()->create(['title' => 'Long task', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 120, 'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'category_id' => $category->id]);
+
+    $component = Livewire::actingAs($user)
+        ->test('pages::task-page')
+        ->set('date_filter', ['start' => now()->subMonth()->format('Y-m-d'), 'end' => now()->addDay()->format('Y-m-d')])
+        ->call('applyDateFilter')
+        ->set('sortByEstimatedMinutes', true)
+        ->call('applyDateFilter');
+
+    $html = $component->html();
+    expect(strpos($html, 'Short task'))->toBeLessThan(strpos($html, 'Long task'));
+});
+
+it('stacks multiple sort criteria', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $user->tasks()->create(['title' => 'Today low', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 30, 'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'category_id' => $category->id]);
+    $user->tasks()->create(['title' => 'Today medium', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 15, 'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id]);
+    $user->tasks()->create(['title' => 'Yesterday high', 'task_date' => now()->subDay()->format('Y-m-d'), 'estimated_minutes' => 45, 'priority' => TaskPriority::High, 'day_before_alarm' => 0, 'category_id' => $category->id]);
+
+    $component = Livewire::actingAs($user)
+        ->test('pages::task-page')
+        ->set('date_filter', ['start' => now()->subMonth()->format('Y-m-d'), 'end' => now()->addDay()->format('Y-m-d')])
+        ->call('applyDateFilter')
+        ->set('sortByDate', true)
+        ->set('sortByPriority', true)
+        ->call('applyDateFilter');
+
+    $html = $component->html();
+    expect(strpos($html, 'Yesterday high'))->toBeLessThan(strpos($html, 'Today low'));
+    expect(strpos($html, 'Today low'))->toBeLessThan(strpos($html, 'Today medium'));
+});
+
+it('applies filter and sort together', function () {
+    $user = User::factory()->create();
+    $catA = $user->categories()->create(['name' => 'Work']);
+    $catB = $user->categories()->create(['name' => 'Personal']);
+    $user->tasks()->create(['title' => 'Work low', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 30, 'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'category_id' => $catA->id]);
+    $user->tasks()->create(['title' => 'Work high', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 15, 'priority' => TaskPriority::High, 'day_before_alarm' => 0, 'category_id' => $catA->id]);
+    $user->tasks()->create(['title' => 'Personal high', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 45, 'priority' => TaskPriority::High, 'day_before_alarm' => 0, 'category_id' => $catB->id]);
+
+    $component = Livewire::actingAs($user)
+        ->test('pages::task-page')
+        ->set('filterCategoryId', $catA->id)
+        ->set('sortByPriority', true)
+        ->call('applyDateFilter');
+
+    $html = $component->html();
+    expect(strpos($html, 'Work high'))->toBeLessThan(strpos($html, 'Work low'));
+    $component->assertDontSee('Personal high');
+});
+
+it('defaults to date descending sort when no sort is selected', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $user->tasks()->create(['title' => 'Old task', 'task_date' => now()->subWeek()->format('Y-m-d'), 'estimated_minutes' => 30, 'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id]);
+    $user->tasks()->create(['title' => 'Recent task', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 15, 'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'category_id' => $category->id]);
+
+    $component = Livewire::actingAs($user)
+        ->test('pages::task-page')
+        ->set('date_filter', ['start' => now()->subMonth()->format('Y-m-d'), 'end' => now()->addDay()->format('Y-m-d')])
+        ->call('applyDateFilter');
+
+    $html = $component->html();
+    expect(strpos($html, 'Recent task'))->toBeLessThan(strpos($html, 'Old task'));
+});
