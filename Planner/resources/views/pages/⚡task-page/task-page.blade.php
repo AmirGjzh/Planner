@@ -82,8 +82,33 @@
                 <x-ui.heading level="h2" size="md">Your Tasks</x-ui.heading>
                 <x-ui.separator class="my-4"></x-ui.separator>
                 <x-ui.error name="toggle_task" class="mb-4"></x-ui.error>
-                @if ($this->workload)
-                    <x-ui.text class="mb-4">Workload: {{ $this->workload['hours'] }}h {{ $this->workload['minutes'] }}m · {{ $this->workload['label'] }}</x-ui.text>
+                @if($date_filter->getStart() === $date_filter->getEnd())
+                    @if ($this->workload)
+                        @if($this->workload['label'] == 'Light')
+                            <x-ui.alerts color="sky" icon="musical-note" class="mb-4">
+                                <x-ui.alerts.heading>Light Day</x-ui.alerts.heading>
+                                <x-ui.alerts.description>You have {{ $this->workload['hours'] }}h {{ $this->workload['minutes'] }}m,
+                                    no heavy work today.</x-ui.alerts.description>
+                            </x-ui.alerts>
+                        @elseif($this->workload['label'] == 'Medium')
+                            <x-ui.alerts color="amber" icon="rocket-launch" class="mb-4">
+                                <x-ui.alerts.heading>Medium Day</x-ui.alerts.heading>
+                                <x-ui.alerts.description>You have {{ $this->workload['hours'] }}h {{ $this->workload['minutes'] }}m,
+                                    focus on your work today.</x-ui.alerts.description>
+                            </x-ui.alerts>
+                        @else
+                            <x-ui.alerts color="red" icon="bell-alert" class="mb-4">
+                                <x-ui.alerts.heading>Heavy Day</x-ui.alerts.heading>
+                                <x-ui.alerts.description>You have {{ $this->workload['hours'] }}h {{ $this->workload['minutes'] }}m,
+                                    if you feel heavy, move some tasks to later.</x-ui.alerts.description>
+                            </x-ui.alerts>
+                        @endif
+                    @else
+                        <x-ui.alerts color="green" icon="face-smile">
+                            <x-ui.alerts.heading>Rest Day</x-ui.alerts.heading>
+                            <x-ui.alerts.description>No task today. Rest and have joy.</x-ui.alerts.description>
+                        </x-ui.alerts>
+                    @endif
                 @endif
                 @forelse ($this->tasks as $task)
                     <div class="flex justify-between gap-20 bg-slate-200 shadow-lg rounded-lg py-2 px-4 mb-4">
@@ -105,11 +130,11 @@
                             </div>
                             <div class="flex justify-end">
                                 <x-ui.text class="text-black! text-right pr-2">{{ $task->plan->name ?? 'No plan'
-                                        }}</x-ui.text>
+                                                }}</x-ui.text>
                                 <x-ui.text class="text-black! text-right pr-2">{{ $task->category->name
-                                        }}</x-ui.text>
+                                                }}</x-ui.text>
                                 <x-ui.text class="text-black/60! text-right pr-2">{{ $task->priority
-                                        }}</x-ui.text>
+                                                }}</x-ui.text>
                             </div>
                             <div class="flex flex-col gap-2 items-end">
                                 <x-ui.button size="sm" wire:click="deleteTask({{ $task->id }})"

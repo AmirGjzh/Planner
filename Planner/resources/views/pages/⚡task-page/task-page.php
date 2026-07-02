@@ -105,8 +105,8 @@ new class extends Component
             'hours' => intdiv($total, 60),
             'minutes' => $total % 60,
             'label' => match (true) {
-                $total < 120 => 'Light',
-                $total < 240 => 'Medium',
+                $total < 180 => 'Light',
+                $total < 360 => 'Medium',
                 default => 'Heavy',
             },
         ];

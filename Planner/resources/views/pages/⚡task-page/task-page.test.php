@@ -551,11 +551,11 @@ it('returns Light workload for tasks under 60 minutes', function () {
     ]);
 });
 
-it('returns Medium workload at 120 minute boundary', function () {
+it('returns Medium workload at 180 minute boundary', function () {
     $user = User::factory()->create();
     $category = $user->categories()->create(['name' => 'Work']);
     $user->tasks()->create([
-        'title' => 'Hour task', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 120,
+        'title' => 'Hour task', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 180,
         'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
     ]);
 
@@ -563,18 +563,18 @@ it('returns Medium workload at 120 minute boundary', function () {
         ->test('pages::task-page');
 
     expect($component->instance()->workload())->toEqual([
-        'total_minutes' => 120,
-        'hours' => 2,
+        'total_minutes' => 180,
+        'hours' => 3,
         'minutes' => 0,
         'label' => 'Medium',
     ]);
 });
 
-it('returns Heavy workload at 240 minute boundary', function () {
+it('returns Heavy workload at 360 minute boundary', function () {
     $user = User::factory()->create();
     $category = $user->categories()->create(['name' => 'Work']);
     $user->tasks()->create([
-        'title' => 'Long task', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 240,
+        'title' => 'Long task', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 360,
         'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
     ]);
 
@@ -582,8 +582,8 @@ it('returns Heavy workload at 240 minute boundary', function () {
         ->test('pages::task-page');
 
     expect($component->instance()->workload())->toEqual([
-        'total_minutes' => 240,
-        'hours' => 4,
+        'total_minutes' => 360,
+        'hours' => 6,
         'minutes' => 0,
         'label' => 'Heavy',
     ]);
@@ -593,11 +593,11 @@ it('sums workload across multiple tasks', function () {
     $user = User::factory()->create();
     $category = $user->categories()->create(['name' => 'Work']);
     $user->tasks()->create([
-        'title' => 'Task A', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 90,
+        'title' => 'Task A', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 180,
         'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
     ]);
     $user->tasks()->create([
-        'title' => 'Task B', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 45,
+        'title' => 'Task B', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 90,
         'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'category_id' => $category->id,
     ]);
 
@@ -605,9 +605,9 @@ it('sums workload across multiple tasks', function () {
         ->test('pages::task-page');
 
     expect($component->instance()->workload())->toEqual([
-        'total_minutes' => 135,
-        'hours' => 2,
-        'minutes' => 15,
+        'total_minutes' => 270,
+        'hours' => 4,
+        'minutes' => 30,
         'label' => 'Medium',
     ]);
 });
@@ -616,11 +616,11 @@ it('workload respects date filter', function () {
     $user = User::factory()->create();
     $category = $user->categories()->create(['name' => 'Work']);
     $user->tasks()->create([
-        'title' => 'In range', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 120,
+        'title' => 'In range', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 180,
         'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
     ]);
     $user->tasks()->create([
-        'title' => 'Out of range', 'task_date' => now()->subMonth()->format('Y-m-d'), 'estimated_minutes' => 240,
+        'title' => 'Out of range', 'task_date' => now()->subMonth()->format('Y-m-d'), 'estimated_minutes' => 360,
         'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
     ]);
 
@@ -630,8 +630,8 @@ it('workload respects date filter', function () {
         ->call('applyDateFilter');
 
     expect($component->instance()->workload())->toEqual([
-        'total_minutes' => 120,
-        'hours' => 2,
+        'total_minutes' => 180,
+        'hours' => 3,
         'minutes' => 0,
         'label' => 'Medium',
     ]);
@@ -641,13 +641,13 @@ it('renders workload on the page', function () {
     $user = User::factory()->create();
     $category = $user->categories()->create(['name' => 'Work']);
     $user->tasks()->create([
-        'title' => 'Workload test task', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 150,
+        'title' => 'Workload test task', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 210,
         'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
     ]);
 
     Livewire::actingAs($user)
         ->test('pages::task-page')
-        ->assertSee('2h 30m')
+        ->assertSee('3h 30m')
         ->assertSee('Medium');
 });
 
@@ -663,15 +663,15 @@ it('workload updates after creating a task', function () {
     $component
         ->set('task_title', 'New task')
         ->set('task_date', now()->format('Y-m-d'))
-        ->set('task_estimated_minutes', 120)
+        ->set('task_estimated_minutes', 180)
         ->set('task_priority', 'medium')
         ->set('task_category_id', $category->id)
         ->call('addTask')
         ->assertHasNoErrors();
 
     expect($component->instance()->workload())->toEqual([
-        'total_minutes' => 120,
-        'hours' => 2,
+        'total_minutes' => 180,
+        'hours' => 3,
         'minutes' => 0,
         'label' => 'Medium',
     ]);
@@ -698,6 +698,60 @@ it('workload updates after deleting a task', function () {
     $component->call('deleteTask', $task->id)->assertHasNoErrors();
 
     expect($component->instance()->workload())->toBeNull();
+});
+
+it('hides workload alert for multi-day range', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $user->tasks()->create([
+        'title' => 'Range task', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 180,
+        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
+    ]);
+
+    Livewire::actingAs($user)
+        ->test('pages::task-page')
+        ->set('date_filter', ['start' => now()->subWeek()->format('Y-m-d'), 'end' => now()->addWeek()->format('Y-m-d')])
+        ->call('applyDateFilter')
+        ->assertDontSee('Medium Day')
+        ->assertDontSee('Rest Day');
+});
+
+it('Light workload just below Medium boundary (179 min)', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $user->tasks()->create([
+        'title' => 'Light boundary', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 179,
+        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
+    ]);
+
+    $component = Livewire::actingAs($user)
+        ->test('pages::task-page');
+
+    expect($component->instance()->workload())->toEqual([
+        'total_minutes' => 179,
+        'hours' => 2,
+        'minutes' => 59,
+        'label' => 'Light',
+    ]);
+});
+
+it('Medium workload just below Heavy boundary (359 min)', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $user->tasks()->create([
+        'title' => 'Medium boundary', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 359,
+        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
+    ]);
+
+    $component = Livewire::actingAs($user)
+        ->test('pages::task-page');
+
+    expect($component->instance()->workload())->toEqual([
+        'total_minutes' => 359,
+        'hours' => 5,
+        'minutes' => 59,
+        'label' => 'Medium',
+    ]);
 });
 
 it('filters with end date only', function () {

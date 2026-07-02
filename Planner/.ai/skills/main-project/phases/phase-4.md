@@ -545,28 +545,33 @@ The phase is complete when:
 
 **Acceptance Result:** UC-19 is accepted (Layer 1 simplified). Authenticated users can filter their tasks by a custom date range using a range datepicker and Filter button. The default view shows today's tasks. The use case is covered by 6 passing tests (4 Livewire + 2 access). Full daily/weekly/monthly calendar views with workload colors are deferred to Layer 2.
 
-### UC-14 – Workload
+### UC-14 & UC-15 – Workload + Color-Coded Day Indicators
 
-**Description:** Display total estimated time per day with a workload level (Light/Medium/Heavy).
+**Description:** Show total estimated minutes per day with a workload level and color-coded alert. Users see their day's workload at a glance with actionable guidance.
 
-**Implementation:** Added a `workload` computed property to the existing task-page Livewire component (`task-page.php:93-110`). It sums `estimated_minutes` from the already-filtered `$this->tasks` collection and returns `null` when zero, or an array with `total_minutes`, `hours`, `minutes`, and `label`.
+**Implementation:** Added a `workload` computed property to the existing task-page Livewire component (`task-page.php:94-113`). It sums `estimated_minutes` from the already-filtered `$this->tasks` collection and returns `null` when zero, or an array with `total_minutes`, `hours`, `minutes`, and `label`. The `label` drives color-coded alert banners using the app's `<x-ui.alerts>` component.
 
-**Workload levels:**
-- Light: 1–59 minutes
-- Medium: 60–179 minutes
-- Heavy: 180+ minutes
+**Workload levels + alert colors:**
+| Minutes | Label | Alert Color | Heading | Icon |
+|---|---|---|---|---|
+| 0 | (none) | Green | Rest Day | face-smile |
+| 1–179 | Light | Sky | Light Day | musical-note |
+| 180–359 | Medium | Amber | Medium Day | rocket-launch |
+| 360+ | Heavy | Red | Heavy Day | bell-alert |
 
-**Blade Display:** A minimal `<x-ui.text>` snippet was added above the task list showing `Workload: {h}h {m}m · {label}`. The user can reposition this snippet as needed.
+**Single-day guard:** The alert block is wrapped in `@if($date_filter->getStart() === $date_filter->getEnd())` so workload colors only appear when viewing a single day. Multi-day range display is deferred to Layer 2.
+
+**Cache invalidation fix:** `unset($this->tasks, $this->workload)` is called in all 5 mutation methods (add, delete, update, toggle, filter) so workload recomputes after any change.
 
 **Files changed:**
-- `resources/views/pages/⚡task-page/task-page.php` — added `workload` computed property
-- `resources/views/pages/⚡task-page/task-page.blade.php` — added workload display line
-- `resources/views/pages/⚡task-page/task-page.test.php` — added 7 workload tests
+- `resources/views/pages/⚡task-page/task-page.php` — added `workload` computed property with threshold logic, added deduplicated `unset` calls
+- `resources/views/pages/⚡task-page/task-page.blade.php` — added alert banners with single-day guard
+- `resources/views/pages/⚡task-page/task-page.test.php` — 12 workload tests
 
 **Security and Reliability Notes:**
-- The workload is computed from the same filtered `$this->tasks` query, so it automatically respects the date filter.
-- Returns `null` instead of `['total_minutes' => 0, ...]` when no tasks exist / no tasks match the filter, making it easy to conditionally render with `@if`.
-- No new routes, actions, or models — purely a computed aggregation on existing data.
-- No rate limiting needed — it's a read-only in-memory calculation, not a write operation.
+- Workload is computed from the same filtered `$this->tasks` query, so it automatically respects the date filter and owner check.
+- Returns `null` instead of `['total_minutes' => 0, ...]` when no tasks match, making it easy to conditionally render with `@if`.
+- No new routes, actions, or models — purely a computed aggregation on existing data, no rate limiting needed.
+- Single-day guard uses simple string comparison — no SQL or complex logic.
 
-**Acceptance Result:** UC-14 is accepted. Authenticated users see their daily workload total (hours + minutes) and a categorical label (Light/Medium/Heavy) automatically reflecting the current date filter. The use case is covered by 7 passing tests (all Livewire). Color indicators (UC-15) and calendar grid views (UC-19 full) remain Layer 2.
+**Acceptance Result:** UC-14 and UC-15 are accepted. Authenticated users see color-coded workload alerts (Rest/Light/Medium/Heavy) when viewing a single day. For multi-day ranges, no alerts are shown (deferred to Layer 2). The use case is covered by 12 passing tests (all Livewire).
