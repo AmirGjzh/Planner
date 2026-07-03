@@ -4,6 +4,7 @@
         ['label' => 'Categories', 'route' => 'category-page', 'icon' => ''],
         ['label' => 'Plans', 'route' => 'plan-page', 'icon' => ''],
         ['label' => 'Tasks', 'route' => 'task-page', 'icon' => ''],
+        ['label' => 'Reports', 'route' => 'report-page', 'icon' => ''],
     ];
 @endphp
 

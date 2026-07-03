@@ -632,3 +632,33 @@ The phase is complete when:
 - Real-time progress tracking (UC-23) is satisfied for Layer 1: progress is recomputed from the database on every page visit. Cross-component reactivity (e.g., toggling a task on the task page and seeing progress update on the plan page without navigation) is deferred to Layer 2.
 
 **Acceptance Result:** UC-21, UC-22, and UC-23 are accepted. Authenticated users can view tasks per plan in a popover with done/not-done indicators, see completion percentage with a progress bar, and track plan progress. The use case is covered by 233 total passing tests (583 assertions), including 5 new plan-page tests.
+
+### UC-18 – Reports
+
+**Status:** Completed (Layer 1)
+
+**Goal:** Allow authenticated users to view performance reports over a date range, showing total tasks created, tasks completed, completion rate (%), and overdue count.
+
+**Routes:**
+- `GET /reports` → Livewire page `pages::report-page`, auth-only route.
+
+**Implementation Files:**
+- `routes/web.php` — defines the authenticated report route.
+- `resources/views/pages/⚡report-page/report-page.php` — Livewire component with locked `$userId`, `DateRange $date_filter` defaulting to this month, computed `stats()` returning `tasks_created`, `tasks_completed`, `completion_rate`, and `overdue_count` (scoped by user and date range), and `applyDateFilter()` to refresh stats.
+- `resources/views/pages/⚡report-page/report-page.blade.php` — page heading ("Reports"), date range picker + Filter button, 4 stat cards in a responsive grid (Tasks Created, Tasks Completed, Completion Rate with %, Overdue Tasks), each in a white rounded card with colored emphasis text.
+- `resources/views/components/layouts/partials/⚡nav-links/nav-links.blade.php` — added "Reports" nav link between Tasks and the end of the link list.
+
+**Testing Files:**
+- `resources/views/pages/⚡report-page/report-page.test.php` — 4 co-located Livewire tests covering: page renders with all stat labels, correct stats for a multi-task date range, zero stats for empty date range, and completion rate calculation (2/3 = 67%).
+
+**Security and Reliability Notes:**
+- Page access is protected by the `auth` middleware.
+- Ownership is enforced at the query level by `where('user_id', $this->userId)` in all stats queries.
+- The `#[Locked]` attribute on `$userId` prevents client-side tampering.
+- DateRange synthesizer handles hydration/dehydration between JS and Livewire (reused from UC-19).
+- Stats are computed properties — no mutations, no rate limiting needed.
+- Overdue count is scoped to the selected date range: tasks not done with `task_date < today` within the range.
+- Completion rate returns 0% when no tasks exist in the range (division by zero guard).
+- No new actions, enums, policies, or models — purely read-only computed queries.
+
+**Acceptance Result:** UC-18 is accepted. Authenticated users can navigate to `/reports`, select a date range, and see their performance stats (created, completed, rate, overdue). All four stats are correctly calculated and scoped to the authenticated user. The use case is covered by 237 total passing tests (594 assertions), including 4 new report-page tests.
