@@ -662,3 +662,30 @@ The phase is complete when:
 - No new actions, enums, policies, or models — purely read-only computed queries.
 
 **Acceptance Result:** UC-18 is accepted. Authenticated users can navigate to `/reports`, select a date range, and see their performance stats (created, completed, rate, overdue). All four stats are correctly calculated and scoped to the authenticated user. The use case is covered by 237 total passing tests (594 assertions), including 4 new report-page tests.
+
+### UC-25 – Upcoming Tasks
+
+**Status:** Completed (Layer 1)
+
+**Goal:** Allow authenticated users to see tasks approaching within their notification window (`task_date - day_before_alarm <= today AND task_date >= today`) on the dashboard.
+
+**Routes:**
+- `GET /dashboard` → Livewire page `pages::dashboard`, auth-only route (existing).
+
+**Implementation Files:**
+- `resources/views/pages/⚡dashboard/dashboard.php` — added locked `$userId`, computed `upcomingTasks()` querying tasks where `task_date >= today` and the notification window has started (via `whereRaw` with SQLite `DATE` modifier), ordered by `task_date ASC`, eager loads `category` and `plan` relationships.
+- `resources/views/pages/⚡dashboard/dashboard.blade.php` — rewrote from empty div to a full dashboard view with "Upcoming Tasks" heading, card-per-task list showing title, due date, days-until-due label ("Due today/tomorrow/in X days"), category name, plan name (if assigned), and done/not-done badge. Empty state when no upcoming tasks. "View All Tasks" link at bottom navigating to the task page.
+
+**Testing Files:**
+- `resources/views/pages/⚡dashboard/dashboard.test.php` — 5 co-located Livewire tests covering: page renders with heading and "View All Tasks" link, shows tasks within notification window (day_before_alarm=3, task_date=+2), hides tasks outside window (day_before_alarm=1, task_date=+5), empty state when no upcoming tasks, and done/not-done badge display.
+
+**Security and Reliability Notes:**
+- Page access is protected by the `auth` middleware.
+- Ownership is enforced at the query level by `where('user_id', $this->userId)` in the `upcomingTasks()` computed.
+- The `#[Locked]` attribute on `$userId` prevents client-side tampering.
+- The notification window logic uses SQLite's `DATE()` function with per-task `day_before_alarm` modifier — correctly scoped per task, not a fixed window.
+- Tasks with `day_before_alarm = 0` only show if `task_date = today` (immediate alarm).
+- Days-until-due label uses Carbon's `diffInDays()` with `startOfDay()` for consistent day-boundary math.
+- No new routes, actions, enums, policies, or models — purely read-only computed queries on the existing dashboard page.
+
+**Acceptance Result:** UC-25 is accepted. Authenticated users open the dashboard and see all tasks within their notification window, with clear status badges and time-until-due labels. Tasks outside the notification window are hidden. The use case is covered by 242 total passing tests (602 assertions), including 5 new dashboard tests and 2 existing access tests.

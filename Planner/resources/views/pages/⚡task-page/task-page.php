@@ -76,7 +76,7 @@ new class extends Component
     {
         $this->task_date = now()->format('Y-m-d');
         $this->userId = auth()->id() ?? abort(403);
-        $this->date_filter = DateRange::today();
+        $this->date_filter = DateRange::thisWeek();
     }
 
     #[Computed]
