@@ -51,6 +51,7 @@ new class extends Component
         return Plan::query()
             ->where('user_id', $this->userId)
             ->withCount('tasks')
+            ->with('tasks')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
     }

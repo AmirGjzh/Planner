@@ -59,7 +59,7 @@
             "installationTime": 1782230550
         },
         "popup": {
-            "installationTime": 1782230550
+            "installationTime": 1783018106
         },
         "date-picker": {
             "installationTime": 1782224841
@@ -87,6 +87,12 @@
         },
         "switch": {
             "installationTime": 1782888525
+        },
+        "popover": {
+            "installationTime": 1783018106
+        },
+        "progress": {
+            "installationTime": 1783019195
         }
     }
 }

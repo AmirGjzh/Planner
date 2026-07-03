@@ -12,6 +12,7 @@ import rover from "@sheaf/rover"
 Alpine.plugin(rover)
 
 import './components/select.js';
+import './components/progress.js';
 import './globals/modals.js';
 import './components/calendar/index.js';
 import './components/date-picker/index.js';

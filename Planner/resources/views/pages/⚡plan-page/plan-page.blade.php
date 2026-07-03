@@ -42,21 +42,51 @@
                         <x-ui.text class="text-black/60! text-right pr-2">{{ $plan->tasks_count ?: 'No Tasks' }}</x-ui.text>
                         <div class="flex flex-col gap-2">
                             <x-ui.button size="sm" wire:click="deletePlan({{ $plan->id }})"
-                            class="w-20 rounded-lg bg-red-700">Delete</x-ui.button>
+                                class="w-20 rounded-lg bg-red-700">Delete</x-ui.button>
                             <x-ui.button size="sm"
-                            x-on:click="$dispatch('open-modal', { id: 'edit-plan-modal' }); $wire.startEditing({{ $plan->id }})"
-                            class="w-20 rounded-lg bg-slate-700">Edit</x-ui.button>
+                                x-on:click="$dispatch('open-modal', { id: 'edit-plan-modal' }); $wire.startEditing({{ $plan->id }})"
+                                class="w-20 rounded-lg bg-slate-700">Edit</x-ui.button>
+                            <x-ui.popover>
+                                <x-ui.popover.trigger>
+                                    <x-ui.button class="w-full rounded-lg bg-gradient-to-r from-slate-800 to-slate-600">View Tasks</x-ui.button>
+                                </x-ui.popover.trigger>
+                                <x-ui.popover.overlay class="w-lg">
+                                    <div class="p-2 grid grid-cols-4 gap-4">
+                                        @forelse ($plan->tasks as $task)
+                                            <div wire:key="{{ $task->id }}"
+                                                class="rounded-lg flex gap-2 justify-between bg-slate-200 w-full p-2 shadow-md">
+                                                <x-ui.text>{{ $task->title }}</x-ui.text>
+                                                <x-ui.icon name="{{ $task->done ? 'check' : 'backward' }}"></x-ui.icon>
+                                            </div>
+                                        @empty
+                                            <div class="col-span-full text-center py-4">
+                                                <x-ui.text class="text-black/50">No tasks assigned to this plan.</x-ui.text>
+                                            </div>
+                                        @endforelse
+                                        @if($plan->tasks_count > 0)
+                                            <div class="col-span-full space-y-2">
+                                                @php
+                                                    $doneCount = $plan->tasks->where('done', true)->count();
+                                                    $progress = round(($doneCount / $plan->tasks_count) * 100);
+                                                @endphp
+                                                <x-ui.text size="sm" class="font-medium">{{ $doneCount }}/{{ $plan->tasks_count }} ({{ $progress }}%) Progress</x-ui.text>
+                                                <x-ui.progress value="{{ $progress }}" />
+                                            </div>
+                                        @endif
+                                    </div>
+                                </x-ui.popover.overlay>
+                            </x-ui.popover>
                         </div>
                     </div>
                 </div>
             @empty
                 <x-ui.text class="text-black/50 text-center py-8">No plans yet. Create one above.</x-ui.text>
             @endforelse
+            <x-ui.progress value="65" size="lg" />
         </div>
     </div>
 
-    <x-ui.modal bare backdrop="dark" position="center" width="3xl" id="edit-plan-modal"
-        :close-by-clicking-away="false">
+    <x-ui.modal bare backdrop="dark" position="center" width="3xl" id="edit-plan-modal" :close-by-clicking-away="false">
         <div class="flex flex-col m-5">
             <div class="flex justify-between items-center px-1">
                 <x-ui.heading level="h2" size="md">Edit Plan</x-ui.heading>
@@ -75,7 +105,8 @@
                 <div class="mb-4">
                     <x-ui.field>
                         <x-ui.label>Description</x-ui.label>
-                        <x-ui.textarea wire:model="editDescription" placeholder="Description" leftIcon="" resize="none" />
+                        <x-ui.textarea wire:model="editDescription" placeholder="Description" leftIcon=""
+                            resize="none" />
                         <x-ui.error name="editDescription" />
                     </x-ui.field>
                 </div>

@@ -63,11 +63,15 @@
         ],
         "resources/css/components/calendar/cell.css": [
             "calendar"
+        ],
+        "resources/js/components/progress.js": [
+            "progress"
         ]
     },
     "helpers": {
         "popup": [
-            "select"
+            "select",
+            "popover"
         ]
     },
     "internalDependencies": {

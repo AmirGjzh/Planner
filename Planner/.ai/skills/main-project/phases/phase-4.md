@@ -603,3 +603,32 @@ The phase is complete when:
 - Sort direction is ASC only (no DSC toggle) — direction control deferred to Layer 2.
 
 **Acceptance Result:** UC-24 is accepted. Authenticated users can filter tasks by category, plan, status, and priority using dropdown selects. They can sort by date, priority, or estimated minutes using checkboxes (multiple sorts stack). All filters and sorts operate within the user's task scope. The view defaults to date-descending sort when no custom sort is selected. The use case is covered by 228 total passing tests (575 assertions), including 13 filter/sort tests within the 89 task-page Livewire tests.
+
+### UC-21, UC-22 & UC-23 – View Plan Tasks, Plan Progress & Progress Tracking
+
+**Status:** Completed (Layer 1 — combined implementation)
+
+**Goal:** Allow authenticated users to view tasks assigned to a plan with progress (UC-21), see plan completion percentage (UC-22), and track progress as tasks are toggled done/not-done (UC-23).
+
+**Routes:**
+- `GET /plan-page` → Livewire page `pages::plan-page`, auth-only route (same page as UC-04).
+
+**Implementation Files:**
+- `resources/views/pages/⚡plan-page/plan-page.php` — added `->with('tasks')` to the `plans()` computed property to eagerly load tasks for the popover display.
+- `resources/views/pages/⚡plan-page/plan-page.blade.php` — added a `<x-ui.popover>` per plan card containing: a task list (title + done/not-done icon) via `@forelse($plan->tasks)`, a progress display showing `doneCount/tasks_count (progress%)` with an `<x-ui.progress>` bar, and an empty state for plans with no tasks. "View Tasks" button replaced the previous placeholder.
+- `resources/js/app.js` — added `import './components/progress.js';` to register the progress bar Alpine component (previously missing, causing `progressComponent is not defined` JS errors).
+- `resources/js/components/progress.js` — existing progress bar Alpine component (was not imported in `app.js`).
+
+**Testing Files:**
+- `resources/views/pages/⚡plan-page/plan-page.test.php` — 5 new tests covering: view tasks popover with task list, progress with mixed done tasks, 100% progress, 0% progress, and empty state for plans with no tasks.
+
+**Security and Reliability Notes:**
+- Plan access is protected by the `auth` middleware.
+- Ownership is enforced by the `plans()` computed query scoped to `$this->userId` — tasks are loaded through the owned plan relationship.
+- The `#[Locked]` attribute on `$userId` prevents client-side tampering.
+- Progress is computed from eager-loaded tasks collection — no additional queries needed.
+- The popover content is rendered server-side (hidden by Alpine until clicked) — no additional API calls needed.
+- No new routes, actions, enums, or models — purely view-level additions.
+- Real-time progress tracking (UC-23) is satisfied for Layer 1: progress is recomputed from the database on every page visit. Cross-component reactivity (e.g., toggling a task on the task page and seeing progress update on the plan page without navigation) is deferred to Layer 2.
+
+**Acceptance Result:** UC-21, UC-22, and UC-23 are accepted. Authenticated users can view tasks per plan in a popover with done/not-done indicators, see completion percentage with a progress bar, and track plan progress. The use case is covered by 233 total passing tests (583 assertions), including 5 new plan-page tests.

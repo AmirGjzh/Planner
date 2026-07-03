@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\TaskPriority;
 use App\Models\User;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Livewire;
@@ -254,4 +255,64 @@ it('shows task count for each plan', function () {
     Livewire::actingAs($user)
         ->test('pages::plan-page')
         ->assertSee('No Tasks');
+});
+
+it('shows view tasks popover with task list', function () {
+    $user = User::factory()->create();
+    $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+    $category = $user->categories()->create(['name' => 'General']);
+    $user->tasks()->create(['title' => 'Task A', 'task_date' => '2026-01-15', 'estimated_minutes' => 30, 'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'plan_id' => $plan->id, 'category_id' => $category->id]);
+    $user->tasks()->create(['title' => 'Task B', 'task_date' => '2026-01-16', 'estimated_minutes' => 45, 'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'plan_id' => $plan->id, 'category_id' => $category->id]);
+
+    Livewire::actingAs($user)
+        ->test('pages::plan-page')
+        ->assertSee('View Tasks')
+        ->assertSee('Task A')
+        ->assertSee('Task B');
+});
+
+it('shows progress for plan with mixed done tasks', function () {
+    $user = User::factory()->create();
+    $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+    $category = $user->categories()->create(['name' => 'General']);
+    $user->tasks()->create(['title' => 'Done A', 'task_date' => '2026-01-15', 'estimated_minutes' => 30, 'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'plan_id' => $plan->id, 'category_id' => $category->id, 'done' => true]);
+    $user->tasks()->create(['title' => 'Not done B', 'task_date' => '2026-01-16', 'estimated_minutes' => 45, 'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'plan_id' => $plan->id, 'category_id' => $category->id]);
+
+    Livewire::actingAs($user)
+        ->test('pages::plan-page')
+        ->assertSee('1/2 (50%) Progress');
+});
+
+it('shows 100% progress when all tasks are done', function () {
+    $user = User::factory()->create();
+    $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+    $category = $user->categories()->create(['name' => 'General']);
+    $user->tasks()->create(['title' => 'Task A', 'task_date' => '2026-01-15', 'estimated_minutes' => 30, 'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'plan_id' => $plan->id, 'category_id' => $category->id, 'done' => true]);
+    $user->tasks()->create(['title' => 'Task B', 'task_date' => '2026-01-16', 'estimated_minutes' => 45, 'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'plan_id' => $plan->id, 'category_id' => $category->id, 'done' => true]);
+
+    Livewire::actingAs($user)
+        ->test('pages::plan-page')
+        ->assertSee('2/2 (100%) Progress');
+});
+
+it('shows 0% progress when no tasks are done', function () {
+    $user = User::factory()->create();
+    $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+    $category = $user->categories()->create(['name' => 'General']);
+    $user->tasks()->create(['title' => 'Task A', 'task_date' => '2026-01-15', 'estimated_minutes' => 30, 'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'plan_id' => $plan->id, 'category_id' => $category->id]);
+    $user->tasks()->create(['title' => 'Task B', 'task_date' => '2026-01-16', 'estimated_minutes' => 45, 'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'plan_id' => $plan->id, 'category_id' => $category->id]);
+
+    Livewire::actingAs($user)
+        ->test('pages::plan-page')
+        ->assertSee('0/2 (0%) Progress');
+});
+
+it('shows empty state for plan with no tasks', function () {
+    $user = User::factory()->create();
+    $user->plans()->create(['name' => 'Empty Plan', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+
+    Livewire::actingAs($user)
+        ->test('pages::plan-page')
+        ->assertSee('Empty Plan')
+        ->assertSee('No tasks assigned to this plan.');
 });
