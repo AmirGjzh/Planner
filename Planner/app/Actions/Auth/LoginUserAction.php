@@ -9,8 +9,12 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 
-class LoginUserAction
+final class LoginUserAction
 {
+    private const int MAX_ATTEMPTS = 5;
+
+    private const int DECAY_SECONDS = 60;
+
     public function execute(
         string $email,
         string $password,
@@ -18,7 +22,7 @@ class LoginUserAction
         Request $request,
     ): LoginResult {
         $rateLimitKey = $this->rateLimitKey($email, $request);
-        if (RateLimiter::tooManyAttempts($rateLimitKey, 5)) {
+        if (RateLimiter::tooManyAttempts($rateLimitKey, self::MAX_ATTEMPTS)) {
             $seconds = RateLimiter::availableIn($rateLimitKey);
             Log::warning('Login rate limited.', [
                 'email' => Str::lower($email),
@@ -29,7 +33,7 @@ class LoginUserAction
             return LoginResult::RateLimited;
         }
         if (! Auth::attempt(['email' => $email, 'password' => $password], $remember)) {
-            RateLimiter::hit($rateLimitKey, 60);
+            RateLimiter::hit($rateLimitKey, self::DECAY_SECONDS);
             Log::warning('Login failed.', [
                 'email' => Str::lower($email),
                 'ip' => $request->ip(),

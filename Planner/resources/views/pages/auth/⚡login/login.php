@@ -3,19 +3,17 @@
 use App\Actions\Auth\LoginUserAction;
 use App\Enums\LoginResult;
 use Livewire\Attributes\Layout;
-use Livewire\Attributes\Validate;
 use Livewire\Component;
 
 new #[Layout('layouts::auth')] class extends Component
 {
-    #[Validate(['required', 'email'], onUpdate: false)]
     public string $email = '';
 
-    #[Validate(['required'], onUpdate: false)]
     public string $password = '';
 
-    #[Validate(['boolean'], onUpdate: false)]
-    public bool $remember = true;
+    public bool $remember = false;
+
+    public ?string $loginError = null;
 
     public function login(LoginUserAction $loginUserAction)
     {
@@ -27,14 +25,32 @@ new #[Layout('layouts::auth')] class extends Component
             request()
         );
         if ($result === LoginResult::Success) {
+            // TODO: Maybe a welcome toast notification in dashboard page
+            $this->loginError = null;
             return $this->redirectRoute('dashboard', navigate: true);
         }
         if ($result === LoginResult::RateLimited) {
-            $this->addError('login', 'Too many login attempts. Please try again in a minute.');
-
+            $this->loginError = 'limited';
             return;
         }
         $this->reset(['password']);
-        $this->addError('login', 'Wrong email or password.');
+        $this->loginError = 'invalid';
+    }
+
+    protected function rules()
+    {
+        return [
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ];
+    }
+
+    protected function messages()
+    {
+        return [
+            'email.required' => 'The email is required.',
+            'email.email' => 'The email is not a valid email address.',
+            'password.required' => 'The password is required.',
+        ];
     }
 };

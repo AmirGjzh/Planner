@@ -85,31 +85,32 @@ The phase is complete when:
 
 **Routes:**
 - `GET /login` → Livewire page `pages::auth.login`, guest-only route.
-- `GET /dashboard` → temporary authenticated destination after login, auth-only route.
+- `GET /dashboard` → authenticated destination after login, auth-only route.
 
 **Implementation Files:**
 - `routes/web.php` — defines guest login route and authenticated dashboard route.
-- `resources/views/pages/auth/⚡login/login.php` — Livewire page state, validation, action call, error handling, and redirect.
-- `resources/views/pages/auth/⚡login/login.blade.php` — login form UI, field errors, credential or rate-limit error display, remember-me option.
-- `app/Actions/Auth/LoginUserAction.php` — login business action; handles rate limiting, authentication attempt, session regeneration, and logging.
-- `app/Enums/LoginResult.php` — result enum returned by the login action (`Success`, `Fail`, `RateLimited`).
+- `resources/views/pages/auth/⚡login/login.php` — Livewire component with typed `$loginError` property (`null` | `'limited'` | `'invalid'`), validates email/password, calls `LoginUserAction`, redirects on success, sets error state on failure.
+- `resources/views/pages/auth/⚡login/login.blade.php` — login form using mine/* components (`mine.input`, `mine.button`, `mine.checkbox`, `mine.alert`, `mine.separator`), error alerts driven by `$loginError` state, remember-me checkbox, forgot password placeholder.
+- `app/Actions/Auth/LoginUserAction.php` — final action class; rate limiting via `RateLimiter` with configurable constants (`MAX_ATTEMPTS: 5`, `DECAY_SECONDS: 60`), `Auth::attempt()`, session regeneration, structured logging for all outcomes.
+- `app/Enums/LoginResult.php` — backed string enum (`Fail`, `Success`, `RateLimited`).
 
 **Testing Files:**
-- `resources/views/pages/auth/⚡login/login.test.php` — co-located Livewire tests for rendering, validation, failed login, successful login, and rate limiting.
-- `tests/Feature/Auth/LoginAccessTest.php` — route/middleware tests for guest and authenticated access.
-- `tests/Feature/Actions/Auth/LoginUserActionTest.php` — action tests for result states and login logging.
-- `tests/Pest.php` — Pest base setup for Feature and co-located Livewire tests with `LazilyRefreshDatabase`.
-- `phpunit.xml` — adds the `Components` test suite for `resources/views/**/*.test.php`.
+- `resources/views/pages/auth/⚡login/login.test.php` — 7 co-located Livewire tests: render, required field validation, email format validation, wrong credentials error state, successful authentication and redirect, rate limiting after 5 failures, retry after 60-second cooldown.
+- `tests/Feature/Auth/LoginAccessTest.php` — 4 access tests: guest visits login, authenticated user redirected from login, guest redirected from dashboard, authenticated user visits dashboard.
+- `tests/Feature/Actions/Auth/LoginUserActionTest.php` — 4 action tests: success, fail, rate limited, and logging for all outcomes.
 
 **Security and Reliability Notes:**
-- Password validation is handled server-side by Livewire.
-- Failed credentials use a generic error message.
-- Login attempts are rate-limited by normalized email and IP address.
-- Successful login regenerates the session.
-- Login success, failed attempts, and rate-limited attempts are logged in the action layer.
+- Validation handled server-side by Livewire with custom messages.
+- Failed credentials use a generic error message to prevent user enumeration.
+- Login attempts are rate-limited by normalized email and IP address (5 attempts per 60 seconds).
+- Rate limit key uses `Str::transliterate()` and `Str::lower()` to prevent Unicode bypass.
+- Error state managed via `$loginError` component property instead of the validation error bag — keeps error bag clean for actual field validation.
+- Successful login regenerates the session to prevent session fixation.
+- Login success, failed attempts, and rate-limited attempts are logged in the action layer with structured context.
 - Blade output remains escaped; no raw user-controlled HTML is rendered.
+- All inputs use mine/* Blade components with consistent styling and built-in loading state.
 
-**Acceptance Result:** UC-01 is accepted. Dashboard content and the future homepage or root route are intentionally deferred to later use cases.
+**Acceptance Result:** UC-01 is accepted. 20 passing tests (55 assertions). 7 Livewire UI tests, 4 action unit tests, 4 access tests, plus additional login flow coverage from peripheral access tests.
 
 ### UC-02 – Register
 

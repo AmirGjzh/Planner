@@ -1,11 +1,9 @@
 # Phase 2 – Conceptual Domain Design
 
 ## 1. Domain Entities
-
 We have four main entities in the system.
 
 ### 1.1 User
-
 Represents each user of the system.
 
 Role in the system:
@@ -13,7 +11,6 @@ Role in the system:
 - Responsible for authentication, profile management, and personal settings
 
 ### 1.2 Category
-
 Represents task groupings created by a user.
 
 Role in the system:
@@ -21,7 +18,6 @@ Role in the system:
 - Each user has their own categories; categories are not shared between users
 
 ### 1.3 Task
-
 Represents an individual piece of work assigned to a specific day on the calendar.
 
 Role in the system:
@@ -31,7 +27,6 @@ Role in the system:
 - Optionally belongs to a plan for project-level grouping
 
 ### 1.4 Plan
-
 Represents a higher-level grouping of tasks under a common goal or project.
 
 Role in the system:
@@ -40,460 +35,485 @@ Role in the system:
 - Each user has their own plans; plans are not shared between users
 
 ## 2. Relationships Between Entities
+Textual representation of the relationships:
 
 ### User – Task
+A User can have multiple Tasks.
 
-A User can have multiple Tasks. Each Task belongs to exactly one User.
+Each Task belongs to exactly one User.
 
+Relationship type:
 - User (1) ——— (N) Task
 
 ### User – Category
+A User can have multiple Categories.
 
-A User can have multiple Categories. Each Category belongs to exactly one User.
+Each Category belongs to exactly one User.
 
+Relationship type:
 - User (1) ——— (N) Category
 
 ### Category – Task
+A Category can contain multiple Tasks.
 
-A Category can contain multiple Tasks. Each Task belongs to exactly one Category.
+Each Task belongs to exactly one Category.
 
+Relationship type:
 - Category (1) ——— (N) Task
 
 ### User – Plan
+A User can have multiple Plans.
 
-A User can have multiple Plans. Each Plan belongs to exactly one User.
+Each Plan belongs to exactly one User.
 
+Relationship type:
 - User (1) ——— (N) Plan
 
 ### Plan – Task
+A Plan can contain multiple Tasks.
 
-A Plan can contain multiple Tasks. Each Task belongs to zero or one Plan (optional association).
+Each Task belongs to zero or one Plan (optional association).
 
+Relationship type:
 - Plan (0..1) ——— (0..N) Task
 
-Note: Category and Plan have no direct relationship. They are independent organizational dimensions. Category classifies tasks by type or subject, while Plan groups tasks under a project or goal.
+Note: Category and Plan have no direct relationship. They are independent organizational dimensions. Category classifies tasks by type/subject, while Plan groups tasks under a project or goal.
 
-## 3. Use Cases
+## 3. Main Use Cases
+A Use Case represents a complete scenario of interaction between a user and the system.
 
-A Use Case represents a complete scenario of interaction between a user and the system. Below they are written in a structured, step-by-step manner, ordered by dependency (topological order).
+Below they are written in a structured, step‑by‑step manner.
 
 ### 3.1 Authentication and Profile
 
-#### UC-01 – Login
-
+#### UC‑01 – Login
 Actor: User (guest who is not logged in)
 
-Description: The user logs into the system and views today's tasks.
+Description:
 
-Main Flow:
-1. The user opens the website.
-2. If not logged in, the user is redirected to the Login page, or clicks the Login button on the homepage.
-3. The user enters email or username and password.
-4. The system validates the credentials:
-   - If successful: the user is logged in and redirected to the Today's Tasks page.
-   - If unsuccessful: an error message is shown and the user can try again.
+The user logs into the system and views today's tasks.
 
-#### UC-02 – Register
+Main Flow
 
+- The user opens the website.
+- If not logged in:
+    - The user is redirected to the Login page, or
+    - Clicks the Login button on the homepage.
+- The user enters email/username and password.
+- The system validates the credentials:
+    - If successful → the user is logged in and redirected to the Today's Tasks page.
+    - If unsuccessful → an error message is shown and the user can try again.
+
+#### UC‑02 – Register
 Actor: New user (guest)
 
-Description: A new user creates an account to manage personal tasks.
+Description:
 
-Main Flow:
-1. The user clicks Register on the homepage.
-2. The registration form is displayed.
-3. The user enters required information (email or username, password, password confirmation).
-4. The system validates the data:
-   - Email format
-   - Unique username and email
-   - Password length and requirements
-5. If validation succeeds:
-   - The account is created
-   - A success or welcome message is shown
-   - The user is redirected to the Login page
+A new user creates an account to manage personal tasks.
 
-#### UC-07 – View and Edit Profile
+Main Flow
 
+- The user clicks Register on the homepage.
+- The registration form is displayed.
+- The user enters required information (e.g., email/username, password, password confirmation, possibly name).
+- The system validates the data:
+    - Email format
+    - Unique username/email
+    - Password length/requirements
+- If validation succeeds:
+    - The account is created
+    - A success/welcome message is shown
+    - The user is redirected to the Login page
+
+#### UC‑03 – View and Edit Profile
 Actor: Logged-in user
 
-Description: The user views and edits profile information.
+Description:
 
-Main Flow:
-1. The logged-in user clicks Profile from the navigation bar.
-2. The system displays current profile information.
-3. The user may edit fields such as: first name, last name, date of birth, country, gender.
-4. The user clicks Save.
-5. The system validates and stores the updated information and shows a success message.
+The user views and edits profile information.
 
-#### UC-08 – Logout
+Main Flow
 
+- The logged-in user clicks Profile from the navigation bar.
+- The system displays current profile information.
+- The user may edit fields such as:
+    - First name
+    - Last name
+    - Date of birth
+    - Country
+    - Gender
+- The user clicks Save.
+- The system validates and stores the updated information and shows a success message.
+
+#### UC‑04 – Logout
 Actor: Logged-in user
 
-Description: The user logs out of the system.
+Description:
 
-Main Flow:
-1. The user clicks Logout in the top navigation bar.
-2. The system invalidates the session or token.
-3. The user is redirected to the homepage or login page.
-4. The navigation bar again shows Login and Register options.
+The user logs out of the system.
 
-#### UC-09 – Delete Account
+Main Flow
 
+- The user clicks Logout in the top navigation bar.
+- The system invalidates the session/token.
+- The user is redirected to the homepage or login page.
+- The navigation bar again shows Login / Register options.
+
+#### UC‑05 – Delete Account
 Actor: Logged-in user
 
-Description: The user deletes their account along with all related data.
+Description:
 
-Main Flow:
-1. The user opens Account Settings from the profile menu.
-2. At the bottom of the page, the user sees a Delete Account button.
-3. The system requests the current password for confirmation.
-4. The user enters the password and confirms.
-5. The system verifies the password.
-6. If valid:
-   - The account deletion process begins
-   - Related data is soft-deleted or hard-deleted as configured
-7. The user is logged out and sees a message: "Your account has been deleted."
+The user deletes their account along with all related tasks and categories.
 
-### 3.2 Category Management
+(The exact behavior — soft delete or hard delete — can be finalized later.)
 
-#### UC-03 – Manage Categories
+Main Flow
 
+- The user opens Account Settings from the profile menu.
+- At the bottom of the page, the user sees a Delete Account button.
+- The system requests the current password for confirmation.
+- The user enters the password and confirms.
+- The system verifies the password.
+- If valid:
+    - The account deletion process begins
+    - Related data may be soft-deleted or hard-deleted (to be finalized later)
+- The user is logged out and sees a message such as:"Your account has been deleted."
+
+### 3.2 Task Management
+
+#### UC‑06 – Create Task
 Actor: Logged-in user
 
-**Create Category:**
-1. The user opens the Category Management page.
-2. Clicks Add Category.
-3. Enters the category name (e.g., Work, University).
-4. Saves the category.
-5. The system creates the category for that user.
+Description:
 
-**Edit Category:**
-1. The user clicks Edit next to a category.
-2. The edit form opens.
-3. The user changes the name and saves.
-4. Tasks linked to the category remain linked to the same category record.
+The user creates a new task for a specific day.
 
-**Delete Category:**
-1. Deletion is prevented if the category still has tasks assigned (restrict on delete).
-2. User must reassign or delete all tasks in the category before it can be deleted.
+Main Flow
 
-### 3.3 Plan Management
+- The user is on the Today's Tasks page or another day.
+- The user clicks Add Task.
+- A task creation form appears containing fields such as:
+    - Title
+    - Description
+    - Category
+    - Plan (optional)
+    - Date (default = currently viewed day)
+    - Estimated duration
+    - Priority (High / Medium / Low)
+    - Notification days before deadline
+    - Recurrence settings
+- The user submits the form.
+- The system stores the task and associates it with the corresponding User, Category, and optionally a Plan.
+- The task appears in that day's task list.
+- The system recalculates the daily workload and updates the day's color and message.
 
-#### UC-04 – Create Plan
-
+#### UC‑07 – Edit Task
 Actor: Logged-in user
 
-Description: The user creates a new plan to group related tasks under a project or goal.
+Description:
 
-Main Flow:
-1. The user navigates to the Plans page.
-2. Clicks Create Plan.
-3. A form appears with fields: Name, Description (optional), Start Date (required), End Date (required).
-4. The user fills in the fields and submits.
-5. The system stores the plan and associates it with the user.
-6. The plan appears in the user's plan list.
+The user modifies an existing task.
 
-#### UC-05 – Edit Plan
+Important note:
 
+In this version, the task date cannot be changed for simplicity.
+
+Main Flow
+
+- The user opens a day view or task list.
+- The user clicks Edit next to a task.
+- The edit form opens with current values pre-filled.
+- The user can modify:
+    - Title
+    - Description
+    - Category
+    - Plan (optional)
+    - Estimated time
+    - Priority
+    - Notification days before
+    - Recurrence settings
+- The date field is locked.
+- The user clicks Save.
+- The system saves changes and recalculates the day's workload if necessary.
+
+#### UC‑08 – Delete Task
 Actor: Logged-in user
 
-Description: The user edits an existing plan.
+Description:
 
-Main Flow:
-1. The user opens the Plans page.
-2. Clicks Edit next to a plan.
-3. The edit form opens with current values pre-filled.
-4. The user modifies fields (name, description, date range) and saves.
-5. The system updates the plan.
+The user deletes a task.
 
-#### UC-06 – Delete Plan
+Main Flow
 
+- The user clicks Delete next to a task.
+- The system optionally displays a confirmation dialog.
+- The user confirms deletion.
+- The system permanently deletes the task.
+- The system recalculates the daily workload and updates the day's color/message.
+
+#### UC‑09 – Change Task Status (Done / Not Done)
 Actor: Logged-in user
 
-Description: The user deletes a plan. Deletion is prevented if the plan still has tasks assigned (restrict on delete).
+Description:
 
-Main Flow:
-1. The user clicks Delete next to a plan.
-2. The system checks whether the plan has any tasks assigned.
-3. If the plan has tasks, deletion is blocked and an error message is shown.
-4. If the plan has no tasks, deletion proceeds.
-5. The plan is permanently removed from the user's list.
+The user marks a task as completed or not completed.
 
-### 3.4 Task Management
+Main Flow
 
-#### UC-10 – Create Task
+- The user views tasks for a specific day.
+- Each task has a checkbox or Done button.
+- The user toggles the status.
+- The system updates the task status.
 
+System background logic:
+
+If a task status is not updated by the end of the day, the system considers it Not Done.
+
+This affects:
+
+- reports
+- overdue task detection
+
+### 3.3 Category Management
+
+#### UC‑10 – Manage Categories
 Actor: Logged-in user
 
-Description: The user creates a new task for a specific day.
+Create Category:
 
-Main Flow:
-1. The user is on the Today's Tasks page or another day.
-2. The user clicks Add Task.
-3. A task creation form appears containing fields: Title, Description, Category, Plan (optional), Date (default = currently viewed day), Estimated duration, Priority (High / Medium / Low), Notification days before deadline.
-4. The user submits the form.
-5. The system stores the task and associates it with the corresponding User, Category, and optionally a Plan.
-6. The task appears in that day's task list.
-7. The system recalculates the daily workload and updates the day's color and message.
+- The user opens the Category Management page.
+- Clicks Add Category.
+- Enters the category name (e.g., Work, University).
+- Saves the category.
+- The system creates the category for that user.
 
-#### UC-11 – Edit Task
+Edit Category:
 
-Actor: Logged-in user
+- The user clicks Edit next to a category.
+- The edit form opens.
+- The user changes the name and saves.
 
-Description: The user modifies an existing task. In this version, the task date cannot be changed for simplicity.
+Tasks linked to the category remain linked to the same category record.
 
-Main Flow:
-1. The user opens a day view or task list.
-2. The user clicks Edit next to a task.
-3. The edit form opens with current values pre-filled.
-4. The user can modify: Title, Description, Category, Plan (optional), Estimated time, Priority, Notification days before.
-5. The date field is locked.
-6. The user clicks Save.
-7. The system saves changes and recalculates the day's workload if necessary.
+Delete Category:
 
-#### UC-12 – Delete Task
+- Deletion is prevented if the category still has tasks assigned (restrict on delete).
+- User must reassign or delete all tasks in the category before it can be deleted.
 
-Actor: Logged-in user
+### 3.4 Views and Reporting
 
-Description: The user deletes a task.
-
-Main Flow:
-1. The user clicks Delete next to a task.
-2. The system optionally displays a confirmation dialog.
-3. The user confirms deletion.
-4. The system permanently deletes the task.
-5. The system recalculates the daily workload and updates the day's color or message.
-
-### 3.5 Task Status
-
-#### UC-13 – Mark Task as Done / Not Done
-
-Actor: Logged-in user
-
-Description: The user marks a task as completed or not completed.
-
-Main Flow:
-1. The user views tasks for a specific day.
-2. Each task has a checkbox or Done button.
-3. The user toggles the status.
-4. The system updates the task status.
-
-System background logic: If a task status is not updated by the end of the day, the system considers it Not Done. This affects reports and overdue task detection.
-
-#### UC-17 – Automatic Not Done Overnight
-
-Actor: System (background process)
-
-Description: At the end of each day, the system automatically marks any tasks that were not updated as Not Done.
-
-Main Flow:
-1. A scheduled task runs at midnight (or end of day).
-2. For each task with task_date = today and done = false, the system ensures the status remains Not Done.
-3. This ensures reports and overdue detection remain accurate.
-
-### 3.6 Workload and Indicators
-
-#### UC-14 – Daily Workload Calculation
-
-Actor: User (passive — calculated automatically)
-
-Description: The system calculates the total estimated time of tasks for each day.
-
-Main Flow:
-1. When tasks are created, edited, or deleted, the system recalculates the total estimated minutes for that day.
-2. The total is displayed in the daily, weekly, and monthly views.
-
-#### UC-15 – Color-Coded Day Indicators
-
-Actor: User (passive — displayed automatically)
-
-Description: The user sees the workload level of a day using colors and messages.
-
-Color rules:
-- 0 hours → White
-- Less than 3 hours → Green
-- Less than 5 hours → Yellow
-- Less than 8 hours → Red
-- 8 hours or more → Black
-
-The system calculates total estimated time and displays the corresponding message. The same colors appear in weekly and monthly views.
-
-### 3.7 Views
-
-#### UC-19 – Calendar View (Daily, Weekly, Monthly)
-
+#### UC‑11 – View Tasks for a Specific Day
 Actor: User
 
-Description: The user sees tasks displayed in different time-based views.
+Flow
 
-**Daily View:**
-1. The user selects a date or clicks a day in the calendar.
-2. The system shows tasks for that day (filtered by user).
-3. The total workload and status color or message are displayed.
-4. The user may create, edit, delete, or mark tasks as Done or Not Done.
+- The user selects a date or clicks a day in the calendar.
+- The system shows tasks for that day (filtered by user).
+- The total workload and status color/message are displayed.
+- The user may create, edit, delete, or mark tasks as Done/Not Done.
 
-**Weekly View:**
-1. The user switches the UI to Week View.
-2. The user selects a week (or navigates previous or next).
-3. The system displays tasks for the week in a table or grid.
-4. Each day shows its workload color indicator.
-
-**Monthly View:**
-1. The user opens Calendar View.
-2. The system displays the current or selected month.
-3. Each day shows its workload color.
-4. The user can click a day to view or add tasks.
-
-#### UC-20 – View Day Details
-
+#### UC‑12 – Weekly View
 Actor: User
 
-Description: The user clicks on a specific day in the calendar to view its tasks and workload details.
+Flow
 
-Main Flow:
-1. The user clicks a day in the monthly calendar.
-2. The system navigates to the daily view for that date.
-3. All tasks for that day are displayed with the total workload and color indicator.
+- The user switches the UI to Week View.
+- The user selects a week (or navigates previous/next).
+- The system displays tasks for the week in a table or grid.
+- Each day shows its workload color indicator.
 
-### 3.8 Overdue and Notifications
-
-#### UC-16 – Overdue Tasks
-
+#### UC‑13 – Monthly Calendar View
 Actor: User
 
-Description: The user sees tasks that are past their scheduled date and still not completed.
+Flow
 
-Main Flow:
-1. The user opens the Overdue Tasks section.
-2. The system filters tasks where task_date < today and status = Not Done.
-3. The list is displayed.
-4. The user may mark them as done or delete them.
+- The user opens Calendar View.
+- The system displays the current or selected month.
+- Each day shows its workload color.
+- The user can click a day to view or add tasks.
 
-Future versions may allow rescheduling.
-
-#### UC-25 – Upcoming Tasks
-
+#### UC‑14 – Filter and Sort Tasks
 Actor: User
 
-Description: The user sees tasks that are approaching in the next few days.
+Flow
 
-Main Flow:
-1. The user opens the dashboard.
-2. The system finds tasks within the configured window (today to today + X days).
-3. The tasks appear in an Upcoming Tasks list.
+The user can filter tasks by:
 
-Future versions may send these notifications via email.
-
-### 3.9 Filtering and Sorting
-
-#### UC-24 – Filter and Sort Tasks
-
-Actor: User
-
-Description: The user filters and sorts tasks to find specific items.
-
-**Filter by:**
 - Category
 - Plan
-- Date or date range
+- Date / date range
 - Status (Done / Not Done)
 - Priority
+- Estimated duration
 
-**Sort by:**
+The user can sort tasks by:
+
 - Date
 - Priority
 - Estimated time
 
-The system updates the list accordingly. Multiple filters can be combined. Clearing filters restores the full list.
+The system updates the list accordingly.
 
-### 3.10 Reports
-
-#### UC-18 – Performance Reports
-
+#### UC‑15 – Daily Load Status
 Actor: User
 
-Description: The user views a performance summary over a chosen time range.
+Description:
 
-Main Flow:
-1. The user opens the Reports page.
-2. Selects a time range (date A to date B).
-3. The system calculates:
-   - Total tasks created
-   - Completed tasks
-   - Incomplete or overdue tasks
-   - Completion rate
-4. The results are shown using numbers, simple charts, or tables.
+The user sees the workload level of a day using colors and messages.
 
-### 3.11 Plan Tracking
+Color rules:
 
-#### UC-21 – View Plan and Its Tasks
+- 0 hours → White
+- < 3 hours → Green
+- < 5 hours → Yellow
+- < 8 hours → Red
+- ≥ 8 hours → Black
 
+The system calculates total estimated time and displays the corresponding message.
+
+The same colors appear in weekly and monthly views.
+
+#### UC‑16 – Upcoming Tasks
+Actor: User
+
+Description:
+
+The user sees tasks that are approaching in the next few days.
+
+Flow
+
+- The user opens the dashboard.
+- The system finds tasks within the configured window(today → today + X days).
+- The tasks appear in an Upcoming Tasks list.
+
+Future versions may send these notifications via email.
+
+#### UC‑17 – Overdue Tasks
+Actor: User
+
+Description:
+
+The user sees tasks that are past their scheduled date and still not completed.
+
+Flow
+
+- The user opens the Overdue Tasks section.
+    - The system filters tasks where:
+    - task_date < today
+- status = Not Done
+- The list is displayed.
+
+The user may mark them as done or delete them.
+
+Future versions may allow rescheduling.
+
+#### UC‑18 – Performance Reports
+Actor: User
+
+Description:
+
+The user views a performance summary over a chosen time range.
+
+Flow
+
+- The user opens the Reports page.
+- Selects a time range (date A → date B).
+- The system calculates:
+    - total tasks created
+    - completed tasks
+    - incomplete/overdue tasks
+    - completion rate
+- The results are shown using numbers, simple charts, or tables.
+
+### 3.5 Plan Management
+
+#### UC‑19 – Create Plan
 Actor: Logged-in user
 
-Description: The user views a specific plan and all tasks assigned to it.
+Description:
 
-Main Flow:
-1. The user navigates to the Plans page.
-2. Clicks on a plan or selects View.
-3. The system shows plan details (name, description, date range, progress).
-4. Below the details, all tasks assigned to the plan are displayed.
-5. The user can create, edit, delete, or mark tasks as Done or Not Done from this view.
-6. The system calculates and displays plan progress as a percentage (completed tasks / total tasks).
+The user creates a new plan to group related tasks under a project or goal.
 
-#### UC-22 – Plan Progress
+Main Flow
 
+- The user navigates to the Plans page.
+- Clicks Create Plan.
+- A form appears with fields such as:
+    - Name
+    - Description
+    - Start Date (required)
+    - End Date (required)
+- The user fills in the fields and submits.
+- The system stores the plan and associates it with the user.
+- The plan appears in the user's plan list.
+
+#### UC‑20 – Edit Plan
 Actor: Logged-in user
 
-Description: The user sees the progress of a plan based on task completion.
+Description:
 
-Main Flow:
-1. When viewing a plan or plan list, the system calculates the progress percentage.
-2. Progress = (completed tasks / total tasks) × 100.
-3. The progress is displayed as a percentage or progress bar.
+The user edits an existing plan.
 
-#### UC-23 – Plan Progress Tracking
+Main Flow
 
+- The user opens the Plans page.
+- Clicks Edit next to a plan.
+- The edit form opens with current values pre-filled.
+- The user modifies fields (name, description, date range) and saves.
+- The system updates the plan.
+
+#### UC‑21 – Delete Plan
 Actor: Logged-in user
 
-Description: The user sees real-time plan progress updates as tasks are marked done.
+Description:
 
-Main Flow:
-1. When a task in a plan is marked as done or not done, the plan progress is recalculated immediately.
-2. The updated progress is reflected in the UI without a page reload.
+The user deletes a plan. Deletion is prevented if the plan still has tasks assigned (restrict on delete).
 
-### 3.12 Recurring Tasks
+Main Flow
 
-#### UC-26 – Recurring / Multi-Day Tasks
+- The user clicks Delete next to a plan.
+- The system checks whether the plan has any tasks assigned.
+- If the plan has tasks, deletion is blocked and an error message is shown.
+- If the plan has no tasks, deletion proceeds.
+- The plan is permanently removed from the user's list.
 
+#### UC‑22 – View Plan and Its Tasks
 Actor: Logged-in user
 
-Description: The user assigns a task to multiple selected days.
+Description:
 
-Main Flow:
-1. In the task creation form, the user selects multiple days (e.g., specific weekdays or multiple dates).
-2. The system creates separate independent tasks for each selected date.
-3. Each task is an independent record — no recurrence pattern entity is needed for MVP.
+The user views a specific plan and all tasks assigned to it.
 
-Note: For the MVP, Option 1 (simple model) is used. No recurrence pattern field is included in the domain model; recurrence is handled by creating duplicate tasks.
+Main Flow
 
-### 3.13 Soft Delete Behavior
+- The user navigates to the Plans page.
+- Clicks on a plan or selects View.
+- The system shows plan details (name, description, date range, progress).
+- Below the details, all tasks assigned to the plan are displayed.
+- The user can create, edit, delete, or mark tasks as Done/Not Done from this view.
+- The system calculates and displays plan progress as a percentage (completed tasks / total tasks).
 
-#### UC-27 – Soft Delete and Admin Management
+#### UC‑23 – Assign / Remove Task from Plan
+Actor: Logged-in user
 
-Description: Soft deletion is only used for User accounts. Categories, tasks, and plans are hard-deleted.
+Description:
 
-Rules:
-- If a plan is deleted, all tasks within that plan are also cascade-deleted.
-- If a category is deleted, tasks referencing it are prevented from deletion unless they are reassigned first.
-- The Admin role handles user account cleanup in future versions.
+The user assigns a task to a plan or removes it from a plan.
+
+Main Flow
+
+- The user opens a task creation or edit form.
+- The form includes a Plan dropdown (optional, defaults to "No Plan").
+- The user selects a plan (or changes to "No Plan") and saves.
+- The system associates the task with the selected plan, or clears the association.
 
 ## 4. Conceptual Domain Model
-
 At this level we define only the core attributes, not database types.
 
 ### 4.1 User
+Suggested conceptual fields:
 
-Conceptual fields:
 - User ID
 - Username
 - Email
@@ -509,16 +529,16 @@ Conceptual fields:
 Some fields may be optional in implementation.
 
 ### 4.2 Category
-
 Conceptual fields:
+
 - Category ID
 - Category Name
 - Owner User (reference to User)
 - (Optional in future) category color or icon
 
 ### 4.3 Task
-
 Conceptual fields:
+
 - Task ID
 - Title
 - Description
@@ -534,8 +554,8 @@ Conceptual fields:
 - Last update date
 
 ### 4.4 Plan
-
 Conceptual fields:
+
 - Plan ID
 - Plan Name
 - Description (optional)
@@ -546,60 +566,112 @@ Conceptual fields:
 - Creation date
 - Last update date
 
+### Recurring Tasks Note
+Since the system supports selecting multiple days for a task, there are two possible designs.
+
+#### Option 1 – Simple MVP Model (Recommended)
+When the user selects multiple seeds, the system creates separate independent tasks for each date.
+
+Advantages:
+
+- Simpler design
+- No additional recurrence entities required
+- Suitable for MVP
+
+#### Option 2 – Advanced Model (Future)
+Introduce a separate entity such as TaskPattern or recurrence configuration.
+
+For Phase 2 and MVP, we choose Option 1.
+
+Therefore, no recurrence pattern field is included in the domain model for now; recurrence will be handled in the service logic/UI layer.
+
 ## 5. Module Boundaries
 
 The system is decomposed into the following modules. Each module has a clear responsibility and communicates with others through well-defined service classes.
 
 ### 5.1 Authentication Module
 
-**Responsibility:** User registration, login, logout, password management, session handling.
-**Depends on:** User model, Laravel's built-in Auth system.
-**Used by:** All other modules (user must be authenticated).
+**Responsibility:**
+- User registration, login, logout
+- Password management
+- Session handling
 
-### 5.2 Category Management Module
+**Depends on:** User model, Laravel's built-in Auth system
+**Used by:** All other modules (user must be authenticated)
 
-**Responsibility:** Create, read, update, delete categories. Enforce restrict-on-delete when category has tasks.
-**Depends on:** User, Task models.
-**Interacts with:** Task Management (tasks reference categories).
+### 5.2 Task Management Module
 
-### 5.3 Plan Management Module
+**Responsibility:**
+- Create, read, update, delete tasks
+- Toggle task status (Done / Not Done)
+- Filtering and sorting tasks
+- Assign / remove task from plan
 
-**Responsibility:** Create, read, update, delete plans. Calculate plan progress (% completed). Prevent deletion when plan has tasks.
-**Depends on:** User, Task models.
-**Interacts with:** Task Management (tasks reference plans).
+**Depends on:** User, Category, Plan models
+**Interacts with:** Category Management (for category assignment), Plan Management (for plan assignment), Workload & Color Module (recalculates after changes)
 
-### 5.4 Task Management Module
+### 5.3 Category Management Module
 
-**Responsibility:** Create, read, update, delete tasks. Toggle task status (Done / Not Done). Filtering and sorting tasks. Assign or remove task from plan.
-**Depends on:** User, Category, Plan models.
-**Interacts with:** Category Management, Plan Management, Workload and Color Module.
+**Responsibility:**
+- Create, read, update, delete categories
+- Enforce restrict-on-delete when category has tasks
 
-### 5.5 Daily Workload and Color Module
+**Depends on:** User, Task models
+**Interacts with:** Task Management (tasks reference categories)
 
-**Responsibility:** Calculate total estimated minutes per day for a user. Map total time to color and message. Recalculate when tasks are created, updated, or deleted.
-**Depends on:** Task model.
-**Interacts with:** Task Management (triggered by task changes), View Layer (provides color/message data).
+### 5.4 Plan Management Module
+
+**Responsibility:**
+- Create, read, update, delete plans
+- Calculate plan progress (% completed)
+- Prevent deletion when plan has tasks (restrict on delete)
+
+**Depends on:** User, Task models
+**Interacts with:** Task Management (tasks reference plans)
+
+### 5.5 Daily Workload & Color Module
+
+**Responsibility:**
+- Calculate total estimated minutes per day for a user
+- Map total time to color and message
+- Recalculate when tasks are created, updated, or deleted
+
+**Depends on:** Task model
+**Interacts with:** Task Management (triggered by task changes), View Layer (provides color/message data)
 
 ### 5.6 Overdue Tasks Module
 
-**Responsibility:** Detect tasks where task_date < today and done = false. Provide overdue list scoped to the authenticated user.
-**Depends on:** Task model.
-**Interacts with:** Task Management (status changes remove tasks from overdue).
+**Responsibility:**
+- Detect tasks where `task_date < today` and `done = false`
+- Provide overdue list scoped to the authenticated user
+
+**Depends on:** Task model
+**Interacts with:** Task Management (status changes remove tasks from overdue)
 
 ### 5.7 Upcoming Tasks Module
 
-**Responsibility:** Detect tasks within the notification window (today to today + day_before_alarm). Provide upcoming list.
-**Depends on:** Task model.
-**Interacts with:** Task Management (date/task changes affect upcoming).
+**Responsibility:**
+- Detect tasks within the notification window (today → today + `day_before_alarm`)
+- Provide upcoming list
+
+**Depends on:** Task model
+**Interacts with:** Task Management (date/task changes affect upcoming)
 
 ### 5.8 Reporting Module
 
-**Responsibility:** Generate performance reports for a given date range. Calculate: total tasks, completed tasks, completion rate, overdue count.
-**Depends on:** Task model.
-**Interacts with:** View Layer (display results in tables or charts).
+**Responsibility:**
+- Generate performance reports for a given date range
+- Calculate: total tasks, completed tasks, completion rate, overdue count
+
+**Depends on:** Task model
+**Interacts with:** View Layer (display results in tables/charts)
 
 ### 5.9 View / Presentation Layer
 
-**Responsibility:** Render UI using Laravel Blade and Livewire components. Handle user interactions via Livewire method calls. Compose data from service classes for display.
-**Depends on:** All modules (orchestrates data for views).
-**Technology:** Laravel Blade layouts + Livewire full-page / nested components.
+**Responsibility:**
+- Render UI using Laravel Blade and Livewire components
+- Handle user interactions via Livewire method calls
+- Compose data from service classes for display
+
+**Depends on:** All modules (orchestrates data for views)
+**Technology:** Laravel Blade layouts + Livewire full-page / nested components

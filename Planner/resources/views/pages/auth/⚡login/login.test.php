@@ -11,7 +11,7 @@ beforeEach(function () {
 it('renders successfully', function () {
     Livewire::test('pages::auth.login')
         ->assertStatus(200)
-        ->assertSee('Sign in to your account');
+        ->assertSee('Welcome back');
 });
 
 it('validates required fields', function () {
@@ -42,7 +42,7 @@ it('shows a login error for wrong credentials', function () {
         ->set('email', 'amir@example.com')
         ->set('password', 'wrong-password')
         ->call('login')
-        ->assertHasErrors('login')
+        ->assertSet('loginError', 'invalid')
         ->assertSet('password', '');
     $this->assertGuest();
 });
@@ -77,7 +77,7 @@ it('rate limits after too many failed attempts', function () {
         ->set('email', 'amir@example.com')
         ->set('password', 'password')
         ->call('login')
-        ->assertHasErrors('login');
+        ->assertSet('loginError', 'limited');
     $this->assertGuest();
 });
 

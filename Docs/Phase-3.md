@@ -2,28 +2,29 @@
 
 Phase 3 covers three areas of design:
 
-1. **Logical Data Model** — Tables, columns, keys, constraints, enums, factories, seeders
-2. **Architecture Principles and Patterns** — Conventions and patterns to follow during implementation
-3. **Error Handling and Logging Principles** — Error types, log levels, visibility policy
+1. **Logical Data Model (Completed)** — Tables, columns, keys, constraints, enums, factories, seeders
+2. **Architecture Principles & Patterns (Overview)** — Conventions and patterns to follow during implementation
+3. **Error Handling & Logging Principles (Overview)** — Error types, log levels, visibility policy
 
 ---
 
-## 3.1 – Logical Data Model
+## 3.1 — Logical Data Model (Completed)
 
 ### Overview
 
-The database layer consists of 4 models, 4 migrations, 2 enums, 4 factories, and 1 seeder. All entities are user-scoped — each user owns their own tasks, categories, and plans.
+The database layer consists of 4 models, 4 migrations, 2 enums, 4 factories, and 2 seeders.
+All entities are user-scoped — each user owns their own tasks, categories, and plans.
 
 ### Entity Summary
 
 | Entity | Table | Primary Key | Soft Delete | Factory | Seeder |
 |--------|-------|-------------|-------------|---------|--------|
-| User | `users` | `id` | Yes | `UserFactory` | `UserSeeder` |
-| Category | `categories` | `id` | No | `CategoryFactory` | — |
-| Task | `tasks` | `id` | No | `TaskFactory` | — |
-| Plan | `plans` | `id` | No | `PlanFactory` | — |
+| User | `users` | `id` | ✅ Yes | `UserFactory` | `UserSeeder` |
+| Category | `categories` | `id` | ❌ No | `CategoryFactory` | — |
+| Task | `tasks` | `id` | ❌ No | `TaskFactory` | — |
+| Plan | `plans` | `id` | ❌ No | `PlanFactory` | — |
 
-### Entity-Relationship Diagram
+### Entity-Relationship Diagram (Textual)
 
 ```
 User (1) ——— (N) Task
@@ -41,7 +42,7 @@ Plan (0..1) ——— (0..N) Task
 | `plan_id` on `tasks` | `cascadeOnDelete` | Deleting a plan also removes all its tasks |
 | `category_id` on `tasks` | `restrictOnDelete` | Cannot delete a category that still has tasks |
 
-### Tables and Columns
+### Tables & Columns
 
 #### `users`
 
@@ -172,9 +173,9 @@ Used by `User.gender` column with automatic cast.
 
 ---
 
-## 3.2 – Architecture Principles and Patterns
+## 3.2 — Architecture Principles & Patterns (Overview)
 
-This section defines the conventions and patterns to follow during implementation. These are guiding principles — the actual services, actions, and components are created as each use case is implemented.
+*This section defines the conventions and patterns we will follow during Phase 4 implementation. These are guiding principles, not concrete code — the actual services, actions, and components will be created during Phase 4 as each use case is implemented.*
 
 ### Code Organization
 
@@ -204,7 +205,7 @@ Model (data access via Eloquent)
 ```
 
 **Rules:**
-- **Livewire components** should be thin — handle UI state, validation, and delegate to Services or Actions. No raw Eloquent queries in components.
+- **Livewire components** should be thin — handle UI state, validation, and delegate to Services/Actions. No raw Eloquent queries in components.
 - **Services** own business logic for a domain area (e.g., Task, Category, Plan, Workload). Can group related operations.
 - **Actions** are single-purpose classes for operations with side effects (e.g., deleting a plan also recalculates workload). Use when an operation does more than one thing.
 - **Models** handle data access only — no business logic beyond scopes and accessors.
@@ -213,17 +214,17 @@ Model (data access via Eloquent)
 
 | Pattern | Decision | When to Apply |
 |---------|----------|---------------|
-| **Service Layer** | Use | Group related business logic. One service per domain area (e.g., `TaskService`, `WorkloadService`). |
-| **Action Classes** | Use | Extract any operation that triggers side effects (e.g., recalculating workload after deleting a task). |
-| **Backed Enums** | Use | Already in place for fixed value sets. Extend as new value sets appear. |
-| **Repository** | Defer | Start with Eloquent scopes. Only extract repositories if query logic becomes unmanageable. |
-| **Form Request** | Defer | Livewire components handle validation natively via `rules()` and `$this->validate()`. |
-| **View Composer** | Defer | Format data directly in Livewire component properties. |
+| **Service Layer** | ✅ Use | Group related business logic. One service per domain area (e.g., `TaskService`, `WorkloadService`). |
+| **Action Classes** | ✅ Use | Extract any operation that triggers side effects (e.g., recalculating workload after deleting a task). |
+| **Backed Enums** | ✅ Use | Already in place for fixed value sets. Extend as new value sets appear. |
+| **Repository** | ❌ Defer | Start with Eloquent scopes. Only extract repositories if query logic becomes unmanageable. |
+| **Form Request** | ❌ Defer | Livewire components handle validation natively via `rules()` and `$this->validate()`. |
+| **View Composer** | ❌ Defer | Format data directly in Livewire component properties. |
 
 ### Naming Conventions
 
-| Layer | Naming Pattern | Example |
-|-------|---------------|---------|
+| Layer | Naming | Example |
+|-------|--------|---------|
 | Service | `{Domain}Service` | `TaskService`, `WorkloadService` |
 | Action | `{Verb}{Noun}Action` | `CreateTaskAction`, `ToggleTaskDoneAction` |
 | Livewire (full-page) | `{View}Page` | `TodayTasksPage`, `PlanListPage` |
@@ -232,7 +233,7 @@ Model (data access via Eloquent)
 
 ### Service Boundaries (Planned)
 
-These service areas are defined as a map of responsibilities. They will be fleshed out during implementation.
+*These service areas will be fleshed out during Phase 4. Listed here as a map of responsibilities.*
 
 | Domain Area | Responsibilities |
 |-------------|-----------------|
@@ -251,18 +252,18 @@ These service areas are defined as a map of responsibilities. They will be flesh
 
 ---
 
-## 3.3 – Error Handling and Logging Principles
+## 3.3 — Error Handling & Logging Principles (Overview)
 
-This section defines the conventions for handling errors and logging. Actual exception classes and logger calls are added during implementation.
+*This section defines the conventions for handling errors and logging. Actual exception classes and logger calls will be added during Phase 4 implementation.*
 
 ### Error Types
 
-| Type | How It Is Raised | Example |
+| Type | How It's Raised | Example |
 |------|-----------------|---------|
 | **Validation error** | Livewire `$this->validate()` | Missing title, past date |
 | **Authorization failure** | `$this->authorize()` or `Gate` | Editing another user's task |
 | **Domain exception** | Custom exception class | Deleting a category that still has tasks |
-| **System error** | PHP or Laravel exception | Database connection lost |
+| **System error** | PHP/Laravel exception | Database connection lost |
 
 ### Domain Exception Convention
 
@@ -273,14 +274,14 @@ Create a custom exception class when a business rule is violated and the user ne
 | `CategoryHasTasksException` | Attempting to delete a category that still has tasks |
 | `TaskDateLockedException` | Attempting to change the date of an existing task |
 
-Add more as new rules emerge during implementation.
+*Add more as new rules emerge during Phase 4.*
 
 ### Handling Strategy
 
 | Layer | How to Handle |
 |-------|---------------|
 | **Livewire Component** | Catch domain exceptions → show user-friendly message via `session()->flash()` or `$this->addError()`. For validation → automatic per-field messages. |
-| **Service / Action** | Throw domain exceptions for rule violations. Do not catch Laravel system exceptions — let them propagate to the global handler. |
+| **Service / Action** | Throw domain exceptions for rule violations. Don't catch Laravel system exceptions — let them propagate to the global handler. |
 | **Global Handler** | `App\Exceptions\Handler` — log unexpected errors with full stack trace, return a generic "Something went wrong" message. |
 
 ### Logging Conventions
@@ -291,8 +292,8 @@ Add more as new rules emerge during implementation.
 | `warning` | Failed attempts (validation failures, unauthorized access) |
 | `error` | Unexpected system errors, database failures, service exceptions |
 
-- Use `Log::info()`, `Log::warning()`, `Log::error()` directly in Services or Actions.
-- Do not log in Livewire components — delegate to the Service or Action layer.
+- Use `Log::info()`, `Log::warning()`, `Log::error()` directly in Services/Actions.
+- Don't log in Livewire components — delegate to the Service/Action layer.
 - Local development uses stack logging; production can use daily files.
 
 ### Error Visibility for Users

@@ -56,13 +56,13 @@ A Laravel 13 + Livewire 4 task planner application. Users manage tasks, categori
 - `phases/phase-2.md` — Domain Design + UC Specs
 - `phases/phase-3.md` — Data Model & Architecture
 - `phases/phase-4.md` — Implementation Process & Logs
+- `best-practices/Laravel.md` — Laravel Performance & Best Practices Bible
+- `best-practices/Livewire.md` — Livewire v4 Performance Tricks
 
 ## Key Decisions
 
 - Plan CRUD before Task CRUD (topological dependency)
 - UC specs in Phase-2 (design-time), implementation logs in Phase-4
-- Sheaf UI deferred to Layer 2 (no Boost skill yet)
-- Laravel.md and Livewire.md deferred to Layer 2
 
 ## How to Use
 

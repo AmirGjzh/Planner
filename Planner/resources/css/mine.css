@@ -1,0 +1,43 @@
+:root {
+    --mine-page-bg-green: #F6FbF7;
+    --mine-text-link: #1E8E5A;
+    --mine-input-bg: #F8FCFA;
+    --mine-input-border: #DDEBE4;
+    --mine-input-border-error: #EF9292;
+    --mine-input-ring-error: #F4DDDD;
+    --mine-input-bg-error: #FFF5F5;
+    --mine-input-border-focus: #34A36B;
+    --mine-input-ring-focus: #DFF5E7;
+    --mine-text-error: #E53935;
+    --mine-text-primary: #111827;
+    --mine-text-secondary: #6B7280;
+    --mine-text-secondary-alert: #5d6470;
+    --mine-text-placeholder: #9daaa4;
+    --mine-input-icon: #a4b9a4;
+    --mine-separator-border: #cbe4cb;
+    --mine-btn-bg: #22a064;
+    --mine-btn-bg-hover: #1b8a54;
+    --mine-btn-text: #ffffff;
+    --mine-btn-ring-focus: #C8EAD6;
+    --mine-card-bg: #ffffff;
+
+    --mine-alert-bg-danger: #FEECEC;
+    --mine-alert-border-danger: #F5B4B4;
+    --mine-alert-icon-danger: #E53935;
+    --mine-alert-title-danger: #B91c1c;
+
+    --mine-alert-bg-success: #e8f7ef;
+    --mine-alert-border-success: #b7e5c9;
+    --mine-alert-icon-success: #22a064;
+    --mine-alert-title-success: #166534;
+
+    --mine-alert-bg-warning: #fff6e5;
+    --mine-alert-border-warning: #ffe3b3;
+    --mine-alert-icon-warning: #f59e0b;
+    --mine-alert-title-warning: #b45309;
+
+    --mine-alert-bg-info: #e9f1ff;
+    --mine-alert-border-info: #bfd6ff;
+    --mine-alert-icon-info: #3b82f6;
+    --mine-alert-title-info: #1e40af;
+}
