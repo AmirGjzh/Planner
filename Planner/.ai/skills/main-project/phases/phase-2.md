@@ -179,89 +179,32 @@ Actor: Logged-in user
 
 ### 3.3 Plan Management
 
-#### UC-04 – Create Plan
+#### UC-04 – Manage Plans
 
 Actor: Logged-in user
 
-Description: The user creates a new plan to group related tasks under a project or goal.
+Description: The user creates, edits, or deletes plans to group related tasks.
 
 Main Flow:
 1. The user navigates to the Plans page.
-2. Clicks Create Plan.
-3. A form appears with fields: Name, Description (optional), Start Date (required), End Date (required).
-4. The user fills in the fields and submits.
-5. The system stores the plan and associates it with the user.
-6. The plan appears in the user's plan list.
-
-#### UC-05 – Edit Plan
-
-Actor: Logged-in user
-
-Description: The user edits an existing plan.
-
-Main Flow:
-1. The user opens the Plans page.
-2. Clicks Edit next to a plan.
-3. The edit form opens with current values pre-filled.
-4. The user modifies fields (name, description, date range) and saves.
-5. The system updates the plan.
-
-#### UC-06 – Delete Plan
-
-Actor: Logged-in user
-
-Description: The user deletes a plan. Deletion is prevented if the plan still has tasks assigned (restrict on delete).
-
-Main Flow:
-1. The user clicks Delete next to a plan.
-2. The system checks whether the plan has any tasks assigned.
-3. If the plan has tasks, deletion is blocked and an error message is shown.
-4. If the plan has no tasks, deletion proceeds.
-5. The plan is permanently removed from the user's list.
+2. To create a plan, the user fills in the name, optional description, start date, and end date, then submits.
+3. To edit a plan, the user modifies the name, description, or date range and saves.
+4. To delete a plan, the user clicks Delete. Deletion is blocked if the plan still has tasks assigned (restrict on delete).
 
 ### 3.4 Task Management
 
-#### UC-10 – Create Task
+#### UC-10 – Manage Tasks
 
 Actor: Logged-in user
 
-Description: The user creates a new task for a specific day.
+Description: The user creates, edits, or deletes tasks for a specific day.
 
 Main Flow:
-1. The user is on the Today's Tasks page or another day.
-2. The user clicks Add Task.
-3. A task creation form appears containing fields: Title, Description, Category, Plan (optional), Date (default = currently viewed day), Estimated duration, Priority (High / Medium / Low), Notification days before deadline.
-4. The user submits the form.
-5. The system stores the task and associates it with the corresponding User, Category, and optionally a Plan.
-6. The task appears in that day's task list.
-7. The system recalculates the daily workload and updates the day's color and message.
-
-#### UC-11 – Edit Task
-
-Actor: Logged-in user
-
-Description: The user modifies an existing task.
-
-Main Flow:
-1. The user opens a day view or task list.
-2. The user clicks Edit next to a task.
-3. The edit form opens with current values pre-filled.
-4. The user can modify: Title, Description, Date, Category, Plan (optional), Estimated time, Priority, Notification days before.
-5. The user clicks Save.
-6. The system saves changes and recalculates the day's workload if necessary.
-
-#### UC-12 – Delete Task
-
-Actor: Logged-in user
-
-Description: The user deletes a task.
-
-Main Flow:
-1. The user clicks Delete next to a task.
-2. The system optionally displays a confirmation dialog.
-3. The user confirms deletion.
-4. The system permanently deletes the task.
-5. The system recalculates the daily workload and updates the day's color or message.
+1. The user is on the task page for a specific day.
+2. To create a task, the user fills in the title, category, estimated duration, priority, optional plan, and submits.
+3. To edit a task, the user modifies any field and saves.
+4. To delete a task, the user clicks Delete and confirms. The task is permanently removed.
+5. The system recalculates the daily workload after any create, edit, or delete operation.
 
 ### 3.5 Task Status
 
@@ -279,43 +222,17 @@ Main Flow:
 
 System background logic: If a task status is not updated by the end of the day, the system considers it Not Done. This affects reports and overdue task detection.
 
-#### UC-17 – Automatic Not Done Overnight
+### 3.6 Workload
 
-Actor: System (background process)
-
-Description: At the end of each day, the system automatically marks any tasks that were not updated as Not Done.
-
-Main Flow:
-1. A scheduled task runs at midnight (or end of day).
-2. For each task with task_date = today and done = false, the system ensures the status remains Not Done.
-3. This ensures reports and overdue detection remain accurate.
-
-### 3.6 Workload and Indicators
-
-#### UC-14 – Daily Workload Calculation
+#### UC-14 – Daily Workload
 
 Actor: User (passive — calculated automatically)
 
-Description: The system calculates the total estimated time of tasks for each day.
+Description: The system calculates and displays the total estimated time of tasks for each day.
 
 Main Flow:
 1. When tasks are created, edited, or deleted, the system recalculates the total estimated minutes for that day.
-2. The total is displayed in the daily, weekly, and monthly views.
-
-#### UC-15 – Color-Coded Day Indicators
-
-Actor: User (passive — displayed automatically)
-
-Description: The user sees the workload level of a day using colors and messages.
-
-Color rules:
-- 0 hours → White
-- Less than 3 hours → Green
-- Less than 5 hours → Yellow
-- Less than 8 hours → Red
-- 8 hours or more → Black
-
-The system calculates total estimated time and displays the corresponding message. The same colors appear in weekly and monthly views.
+2. The total is displayed as hours and minutes.
 
 ### 3.7 Views
 
@@ -342,17 +259,6 @@ Description: The user sees tasks displayed in different time-based views.
 2. The system displays the current or selected month.
 3. Each day shows its workload color.
 4. The user can click a day to view or add tasks.
-
-#### UC-20 – View Day Details
-
-Actor: User
-
-Description: The user clicks on a specific day in the calendar to view its tasks and workload details.
-
-Main Flow:
-1. The user clicks a day in the monthly calendar.
-2. The system navigates to the daily view for that date.
-3. All tasks for that day are displayed with the total workload and color indicator.
 
 ### 3.8 Overdue and Notifications
 
@@ -425,66 +331,17 @@ Main Flow:
 
 ### 3.11 Plan Tracking
 
-#### UC-21 – View Plan and Its Tasks
+#### UC-21 – Plan Progress & Tracking
 
 Actor: Logged-in user
 
-Description: The user views a specific plan and all tasks assigned to it.
+Description: The user views a plan's tasks, sees its completion progress, and tracks progress as tasks are marked done.
 
 Main Flow:
 1. The user navigates to the Plans page.
-2. Clicks on a plan or selects View.
-3. The system shows plan details (name, description, date range, progress).
-4. Below the details, all tasks assigned to the plan are displayed.
-5. The user can create, edit, delete, or mark tasks as Done or Not Done from this view.
-6. The system calculates and displays plan progress as a percentage (completed tasks / total tasks).
-
-#### UC-22 – Plan Progress
-
-Actor: Logged-in user
-
-Description: The user sees the progress of a plan based on task completion.
-
-Main Flow:
-1. When viewing a plan or plan list, the system calculates the progress percentage.
-2. Progress = (completed tasks / total tasks) × 100.
-3. The progress is displayed as a percentage or progress bar.
-
-#### UC-23 – Plan Progress Tracking
-
-Actor: Logged-in user
-
-Description: The user sees real-time plan progress updates as tasks are marked done.
-
-Main Flow:
-1. When a task in a plan is marked as done or not done, the plan progress is recalculated immediately.
-2. The updated progress is reflected in the UI without a page reload.
-
-### 3.12 Recurring Tasks
-
-#### UC-26 – Recurring / Multi-Day Tasks
-
-Actor: Logged-in user
-
-Description: The user assigns a task to multiple selected days.
-
-Main Flow:
-1. In the task creation form, the user selects multiple days (e.g., specific weekdays or multiple dates).
-2. The system creates separate independent tasks for each selected date.
-3. Each task is an independent record — no recurrence pattern entity is needed for MVP.
-
-Note: For the MVP, Option 1 (simple model) is used. No recurrence pattern field is included in the domain model; recurrence is handled by creating duplicate tasks.
-
-### 3.13 Soft Delete Behavior
-
-#### UC-27 – Soft Delete and Admin Management
-
-Description: Soft deletion is only used for User accounts. Categories, tasks, and plans are hard-deleted.
-
-Rules:
-- Deleting a plan is blocked if it still has tasks assigned (restrict on delete).
-- If a category is deleted, tasks referencing it are prevented from deletion unless they are reassigned first.
-- The Admin role handles user account cleanup in future versions.
+2. The system shows plans with their task count and progress percentage (completed tasks / total tasks × 100).
+3. The user can view all tasks assigned to a plan.
+4. When a task in a plan is marked as done or not done, the plan progress is recalculated and updated.
 
 ## 4. Conceptual Domain Model
 

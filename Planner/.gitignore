@@ -17,6 +17,7 @@ opencode.json
 /.zed
 #/.ai
 /.agents
+mine/
 /auth.json
 /node_modules
 /public/build

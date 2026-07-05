@@ -2,7 +2,7 @@
 
 ## 0.1 – Product Vision
 
-A daily and weekly task management system designed to replace tracking tasks in Telegram. It enables users to categorize tasks, organize them into plans or projects, assign them to specific calendar days, control daily workload, view completed and incomplete tasks across different days, and generate performance reports over selected time periods.
+A task management system designed to make planning easier. It enables users to categorize tasks, organize them into plans or projects, assign them to specific days, control daily workload, view completed and incomplete tasks across different days, and generate performance reports over selected time periods.
 
 ## 0.2 – User Roles
 
@@ -43,12 +43,7 @@ In the first version, the system must include at least the following features:
 ### Daily Workload Calculation
 
 - Calculate the total estimated time of tasks per day
-- Display the day's status using color indicators based on workload:
-  - 0 hours
-  - Less than 3 hours
-  - Less than 5 hours
-  - Less than 8 hours
-  - 8 hours or more
+- Display the day's status using color indicators based on workload
 - Display appropriate warnings when the daily workload exceeds defined thresholds
 
 ### Task Views
@@ -84,12 +79,6 @@ In the first version, the system must include at least the following features:
 
 - Display upcoming tasks on the main dashboard (or in a separate list)
 - Future enhancement: email notifications and other notification methods
-
-### Task Operations
-
-- Add
-- Edit
-- Delete
 
 ### Soft Delete
 

@@ -247,7 +247,7 @@ These service areas are defined as a map of responsibilities. They will be flesh
 | **Task** | Task CRUD, toggle done, workload recalculation trigger |
 | **Category** | Category CRUD, delete protection check |
 | **Plan** | Plan CRUD, progress calculation |
-| **Workload** | Daily total calculation, color/message mapping |
+| **Workload** | Daily total calculation |
 | **Overdue** | Query tasks past their date and not done |
 | **Upcoming** | Query tasks within their notification window |
 | **Report** | Aggregate performance data over a date range |

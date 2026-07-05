@@ -193,106 +193,49 @@ The phase is complete when:
 
 **Acceptance Result:** UC-03 is accepted. Authenticated users can create categories (with duplicate detection and rate limiting), rename categories inline (with duplicate detection and rate limiting), delete categories (blocked if tasks exist), view task counts per category, navigate paginated results, and the use case is covered by 33 passing tests (14 Livewire + 6 create action + 7 edit action + 4 delete action + 2 access).
 
-### UC-04 – Create Plan
+### UC-04 – Manage Plans
 
 **Status:** Completed
 
-**Goal:** Allow an authenticated user to create a plan with a name, optional description, and a required date range (start/end), then see it appear in their plan list.
+**Goal:** Allow an authenticated user to create, edit, and delete plans. Creating a plan requires a name, optional description, and a required date range (start/end). Editing allows modifying name, description, or date range from a modal. Deletion is blocked when the plan still has tasks assigned.
 
 **Routes:**
 - `GET /plan-page` → Livewire page `pages::plan-page`, auth-only route.
 
 **Implementation Files:**
 - `routes/web.php` — defines the authenticated plan-page route.
-- `resources/views/pages/⚡plan-page/plan-page.php` — Livewire page state; `addPlan()` validates `plan_name` (required, max:255), `description` (nullable, max:5000), and `range.start`/`range.end` (required, date format, after) via `$this->validate()`, calls `CreatePlanAction`, handles `AlreadyExists`/`RateLimited` with inline errors, resets form on success, busts cache via `unset($this->plans)`.
-- `resources/views/pages/⚡plan-page/plan-page.blade.php` — plan creation form with `wire:model` for name, description, and date picker (range mode); plan list with `withCount('tasks')` showing task count per plan; delete and edit buttons per plan; empty state when no plans exist.
-- `app/Actions/Plan/CreatePlanAction.php` — create plan business action; authorization through `abort_unless($user->can('create', Plan::class), 403)`, rate limiting (5 attempts/minute per user+IP) checked before the duplicate-name DB query, checks user-scoped name uniqueness via `$user->plans()->where('name', $name)->exists()`, creates the plan, logs info on success and warning on failures, returns `Created`, `AlreadyExists`, or `RateLimited`.
-- `app/Policies/PlanPolicy.php` — policy with `create` (always true), `update` (ownership), `delete` (ownership) methods. Enforced in Action classes.
+- `resources/views/pages/⚡plan-page/plan-page.php` — Livewire page state; `addPlan()` validates fields and calls `CreatePlanAction`; `startEditing()` queries the plan, `updatePlan()` calls `EditPlanAction`; `deletePlan()` calls `DeletePlanAction`. All three handle result enums with inline errors and bust cache via `unset($this->plans)`.
+- `resources/views/pages/⚡plan-page/plan-page.blade.php` — creation form, edit modal (Alpine `$dispatch('open-modal')` + `$wire.startEditing()`), delete buttons, plan list with `withCount('tasks')`, empty state.
+- `app/Actions/Plan/CreatePlanAction.php` — create action; authorization via `$user->can('create', Plan::class)`, rate limiting (5/min) before duplicate-name check, user-scoped uniqueness, returns `Created`, `AlreadyExists`, or `RateLimited`.
+- `app/Actions/Plan/EditPlanAction.php` — edit action; authorization via `$user->can('update', $plan)`, rate limiting (5/min), uniqueness excluding self, returns `Updated`, `AlreadyExists`, or `RateLimited`.
+- `app/Actions/Plan/DeletePlanAction.php` — delete action; authorization via `$user->can('delete', $plan)`, checks `$plan->tasks()->count()` before deletion, returns `Deleted` or `HasTasks`.
+- `app/Policies/PlanPolicy.php` — policy with `create`, `update`, `delete` ownership checks. Enforced in Action classes.
 - `app/Enums/CreatePlanResult.php` — result enum (`Created`, `AlreadyExists`, `RateLimited`).
-
-**Testing Files:**
-- `tests/Feature/Actions/Plan/CreatePlanActionTest.php` — 6 action tests covering: successful creation, duplicate detection per user, cross-user same-name tolerance, rate limiting, time-travel retry, and logging for all outcomes.
-- `resources/views/pages/⚡plan-page/plan-page.test.php` — 18 co-located Livewire tests covering: page rendering with plans, empty state, successful create, duplicate name error, required name validation, max-length name validation, rate-limited create, startEditing field population, cancelEditing field reset, successful edit, duplicate name on edit, required edit name, max-length edit name, rate-limited edit, successful delete, delete-with-tasks prevention, multiple plans display, and task count display.
-- `tests/Feature/Auth/PlanPageAccessTest.php` — 2 access tests covering: guest redirect to login and authenticated page access.
-
-**Security and Reliability Notes:**
-- Plan access is protected by the `auth` middleware.
-- Ownership is verified at two independent layers: (1) relationship-scoped `$user->plans()->findOrFail()` in the Action (throws `ModelNotFoundException` if the plan belongs to another user), (2) `PlanPolicy` enforced via `$user->can()` in each Action as defense-in-depth.
-- Plan name uniqueness is scoped per user (checked inside the Action).
-- Create and edit actions are rate-limited (5 attempts per minute per user+IP) with distinct keys (`create-plan:`, `edit-plan:`). The rate limiter is checked before the duplicate-name DB query — preventing unnecessary database hits while rate-limited. All rate-limit hits and failures are logged. Delete is not rate-limited (infrequent, destructive action).
-- The `#[Locked]` attribute on `$userId` prevents client-side tampering.
-- Plan date range is validated with `date_format:Y-m-d` and `after:range.start` rules.
-- Inline errors are shown via `$this->addError()` and displayed with `<x-ui.error>` components.
-- Blade output remains escaped; no raw user-controlled HTML is rendered.
-
-**Acceptance Result:** UC-04 is accepted. Authenticated users can create plans with a name, description, and date range. Duplicate names per user are rejected, rate limiting prevents abuse, and the use case is covered by 26 passing tests (6 action + 18 Livewire + 2 access).
-
-### UC-05 – Edit Plan
-
-**Status:** Completed
-
-**Goal:** Allow an authenticated user to edit a plan's name, description, or date range from a modal form, with duplicate-name detection and rate limiting.
-
-**Routes:**
-- `GET /plan-page` → Livewire page `pages::plan-page`, auth-only route (same page as UC-04).
-
-**Implementation Files:**
-- `resources/views/pages/⚡plan-page/plan-page.php` — Livewire page state; `startEditing()` queries the plan via `$user->plans()->findOrFail()` and loads data into edit-scoped properties (`editingPlanId`, `editName`, `editDescription`, `editRange`), `cancelEditing()` resets all edit-scoped properties to defaults, `updatePlan()` validates edit fields (same rules as create), calls `EditPlanAction`, handles `RateLimited`/`AlreadyExists` with inline errors, dispatches `close-modal` on success, calls `cancelEditing()`, and refreshes the plan list.
-- `resources/views/pages/⚡plan-page/plan-page.blade.php` — edit modal triggered by Alpine `$dispatch('open-modal', { id: 'edit-plan-modal' })` instantly followed by `$wire.startEditing(plan.id)` for async population; form with `wire:model` for edit name, description, and date range; Cancel button calling `$data.close(); $wire.cancelEditing()`; Save button submitting `updatePlan` with `wire:target` for loading state; error display via `<x-ui.error>` components for `editName`, `editRange.end`, and `edit_form`.
-- `app/Actions/Plan/EditPlanAction.php` — edit plan business action; authorization through `abort_unless($user->can('update', $plan), 403)`, rate limiting (5 attempts/minute per user+IP) checked before the duplicate-name DB query, checks uniqueness excluding the current plan, updates name, description, and date range, logs info on success and warning on failures, returns `Updated`, `AlreadyExists`, or `RateLimited`.
-- `app/Policies/PlanPolicy.php` — policy with `update` ownership check. Enforced in Action class.
 - `app/Enums/EditPlanResult.php` — result enum (`Updated`, `AlreadyExists`, `RateLimited`).
-
-**Testing Files:**
-- `tests/Feature/Actions/Plan/EditPlanActionTest.php` — 7 action tests covering: successful update (name, description, dates), duplicate detection, keeping the same name, cross-user ownership blocked via `ModelNotFoundException` from `$user->plans()->findOrFail()`, rate limiting, time-travel retry, and logging for all outcomes.
-- `resources/views/pages/⚡plan-page/plan-page.test.php` — 18 co-located Livewire tests covering (edit portions): startEditing population, cancelEditing reset, successful name, description, and date update, duplicate name error, required name validation, max-length name validation, rate-limited update. Delete and create tests also cover the same component.
-- `tests/Feature/Auth/PlanPageAccessTest.php` — 2 access tests covering: guest redirect to login and authenticated page access.
-
-**Security and Reliability Notes:**
-- Plan access is protected by the `auth` middleware.
-- Ownership is verified at two independent layers: (1) relationship-scoped `$user->plans()->findOrFail()` in the Action (throws `ModelNotFoundException` if the plan belongs to another user), (2) `PlanPolicy` enforced via `$user->can()` in each Action as defense-in-depth.
-- Plan name uniqueness is scoped per user and excludes the current plan's name (checked inside the Action).
-- Edit action is rate-limited (5 attempts per minute per user+IP) with key `edit-plan:`. The rate limiter is checked before the duplicate-name DB query — preventing unnecessary database hits while rate-limited. All rate-limit hits and failures are logged.
-- The `#[Locked]` attribute on `$userId` prevents client-side tampering.
-- Edit modal opens instantly (UX-first) with a brief empty state, then `$wire.startEditing()` populates fields asynchronously — no loading spinner needed for typical response times.
-- The edit modal is closed on successful save via `$this->dispatch('close-modal', ...)` before `cancelEditing()` resets state. The Cancel button calls `$data.close(); $wire.cancelEditing()` — Alpine closes first, then Livewire resets after, preventing visual flicker.
-- Inline errors are shown via `$this->addError()` and displayed with `<x-ui.error>` components.
-- Blade output remains escaped; no raw user-controlled HTML is rendered.
-
-**Acceptance Result:** UC-05 is accepted. Authenticated users can edit plans from a modal with immediate visual feedback, duplicate names per user are rejected, rate limiting prevents abuse, and the use case is covered by 27 passing tests (7 action + 18 Livewire + 2 access).
-
-### UC-06 – Delete Plan
-
-**Status:** Completed
-
-**Goal:** Allow an authenticated user to delete a plan. Deletion is blocked if the plan still has tasks assigned (restrict on delete).
-
-**Routes:**
-- `GET /plan-page` → Livewire page `pages::plan-page`, auth-only route (same page as UC-04).
-
-**Implementation Files:**
-- `resources/views/pages/⚡plan-page/plan-page.php` — Livewire page state; `deletePlan()` calls `DeletePlanAction`, handles `HasTasks` result by showing an inline error via `$this->addError('plan_form', ...)`, refreshes plan list on success via `unset($this->plans)`.
-- `resources/views/pages/⚡plan-page/plan-page.blade.php` — delete button with `wire:click="deletePlan(plan.id)"` per plan in the list; form-level `<x-ui.error name="plan_form" />` for the has-tasks message.
-- `app/Actions/Plan/DeletePlanAction.php` — delete plan business action; authorization through `abort_unless($user->can('delete', $plan), 403)`, checks for assigned tasks via a single `$plan->tasks()->count()` query before deletion (avoids N+1), logs warning with task count if blocked, logs info on success, returns `Deleted` or `HasTasks`.
-- `app/Policies/PlanPolicy.php` — policy with `delete` ownership check. Enforced in Action class.
 - `app/Enums/DeletePlanResult.php` — result enum (`Deleted`, `HasTasks`).
-- `database/migrations/2026_06_14_152651_create_tasks_table.php` — `plan_id` foreign key uses `restrictOnDelete` to enforce the DB-level guard against deleting plans with tasks.
+- `database/migrations/...create_plans_table.php` — creates `plans` table with unique name per user.
+- `database/migrations/...create_tasks_table.php` — `plan_id` foreign key uses `restrictOnDelete`.
 
 **Testing Files:**
-- `tests/Feature/Actions/Plan/DeletePlanActionTest.php` — 4 action tests covering: successful deletion, cross-user ownership blocked via `ModelNotFoundException`, has-tasks prevention, and logging for all outcomes.
-- `resources/views/pages/⚡plan-page/plan-page.test.php` — 18 co-located Livewire tests covering (delete portions): successful delete, delete-with-tasks prevention (HasTasks error), showing all plans, task count display. Create and edit tests also cover the same component.
-- `tests/Feature/Auth/PlanPageAccessTest.php` — 2 access tests covering: guest redirect to login and authenticated page access.
+- `tests/Feature/Actions/Plan/CreatePlanActionTest.php` — 6 action tests: creation, duplicate, cross-user, rate limiting, retry, logging.
+- `tests/Feature/Actions/Plan/EditPlanActionTest.php` — 7 action tests: update, duplicate, same-name, ownership, rate limiting, retry, logging.
+- `tests/Feature/Actions/Plan/DeletePlanActionTest.php` — 4 action tests: deletion, ownership, has-tasks prevention, logging.
+- `resources/views/pages/⚡plan-page/plan-page.test.php` — 18 co-located Livewire tests covering all CRUD operations with validation, errors, and rate limiting.
+- `tests/Feature/Auth/PlanPageAccessTest.php` — 2 access tests for guest redirect and authenticated access.
 
 **Security and Reliability Notes:**
 - Plan access is protected by the `auth` middleware.
-- Ownership is verified at two independent layers: (1) relationship-scoped `$user->plans()->findOrFail()` in the Action (throws `ModelNotFoundException` if the plan belongs to another user), (2) `PlanPolicy` enforced via `$user->can()` in each Action as defense-in-depth.
-- Deleting a plan with tasks is blocked by a server-side `count()` check before the database call, avoiding an unhandled `QueryException` from the `restrictOnDelete` constraint.
-- Delete is not rate-limited (infrequent, destructive action).
+- Ownership is verified at two independent layers: (1) relationship-scoped `$user->plans()->findOrFail()` in each Action, (2) `PlanPolicy` enforced via `$user->can()` in each Action as defense-in-depth.
+- Plan name uniqueness is scoped per user.
+- Create and edit actions are rate-limited (5 attempts/minute per user+IP) with distinct keys (`create-plan:`, `edit-plan:`). The rate limiter is checked before the duplicate-name DB query. Delete is not rate-limited.
+- Deleting a plan with tasks is blocked by a server-side `count()` check before the database call.
+- Plan date range is validated with `date_format:Y-m-d` and `after:range.start` rules.
+- Edit modal opens instantly (UX-first), populates via `$wire.startEditing()`, closes on success via `$this->dispatch('close-modal')`.
 - The `#[Locked]` attribute on `$userId` prevents client-side tampering.
-- Inline errors are shown via `$this->addError()` and displayed with `<x-ui.error>` components.
-- Blade output remains escaped; no raw user-controlled HTML is rendered.
+- Inline errors via `$this->addError()` and `<x-ui.error>` components.
+- Blade output remains escaped.
 
-**Acceptance Result:** UC-06 is accepted. Authenticated users can delete plans, deletion is blocked when tasks are still assigned (with a clear error message), and the use case is covered by 24 passing tests (4 action + 18 Livewire + 2 access).
+**Acceptance Result:** UC-04 is accepted. Authenticated users can create plans (with duplicate detection and rate limiting), edit plans from a modal (with duplicate detection and rate limiting), and delete plans (blocked if tasks exist). The use case is covered by 37 passing tests (6 create + 7 edit + 4 delete action + 18 Livewire + 2 access).
 
 ### UC-07 – View and Edit Profile
 
@@ -385,108 +328,48 @@ The phase is complete when:
 
 **Acceptance Result:** UC-09 is accepted. Authenticated users can delete their account with password confirmation, wrong passwords are rejected with a clear error, brute-force attempts are rate-limited, the account is properly obfuscated and soft-deleted, and the use case is covered by passing tests.
 
-### UC-10 – Create Task
+### UC-10 – Manage Tasks
 
 **Status:** Completed
 
-**Goal:** Allow an authenticated user to create a task with a title, optional description, task date, estimated minutes, alarm days, priority (low/medium/high), a required category, and an optional plan assignment, then see it appear in their task list.
+**Goal:** Allow an authenticated user to create, edit, and delete tasks. Creating a task requires a title, optional description, task date, estimated minutes, alarm days, priority, a required category, and an optional plan. Editing allows modifying all fields from a modal. Deletion removes the task with a single click.
 
 **Routes:**
 - `GET /task-page` → Livewire page `pages::task-page`, auth-only route.
 
 **Implementation Files:**
 - `routes/web.php` — defines the authenticated task-page route.
-- `resources/views/pages/⚡task-page/task-page.php` — Livewire page state; `addTask()` validates all fields inline via `$this->validate()` (`task_title` required string max:255, `task_description` nullable max:5000, `task_date` required date_format:Y-m-d, `task_estimated_minutes` required integer min:1 max:1440, `task_alarm_days` required integer min:0 max:365, `task_priority` required in:low,medium,high, `task_category_id` required integer, `task_plan_id` nullable integer), converts priority string to `TaskPriority` enum, calls `CreateTaskAction`, handles `RateLimited`/`InvalidCategory`/`InvalidPlan` with inline errors, resets form fields and defaults on success, busts cache via `unset($this->tasks)`.
-- `resources/views/pages/⚡task-page/task-page.blade.php` — create form with `wire:model` for title, description, date picker (single mode), estimated minutes (number input), alarm days (number input), priority select (low/medium/high), category select (populated from `$this->categories` computed property), plan select (populated from `$this->plans` computed property); form-level `<x-ui.error name="task_form" />` for rate limit errors; field-level errors for each input.
-- `app/Actions/Task/CreateTaskAction.php` — create task business action; authorization through `abort_unless($user->can('create', Task::class), 403)`, rate limiting (5 attempts/minute per user+IP) checked before category/plan existence queries, validates category ownership via `$user->categories()->whereKey($categoryId)->exists()`, validates plan ownership via `$user->plans()->whereKey($planId)->exists()` (only when `$planId` is not null), hits the rate limiter on each attempt, creates the task with all provided fields, logs info on success and warning on failures, returns `Created`, `RateLimited`, `InvalidCategory`, or `InvalidPlan`.
-- `app/Policies/TaskPolicy.php` — policy with `create` (always true), `update` (ownership), `delete` (ownership) methods. Enforced in Action classes.
+- `resources/views/pages/⚡task-page/task-page.php` — Livewire page state; `addTask()` validates all fields and calls `CreateTaskAction`; `startEditing()` queries the task, `updateTask()` calls `EditTaskAction`; `deleteTask()` calls `DeleteTaskAction`. All handle result enums with inline errors and bust cache via `unset($this->tasks)`.
+- `resources/views/pages/⚡task-page/task-page.blade.php` — create form (title, description, date picker, estimated minutes, alarm days, priority select, category select, plan select); edit modal triggered by Alpine `$dispatch('open-modal')` + `$wire.startEditing()`; delete buttons per task.
+- `app/Actions/Task/CreateTaskAction.php` — create action; authorization via `$user->can('create', Task::class)`, rate limiting (5/min) before category/plan existence queries, validates category/plan ownership, returns `Created`, `RateLimited`, `InvalidCategory`, or `InvalidPlan`.
+- `app/Actions/Task/EditTaskAction.php` — edit action; authorization via `$user->can('update', $task)`, rate limiting (5/min), validates category/plan ownership, returns `Updated`, `RateLimited`, `InvalidCategory`, or `InvalidPlan`.
+- `app/Actions/Task/DeleteTaskAction.php` — delete action; authorization via `$user->can('delete', $task)`, returns `Deleted`.
+- `app/Policies/TaskPolicy.php` — policy with `create`, `update`, `delete` ownership checks. Enforced in Action classes.
 - `app/Enums/CreateTaskResult.php` — result enum (`Created`, `RateLimited`, `InvalidCategory`, `InvalidPlan`).
-- `database/migrations/2026_06_14_152651_create_tasks_table.php` — creates `tasks` table with `foreignId('category_id')` using `restrictOnDelete`, `foreignId('plan_id')` nullable using `restrictOnDelete`, and `foreignId('user_id')` using `cascadeOnDelete`.
-
-**Testing Files:**
-- `tests/Feature/Actions/Task/CreateTaskActionTest.php` — 10 action tests covering: successful creation, creation with all optional fields (description, plan), rate limiting, time-travel retry after one minute, missing category ID, other-user category, missing plan ID, other-user plan, and logging for all outcomes.
-- `resources/views/pages/⚡task-page/task-page.test.php` — 25 co-located Livewire tests covering (create portions): page rendering with tasks, empty state, successful create, create with plan assigned, title required, title max length, date format validation, estimated minutes min/max, alarm days min/max, priority enum validation, category required, rate-limited create, invalid category error, invalid plan error.
-- `tests/Feature/Auth/TaskPageAccessTest.php` — 2 access tests covering: guest redirect to login and authenticated page access.
-
-**Security and Reliability Notes:**
-- Task access is protected by the `auth` middleware.
-- Ownership is verified at two independent layers: (1) relationship-scoped `$user->categories()->whereKey()->exists()` and `$user->plans()->whereKey()->exists()` for category/plan validity, (2) `TaskPolicy` enforced via `$user->can()` in the Action.
-- Category and plan existence is scoped to the authenticated user — a category or plan belonging to another user is treated as invalid, not leaking existence information.
-- Rate limiting (5 attempts per minute per user+IP) with key `create-task:` is checked before the category/plan existence DB queries — preventing unnecessary database hits while rate-limited. The rate limiter is hit on every attempt. All rate-limit hits and failures are logged.
-- Task field validation covers all inputs: title (required, max:255), description (nullable, max:5000), date (required, `date_format:Y-m-d`), estimated minutes (required, integer, min:1, max:1440 — covers 0 to 24 hours), alarm days (required, integer, min:0, max:365), priority (required, in:low,medium,high), category (required, integer), plan (nullable, integer). Format and bounds are validated in the Livewire component before the Action is called.
-- The `#[Locked]` attribute on `$userId` prevents client-side tampering.
-- Database foreign key constraints (`restrictOnDelete` on `category_id` and `plan_id`) ensure referential integrity at the DB level.
-- Inline errors are shown via `$this->addError()` and displayed with `<x-ui.error>` components.
-- Blade output remains escaped; no raw user-controlled HTML is rendered.
-
-**Acceptance Result:** UC-10 is accepted. Authenticated users can create tasks with all required and optional fields, invalid category/plan selections show clear errors, rate limiting prevents abuse, and the use case is covered by 28 passing tests (10 action + 16 Livewire + 2 access).
-
-### UC-11 – Edit Task
-
-**Status:** Completed
-
-**Goal:** Allow an authenticated user to edit a task's title, description, date, estimated minutes, alarm days, priority, category, and plan assignment from a modal form, with the same validation as creation plus category/plan validity checks.
-
-**Routes:**
-- `GET /task-page` → Livewire page `pages::task-page`, auth-only route (same page as UC-10).
-
-**Implementation Files:**
-- `resources/views/pages/⚡task-page/task-page.php` — Livewire page state; `startEditing()` queries the task via `$user->tasks()->findOrFail()` and loads all fields into edit-scoped properties (`editingTaskId`, `editTitle`, `editDescription`, `editDate`, `editEstimatedMinutes`, `editAlarmDays`, `editPriority`, `editCategoryId`, `editPlanId`), `cancelEditing()` resets all edit-scoped properties to defaults, `updateTask()` validates edit fields (same rules as create — `editTitle` required max:255, `editDescription` nullable max:5000, `editDate` required date_format:Y-m-d, `editEstimatedMinutes` required integer min:1 max:1440, `editAlarmDays` required integer min:0 max:365, `editPriority` required in:low,medium,high, `editCategoryId` required integer, `editPlanId` nullable integer), converts priority to `TaskPriority` enum, calls `EditTaskAction`, handles `RateLimited`/`InvalidCategory`/`InvalidPlan` with inline errors, dispatches `close-modal` on success, calls `cancelEditing()`, and refreshes the task list.
-- `resources/views/pages/⚡task-page/task-page.blade.php` — edit modal triggered by Alpine `$dispatch('open-modal', { id: 'edit-task-modal' })` instantly followed by `$wire.startEditing(task.id)` for async population; form with `wire:model` for all edit fields matching the add form layout (title, description, date picker, estimated minutes, alarm days, priority select, category select, plan select); Cancel button calling `$data.close(); $wire.cancelEditing()`; Save button submitting `updateTask` with `wire:target` for loading state; error display via `<x-ui.error>` for each field and form-level `edit_form`.
-- `app/Actions/Task/EditTaskAction.php` — edit task business action; retrieves the task via `$user->tasks()->findOrFail()` for ownership scoping, authorization through `abort_unless($user->can('update', $task), 403)`, rate limiting (5 attempts/minute per user+IP) checked before category/plan existence queries, validates category ownership via `$user->categories()->whereKey($categoryId)->exists()`, validates plan ownership when provided, hits the rate limiter on every attempt, updates the task with all fields, logs info on success and warning on failures, returns `Updated`, `RateLimited`, `InvalidCategory`, or `InvalidPlan`.
-- `app/Policies/TaskPolicy.php` — policy with `update` ownership check. Enforced in Action class.
 - `app/Enums/EditTaskResult.php` — result enum (`Updated`, `RateLimited`, `InvalidCategory`, `InvalidPlan`).
-
-**Testing Files:**
-- `tests/Feature/Actions/Task/EditTaskActionTest.php` — 10 action tests covering: successful update (all fields), update with plan assignment, cross-user ownership blocked via `ModelNotFoundException` from `$user->tasks()->findOrFail()`, rate limiting, time-travel retry after one minute, invalid category (missing), invalid plan (missing), and logging for all outcomes.
-- `resources/views/pages/⚡task-page/task-page.test.php` — 25 co-located Livewire tests covering (edit portions): startEditing field population, cancelEditing field reset, successful title, date, and priority update, required edit title validation, rate-limited update, invalid category error on edit, invalid plan error on edit. Create and delete tests also cover the same component.
-- `tests/Feature/Auth/TaskPageAccessTest.php` — 2 access tests covering: guest redirect to login and authenticated page access.
-
-**Security and Reliability Notes:**
-- Task access is protected by the `auth` middleware.
-- Ownership is verified at two independent layers: (1) relationship-scoped `$user->tasks()->findOrFail()` in the Action (throws `ModelNotFoundException` if the task belongs to another user), (2) `TaskPolicy` enforced via `$user->can()` in each Action as defense-in-depth.
-- Category and plan existence is scoped to the authenticated user — a category or plan belonging to another user is treated as invalid, not leaking existence information.
-- Rate limiting (5 attempts per minute per user+IP) with key `edit-task:` is checked before the category/plan existence DB queries — preventing unnecessary database hits while rate-limited. The rate limiter is hit on every attempt. All rate-limit hits and failures are logged.
-- Edit validation matches create validation exactly: title (required, max:255), description (nullable, max:5000), date (required, `date_format:Y-m-d`), estimated minutes (required, integer, min:1, max:1440), alarm days (required, integer, min:0, max:365), priority (required, in:low,medium,high), category (required, integer), plan (nullable, integer).
-- The `#[Locked]` attribute on `$userId` prevents client-side tampering.
-- Edit modal opens instantly (UX-first) with empty fields, then `$wire.startEditing()` populates fields asynchronously — no loading spinner needed for typical response times.
-- The edit modal is closed on successful save via `$this->dispatch('close-modal', ...)` before `cancelEditing()` resets state. The Cancel button calls `$data.close(); $wire.cancelEditing()` — Alpine closes first, then Livewire resets after, preventing visual flicker.
-- Inline errors are shown via `$this->addError()` and displayed with `<x-ui.error>` components.
-- Blade output remains escaped; no raw user-controlled HTML is rendered.
-
-**Acceptance Result:** UC-11 is accepted. Authenticated users can edit all task fields from a modal with immediate visual feedback, invalid category/plan selections show clear errors, rate limiting prevents abuse, and the use case is covered by 19 passing tests (10 action + 7 Livewire + 2 access).
-
-### UC-12 – Delete Task
-
-**Status:** Completed
-
-**Goal:** Allow an authenticated user to delete a task with a single click, removing it from their task list.
-
-**Routes:**
-- `GET /task-page` → Livewire page `pages::task-page`, auth-only route (same page as UC-10).
-
-**Implementation Files:**
-- `resources/views/pages/⚡task-page/task-page.php` — Livewire page state; `deleteTask()` calls `DeleteTaskAction` directly (no result handling needed since the action only returns `Deleted` on success or throws `ModelNotFoundException` on ownership failure), refreshes task list via `unset($this->tasks)`.
-- `resources/views/pages/⚡task-page/task-page.blade.php` — delete button with `wire:click="deleteTask(task.id)"` per task in the list.
-- `app/Actions/Task/DeleteTaskAction.php` — delete task business action; retrieves the task via `$user->tasks()->findOrFail()` for ownership scoping (throws `ModelNotFoundException` if the task belongs to another user), authorization through `abort_unless($user->can('delete', $task), 403)`, deletes the task, logs info on success, returns `Deleted`.
-- `app/Policies/TaskPolicy.php` — policy with `delete` ownership check. Enforced in Action class.
 - `app/Enums/DeleteTaskResult.php` — result enum (`Deleted`).
+- `database/migrations/...create_tasks_table.php` — creates `tasks` table with foreign keys.
 
 **Testing Files:**
-- `tests/Feature/Actions/Task/DeleteTaskActionTest.php` — 3 action tests covering: successful deletion, cross-user ownership blocked via `ModelNotFoundException`, and logging for successful deletion.
-- `resources/views/pages/⚡task-page/task-page.test.php` — 25 co-located Livewire tests covering (delete portions): successful task deletion, showing all tasks on the page. Create and edit tests also cover the same component.
-- `tests/Feature/Auth/TaskPageAccessTest.php` — 2 access tests covering: guest redirect to login and authenticated page access.
+- `tests/Feature/Actions/Task/CreateTaskActionTest.php` — 10 action tests: creation, optional fields, rate limiting, retry, missing/other-user category/plan, logging.
+- `tests/Feature/Actions/Task/EditTaskActionTest.php` — 10 action tests: update all fields, plan assignment, ownership, rate limiting, retry, invalid category/plan, logging.
+- `tests/Feature/Actions/Task/DeleteTaskActionTest.php` — 3 action tests: deletion, ownership, logging.
+- `resources/views/pages/⚡task-page/task-page.test.php` — 25 co-located Livewire tests covering all CRUD operations with validation, errors, and rate limiting.
+- `tests/Feature/Auth/TaskPageAccessTest.php` — 2 access tests for guest redirect and authenticated access.
 
 **Security and Reliability Notes:**
 - Task access is protected by the `auth` middleware.
-- Ownership is verified at two independent layers: (1) relationship-scoped `$user->tasks()->findOrFail()` in the Action (throws `ModelNotFoundException` if the task belongs to another user), (2) `TaskPolicy` enforced via `$user->can()` in each Action as defense-in-depth.
-- Delete is not rate-limited (infrequent, destructive action).
-- Tasks are leaf entities with no dependent records — no cascade or restrict checks are needed.
-- Database foreign key constraints (`restrictOnDelete` on `category_id` and `plan_id`) ensure that deleting a task does not affect its category or plan.
+- Ownership is verified at two independent layers: (1) relationship-scoped `$user->tasks()->findOrFail()` in each Action, (2) `TaskPolicy` enforced via `$user->can()` in each Action as defense-in-depth.
+- Category and plan existence is scoped to the authenticated user — a category or plan belonging to another user is treated as invalid.
+- Create and edit actions are rate-limited (5 attempts/minute per user+IP) with distinct keys (`create-task:`, `edit-task:`). The rate limiter is checked before category/plan DB queries. Delete is not rate-limited.
+- Task field validation covers all inputs: title (required, max:255), description (nullable, max:5000), date (required, `date_format:Y-m-d`), estimated minutes (required, integer, min:1, max:1440), alarm days (required, integer, min:0, max:365), priority (required, in:low,medium,high), category (required, integer), plan (nullable, integer).
+- Edit modal opens instantly (UX-first), populates via `$wire.startEditing()`, closes on success via `$this->dispatch('close-modal')`.
 - The `#[Locked]` attribute on `$userId` prevents client-side tampering.
-- Blade output remains escaped; no raw user-controlled HTML is rendered.
+- Database foreign key constraints (`restrictOnDelete` on `category_id` and `plan_id`) ensure referential integrity.
+- Inline errors via `$this->addError()` and `<x-ui.error>` components.
+- Blade output remains escaped.
 
-**Acceptance Result:** UC-12 is accepted. Authenticated users can delete tasks with a single click, ownership is enforced to prevent cross-user deletion, and the use case is covered by 6 passing tests (3 action + 1 Livewire + 2 access).
+**Acceptance Result:** UC-10 is accepted. Authenticated users can create tasks with all required/optional fields, edit all fields from a modal, and delete tasks with a single click. Invalid category/plan selections show clear errors, rate limiting prevents abuse, ownership is enforced. The use case is covered by 50 passing tests (10 create + 10 edit + 3 delete action + 25 Livewire + 2 access).
 
 ### UC-13 – Toggle Done
 
@@ -545,9 +428,9 @@ The phase is complete when:
 
 **Acceptance Result:** UC-19 is accepted (Layer 1 simplified). Authenticated users can filter their tasks by a custom date range using a range datepicker and Filter button. The default view shows today's tasks. The use case is covered by 6 passing tests (4 Livewire + 2 access). Full daily/weekly/monthly calendar views with workload colors are deferred to Layer 2.
 
-### UC-14 & UC-15 – Workload + Color-Coded Day Indicators
+### UC-14 – Daily Workload
 
-**Description:** Show total estimated minutes per day with a workload level and color-coded alert. Users see their day's workload at a glance with actionable guidance.
+**Description:** Show total estimated minutes per day with a workload level and alert. Users see their day's workload at a glance with actionable guidance.
 
 **Implementation:** Added a `workload` computed property to the existing task-page Livewire component (`task-page.php:94-113`). It sums `estimated_minutes` from the already-filtered `$this->tasks` collection and returns `null` when zero, or an array with `total_minutes`, `hours`, `minutes`, and `label`. The `label` drives color-coded alert banners using the app's `<x-ui.alerts>` component.
 
@@ -559,7 +442,7 @@ The phase is complete when:
 | 180–359 | Medium | Amber | Medium Day | rocket-launch |
 | 360+ | Heavy | Red | Heavy Day | bell-alert |
 
-**Single-day guard:** The alert block is wrapped in `@if($date_filter->getStart() === $date_filter->getEnd())` so workload colors only appear when viewing a single day. Multi-day range display is deferred to Layer 2.
+**Single-day guard:** The alert block is wrapped in `@if($date_filter->getStart() === $date_filter->getEnd())` so workload alerts only appear when viewing a single day. Multi-day range display is deferred to Layer 2.
 
 **Cache invalidation fix:** `unset($this->tasks, $this->workload)` is called in all 5 mutation methods (add, delete, update, toggle, filter) so workload recomputes after any change.
 
@@ -574,7 +457,7 @@ The phase is complete when:
 - No new routes, actions, or models — purely a computed aggregation on existing data, no rate limiting needed.
 - Single-day guard uses simple string comparison — no SQL or complex logic.
 
-**Acceptance Result:** UC-14 and UC-15 are accepted. Authenticated users see color-coded workload alerts (Rest/Light/Medium/Heavy) when viewing a single day. For multi-day ranges, no alerts are shown (deferred to Layer 2). The use case is covered by 12 passing tests (all Livewire).
+**Acceptance Result:** UC-14 is accepted. Authenticated users see workload alerts (Rest/Light/Medium/Heavy) when viewing a single day. For multi-day ranges, no alerts are shown (deferred to Layer 2). The use case is covered by 12 passing tests (all Livewire).
 
 ### UC-24 – Filter & Sort
 

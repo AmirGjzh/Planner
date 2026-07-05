@@ -78,12 +78,7 @@ As a user, I want the system to calculate the total estimated time of tasks for 
 
 #### Color-Coded Day Indicators
 
-As a user, I want each day in the calendar or daily view to have a status color based on total workload:
-- Total time = 0 hours → White
-- Total time < 3 hours → Green
-- Total time < 5 hours → Yellow
-- Total time < 8 hours → Red
-- Total time ≥ 8 hours → Black
+As a user, I want each day in the calendar or daily view to have a status color based on total workload
 
 In this version, thresholds are global and fixed. In future versions, they may become configurable.
 

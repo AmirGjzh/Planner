@@ -465,22 +465,22 @@ it('toggles a task from done to not done', function () {
     expect($task->fresh()->done)->toBeFalse();
 });
 
-it('shows only today\'s tasks by default', function () {
+it('shows only this week\'s tasks by default', function () {
     $user = User::factory()->create();
     $category = $user->categories()->create(['name' => 'Work']);
     $user->tasks()->create([
-        'title' => 'Yesterday task', 'task_date' => now()->subDay()->format('Y-m-d'), 'estimated_minutes' => 30,
+        'title' => 'Last week task', 'task_date' => now()->subWeek()->format('Y-m-d'), 'estimated_minutes' => 30,
         'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
     ]);
     $user->tasks()->create([
-        'title' => 'Today task', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 15,
+        'title' => 'This week task', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 15,
         'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'category_id' => $category->id,
     ]);
 
     Livewire::actingAs($user)
         ->test('pages::task-page')
-        ->assertSee('Today task')
-        ->assertDontSee('Yesterday task');
+        ->assertSee('This week task')
+        ->assertDontSee('Last week task');
 });
 
 it('applies date range filter when filter button is clicked', function () {
@@ -640,13 +640,16 @@ it('workload respects date filter', function () {
 it('renders workload on the page', function () {
     $user = User::factory()->create();
     $category = $user->categories()->create(['name' => 'Work']);
+    $today = now()->format('Y-m-d');
     $user->tasks()->create([
-        'title' => 'Workload test task', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 210,
+        'title' => 'Workload test task', 'task_date' => $today, 'estimated_minutes' => 210,
         'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
     ]);
 
     Livewire::actingAs($user)
         ->test('pages::task-page')
+        ->set('date_filter', ['start' => $today, 'end' => $today])
+        ->call('applyDateFilter')
         ->assertSee('3h 30m')
         ->assertSee('Medium');
 });
