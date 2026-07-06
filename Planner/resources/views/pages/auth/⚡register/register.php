@@ -8,17 +8,12 @@ use Livewire\Component;
 
 new #[Layout('layouts::auth')] class extends Component
 {
-    #[Validate(['required'], onUpdate: false)]
-    #[Validate('regex:/^[a-zA-Z][a-zA-Z0-9_-]{2,29}$/', message: 'Username must start with a letter and contain only letters, numbers, underscores and hyphens.', onUpdate: false)]
     public string $user_name = '';
 
-    #[Validate(['required', 'email:rfc'], onUpdate: false)]
     public string $email = '';
 
-    #[Validate(['required', 'confirmed', 'min:8'], onUpdate: false)]
     public string $password = '';
 
-    #[Validate(['required'], onUpdate: false)]
     public string $password_confirmation = '';
 
     public function register(RegisterUserAction $registerUserAction)
@@ -47,5 +42,22 @@ new #[Layout('layouts::auth')] class extends Component
         }
         $this->addError('email', 'Email already taken.');
         $this->reset('password', 'password_confirmation');
+    }
+
+    protected function rules(): array
+    {
+        return [
+            'user_name' => ['required', 'regex:/^[a-zA-Z][a-zA-Z0-9_-]{2,29}$/'],
+            'email' => ['required', 'email:rfc'],
+            'password' => ['required', 'confirmed', 'min:8'],
+            'password_confirmation' => ['required'],
+        ];
+    }
+
+    protected function messages(): array
+    {
+        return [
+
+        ];
     }
 };

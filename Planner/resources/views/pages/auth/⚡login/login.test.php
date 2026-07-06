@@ -67,7 +67,7 @@ it('rate limits after too many failed attempts', function () {
         'email' => 'amir@example.com',
         'password' => 'password',
     ]);
-    foreach (range(1, 5) as $attempt) {
+    foreach (range(1, 5) as $ignored) {
         Livewire::test('pages::auth.login')
             ->set('email', 'amir@example.com')
             ->set('password', 'wrong-password')
@@ -86,7 +86,7 @@ it('allows login again after one minute', function () {
         'email' => 'amir@example.com',
         'password' => 'password',
     ]);
-    foreach (range(1, 5) as $attempt) {
+    foreach (range(1, 5) as $ignored) {
         Livewire::test('pages::auth.login')
             ->set('email', 'amir@example.com')
             ->set('password', 'wrong-password')

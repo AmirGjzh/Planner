@@ -1,7 +1,7 @@
-<div class="min-h-dvh bg-[var(--mine-page-bg-green)] px-6 py-4 flex justify-center items-center">
-    <div class="bg-[var(--mine-card-bg)] w-full max-w-120 flex flex-col justify-center p-6 rounded-xl shadow-[0_10px_30px_rgba(16,24,40,0.1)]">
-        <h1 class="text-center font-medium text-xl text-[var(--mine-text-primary)] mb-2">Welcome back</h1>
-        <p class="text-center text-sm mb-6 text-[var(--mine-text-secondary)] font-medium">Sign in to continue to your workspace</p>
+<div class="min-h-dvh bg-(--mine-page-bg-green) px-6 py-4 flex justify-center items-center">
+    <div class="bg-(--mine-card-bg) w-full max-w-120 flex flex-col justify-center p-6 rounded-xl shadow-[0_10px_30px_rgba(16,24,40,0.1)]">
+        <h1 class="text-center font-medium text-xl text-(--mine-text-primary) mb-2">Welcome back</h1>
+        <p class="text-center text-sm mb-6 text-(--mine-text-secondary) font-medium">Sign in to continue to your workspace</p>
 
         @if($loginError === 'limited')
             <div class="mb-4">
@@ -27,8 +27,8 @@
             </div>
 
             <div class="flex justify-between mb-6">
-                <x-mine.checkbox wire:model="remember" label="Remember me"></x-mine.checkbox>
-                <a href="#" class="text-sm text-[var(--mine-text-link)] font-medium">Forgot password?</a>
+                <x-mine.checkbox wire:model="remember">Remember me</x-mine.checkbox>
+                <a href="#" class="text-sm text-(--mine-text-link) font-medium">Forgot password?</a>
             </div>
 
             <div class="mb-4">
@@ -36,13 +36,13 @@
             </div>
         </form>
 
-        <div class="mb-2 px-8">
+        <div class="mb-2 px-6">
             <x-mine.separator label="OR"></x-mine.separator>
         </div>
 
         <div class="flex justify-center">
-            <p class="text-sm text-[var(--mine-text-primary)] font-medium mr-2">Don't have an account?</p>
-            <a href="{{ route('register') }}" class="text-sm text-[var(--mine-text-link)] font-medium">Create account</a>
+            <p class="text-sm text-(--mine-text-primary) font-medium mr-2">Don't have an account?</p>
+            <a wire:navigate href="{{ route('register') }}" class="text-sm text-(--mine-text-link) font-medium">Create account</a>
         </div>
     </div>
 </div>

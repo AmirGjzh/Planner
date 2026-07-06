@@ -37,7 +37,7 @@ new #[Layout('layouts::auth')] class extends Component
         $this->loginError = 'invalid';
     }
 
-    protected function rules()
+    protected function rules(): array
     {
         return [
             'email' => ['required', 'email'],
@@ -45,7 +45,7 @@ new #[Layout('layouts::auth')] class extends Component
         ];
     }
 
-    protected function messages()
+    protected function messages(): array
     {
         return [
             'email.required' => 'The email is required.',
