@@ -13,12 +13,12 @@ new #[Layout('layouts::auth')] class extends Component
 
     public bool $remember = false;
 
-    public ?string $loginError = null;
+    public ?string $login_error = null;
 
-    public function login(LoginUserAction $loginUserAction)
+    public function login(LoginUserAction $login_user_action)
     {
         $credentials = $this->validate();
-        $result = $loginUserAction->execute(
+        $result = $login_user_action->execute(
             $credentials['email'],
             $credentials['password'],
             $this->remember,
@@ -26,15 +26,17 @@ new #[Layout('layouts::auth')] class extends Component
         );
         if ($result === LoginResult::Success) {
             // TODO: Maybe a welcome toast notification in dashboard page
-            $this->loginError = null;
+            $this->login_error = null;
+
             return $this->redirectRoute('dashboard', navigate: true);
         }
         if ($result === LoginResult::RateLimited) {
-            $this->loginError = 'limited';
+            $this->login_error = 'rate_limited';
+
             return;
         }
         $this->reset(['password']);
-        $this->loginError = 'invalid';
+        $this->login_error = 'invalid';
     }
 
     protected function rules(): array

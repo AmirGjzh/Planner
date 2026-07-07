@@ -42,7 +42,7 @@ it('shows a login error for wrong credentials', function () {
         ->set('email', 'amir@example.com')
         ->set('password', 'wrong-password')
         ->call('login')
-        ->assertSet('loginError', 'invalid')
+        ->assertSet('login_error', 'invalid')
         ->assertSet('password', '');
     $this->assertGuest();
 });
@@ -77,7 +77,7 @@ it('rate limits after too many failed attempts', function () {
         ->set('email', 'amir@example.com')
         ->set('password', 'password')
         ->call('login')
-        ->assertSet('loginError', 'limited');
+        ->assertSet('login_error', 'rate_limited');
     $this->assertGuest();
 });
 

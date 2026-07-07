@@ -48,7 +48,7 @@ Plan (0..1) ——— (0..N) Task
 | Column | Type | Constraints |
 |--------|------|-------------|
 | `id` | `bigint unsigned` | Primary key, auto-increment |
-| `user_name` | `string` | Unique, not null |
+| `username` | `string` | Unique, not null |
 | `email` | `string` | Unique, not null |
 | `password` | `string` | Not null |
 | `first_name` | `string` | Nullable |
@@ -62,7 +62,7 @@ Plan (0..1) ——— (0..N) Task
 | `created_at` / `updated_at` | `timestamp` | Auto-managed |
 
 **Model details:**
-- `#[Fillable]`: `user_name`, `email`, `password`, `first_name`, `last_name`, `birth_date`, `country`, `gender`
+- `#[Fillable]`: `username`, `email`, `password`, `first_name`, `last_name`, `birth_date`, `country`, `gender`
 - `#[Hidden]`: `password`, `remember_token`
 - **Casts:** `email_verified_at` → `datetime`, `birth_date` → `date:Y-m-d`, `gender` → `UserGender` enum, `password` → `hashed`
 - **Accessor:** `fullName()` — returns trimmed `"{first_name} {last_name}"`

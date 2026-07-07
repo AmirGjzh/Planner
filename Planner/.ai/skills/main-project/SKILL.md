@@ -17,42 +17,31 @@ A Laravel 13 + Livewire 4 task planner application. Users manage tasks, categori
 | # | UC | Description |
 |---|-----|-------------|
 | 01 | Login | Email + password authentication |
-| 02 | Register | Username, email, password |
-| 03 | Categories | CRUD, each task belongs to one |
-| 04 | Create Plan | Name, description, date range |
-| 05 | Edit Plan | Modify plan details |
-| 06 | Delete Plan | Blocked if plan has tasks |
-| 07 | Profile | View & edit user info |
-| 08 | Logout | Session invalidation |
-| 09 | Delete Account | Soft delete with password confirmation |
-| 10 | Create Task | Day, title, category, duration, priority |
-| 11 | Edit Task | Modify all task fields |
-| 12 | Delete Task | Hard delete |
-| 13 | Toggle Done | Mark done/not done |
-| 14 | Workload | Total estimated time per day |
-| 15 | Colors | Day status indicators (White/Green/Yellow/Red/Black) |
-| 16 | Overdue | Tasks past due date, not done |
-| 17 | Auto Not-Done | End-of-day status for reporting |
-| 18 | Reports | Performance stats over date range |
-| 19 | Calendar | Daily/weekly/monthly views |
-| 20 | Day Details | Click day → daily view |
-| 21 | View Plan Tasks | Tasks assigned to a plan |
-| 22 | Plan Progress | Completion percentage |
-| 23 | Progress Tracking | Real-time plan updates |
-| 24 | Filter/Sort | By category, plan, status, priority, date |
-| 25 | Upcoming | Tasks within X days |
-| 26 | Recurring | Multi-day task assignment |
-| 27 | Soft Delete | User soft-delete, cascade for plans/tasks |
+| 02 | Register | Username, email, password with validation |
+| 07 | View and Edit Profile | View and update personal info |
+| 08 | Logout | Session invalidation with SPA transition |
+| 09 | Delete Account | Soft-delete with password confirmation |
+| 03 | Manage Categories | CRUD with duplicate detection, rate limiting, task-guarded deletion |
+| 04 | Manage Plans | CRUD with duplicate detection, rate limiting, task-guarded deletion |
+| 10 | Manage Tasks | CRUD with category/plan validation, rate limiting |
+| 13 | Toggle Done | Mark task done/not done |
+| 14 | Daily Workload | Total estimated time per day with alerts |
+| 19 | Calendar View | Date range filtering (daily/weekly/monthly deferred) |
+| 16 | Overdue Tasks | Tasks past due date and not done |
+| 25 | Upcoming Tasks | Tasks within notification window |
+| 24 | Filter & Sort | By category, plan, status, priority, date |
+| 18 | Reports | Performance stats over a date range |
+| 21 | Plan Progress & Tracking | Task list, completion %, real-time tracking |
 
 ## Implementation Status
 
-- **Completed:** UC-01 through UC-15, UC-18, UC-19, UC-21 through UC-25
-- **Remaining:** UC-16, UC-17, UC-20, UC-26, UC-27
+- **Completed:** UC-01, 02, 03, 04, 07, 08, 09, 10, 13, 14, 18, 19, 21, 24, 25
+- **Deferred:** UC-16
 
 ## Phases
 
 - `phases/phase-0.md` — Vision & Scope
-- `phases/phase-1.md` — Requirements (27 UCs, NFRs, ACs)
+- `phases/phase-1.md` — Requirements (16 UCs, NFRs, ACs)
 - `phases/phase-2.md` — Domain Design + UC Specs
 - `phases/phase-3.md` — Data Model & Architecture
 - `phases/phase-4.md` — Implementation Process & Logs

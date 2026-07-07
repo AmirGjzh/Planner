@@ -37,7 +37,7 @@ it('returns fail for invalid credentials', function () {
 
 it('returns rate limited after repeated failures', function () {
     User::factory()->create(['email' => 'amir@example.com', 'password' => 'password']);
-    foreach (range(1, 5) as $attempt) {
+    foreach (range(1, 5) as $ignored) {
         app(LoginUserAction::class)->execute('amir@example.com', 'wrong-password', true, loginRequest());
     }
     $result = app(LoginUserAction::class)
@@ -51,11 +51,11 @@ it('logs failed, limited, and successful login events', function () {
     app(LoginUserAction::class)->execute('amir@example.com', 'wrong-password', true, loginRequest());
     Log::shouldHaveReceived('warning')
         ->with('Login failed.', Mockery::on(fn (array $context) => $context['email'] === 'amir@example.com'));
-    foreach (range(1, 5) as $attempt) {
+    foreach (range(1, 5) as $ignored) {
         app(LoginUserAction::class)->execute('amir@example.com', 'wrong-password', true, loginRequest());
     }
     Log::shouldHaveReceived('warning')
-        ->with('Login rate limited.', Mockery::on(fn (array $context) => isset($context['seconds_remaining'])));
+        ->with('Login rate limited.', Mockery::on(fn (array $context) => isset($context['available_in'])));
     RateLimiter::clear('login:amir@example.com|127.0.0.1');
     app(LoginUserAction::class)->execute('amir@example.com', 'password', true, loginRequest());
     Log::shouldHaveReceived('info')

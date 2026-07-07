@@ -89,9 +89,9 @@ The phase is complete when:
 
 **Implementation Files:**
 - `routes/web.php` — defines guest login route and authenticated dashboard route.
-- `resources/views/pages/auth/⚡login/login.php` — Livewire component with typed `$loginError` property (`null` | `'limited'` | `'invalid'`), validates email/password, calls `LoginUserAction`, redirects on success, sets error state on failure.
-- `resources/views/pages/auth/⚡login/login.blade.php` — login form using mine/* components (`mine.input`, `mine.button`, `mine.checkbox`, `mine.alert`, `mine.separator`), error alerts driven by `$loginError` state, remember-me checkbox, forgot password placeholder.
-- `app/Actions/Auth/LoginUserAction.php` — final action class; rate limiting via `RateLimiter` with configurable constants (`MAX_ATTEMPTS: 5`, `DECAY_SECONDS: 60`), `Auth::attempt()`, session regeneration, structured logging for all outcomes.
+- `resources/views/pages/auth/⚡login/login.php` — Livewire component with typed `$login_error` property (`null` | `'rate_limited'` | `'invalid'`), `$remember` bool for the remember-me toggle, validates email/password with custom `messages()`, uses a `match` expression on `LoginResult` enum cases, calls `LoginUserAction`, redirects on success, resets password and sets error state on failure.
+- `resources/views/pages/auth/⚡login/login.blade.php` — login form using mine/* components (`mine.input`, `mine.button`, `mine.checkbox`, `mine.alert`, `mine.separator`), error alerts driven by `$login_error` state, remember-me checkbox, forgot password placeholder.
+- `app/Actions/Auth/LoginUserAction.php` — final action class; rate limiting via `RateLimiter` with configurable constants (`MAX_ATTEMPTS: 5`, `DECAY_SECONDS: 60`), `Auth::attempt()`, session regeneration, structured logging for all outcomes with `'available_in'` context key.
 - `app/Enums/LoginResult.php` — backed string enum (`Fail`, `Success`, `RateLimited`).
 
 **Testing Files:**
@@ -104,7 +104,7 @@ The phase is complete when:
 - Failed credentials use a generic error message to prevent user enumeration.
 - Login attempts are rate-limited by normalized email and IP address (5 attempts per 60 seconds).
 - Rate limit key uses `Str::transliterate()` and `Str::lower()` to prevent Unicode bypass.
-- Error state managed via `$loginError` component property instead of the validation error bag — keeps error bag clean for actual field validation.
+- Error state managed via `$login_error` component property instead of the validation error bag — keeps error bag clean for actual field validation.
 - Successful login regenerates the session to prevent session fixation.
 - Login success, failed attempts, and rate-limited attempts are logged in the action layer with structured context.
 - Blade output remains escaped; no raw user-controlled HTML is rendered.
@@ -124,12 +124,11 @@ The phase is complete when:
 
 **Implementation Files:**
 - `routes/web.php` — defines the guest-only register route.
-- `resources/views/pages/auth/⚡register/register.php` — Livewire page state, validation, action call, result handling, password reset on failure, and redirect.
-- `resources/views/pages/auth/⚡register/register.blade.php` — registration form UI, field errors, register-level error display, password reveal inputs, and login navigation link.
-- `app/Actions/Auth/RegisterUserAction.php` — registration business action; handles rate limiting, username or email uniqueness checks after the limiter gate, user creation, race-condition duplicate handling, and logging.
+- `resources/views/pages/auth/⚡register/register.php` — Livewire component with typed `$register_error` property (`null` | `'rate_limited'` | `'username_taken'` | `'email_taken'`), `$password_confirmation` property, validates username (regex `/^[a-zA-Z][a-zA-Z0-9_-]{2,29}$/`), email (`email:rfc`), and password (confirmed, min:8) with custom `messages()`, uses a `match` expression to handle all 4 `RegisterResult` enum cases, calls `RegisterUserAction`, resets password fields on failure, redirects to login on success.
+- `resources/views/pages/auth/⚡register/register.blade.php` — registration form UI, field errors, register-level error display driven by `$register_error` state, and login navigation link.
+- `app/Actions/Auth/RegisterUserAction.php` — final action class; rate limiting via `RateLimiter` with configurable constants (`MAX_ATTEMPTS: 5`, `DECAY_SECONDS: 60`), username/email uniqueness checks after the limiter gate, user creation via `User::create()`, race-condition duplicate handling via `QueryException` / `isIntegrityConstraintViolation()` (SQLSTATE '23' prefix), structured logging for all outcomes with `'available_in'` context key.
 - `app/Enums/RegisterResult.php` — result enum returned by the register action (`Success`, `UsernameTaken`, `EmailTaken`, `RateLimited`).
-- `resources/views/pages/auth/⚡login/login.blade.php` — adds navigation from login to register.
-- `resources/views/pages/auth/⚡login/login.php` — small validation or message cleanup kept aligned with the auth flow.
+- `resources/views/pages/auth/⚡login/login.blade.php` — cross-navigation link from login to register.
 
 **Testing Files:**
 - `resources/views/pages/auth/⚡register/register.test.php` — co-located Livewire tests for rendering, validation, duplicate username or email errors, successful registration, guest state after registration, and rate limiting.
@@ -147,7 +146,7 @@ The phase is complete when:
 - Registration success, duplicate failures, and rate-limited attempts are logged in the action layer.
 - Blade output remains escaped; no raw user-controlled HTML is rendered.
 
-**Acceptance Result:** UC-02 is accepted. Registration creates an account, redirects guests to login, does not auto-login the new user, handles duplicate data cleanly, and is covered by passing tests.
+**Acceptance Result:** UC-02 is accepted. 22 passing tests. 12 co-located Livewire UI tests (including 4 username-format dataset variants), 5 action tests (success, username taken, email taken, rate limited, logging), 2 access tests, plus additional register flow coverage from peripheral access tests.
 
 ### UC-03 – Manage Categories
 

@@ -3,13 +3,13 @@
         <h1 class="text-center font-medium text-xl text-(--mine-text-primary) mb-2">Welcome back</h1>
         <p class="text-center text-sm mb-6 text-(--mine-text-secondary) font-medium">Sign in to continue to your workspace</p>
 
-        @if($loginError === 'limited')
+        @if($login_error === 'rate_limited')
             <div class="mb-4">
                 <x-mine.alert variant="warning" title="Login is currently limited.">Please try again in a minute.</x-mine.alert>
             </div>
         @endif
 
-        @if($loginError === 'invalid')
+        @if($login_error === 'invalid')
             <div class="mb-4">
                 <x-mine.alert variant="danger" title="Invalid credentials.">The email or password you entered is incorrect.</x-mine.alert>
             </div>

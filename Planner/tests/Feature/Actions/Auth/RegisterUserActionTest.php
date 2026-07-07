@@ -25,14 +25,14 @@ it('returns success and creates a user', function () {
 
     $user = User::where('email', 'amir@example.com')->first();
 
-    expect($user)->not->toBeNull();
-    expect($user->user_name)->toBe('amir_user');
-    expect(Hash::check('password123', $user->password))->toBeTrue();
+    expect($user)->not->toBeNull()
+        ->and($user->username)->toBe('amir_user')
+        ->and(Hash::check('password123', $user->password))->toBeTrue();
 });
 
 it('returns username taken when username already exists', function () {
     User::factory()->create([
-        'user_name' => 'amir_user',
+        'username' => 'amir_user',
         'email' => 'old@example.com',
     ]);
 
@@ -44,7 +44,7 @@ it('returns username taken when username already exists', function () {
 
 it('returns email taken when email already exists', function () {
     User::factory()->create([
-        'user_name' => 'old_user',
+        'username' => 'old_user',
         'email' => 'amir@example.com',
     ]);
 
@@ -56,11 +56,11 @@ it('returns email taken when email already exists', function () {
 
 it('returns rate limited after repeated failed attempts', function () {
     User::factory()->create([
-        'user_name' => 'taken_user',
+        'username' => 'taken_user',
         'email' => 'old@example.com',
     ]);
 
-    foreach (range(1, 5) as $attempt) {
+    foreach (range(1, 5) as $ignored) {
         app(RegisterUserAction::class)
             ->execute('taken_user', 'amir@example.com', 'password123', registerRequest());
     }
@@ -75,7 +75,7 @@ it('logs failed, limited, and successful register events', function () {
     Log::spy();
 
     User::factory()->create([
-        'user_name' => 'taken_user',
+        'username' => 'taken_user',
         'email' => 'old@example.com',
     ]);
 
@@ -84,17 +84,17 @@ it('logs failed, limited, and successful register events', function () {
 
     Log::shouldHaveReceived('warning')
         ->with('Register failed, username already taken.', Mockery::on(
-            fn (array $context) => $context['user_name'] === 'taken_user'
+            fn (array $context) => $context['username'] === 'taken_user'
         ));
 
-    foreach (range(1, 5) as $attempt) {
+    foreach (range(1, 5) as $ignored) {
         app(RegisterUserAction::class)
             ->execute('taken_user', 'amir@example.com', 'password123', registerRequest());
     }
 
     Log::shouldHaveReceived('warning')
         ->with('Register rate limited.', Mockery::on(
-            fn (array $context) => isset($context['seconds_remaining'])
+            fn (array $context) => isset($context['available_in'])
         ));
     RateLimiter::clear('register:127.0.0.1');
 
@@ -102,7 +102,7 @@ it('logs failed, limited, and successful register events', function () {
         ->execute('amir_user', 'amir@example.com', 'password123', registerRequest());
 
     Log::shouldHaveReceived('info')
-        ->with('User Registered.', Mockery::on(
+        ->with('User registered.', Mockery::on(
             fn (array $context) => $context['email'] === 'amir@example.com'
         ));
 });

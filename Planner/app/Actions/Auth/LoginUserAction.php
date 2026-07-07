@@ -21,19 +21,19 @@ final class LoginUserAction
         bool $remember,
         Request $request,
     ): LoginResult {
-        $rateLimitKey = $this->rateLimitKey($email, $request);
-        if (RateLimiter::tooManyAttempts($rateLimitKey, self::MAX_ATTEMPTS)) {
-            $seconds = RateLimiter::availableIn($rateLimitKey);
+        $rate_limit_key = $this->rateLimitKey($email, $request);
+        if (RateLimiter::tooManyAttempts($rate_limit_key, self::MAX_ATTEMPTS)) {
+            $available_in = RateLimiter::availableIn($rate_limit_key);
             Log::warning('Login rate limited.', [
                 'email' => Str::lower($email),
                 'ip' => $request->ip(),
-                'seconds_remaining' => $seconds,
+                'available_in' => $available_in,
             ]);
 
             return LoginResult::RateLimited;
         }
         if (! Auth::attempt(['email' => $email, 'password' => $password], $remember)) {
-            RateLimiter::hit($rateLimitKey, self::DECAY_SECONDS);
+            RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
             Log::warning('Login failed.', [
                 'email' => Str::lower($email),
                 'ip' => $request->ip(),
@@ -41,7 +41,7 @@ final class LoginUserAction
 
             return LoginResult::Fail;
         }
-        RateLimiter::clear($rateLimitKey);
+        RateLimiter::clear($rate_limit_key);
         session()->regenerate();
         Log::info('User logged in.', [
             'user_id' => Auth::id(),

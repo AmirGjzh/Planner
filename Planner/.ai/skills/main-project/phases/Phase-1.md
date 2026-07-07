@@ -34,31 +34,15 @@ Each task belongs to exactly one category.
 
 ### Plan Management
 
-#### Create Plan
+#### Manage Plans
 
-As a user, I want to create a plan with a name, optional description, and a date range so that I can group related tasks under a common goal.
-
-#### Edit Plan
-
-As a user, I want to edit my plan's name, description, or date range so that I can keep my plans up to date.
-
-#### Delete Plan
-
-As a user, I want to delete a plan so it no longer appears in my list. Deleting a plan is blocked if it still has tasks assigned (restrict on delete).
+As a user, I want to create, edit, and delete plans so that I can group related tasks under a common goal and keep them up to date. Deleting a plan is blocked if it still has tasks assigned (restrict on delete).
 
 ### Task Management
 
-#### Create Task
+#### Manage Tasks
 
-As a user, I want to create a task for a specific day with a title, category, estimated duration, and priority so that I know what needs to be done on that day.
-
-#### Edit Task
-
-As a user, I want to edit my existing tasks (title, description, category, estimated time, priority, alarm days) so that I can keep my schedule up to date if circumstances change.
-
-#### Delete Task
-
-As a user, I want to delete a task so it no longer appears in my list.
+As a user, I want to create, edit, and delete tasks so that I can schedule my work and keep it up to date. Creating a task requires a title, category, estimated duration, and priority. Editing allows modifying all fields. Deletion removes the task permanently.
 
 ### Task Status
 
@@ -66,31 +50,17 @@ As a user, I want to delete a task so it no longer appears in my list.
 
 As a user, I want to mark tasks as completed or revert them to not done so I can track my progress.
 
-#### Automatic Not Done Status
-
-As a user, if I do not specify a task's status by the end of the day, I want the system to automatically consider it not done so that performance reports remain accurate.
-
 ### Workload and Indicators
 
-#### Daily Workload Calculation
+#### Daily Workload
 
-As a user, I want the system to calculate the total estimated time of tasks for each day so I know how much work I have assigned to myself.
-
-#### Color-Coded Day Indicators
-
-As a user, I want each day in the calendar or daily view to have a status color based on total workload
-
-In this version, thresholds are global and fixed. In future versions, they may become configurable.
+As a user, I want the system to calculate the total estimated time of tasks for each day and show workload alerts so I know how much work I have assigned. In this version, thresholds are global and fixed. In future versions, they may become configurable.
 
 ### Views
 
-#### Calendar View (Daily, Weekly, Monthly)
+#### Calendar View (Date Range Filter)
 
-As a user, I want to see tasks displayed in daily, weekly, and monthly calendar views so that I can have both detailed and overview perspectives of my schedule.
-
-#### View Day Details
-
-As a user, I want to click on a specific day in the calendar to view its tasks and total workload so that I can drill down into any day.
+As a user, I want to see tasks filtered by a date range so that I can view my schedule for specific periods. Full daily, weekly, and monthly views are deferred to a later layer.
 
 ### Filtering and Sorting
 
@@ -128,17 +98,7 @@ As a user, I want to see the progress of a plan based on how many of its tasks a
 
 As a user, I want to see real-time plan progress updates as I mark tasks done so that I always know the current status.
 
-### Recurring Tasks
 
-#### Recurring / Multi-Day Tasks
-
-As a user, I want to assign a task to multiple selected days (e.g., specific weekdays or multiple dates) so that I don't have to create repetitive tasks separately for each day.
-
-### Soft Delete Behavior
-
-#### Soft Delete and Admin Management
-
-Soft deletion is only used for User accounts. Categories, tasks, and plans are hard-deleted. Deleting a plan is blocked if it still has tasks (restrict on delete). If a category is deleted, tasks referencing it are prevented from deletion unless they are reassigned first.
 
 ## 1.2 – Non-Functional Requirements
 
@@ -158,7 +118,7 @@ Soft deletion is only used for User accounts. Categories, tasks, and plans are h
   - Task management
   - Category management
   - Plan management
-  - Daily workload and color logic
+  - Daily workload logic
   - Reporting logic
   - Upcoming tasks logic
 - Important logic components must be covered by unit tests and higher-level tests.
@@ -208,21 +168,17 @@ Soft deletion is only used for User accounts. Categories, tasks, and plans are h
 **Given** the user clicks Delete on a category that has tasks,
 **Then** deletion is blocked and an error message is shown.
 
-### Create Plan
+### Manage Plans
 
 **Given** the user is on the Plans page,
 **When** they enter a name, optional description, and valid date range,
 **Then** the plan is created and appears in the plan list.
 **And** if the name is duplicate or dates are invalid, an error is shown.
 
-### Edit Plan
-
 **Given** the user is viewing a plan,
 **When** they modify the name, description, or date range and save,
 **Then** the plan is updated with the new values.
 **And** duplicate name detection applies.
-
-### Delete Plan
 
 **Given** the user is viewing a plan that has tasks,
 **When** they attempt to delete the plan,
@@ -264,7 +220,7 @@ Soft deletion is only used for User accounts. Categories, tasks, and plans are h
 **Given** the user exceeds 5 failed attempts within a minute,
 **Then** further attempts are rate-limited.
 
-### Create Task
+### Manage Tasks
 
 **Given** the user is on the task page for a specific day,
 **When** they fill in the title, select a category, set an estimated duration, and submit,
@@ -272,14 +228,10 @@ Soft deletion is only used for User accounts. Categories, tasks, and plans are h
 **And** the daily workload is recalculated.
 **And** if required fields are missing, submission is rejected.
 
-### Edit Task
-
 **Given** the user is viewing a task,
 **When** they modify any field and save,
 **Then** the task is updated.
 **And** the daily workload is recalculated if the date or estimated minutes changed.
-
-### Delete Task
 
 **Given** the user is viewing a task,
 **When** they click delete and confirm,
@@ -293,19 +245,12 @@ Soft deletion is only used for User accounts. Categories, tasks, and plans are h
 **Then** the task's done field updates immediately.
 **And** the change is reflected in the UI without a page reload.
 
-### Daily Workload Calculation
+### Daily Workload
 
 **Given** the user is viewing a day,
 **When** tasks exist for that day,
 **Then** the total estimated minutes is summed and displayed.
-**And** the day shows the correct color indicator based on thresholds.
-**And** the contextual message matches the color level.
-
-### Color-Coded Day Indicators
-
-**Given** the user is viewing the calendar,
-**When** a day has tasks with different total estimated times,
-**Then** the day displays the correct color: White (0h), Green (<3h), Yellow (<5h), Red (<8h), Black (≥8h).
+**And** a workload alert is shown based on thresholds (Rest/<3h/<6h/6h+).
 
 ### Overdue Tasks
 
@@ -314,11 +259,6 @@ Soft deletion is only used for User accounts. Categories, tasks, and plans are h
 **Then** all such tasks are listed.
 **And** tasks marked as done are excluded from the list.
 
-### Automatic Not Done Overnight
-
-**Given** a task has task_date = today and done = false,
-**When** the day ends,
-**Then** the system ensures the task status remains Not Done for reporting purposes.
 
 ### Performance Reports
 
@@ -329,22 +269,10 @@ Soft deletion is only used for User accounts. Categories, tasks, and plans are h
 
 ### Calendar View
 
-**Given** the user opens the Calendar View,
-**When** the current month is displayed,
-**Then** each day shows its workload color indicator.
-**And** the user can navigate between months.
-
-**Given** the user switches to Weekly View,
-**Then** tasks for the selected week are displayed with daily workload colors.
-
-**Given** the user switches to Daily View,
-**Then** all tasks for the selected day are displayed with the total workload.
-
-### View Day Details
-
-**Given** the user clicks a day in the monthly calendar,
-**When** the day has tasks,
-**Then** the system navigates to the daily view showing all tasks and the total workload.
+**Given** the user selects a date range,
+**When** they apply the filter,
+**Then** tasks within that range are displayed.
+**And** the user can navigate between periods.
 
 ### View Plan Tasks
 
@@ -382,22 +310,6 @@ Soft deletion is only used for User accounts. Categories, tasks, and plans are h
 **When** they open the dashboard,
 **Then** upcoming tasks are displayed in a list.
 
-### Recurring / Multi-Day Tasks
-
-**Given** the user creates a task for multiple days,
-**When** they select multiple dates,
-**Then** separate independent tasks are created for each selected date.
-
-### Soft Delete Behavior
-
-**Given** a user account is deleted,
-**Then** the user record is soft-deleted with obfuscated email and username.
-
-**Given** a plan with tasks is deleted,
-**Then** deletion is blocked by the database constraint.
-
-**Given** a category with tasks is deleted,
-**Then** deletion is blocked by the database constraint.
 
 ## 1.4 – Requirements Prioritization (MoSCoW)
 
@@ -412,7 +324,7 @@ Soft deletion is only used for User accounts. Categories, tasks, and plans are h
 - Daily view with task list
 - Weekly view
 - Monthly calendar view
-- Daily workload calculation with color indicators (White, Green, Yellow, Red, Black)
+- Daily workload calculation with alerts
 - Overdue tasks list
 - Upcoming tasks list (based on day_before_alarm)
 - Plan CRUD
@@ -424,7 +336,6 @@ Soft deletion is only used for User accounts. Categories, tasks, and plans are h
 - Filter tasks by category, plan, status, priority, date range
 - Sort tasks by date, priority, estimated time
 - Performance reports over a date range
-- Create task for multiple days (recurrence via duplicate entries)
 
 ### Could Have (Nice to Have)
 

@@ -428,13 +428,13 @@ The system is decomposed into the following modules. Each module has a clear res
 
 **Responsibility:** Create, read, update, delete tasks. Toggle task status (Done / Not Done). Filtering and sorting tasks. Assign or remove task from plan.
 **Depends on:** User, Category, Plan models.
-**Interacts with:** Category Management, Plan Management, Workload and Color Module.
+**Interacts with:** Category Management, Plan Management, Daily Workload Module.
 
-### 5.5 Daily Workload and Color Module
+### 5.5 Daily Workload Module
 
-**Responsibility:** Calculate total estimated minutes per day for a user. Map total time to color and message. Recalculate when tasks are created, updated, or deleted.
+**Responsibility:** Calculate total estimated minutes per day for a user. Map total time to workload level and message. Recalculate when tasks are created, updated, or deleted.
 **Depends on:** Task model.
-**Interacts with:** Task Management (triggered by task changes), View Layer (provides color/message data).
+**Interacts with:** Task Management (triggered by task changes), View Layer (provides workload data).
 
 ### 5.6 Overdue Tasks Module
 

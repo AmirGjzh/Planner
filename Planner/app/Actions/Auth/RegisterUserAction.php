@@ -10,49 +10,33 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 
-class RegisterUserAction
+final class RegisterUserAction
 {
+    private const int MAX_ATTEMPTS = 5;
+
+    private const int DECAY_SECONDS = 60;
+
     public function execute(
-        string $user_name,
+        string $username,
         string $email,
         string $password,
         Request $request,
     ): RegisterResult {
-        $rateLimitKey = $this->rateLimitKey($email, $request);
+        $rate_limit_key = $this->rateLimitKey($request);
         $email = Str::lower($email);
-        if (RateLimiter::tooManyAttempts($rateLimitKey, 5)) {
-            $seconds = RateLimiter::availableIn($rateLimitKey);
+        if (RateLimiter::tooManyAttempts($rate_limit_key, self::MAX_ATTEMPTS)) {
+            $available_in = RateLimiter::availableIn($rate_limit_key);
             Log::warning('Register rate limited.', [
                 'email' => $email,
                 'ip' => $request->ip(),
-                'seconds_remaining' => $seconds,
+                'available_in' => $available_in,
             ]);
 
             return RegisterResult::RateLimited;
         }
-        if (User::where('user_name', $user_name)->exists()) {
-            RateLimiter::hit($rateLimitKey, 60);
-            Log::warning('Register failed, username already taken.', [
-                'user_name' => $user_name,
-                'email' => $email,
-                'ip' => $request->ip(),
-            ]);
-
-            return RegisterResult::UsernameTaken;
-        }
-        if (User::where('email', $email)->exists()) {
-            RateLimiter::hit($rateLimitKey, 60);
-            Log::warning('Register failed, email already taken.', [
-                'user_name' => $user_name,
-                'email' => $email,
-                'ip' => $request->ip(),
-            ]);
-
-            return RegisterResult::EmailTaken;
-        }
         try {
             User::create([
-                'user_name' => $user_name,
+                'username' => $username,
                 'email' => $email,
                 'password' => $password,
             ]);
@@ -60,10 +44,10 @@ class RegisterUserAction
             if (! $this->isIntegrityConstraintViolation($e)) {
                 throw $e;
             }
-            if (User::where('user_name', $user_name)->exists()) {
-                RateLimiter::hit($rateLimitKey, 60);
+            RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
+            if (User::where('username', $username)->exists()) {
                 Log::warning('Register failed, username already taken.', [
-                    'user_name' => $user_name,
+                    'username' => $username,
                     'email' => $email,
                     'ip' => $request->ip(),
                 ]);
@@ -71,9 +55,8 @@ class RegisterUserAction
                 return RegisterResult::UsernameTaken;
             }
             if (User::where('email', $email)->exists()) {
-                RateLimiter::hit($rateLimitKey, 60);
                 Log::warning('Register failed, email already taken.', [
-                    'user_name' => $user_name,
+                    'username' => $username,
                     'email' => $email,
                     'ip' => $request->ip(),
                 ]);
@@ -82,9 +65,9 @@ class RegisterUserAction
             }
             throw $e;
         }
-        RateLimiter::clear($rateLimitKey);
-        Log::info('User Registered.', [
-            'user_name' => $user_name,
+        RateLimiter::clear($rate_limit_key);
+        Log::info('User registered.', [
+            'username' => $username,
             'email' => $email,
             'ip' => $request->ip(),
         ]);
@@ -92,15 +75,15 @@ class RegisterUserAction
         return RegisterResult::Success;
     }
 
-    private function rateLimitKey(string $email, Request $request): string
+    private function rateLimitKey(Request $request): string
     {
         return Str::transliterate('register:'.$request->ip());
     }
 
     private function isIntegrityConstraintViolation(QueryException $e): bool
     {
-        $sqlState = (string) ($e->errorInfo[0] ?? $e->getCode());
+        $sql_state = (string) ($e->errorInfo[0] ?? $e->getCode());
 
-        return str_starts_with($sqlState, '23');
+        return str_starts_with($sql_state, '23');
     }
 }

@@ -18,7 +18,7 @@ it('validates required fields', function () {
     Livewire::test('pages::auth.register')
         ->call('register')
         ->assertHasErrors([
-            'user_name' => ['required'],
+            'username' => ['required'],
             'email' => ['required'],
             'password' => ['required'],
             'password_confirmation' => ['required'],
@@ -27,12 +27,12 @@ it('validates required fields', function () {
 
 it('validates username format', function (string $username) {
     Livewire::test('pages::auth.register')
-        ->set('user_name', $username)
+        ->set('username', $username)
         ->set('email', 'amir@example.com')
         ->set('password', 'password123')
         ->set('password_confirmation', 'password123')
         ->call('register')
-        ->assertHasErrors(['user_name']);
+        ->assertHasErrors(['username']);
 })->with([
     'starts with number' => '1amir',
     'too short' => 'am',
@@ -42,7 +42,7 @@ it('validates username format', function (string $username) {
 
 it('validates email format', function () {
     Livewire::test('pages::auth.register')
-        ->set('user_name', 'amir_user')
+        ->set('username', 'amir_user')
         ->set('email', 'bad-email')
         ->set('password', 'password123')
         ->set('password_confirmation', 'password123')
@@ -52,7 +52,7 @@ it('validates email format', function () {
 
 it('validates password confirmation', function () {
     Livewire::test('pages::auth.register')
-        ->set('user_name', 'amir_user')
+        ->set('username', 'amir_user')
         ->set('email', 'amir@example.com')
         ->set('password', 'password123')
         ->set('password_confirmation', 'different-password')
@@ -62,7 +62,7 @@ it('validates password confirmation', function () {
 
 it('validates password length', function () {
     Livewire::test('pages::auth.register')
-        ->set('user_name', 'amir_user')
+        ->set('username', 'amir_user')
         ->set('email', 'amir@example.com')
         ->set('password', 'short')
         ->set('password_confirmation', 'short')
@@ -72,55 +72,53 @@ it('validates password length', function () {
 
 it('shows username taken error', function () {
     User::factory()->create([
-        'user_name' => 'amir_user',
+        'username' => 'amir_user',
         'email' => 'old@example.com',
     ]);
 
     Livewire::test('pages::auth.register')
-        ->set('user_name', 'amir_user')
+        ->set('username', 'amir_user')
         ->set('email', 'amir@example.com')
         ->set('password', 'password123')
         ->set('password_confirmation', 'password123')
         ->call('register')
-        ->assertHasErrors('user_name');
+        ->assertSet('register_error', 'username_taken');
 });
 
 it('shows email taken error', function () {
     User::factory()->create([
-        'user_name' => 'old_user',
+        'username' => 'old_user',
         'email' => 'amir@example.com',
     ]);
 
     Livewire::test('pages::auth.register')
-        ->set('user_name', 'amir_user')
+        ->set('username', 'amir_user')
         ->set('email', 'amir@example.com')
         ->set('password', 'password123')
         ->set('password_confirmation', 'password123')
         ->call('register')
-        ->assertHasErrors('email');
+        ->assertSet('register_error', 'email_taken');
 });
 
 it('creates the user and redirects to login', function () {
     Livewire::test('pages::auth.register')
-        ->set('user_name', 'amir_user')
+        ->set('username', 'amir_user')
         ->set('email', 'amir@example.com')
         ->set('password', 'password123')
         ->set('password_confirmation', 'password123')
         ->call('register')
         ->assertRedirect(route('login'));
 
-    $user = User::query()
-        ->where('email', 'amir@example.com')
-        ->first();
+    $user = User::firstWhere('email', 'amir@example.com');
 
-    expect($user)->not->toBeNull();
-    expect($user->user_name)->toBe('amir_user');
-    expect($user->password)->not->toBe('password123');
+    expect($user)->not->toBeNull()
+        ->and($user->username)->toBe('amir_user')
+        ->and($user->password)->not->toBe('password123');
 });
 
 it('does not authenticate the user after registration', function () {
     Livewire::test('pages::auth.register')
-        ->set('user_name', 'amir_user')
+        ->set('username', 'amir_user')
         ->set('email', 'amir@example.com')
         ->set('password', 'password123')
         ->set('password_confirmation', 'password123')
@@ -132,13 +130,13 @@ it('does not authenticate the user after registration', function () {
 
 it('rate limits after too many failed register attempts', function () {
     User::factory()->create([
-        'user_name' => 'taken_user',
+        'username' => 'taken_user',
         'email' => 'old@example.com',
     ]);
 
-    foreach (range(1, 5) as $attempt) {
+    foreach (range(1, 5) as $ignored) {
         Livewire::test('pages::auth.register')
-            ->set('user_name', 'taken_user')
+            ->set('username', 'taken_user')
             ->set('email', 'amir@example.com')
             ->set('password', 'password123')
             ->set('password_confirmation', 'password123')
@@ -146,23 +144,23 @@ it('rate limits after too many failed register attempts', function () {
     }
 
     Livewire::test('pages::auth.register')
-        ->set('user_name', 'amir_user')
+        ->set('username', 'amir_user')
         ->set('email', 'amir@example.com')
         ->set('password', 'password123')
         ->set('password_confirmation', 'password123')
         ->call('register')
-        ->assertHasErrors('register');
+        ->assertSet('register_error', 'rate_limited');
 });
 
 it('allows registration again after one minute', function () {
     User::factory()->create([
-        'user_name' => 'taken_user',
+        'username' => 'taken_user',
         'email' => 'old@example.com',
     ]);
 
-    foreach (range(1, 5) as $attempt) {
+    foreach (range(1, 5) as $ignored) {
         Livewire::test('pages::auth.register')
-            ->set('user_name', 'taken_user')
+            ->set('username', 'taken_user')
             ->set('email', 'amir@example.com')
             ->set('password', 'password123')
             ->set('password_confirmation', 'password123')
@@ -172,7 +170,7 @@ it('allows registration again after one minute', function () {
     $this->travel(61)->seconds();
 
     Livewire::test('pages::auth.register')
-        ->set('user_name', 'amir_user')
+        ->set('username', 'amir_user')
         ->set('email', 'amir@example.com')
         ->set('password', 'password123')
         ->set('password_confirmation', 'password123')
