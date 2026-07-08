@@ -1,25 +1,34 @@
 :root {
     --mine-page-bg-green: #F6FbF7;
-    --mine-text-link: #1E8E5A;
-    --mine-input-bg: #F8FCFA;
-    --mine-input-border: #DDEBE4;
-    --mine-input-border-error: #EF9292;
-    --mine-input-ring-error: #F4DDDD;
-    --mine-input-bg-error: #FFF5F5;
-    --mine-input-border-focus: #34A36B;
-    --mine-input-ring-focus: #DFF5E7;
-    --mine-text-error: #E53935;
+    --mine-card-bg: #ffffff;
+
     --mine-text-primary: #111827;
     --mine-text-secondary: #6B7280;
-    --mine-text-secondary-alert: #5d6470;
+    --mine-text-alert: #5d6470;
     --mine-text-placeholder: #9daaa4;
+    --mine-text-error: #E53935;
+    --mine-text-link: #1E8E5A;
+
+    --mine-input-bg: #F8FCFA;
+    --mine-input-border: #DDEBE4;
+    --mine-input-border-focus: #34A36B;
+    --mine-input-ring-focus: #DFF5E7;
+
+    --mine-input-bg-error: #FFF5F5;
+    --mine-input-border-error: #EF9292;
+    --mine-input-ring-error: #F4DDDD;
+
     --mine-input-icon: #a4b9a4;
+
     --mine-separator-border: #cbe4cb;
+
+    --mine-checkbox-bg: #22a064;
+    --mine-checkbox-text: #ffffff;
+
     --mine-btn-bg: #22a064;
     --mine-btn-bg-hover: #1b8a54;
     --mine-btn-text: #ffffff;
     --mine-btn-ring-focus: #C8EAD6;
-    --mine-card-bg: #ffffff;
 
     --mine-alert-bg-danger: #FEECEC;
     --mine-alert-border-danger: #F5B4B4;
@@ -40,4 +49,19 @@
     --mine-alert-border-info: #bfd6ff;
     --mine-alert-icon-info: #3b82f6;
     --mine-alert-title-info: #1e40af;
+
+
+
+
+
+
+
+    --mine-header-border: #e7f0ec;
+    --mine-nav-link-text: #565c67;
+    --mine-nav-link-text-active: #166534;
+    --mine-nav-link-bg-hover: #EDF5F0;
+    --mine-nav-link-bg-active: #EDF5F0;
+
+    --mine-theme-switcher-color: #166534;
+    --mine-theme-switcher-bg-hover: #EDF5F0;
 }
