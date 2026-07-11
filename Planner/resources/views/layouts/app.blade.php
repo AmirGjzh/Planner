@@ -12,84 +12,8 @@
     @livewireStyles
 </head>
 
-<body>
-
-    <div class="w-full h-18 px-8 flex items-center">
-        <div class="pr-12">
-            <div class="pr-3"></div>
-            <h1 class="text-lg font-medium">Planner</h1>
-        </div>
-        <div>
-            <x-mine.dropdown>
-                <x-mine.dropdown.trigger class="flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-[#F4FBF7]">
-                    <div class="text-left">
-
-                        <p class="text-sm font-semibold text-[#111827]">
-                            John Doe
-                        </p>
-
-                        <p class="text-xs text-[#6B7280]">
-                            john@example.com
-                        </p>
-
-                    </div>
-                </x-mine.dropdown.trigger>
-
-                <x-mine.dropdown.content>
-                    <div class="p-2">
-
-                        <div class="flex items-center gap-3 rounded-xl p-2">
-
-                            <img src="https://i.pravatar.cc/80" class="size-11 rounded-full">
-
-                            <div>
-
-                                <p class="text-sm font-semibold">
-                                    John Doe
-                                </p>
-
-                                <p class="text-xs text-[#6B7280]">
-                                    john@example.com
-                                </p>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <x-mine.dropdown.divider />
-
-                    <x-mine.dropdown.item>
-
-                        {{-- <x-heroicon-o-user class="size-5" /> --}}
-
-                        <span>Profile</span>
-
-                    </x-mine.dropdown.item>
-
-                    <x-mine.dropdown.item>
-
-                        {{-- <x-heroicon-o-cog-6-tooth class="size-5" /> --}}
-
-                        <span>Settings</span>
-
-                    </x-mine.dropdown.item>
-
-                    <x-mine.dropdown.divider />
-
-                    <x-mine.dropdown.item destructive>
-
-                        {{-- <x-heroicon-o-arrow-left-on-rectangle class="size-5" /> --}}
-
-                        <span>Logout</span>
-
-                    </x-mine.dropdown.item>
-                </x-mine.dropdown.content>
-            </x-mine.dropdown>
-        </div>
-    </div>
-
+<body class="min-h-dvh flex flex-col">
+    <x-mine.header />
     {{ $slot }}
 
 

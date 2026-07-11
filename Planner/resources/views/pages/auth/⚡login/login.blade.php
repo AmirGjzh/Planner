@@ -1,5 +1,5 @@
 <div class="min-h-dvh bg-(--mine-page-bg-green) px-6 py-4 flex justify-center items-center">
-    <div class="bg-(--mine-card-bg) w-full max-w-120 flex flex-col justify-center p-6 rounded-xl shadow-lg">
+    <div class="bg-(--mine-card-bg) w-full max-w-120 flex flex-col justify-center p-6 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
         <h1 class="text-center font-medium text-xl text-(--mine-text-primary) mb-2">Welcome back</h1>
         <p class="text-center text-sm mb-6 text-(--mine-text-secondary) font-medium">Sign in to continue to your workspace</p>
 

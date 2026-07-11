@@ -25,11 +25,10 @@ final class RegisterUserAction
         $rate_limit_key = $this->rateLimitKey($request);
         $email = Str::lower($email);
         if (RateLimiter::tooManyAttempts($rate_limit_key, self::MAX_ATTEMPTS)) {
-            $available_in = RateLimiter::availableIn($rate_limit_key);
             Log::warning('Register rate limited.', [
                 'email' => $email,
                 'ip' => $request->ip(),
-                'available_in' => $available_in,
+                'available_in' => RateLimiter::availableIn($rate_limit_key),
             ]);
 
             return RegisterResult::RateLimited;

@@ -23,11 +23,10 @@ final class LoginUserAction
     ): LoginResult {
         $rate_limit_key = $this->rateLimitKey($email, $request);
         if (RateLimiter::tooManyAttempts($rate_limit_key, self::MAX_ATTEMPTS)) {
-            $available_in = RateLimiter::availableIn($rate_limit_key);
             Log::warning('Login rate limited.', [
                 'email' => Str::lower($email),
                 'ip' => $request->ip(),
-                'available_in' => $available_in,
+                'available_in' => RateLimiter::availableIn($rate_limit_key),
             ]);
 
             return LoginResult::RateLimited;
