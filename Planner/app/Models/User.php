@@ -13,12 +13,12 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 #[Fillable([
-    'user_name',
+    'username',
     'email',
     'password',
-    'first_name',
-    'last_name',
-    'birth_date',
+    'firstname',
+    'lastname',
+    'birthday',
     'country',
     'gender',
 ])]
@@ -48,7 +48,7 @@ class User extends Authenticatable
 
     public function fullName(): string
     {
-        return trim("{$this->first_name} {$this->last_name}");
+        return trim("{$this->firstname} {$this->lastname}");
     }
 
     /**
@@ -60,7 +60,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'birth_date' => 'date:Y-m-d',
+            'birthday' => 'date:Y-m-d',
             'gender' => UserGender::class,
             'password' => 'hashed',
         ];

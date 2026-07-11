@@ -26,12 +26,12 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_name' => fake()->unique()->userName(),
+            'username' => fake()->unique()->userName(),
             'email' => fake()->unique()->safeEmail(),
             'password' => static::$password ??= Hash::make('password'),
-            'first_name' => fake()->firstName(),
-            'last_name' => fake()->lastName(),
-            'birth_date' => fake()->date(),
+            'firstname' => fake()->firstName(),
+            'lastname' => fake()->lastName(),
+            'birthday' => fake()->date(),
             'country' => fake()->countryCode(),
             'gender' => fake()->randomElement(UserGender::cases()),
             'email_verified_at' => now(),
