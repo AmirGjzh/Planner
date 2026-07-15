@@ -112,7 +112,7 @@ Main Flow:
    - A success or welcome message is shown
    - The user is redirected to the Login page
 
-#### UC-07 – View and Edit Profile
+#### UC-03 – View and Edit Profile
 
 Actor: Logged-in user
 
@@ -137,7 +137,7 @@ Main Flow:
 3. The user is redirected to the homepage or login page.
 4. The navigation bar again shows Login and Register options.
 
-#### UC-09 – Delete Account
+#### UC-04 – Delete Account
 
 Actor: Logged-in user
 
@@ -156,7 +156,7 @@ Main Flow:
 
 ### 3.2 Category Management
 
-#### UC-03 – Manage Categories
+#### UC-07 – Manage Categories
 
 Actor: Logged-in user
 
@@ -179,7 +179,7 @@ Actor: Logged-in user
 
 ### 3.3 Plan Management
 
-#### UC-04 – Manage Plans
+#### UC-09 – Manage Plans
 
 Actor: Logged-in user
 

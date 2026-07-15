@@ -10,71 +10,61 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 
-class UpdateProfileAction
+final class UpdateProfileAction
 {
-    public function execute(User $user, array $data, Request $request): UpdateProfileResult
-    {
-        if ($user->isNot(auth()->user())) {
-            abort(403);
-        }
-        $rateLimitKey = $this->rateLimitKey($user, $request);
-        if (RateLimiter::tooManyAttempts($rateLimitKey, 5)) {
+    private const int MAX_ATTEMPTS = 5;
+
+    private const int DECAY_SECONDS = 60;
+
+    public function execute(
+        User $user,
+        string $username,
+        ?string $firstname,
+        ?string $lastname,
+        ?string $gender,
+        ?string $country,
+        ?string $birthday,
+        Request $request,
+    ): UpdateProfileResult {
+        abort_unless($user->is(auth()->user()), 403);
+
+        $rate_limit_key = $this->rateLimitKey($user, $request);
+
+        if (RateLimiter::tooManyAttempts($rate_limit_key, self::MAX_ATTEMPTS)) {
             Log::warning('Profile update rate limited.', [
                 'user_id' => $user->id,
                 'ip' => $request->ip(),
-                'seconds_remaining' => RateLimiter::availableIn($rateLimitKey),
+                'seconds_remaining' => RateLimiter::availableIn($rate_limit_key),
             ]);
 
             return UpdateProfileResult::RateLimited;
         }
-        $userName = $data['user_name'];
-        if (
-            $userName !== $user->user_name
-            && User::query()
-                ->where('user_name', $userName)
-                ->whereKeyNot($user->id)
-                ->exists()
-        ) {
-            RateLimiter::hit($rateLimitKey, 60);
-            Log::warning('Profile update failed, username already taken.', [
-                'user_id' => $user->id,
-                'attempted_user_name' => $userName,
-                'ip' => $request->ip(),
-            ]);
 
-            return UpdateProfileResult::UsernameTaken;
-        }
         try {
             $user->update([
-                'user_name' => $userName,
-                'first_name' => $this->nullableString($data['first_name'] ?? null),
-                'last_name' => $this->nullableString($data['last_name'] ?? null),
-                'gender' => $data['gender'] ?? null,
-                'country' => $data['country'] ?? null,
-                'birth_date' => $data['birth_date'] ?? null,
+                'username' => $username,
+                'firstname' => $this->nullableString($firstname),
+                'lastname' => $this->nullableString($lastname),
+                'gender' => $gender,
+                'country' => $country,
+                'birthday' => $birthday,
             ]);
         } catch (QueryException $e) {
             if (! $this->isIntegrityConstraintViolation($e)) {
                 throw $e;
             }
-            if (
-                User::query()
-                    ->where('user_name', $userName)
-                    ->whereKeyNot($user->id)
-                    ->exists()
-            ) {
-                RateLimiter::hit($rateLimitKey, 60);
-                Log::warning('Profile update failed, username already taken.', [
-                    'user_id' => $user->id,
-                    'attempted_user_name' => $userName,
-                    'ip' => $request->ip(),
-                ]);
 
-                return UpdateProfileResult::UsernameTaken;
-            }
-            throw $e;
+            RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
+            Log::warning('Profile update failed, username already taken.', [
+                'user_id' => $user->id,
+                'attempted_username' => $username,
+                'ip' => $request->ip(),
+            ]);
+
+            return UpdateProfileResult::UsernameTaken;
         }
-        RateLimiter::hit($rateLimitKey, 60);
+
+        RateLimiter::clear($rate_limit_key);
         Log::info('Profile updated.', [
             'user_id' => $user->id,
             'ip' => $request->ip(),
@@ -85,7 +75,7 @@ class UpdateProfileAction
 
     private function rateLimitKey(User $user, Request $request): string
     {
-        return Str::transliterate('profile-update:'.$user->id.'|'.$request->ip());
+        return Str::transliterate('update-profile:'.$user->id.'|'.$request->ip());
     }
 
     private function nullableString(?string $value): ?string

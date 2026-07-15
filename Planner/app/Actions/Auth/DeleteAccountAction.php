@@ -11,24 +11,30 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 
-class DeleteAccountAction
+final class DeleteAccountAction
 {
+    private const int MAX_ATTEMPTS = 5;
+
+    private const int DECAY_SECONDS = 60;
+
     public function execute(User $user, string $password, Request $request): DeleteAccountResult
     {
-        $rateLimitKey = $this->rateLimitKey($user, $request);
+        abort_unless($user->is(auth()->user()), 403);
 
-        if (RateLimiter::tooManyAttempts($rateLimitKey, 5)) {
+        $rate_limit_key = $this->rateLimitKey($user, $request);
+
+        if (RateLimiter::tooManyAttempts($rate_limit_key, self::MAX_ATTEMPTS)) {
             Log::warning('Account deletion rate limited.', [
                 'user_id' => $user->id,
                 'ip' => $request->ip(),
-                'seconds_remaining' => RateLimiter::availableIn($rateLimitKey),
+                'seconds_remaining' => RateLimiter::availableIn($rate_limit_key),
             ]);
 
             return DeleteAccountResult::RateLimited;
         }
 
         if (! Hash::check($password, $user->password)) {
-            RateLimiter::hit($rateLimitKey, 60);
+            RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
             Log::warning('Account deletion failed, wrong password.', [
                 'user_id' => $user->id,
                 'ip' => $request->ip(),
@@ -39,17 +45,17 @@ class DeleteAccountAction
 
         $userId = $user->id;
         Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        session()->invalidate();
+        session()->regenerateToken();
 
         $user->forceFill([
             'email' => 'deleted-user-'.$userId,
-            'user_name' => 'deleted_user_'.$userId,
+            'username' => 'deleted_user_'.$userId,
         ])->save();
 
         $user->delete();
 
-        RateLimiter::clear($rateLimitKey);
+        RateLimiter::clear($rate_limit_key);
 
         Log::info('User account deleted.', [
             'user_id' => $userId,

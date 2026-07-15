@@ -18,11 +18,11 @@ A Laravel 13 + Livewire 4 task planner application. Users manage tasks, categori
 |---|-----|-------------|
 | 01 | Login | Email + password authentication |
 | 02 | Register | Username, email, password with validation |
-| 07 | View and Edit Profile | View and update personal info |
+| 03 | View and Edit Profile | View and update personal info |
+| 04 | Delete Account | Soft-delete with password confirmation |
+| 07 | Manage Categories | CRUD with duplicate detection, rate limiting, task-guarded deletion |
 | 08 | Logout | Session invalidation with SPA transition |
-| 09 | Delete Account | Soft-delete with password confirmation |
-| 03 | Manage Categories | CRUD with duplicate detection, rate limiting, task-guarded deletion |
-| 04 | Manage Plans | CRUD with duplicate detection, rate limiting, task-guarded deletion |
+| 09 | Manage Plans | CRUD with duplicate detection, rate limiting, task-guarded deletion |
 | 10 | Manage Tasks | CRUD with category/plan validation, rate limiting |
 | 13 | Toggle Done | Mark task done/not done |
 | 14 | Daily Workload | Total estimated time per day with alerts |

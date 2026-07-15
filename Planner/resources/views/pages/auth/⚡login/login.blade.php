@@ -1,7 +1,7 @@
-<div class="min-h-dvh bg-(--mine-page-bg-green) px-6 py-4 flex justify-center items-center">
-    <div class="bg-(--mine-card-bg) w-full max-w-120 flex flex-col justify-center p-6 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
-        <h1 class="text-center font-medium text-xl text-(--mine-text-primary) mb-2">Welcome back</h1>
-        <p class="text-center text-sm mb-6 text-(--mine-text-secondary) font-medium">Sign in to continue to your workspace</p>
+<div class="min-h-dvh bg-page px-6 py-4 flex justify-center items-center">
+    <div class="card w-full max-w-120 flex flex-col justify-center p-6">
+        <h1 class="text-center font-medium text-xl text-primary mb-2">Welcome back</h1>
+        <p class="text-center text-sm mb-6 text-secondary font-medium">Sign in to continue to your workspace</p>
 
         @if($login_error === 'rate_limited')
             <div class="mb-4">
@@ -17,12 +17,12 @@
 
         <form wire:submit="login" class="flex flex-col">
             <div class="mb-4">
-                <x-mine.input wire:model="email" label="Email Address" placeholder="Email" leftIcon="envelope">
+                <x-mine.input wire:model="email" label="Email Address" placeholder="Email" leftIcon="envelope" height="h-12">
                 </x-mine.input>
             </div>
 
             <div class="mb-6">
-                <x-mine.input wire:model="password" type="password" label="Password" placeholder="Password" leftIcon="lock-closed">
+                <x-mine.input wire:model="password" type="password" label="Password" placeholder="Password" leftIcon="lock-closed" height="h-12">
                 </x-mine.input>
             </div>
 
@@ -32,7 +32,7 @@
             </div>
 
             <div class="mb-4">
-                <x-mine.button type="submit">Sign in</x-mine.button>
+                <x-mine.button type="submit" height="h-12">Sign in</x-mine.button>
             </div>
         </form>
 
@@ -41,7 +41,7 @@
         </div>
 
         <div class="flex justify-center">
-            <p class="text-sm text-(--mine-text-primary) font-medium mr-2">Don't have an account?</p>
+            <p class="text-sm text-primary font-medium mr-2">Don't have an account?</p>
             <a wire:navigate.hover href="{{ route('register') }}" class="text-sm text-(--mine-text-link) font-medium">Create account</a>
         </div>
     </div>

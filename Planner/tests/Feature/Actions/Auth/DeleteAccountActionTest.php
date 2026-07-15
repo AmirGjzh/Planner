@@ -25,16 +25,16 @@ it('returns success and soft-deletes the user with correct password', function (
     $result = app(DeleteAccountAction::class)
         ->execute($user, 'correct_password', deleteAccountRequest());
 
-    expect($result)->toBe(DeleteAccountResult::Success);
-    expect(Auth::check())->toBeFalse();
-    expect($user->find($user->id))->toBeNull();
-    expect(User::withTrashed()->find($user->id))->not->toBeNull();
+    expect($result)->toBe(DeleteAccountResult::Success)
+        ->and(Auth::check())->toBeFalse()
+        ->and($user->find($user->id))->toBeNull()
+        ->and(User::withTrashed()->find($user->id))->not->toBeNull();
 });
 
 it('obfuscates email and username after deletion', function () {
     $user = User::factory()->create([
         'email' => 'amir@example.com',
-        'user_name' => 'amir_user',
+        'username' => 'amir_user',
         'password' => 'password',
     ]);
     $this->actingAs($user);
@@ -44,8 +44,8 @@ it('obfuscates email and username after deletion', function () {
 
     $deleted = User::withTrashed()->find($user->id);
 
-    expect($deleted->email)->toBe('deleted-user-'.$user->id);
-    expect($deleted->user_name)->toBe('deleted_user_'.$user->id);
+    expect($deleted->email)->toBe('deleted-user-'.$user->id)
+        ->and($deleted->username)->toBe('deleted_user_'.$user->id);
 });
 
 it('returns wrong password for incorrect password', function () {
@@ -57,9 +57,9 @@ it('returns wrong password for incorrect password', function () {
     $result = app(DeleteAccountAction::class)
         ->execute($user, 'wrong_password', deleteAccountRequest());
 
-    expect($result)->toBe(DeleteAccountResult::WrongPassword);
-    expect(Auth::check())->toBeTrue();
-    expect($user->fresh())->not->toBeNull();
+    expect($result)->toBe(DeleteAccountResult::WrongPassword)
+        ->and(Auth::check())->toBeTrue()
+        ->and($user->fresh())->not->toBeNull();
 });
 
 it('returns rate limited after repeated wrong password attempts', function () {
@@ -68,7 +68,7 @@ it('returns rate limited after repeated wrong password attempts', function () {
     ]);
     $this->actingAs($user);
 
-    foreach (range(1, 5) as $attempt) {
+    foreach (range(1, 5) as $ignored) {
         app(DeleteAccountAction::class)
             ->execute($user, 'wrong_password', deleteAccountRequest());
     }
@@ -85,7 +85,7 @@ it('allows deletion again after rate limit expires', function () {
     ]);
     $this->actingAs($user);
 
-    foreach (range(1, 5) as $attempt) {
+    foreach (range(1, 5) as $ignored) {
         app(DeleteAccountAction::class)
             ->execute($user, 'wrong_password', deleteAccountRequest());
     }
@@ -114,7 +114,7 @@ it('logs deletion events', function () {
             fn (array $context) => $context['user_id'] === $user->id
         ));
 
-    foreach (range(1, 5) as $attempt) {
+    foreach (range(1, 5) as $ignored) {
         app(DeleteAccountAction::class)
             ->execute($user, 'wrong_password', deleteAccountRequest());
     }

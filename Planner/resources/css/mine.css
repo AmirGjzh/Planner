@@ -1,54 +1,121 @@
 :root {
-    --mine-page-bg-green: #F6FbF7;
-    --mine-card-bg: #ffffff;
+    --mine-bg-page: linear-gradient(180deg, #FAFBFA 0%, #F1F6F3 100%);
 
-    --mine-text-primary: #111827;
-    --mine-text-secondary: #6B7280;
-    --mine-text-alert: #5d6470;
-    --mine-text-placeholder: #9daaa4;
+    --mine-card-border: #EAF0ED;
+    --mine-card-border-hover: #D6E2DB;
+
+    --mine-text-primary: #0f172b;
+    --mine-text-secondary: #4F6380;
     --mine-text-error: #E53935;
-    --mine-text-link: #1E8E5A;
+    --mine-text-link: #128047;
 
-    --mine-input-bg: #F8FCFA;
-    --mine-input-border: #DDEBE4;
-    --mine-input-border-focus: #34A36B;
+    --mine-btn-primary-bg: #1A9B5C;
+    --mine-btn-primary-bg-hover: #128047;
+    --mine-btn-primary-text: #ffffff;
+    --mine-btn-primary-ring-focus: #C8EAD6;
+
+    --mine-btn-danger-bg: #DC2626;
+    --mine-btn-danger-bg-hover: #B91C1C;
+    --mine-btn-danger-text: #ffffff;
+    --mine-btn-danger-ring-focus: #FAD5D5;
+
+    --mine-btn-ghost-bg: #F8FAF9;
+    --mine-btn-ghost-bg-hover: #EDF5F0;
+    --mine-btn-ghost-text: #4F6380;
+    --mine-btn-ghost-ring-focus: #DFF5E7;
+
+    --mine-alert-danger-bg: #FDF2F2;
+    --mine-alert-danger-border: #ECC5C5;
+    --mine-alert-danger-icon: #DC2626;
+    --mine-alert-danger-icon-bg: #f8e4e4;
+    --mine-alert-danger-title: #991B1B;
+
+    --mine-alert-success-bg: #F0F9F4;
+    --mine-alert-success-border: #C5E6D3;
+    --mine-alert-success-icon: #1A9B5C;
+    --mine-alert-success-icon-bg: #E0F2E8;
+    --mine-alert-success-title: #166534;
+
+    --mine-alert-warning-bg: #FFFBF0;
+    --mine-alert-warning-border: #FDE8C4;
+    --mine-alert-warning-icon: #f59e0b;
+    --mine-alert-warning-icon-bg: #F5EDD6;
+    --mine-alert-warning-title: #92400E;
+
+    --mine-alert-info-bg: #F0F5FF;
+    --mine-alert-info-border: #C8D9F8;
+    --mine-alert-info-icon: #3b82f6;
+    --mine-alert-info-icon-bg: #DCE8FA;
+    --mine-alert-info-title: #1e40af;
+
+    --mine-avatar-bg: #E8F1EC;
+    --mine-avater-text: #128047;
+
+    --mine-modal-bg: #ffffff;
+    --mine-btn-x-bg-hover: #EDF5F0;
+    --mine-btn-arrow-bg-hover: #EDF5F0;
+
+    --mine-input-bg: #FAFBFA;
+    --mine-input-border: #DAE6E0;
+    --mine-input-border-focus: #1A9B5C;
     --mine-input-ring-focus: #DFF5E7;
+    --mine-input-icon: #9AAEA0;
+    --mine-input-placeholder: #98A8A0;
 
-    --mine-input-bg-error: #FFF5F5;
-    --mine-input-border-error: #EF9292;
-    --mine-input-ring-error: #F4DDDD;
+    --mine-input-error-bg: #FDF2F2;
+    --mine-input-error-border: #EF9292;
+    --mine-input-error-ring: #F4DDDD;
 
-    --mine-input-icon: #a4b9a4;
+    --mine-select-selected-bg: #F0F9F4;
+    --mine-select-selected-text: #1A9B5C;
+    --mine-select-bg-hover: #F5F8F6;
+    --mine-select-ring-focus: #DFF5E7;
 
-    --mine-separator-border: #cbe4cb;
+    --mine-separator-border: #DAE6E0;
 
-    --mine-checkbox-bg: #22a064;
+    --mine-datepicker-pill-bg: #1A9B5C;
+    --mine-datepicker-pill-text: #ffffff;
+    --mine-datepicker-pill-bg-hover: #128047;
+    --mine-datepicker-pill-between-bg: #EDF5F0;
+    --mine-datepicker-day-bg-hover: #EDF5F0;
+    --mine-datepicker-day-selected-bg: #1A9B5C;
+    --mine-datepicker-day-selected-text: #ffffff;
+    --mine-datepicker-day-selected-bg-hover: #128047;
+    --mine-datepicker-day-dim-text: #98A8A0;
+    --mine-datepicker-today-decoration: #1A9B5C;
+    --mine-datepicker-day-ring-focus: #DFF5E7;
+
+    --mine-checkbox-bg: #1A9B5C;
     --mine-checkbox-text: #ffffff;
 
-    --mine-btn-bg: #22a064;
-    --mine-btn-bg-hover: #1b8a54;
-    --mine-btn-text: #ffffff;
-    --mine-btn-ring-focus: #C8EAD6;
 
-    --mine-alert-bg-danger: #FEECEC;
-    --mine-alert-border-danger: #F5B4B4;
-    --mine-alert-icon-danger: #E53935;
-    --mine-alert-title-danger: #B91c1c;
 
-    --mine-alert-bg-success: #e8f7ef;
-    --mine-alert-border-success: #b7e5c9;
-    --mine-alert-icon-success: #22a064;
-    --mine-alert-title-success: #166534;
+    /* valid colors */
 
-    --mine-alert-bg-warning: #fff6e5;
-    --mine-alert-border-warning: #ffe3b3;
-    --mine-alert-icon-warning: #f59e0b;
-    --mine-alert-title-warning: #b45309;
 
-    --mine-alert-bg-info: #e9f1ff;
-    --mine-alert-border-info: #bfd6ff;
-    --mine-alert-icon-info: #3b82f6;
-    --mine-alert-title-info: #1e40af;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -64,4 +131,157 @@
 
     --mine-theme-switcher-color: #166534;
     --mine-theme-switcher-bg-hover: #EDF5F0;
+}
+
+
+
+@utility bg-page {
+    background: var(--mine-bg-page);
+}
+
+@utility text-primary {
+    color: var(--mine-text-primary);
+}
+
+@utility text-secondary {
+    color: var(--mine-text-secondary);
+}
+
+@utility text-error {
+    color: var(--mine-text-error);
+}
+
+@utility btn-primary {
+    background: var(--mine-btn-primary-bg);
+    color: var(--mine-btn-primary-text);
+    box-shadow:
+        0 1px 2px rgba(15,23,42,.06),
+        0 4px 12px rgba(26,155,92,.15);
+
+    &:hover {
+        background: var(--mine-btn-primary-bg-hover);
+        box-shadow:
+            0 2px 4px rgba(15,23,42,.08),
+            0 6px 16px rgba(26,155,92,.22);
+    }
+
+    &:focus-visible {
+        box-shadow:
+            0 1px 2px rgba(15,23,42,.06),
+            0 4px 12px rgba(26,155,92,.15),
+            0 0 0 4px var(--mine-btn-primary-ring-focus);
+    }
+}
+
+@utility btn-danger {
+    background: var(--mine-btn-danger-bg);
+    color: var(--mine-btn-danger-text);
+    box-shadow:
+        0 1px 2px rgba(15,23,42,.06),
+        0 4px 12px rgba(220,38,38,.15);
+
+    &:hover {
+        background: var(--mine-btn-danger-bg-hover);
+        box-shadow:
+            0 2px 4px rgba(15,23,42,.08),
+            0 6px 16px rgba(220,38,38,.22);
+    }
+
+    &:focus-visible {
+        box-shadow:
+            0 1px 2px rgba(15,23,42,.06),
+            0 4px 12px rgba(220,38,38,.15),
+            0 0 0 4px var(--mine-btn-danger-ring-focus);
+    }
+}
+
+@utility btn-ghost {
+    background: var(--mine-btn-ghost-bg);
+    color: var(--mine-btn-ghost-text);
+
+    &:hover {
+        background: var(--mine-btn-ghost-bg-hover);
+    }
+
+    &:focus-visible {
+        box-shadow: 0 0 0 4px var(--mine-btn-ghost-ring-focus);
+    }
+}
+
+@utility btn-outline-primary {
+    background: transparent;
+    color: var(--mine-btn-primary-bg-hover);
+    border: 2px solid var(--mine-btn-primary-bg);
+
+    &:hover {
+        background: var(--mine-btn-primary-bg);
+        color: var(--mine-btn-primary-text);
+    }
+
+    &:focus-visible {
+        box-shadow: 0 0 0 4px var(--mine-btn-primary-ring-focus);
+    }
+}
+
+@utility btn-outline-danger {
+    background: transparent;
+    color: var(--mine-btn-danger-bg-hover);
+    border: 2px solid var(--mine-btn-danger-bg);
+
+    &:hover {
+        background: var(--mine-btn-danger-bg);
+        color: var(--mine-btn-danger-text);
+    }
+
+    &:focus-visible {
+        box-shadow: 0 0 0 4px var(--mine-btn-danger-ring-focus);
+    }
+}
+
+@utility card {
+    @apply relative rounded-2xl;
+    @apply bg-white/70;
+    @apply border border-(--mine-card-border);
+    @apply backdrop-blur-md;
+    @apply transition-colors duration-300;
+    box-shadow:
+        0 1px 2px rgba(15,23,42,.03),
+        0 8px 24px rgba(15,23,42,.05);
+}
+
+@utility card-interactive {
+    @apply card;
+    @apply cursor-pointer;
+    @apply transition-all duration-200 ease-out;
+    @apply hover:-translate-y-0.5;
+    @apply hover:border-(--mine-card-border-hover);
+
+    box-shadow:
+        0 1px 2px rgba(15,23,42,.03),
+        0 8px 24px rgba(15,23,42,.05);
+
+    &:hover {
+        box-shadow:
+            0 2px 4px rgba(15,23,42,.04),
+            0 12px 32px rgba(15,23,42,.08);
+    }
+    &:active {
+        transform: translateY(0) scale(.995);
+    }
+}
+
+@utility alert-danger-box {
+    @apply rounded-2xl;
+    background: var(--mine-alert-danger-bg);
+    border: 2px solid var(--mine-alert-danger-border);
+}
+
+@utility danger-icon {
+    background: var(--mine-alert-danger-icon-bg);
+    color: var(--mine-alert-danger-icon);
+}
+
+@utility avatar {
+    background: var(--mine-avatar-bg);
+    color: var(--mine-avater-text);
 }

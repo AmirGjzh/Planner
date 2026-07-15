@@ -89,7 +89,7 @@ The phase is complete when:
 
 **Implementation Files:**
 - `routes/web.php` — defines guest login route and authenticated dashboard route.
-- `resources/views/pages/auth/⚡login/login.php` — Livewire component with typed `$login_error` property (`null` | `'rate_limited'` | `'invalid'`), `$remember` bool for the remember-me toggle, validates email/password with custom `messages()`, uses a `match` expression on `LoginResult` enum cases, calls `LoginUserAction`, redirects on success, resets password and sets error state on failure.
+- `resources/views/pages/auth/⚡login/login.php` — Livewire component with typed `$login_error` property (`null` | `'rate_limited'` | `'invalid'`), `$remember` bool for the remember-me toggle, validates email/password with custom `messages()`, uses `if`/`elseif` on `LoginResult` enum cases, calls `LoginUserAction`, redirects on success, resets password and sets error state on failure.
 - `resources/views/pages/auth/⚡login/login.blade.php` — login form using mine/* components (`mine.input`, `mine.button`, `mine.checkbox`, `mine.alert`, `mine.separator`), error alerts driven by `$login_error` state, remember-me checkbox, forgot password placeholder.
 - `app/Actions/Auth/LoginUserAction.php` — final action class; rate limiting via `RateLimiter` with configurable constants (`MAX_ATTEMPTS: 5`, `DECAY_SECONDS: 60`), `Auth::attempt()`, session regeneration, structured logging for all outcomes with `'available_in'` context key.
 - `app/Enums/LoginResult.php` — backed string enum (`Fail`, `Success`, `RateLimited`).
@@ -148,7 +148,72 @@ The phase is complete when:
 
 **Acceptance Result:** UC-02 is accepted. 22 passing tests. 12 co-located Livewire UI tests (including 4 username-format dataset variants), 5 action tests (success, username taken, email taken, rate limited, logging), 2 access tests, plus additional register flow coverage from peripheral access tests.
 
-### UC-03 – Manage Categories
+### UC-03 – View and Edit Profile
+
+**Status:** Completed
+
+**Goal:** Allow an authenticated user to view account/profile information and update editable profile fields from a modal form.
+
+**Routes:**
+- `GET /profile` → Livewire page `pages::profile`, auth-only route.
+
+**Implementation Files:**
+- `routes/web.php` — defines the authenticated profile route.
+- `resources/views/pages/⚡profile/profile.php` — Livewire page state, authenticated user lookup, profile validation, action call, result handling, form reset or cancel behavior, and country list data.
+- `resources/views/pages/⚡profile/profile.blade.php` — profile display UI, edit modal, form fields, field errors, profile-level rate-limit error display, and cancel or apply controls.
+- `app/Actions/Profile/UpdateProfileAction.php` — profile update business action; handles rate limiting, username uniqueness checks after the limiter gate, profile persistence, race-condition duplicate handling, and logging.
+- `app/Enums/UpdateProfileResult.php` — result enum returned by the profile update action (`Success`, `UsernameTaken`, `RateLimited`).
+- `app/Enums/UserGender.php` — enum used by profile validation and the `User.gender` cast.
+- `app/Models/User.php` — stores editable profile fields and casts `birthday` and `gender`.
+
+**Testing Files:**
+- `resources/views/pages/⚡profile/profile.test.php` — co-located Livewire tests for rendering, initial form state, validation, successful updates, nullable fields, username-taken errors, rate limiting, time-travel retry, and cancel behavior.
+- `tests/Feature/Auth/ProfileAccessTest.php` — route/middleware tests for guest redirect and authenticated profile access.
+- `tests/Feature/Actions/Profile/UpdateProfileActionTest.php` — action tests for success, duplicate username result, keeping the current username, nullable cleanup, rate limiting, time-travel retry, and logging.
+
+**Security and Reliability Notes:**
+- Profile access is protected by the `auth` middleware.
+- Livewire validation handles required username, username format, text lengths, enum-backed gender values, valid country codes, and non-future birth dates.
+- Username uniqueness is checked inside the action after rate-limit checks to avoid unnecessary database reads while the profile update key is limited.
+- Database unique constraints remain the final protection against duplicate usernames.
+- Race-condition duplicate failures are caught from database integrity exceptions and converted into a user-friendly username error.
+- Profile update attempts are rate-limited by authenticated user ID and IP address.
+- Profile update success, duplicate username failures, and rate-limited attempts are logged in the action layer.
+- Blade output remains escaped; no raw user-controlled HTML is rendered.
+
+**Acceptance Result:** UC-03 is accepted. Authenticated users can view and edit profile information, invalid input is rejected, duplicate usernames are handled cleanly, rate limiting is enforced, and the use case is covered by passing tests.
+
+### UC-04 – Delete Account
+
+**Status:** Completed
+
+**Goal:** Allow an authenticated user to permanently delete their account, requiring password confirmation, with rate limiting to prevent brute-force attacks.
+
+**Routes:**
+- `GET /profile` → Livewire page `pages::profile`, auth-only route (existing UC-03 route).
+
+**Implementation Files:**
+- `resources/views/pages/⚡profile/profile.php` — Livewire page state; `deleteAccount()` method validates the password field, calls `DeleteAccountAction`, handles all three result states (`Success`, `WrongPassword`, `RateLimited`), and redirects to login on success; `cancelDelete()` resets form state.
+- `resources/views/pages/⚡profile/profile.blade.php` — profile display UI with a "Delete Account" button that opens a confirmation modal with a password field and submit or cancel controls (unchanged from UC-03).
+- `app/Actions/Auth/DeleteAccountAction.php` — account deletion business action; checks rate limiting (5 attempts per minute per user ID/IP), verifies the password against the user's hashed password, logs the user out, obfuscates email and username to free unique constraints, soft-deletes the user record, and logs the event.
+- `app/Enums/DeleteAccountResult.php` — result enum returned by the delete account action (`Success`, `WrongPassword`, `RateLimited`).
+
+**Testing Files:**
+- `tests/Feature/Actions/Auth/DeleteAccountActionTest.php` — action tests for successful deletion, email/username obfuscation, wrong password result, rate limiting, time-travel retry, and logging for all outcomes.
+
+**Security and Reliability Notes:**
+- Account deletion is protected by the `auth` middleware via the profile route.
+- Password verification is performed inside the action layer, not the Livewire component — ensuring the guard applies regardless of caller.
+- Rate limiting (5 attempts per minute) prevents brute-force password guessing on the delete account flow.
+- Email and username are obfuscated with `deleted-user-{id}` / `deleted_user_{id}` before soft-deleting, freeing unique constraints for future registrations without leaking the original values.
+- Database unique constraints remain the final protection against duplicate data for the obfuscated values (rare but safe).
+- Deletion success, wrong password attempts, and rate-limited attempts are logged in the action layer.
+- The action logs the user out and invalidates the session before deleting the user record.
+- Blade output remains escaped; no raw user-controlled HTML is rendered.
+
+**Acceptance Result:** UC-04 is accepted. Authenticated users can delete their account with password confirmation, wrong passwords are rejected with a clear error, brute-force attempts are rate-limited, the account is properly obfuscated and soft-deleted, and the use case is covered by passing tests.
+
+### UC-07 – Manage Categories
 
 **Status:** Completed
 
@@ -191,9 +256,35 @@ The phase is complete when:
 - The `#[Locked]` attribute on `$userId` prevents client-side tampering.
 - Blade output remains escaped; no raw user-controlled HTML is rendered.
 
-**Acceptance Result:** UC-03 is accepted. Authenticated users can create categories (with duplicate detection and rate limiting), rename categories inline (with duplicate detection and rate limiting), delete categories (blocked if tasks exist), view task counts per category, navigate paginated results, and the use case is covered by 33 passing tests (14 Livewire + 6 create action + 7 edit action + 4 delete action + 2 access).
+**Acceptance Result:** UC-07 is accepted. Authenticated users can create categories (with duplicate detection and rate limiting), rename categories inline (with duplicate detection and rate limiting), delete categories (blocked if tasks exist), view task counts per category, navigate paginated results, and the use case is covered by 33 passing tests (14 Livewire + 6 create action + 7 edit action + 4 delete action + 2 access).
 
-### UC-04 – Manage Plans
+### UC-08 – Logout
+
+**Status:** Completed
+
+**Goal:** Allow an authenticated user to log out, ending their session, and transition back to the login page using an SPA navigation without a full page reload.
+
+**Routes:**
+- `POST /logout` — plain POST route within the `auth` middleware group, returns 204 No Content.
+
+**Implementation Files:**
+- `routes/web.php` — defines the authenticated POST `/logout` route with a named route `logout`; executes `LogoutUserAction` and returns `response()->noContent()`.
+- `resources/views/layouts/app.blade.php` — user dropdown menu; the Log out item uses Alpine `fetch()` to POST to the logout route with the CSRF token, then calls `Livewire.navigate()` for an SPA transition to the login page.
+- `app/Actions/Auth/LogoutUserAction.php` — logout business action; retrieves the authenticated user ID, calls `Auth::logout()`, invalidates the session, regenerates the CSRF token, and logs the event.
+
+**Testing Files:**
+- `tests/Feature/Auth/LogoutAccessTest.php` — route/middleware tests for successful logout (asserts 204 No Content and guest state) and guest redirect to login.
+
+**Security and Reliability Notes:**
+- Logout is protected by the `auth` middleware; guests are redirected to login.
+- Session is invalidated and the CSRF token is regenerated after logout to prevent session fixation.
+- Logout events are logged with the user ID and IP address.
+- The Alpine fetch approach avoids a full page reload — the 204 response is consumed silently and `Livewire.navigate()` provides an SPA transition to the login page.
+- Blade output remains escaped; no raw user-controlled HTML is rendered.
+
+**Acceptance Result:** UC-08 is accepted. Authenticated users can log out with a single click, the session is properly invalidated, and the user is transitioned to the login page without a full browser refresh.
+
+### UC-09 – Manage Plans
 
 **Status:** Completed
 
@@ -235,98 +326,7 @@ The phase is complete when:
 - Inline errors via `$this->addError()` and `<x-ui.error>` components.
 - Blade output remains escaped.
 
-**Acceptance Result:** UC-04 is accepted. Authenticated users can create plans (with duplicate detection and rate limiting), edit plans from a modal (with duplicate detection and rate limiting), and delete plans (blocked if tasks exist). The use case is covered by 37 passing tests (6 create + 7 edit + 4 delete action + 18 Livewire + 2 access).
-
-### UC-07 – View and Edit Profile
-
-**Status:** Completed
-
-**Goal:** Allow an authenticated user to view account/profile information and update editable profile fields from a modal form.
-
-**Routes:**
-- `GET /profile` → Livewire page `pages::profile`, auth-only route.
-
-**Implementation Files:**
-- `routes/web.php` — defines the authenticated profile route.
-- `resources/views/pages/⚡profile/profile.php` — Livewire page state, authenticated user lookup, profile validation, action call, result handling, form reset or cancel behavior, and country list data.
-- `resources/views/pages/⚡profile/profile.blade.php` — profile display UI, edit modal, form fields, field errors, profile-level rate-limit error display, and cancel or apply controls.
-- `app/Actions/Profile/UpdateProfileAction.php` — profile update business action; handles rate limiting, username uniqueness checks after the limiter gate, profile persistence, race-condition duplicate handling, and logging.
-- `app/Enums/UpdateProfileResult.php` — result enum returned by the profile update action (`Success`, `UsernameTaken`, `RateLimited`).
-- `app/Enums/UserGender.php` — enum used by profile validation and the `User.gender` cast.
-- `app/Models/User.php` — stores editable profile fields and casts `birth_date` and `gender`.
-
-**Testing Files:**
-- `resources/views/pages/⚡profile/profile.test.php` — co-located Livewire tests for rendering, initial form state, validation, successful updates, nullable fields, username-taken errors, rate limiting, time-travel retry, and cancel behavior.
-- `tests/Feature/Auth/ProfileAccessTest.php` — route/middleware tests for guest redirect and authenticated profile access.
-- `tests/Feature/Actions/Profile/UpdateProfileActionTest.php` — action tests for success, duplicate username result, keeping the current username, nullable cleanup, rate limiting, time-travel retry, and logging.
-
-**Security and Reliability Notes:**
-- Profile access is protected by the `auth` middleware.
-- Livewire validation handles required username, username format, text lengths, enum-backed gender values, valid country codes, and non-future birth dates.
-- Username uniqueness is checked inside the action after rate-limit checks to avoid unnecessary database reads while the profile update key is limited.
-- Database unique constraints remain the final protection against duplicate usernames.
-- Race-condition duplicate failures are caught from database integrity exceptions and converted into a user-friendly username error.
-- Profile update attempts are rate-limited by authenticated user ID and IP address.
-- Profile update success, duplicate username failures, and rate-limited attempts are logged in the action layer.
-- Blade output remains escaped; no raw user-controlled HTML is rendered.
-
-**Acceptance Result:** UC-07 is accepted. Authenticated users can view and edit profile information, invalid input is rejected, duplicate usernames are handled cleanly, rate limiting is enforced, and the use case is covered by passing tests.
-
-### UC-08 – Logout
-
-**Status:** Completed
-
-**Goal:** Allow an authenticated user to log out, ending their session, and transition back to the login page using an SPA navigation without a full page reload.
-
-**Routes:**
-- `POST /logout` — plain POST route within the `auth` middleware group, returns 204 No Content.
-
-**Implementation Files:**
-- `routes/web.php` — defines the authenticated POST `/logout` route with a named route `logout`; executes `LogoutUserAction` and returns `response()->noContent()`.
-- `resources/views/layouts/app.blade.php` — user dropdown menu; the Log out item uses Alpine `fetch()` to POST to the logout route with the CSRF token, then calls `Livewire.navigate()` for an SPA transition to the login page.
-- `app/Actions/Auth/LogoutUserAction.php` — logout business action; retrieves the authenticated user ID, calls `Auth::logout()`, invalidates the session, regenerates the CSRF token, and logs the event.
-
-**Testing Files:**
-- `tests/Feature/Auth/LogoutAccessTest.php` — route/middleware tests for successful logout (asserts 204 No Content and guest state) and guest redirect to login.
-
-**Security and Reliability Notes:**
-- Logout is protected by the `auth` middleware; guests are redirected to login.
-- Session is invalidated and the CSRF token is regenerated after logout to prevent session fixation.
-- Logout events are logged with the user ID and IP address.
-- The Alpine fetch approach avoids a full page reload — the 204 response is consumed silently and `Livewire.navigate()` provides an SPA transition to the login page.
-- Blade output remains escaped; no raw user-controlled HTML is rendered.
-
-**Acceptance Result:** UC-08 is accepted. Authenticated users can log out with a single click, the session is properly invalidated, and the user is transitioned to the login page without a full browser refresh.
-
-### UC-09 – Delete Account
-
-**Status:** Completed
-
-**Goal:** Allow an authenticated user to permanently delete their account, requiring password confirmation, with rate limiting to prevent brute-force attacks.
-
-**Routes:**
-- `GET /profile` → Livewire page `pages::profile`, auth-only route (existing UC-07 route).
-
-**Implementation Files:**
-- `resources/views/pages/⚡profile/profile.php` — Livewire page state; `deleteAccount()` method validates the password field, calls `DeleteAccountAction`, handles all three result states (`Success`, `WrongPassword`, `RateLimited`), and redirects to login on success; `cancelDelete()` resets form state.
-- `resources/views/pages/⚡profile/profile.blade.php` — profile display UI with a "Delete Account" button that opens a confirmation modal with a password field and submit or cancel controls (unchanged from UC-07).
-- `app/Actions/Auth/DeleteAccountAction.php` — account deletion business action; checks rate limiting (5 attempts per minute per user ID/IP), verifies the password against the user's hashed password, logs the user out, obfuscates email and username to free unique constraints, soft-deletes the user record, and logs the event.
-- `app/Enums/DeleteAccountResult.php` — result enum returned by the delete account action (`Success`, `WrongPassword`, `RateLimited`).
-
-**Testing Files:**
-- `tests/Feature/Actions/Auth/DeleteAccountActionTest.php` — action tests for successful deletion, email/username obfuscation, wrong password result, rate limiting, time-travel retry, and logging for all outcomes.
-
-**Security and Reliability Notes:**
-- Account deletion is protected by the `auth` middleware via the profile route.
-- Password verification is performed inside the action layer, not the Livewire component — ensuring the guard applies regardless of caller.
-- Rate limiting (5 attempts per minute) prevents brute-force password guessing on the delete account flow.
-- Email and username are obfuscated with `deleted-user-{id}` / `deleted_user_{id}` before soft-deleting, freeing unique constraints for future registrations without leaking the original values.
-- Database unique constraints remain the final protection against duplicate data for the obfuscated values (rare but safe).
-- Deletion success, wrong password attempts, and rate-limited attempts are logged in the action layer.
-- The action logs the user out and invalidates the session before deleting the user record.
-- Blade output remains escaped; no raw user-controlled HTML is rendered.
-
-**Acceptance Result:** UC-09 is accepted. Authenticated users can delete their account with password confirmation, wrong passwords are rejected with a clear error, brute-force attempts are rate-limited, the account is properly obfuscated and soft-deleted, and the use case is covered by passing tests.
+**Acceptance Result:** UC-09 is accepted. Authenticated users can create plans (with duplicate detection and rate limiting), edit plans from a modal (with duplicate detection and rate limiting), and delete plans (blocked if tasks exist). The use case is covered by 37 passing tests (6 create + 7 edit + 4 delete action + 18 Livewire + 2 access).
 
 ### UC-10 – Manage Tasks
 
@@ -494,7 +494,7 @@ The phase is complete when:
 **Goal:** Allow authenticated users to view tasks assigned to a plan with progress (UC-21), see plan completion percentage (UC-22), and track progress as tasks are toggled done/not-done (UC-23).
 
 **Routes:**
-- `GET /plan-page` → Livewire page `pages::plan-page`, auth-only route (same page as UC-04).
+- `GET /plan-page` → Livewire page `pages::plan-page`, auth-only route (same page as UC-09).
 
 **Implementation Files:**
 - `resources/views/pages/⚡plan-page/plan-page.php` — added `->with('tasks')` to the `plans()` computed property to eagerly load tasks for the popover display.
