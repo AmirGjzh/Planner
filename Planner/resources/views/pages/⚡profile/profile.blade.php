@@ -1,6 +1,6 @@
 <div class="flex-1 px-4 sm:px-8 md:px-16 pb-6 pt-4 flex flex-col">
     <div class="mb-6 ml-2">
-        <h1 class="font-bold text-md text-primary">My Profile</h1>
+        <h1 class="font-bold text-md mine-text-primary">My Profile</h1>
     </div>
     <div class="flex flex-col md:flex-row gap-6">
         <div
@@ -10,7 +10,7 @@
                     <h1 class="font-bold text-xl">{{ strtoupper($this->user->firstname && $this->user->lastname ? substr($this->user->firstname, 0, 1) . substr($this->user->lastname, 0, 1) : substr($this->user->username, 0, 2)) }}</h1>
                 </div>
                 <div class="md:text-center md:flex-0 sm:flex-1 md:my-2">
-                    <h1 class="font-bold text-md text-primary mb-1">{{ $this->user->username }}</h1>
+                    <h1 class="font-bold text-md mine-text-primary mb-1">{{ $this->user->username }}</h1>
                     <p class="font-medium text-sm text-secondary">{{ $this->user->email }}</p>
                 </div>
             </div>
@@ -31,7 +31,7 @@
         <div class="md:flex-2 flex flex-col">
             <div class="card p-6 sm:p-8 flex flex-col gap-4">
                 <div class="mb-4">
-                    <h1 class="font-bold text-sm text-primary">Personal Information</h1>
+                    <h1 class="font-bold text-sm mine-text-primary">Personal Information</h1>
                 </div>
                 <div class="flex justify-between px-2">
                     <p class="text-sm font-medium text-secondary">Firstname</p>
@@ -89,9 +89,9 @@
     <x-mine.modal id="edit-profile-form" :close-by-clicking-away="false" :close-by-escaping="false" width="xl">
         <div class="px-6 sm:px-8 py-6">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-lg font-semibold text-primary">Edit your information</h2>
+                <h2 class="text-lg font-semibold mine-text-primary">Edit your information</h2>
                 <button @click="close(); $wire.cancelEdit()"
-                        class="text-primary hover:bg-(--mine-btn-x-bg-hover) p-2 rounded-xl hover:cursor-pointer">
+                        class="mine-text-primary hover:bg-(--mine-btn-x-bg-hover) p-2 rounded-xl hover:cursor-pointer">
                     <x-mine.icon name="x-mark"/>
                 </button>
             </div>
@@ -158,9 +158,9 @@
                   width="lg">
         <div class="px-6 sm:px-8 py-6">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-lg font-semibold text-primary">Delete your account</h2>
+                <h2 class="text-lg font-semibold mine-text-primary">Delete your account</h2>
                 <button @click="close(); $wire.cancelDelete()"
-                        class="text-primary hover:bg-(--mine-btn-x-bg-hover) p-2 rounded-xl hover:cursor-pointer">
+                        class="mine-text-primary hover:bg-(--mine-btn-x-bg-hover) p-2 rounded-xl hover:cursor-pointer">
                     <x-mine.icon name="x-mark"/>
                 </button>
             </div>

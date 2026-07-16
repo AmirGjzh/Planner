@@ -1,6 +1,7 @@
 :root {
     --mine-bg-page: linear-gradient(180deg, #FAFBFA 0%, #F1F6F3 100%);
 
+    --mine-card-bg: rgba(255, 255, 255, 0.7);
     --mine-card-border: #EAF0ED;
     --mine-card-border-hover: #D6E2DB;
 
@@ -56,6 +57,7 @@
     --mine-btn-arrow-bg-hover: #EDF5F0;
 
     --mine-input-bg: #FAFBFA;
+    --mine-input-autofill-bg: #FAFBFA;
     --mine-input-border: #DAE6E0;
     --mine-input-border-focus: #1A9B5C;
     --mine-input-ring-focus: #DFF5E7;
@@ -133,13 +135,104 @@
     --mine-theme-switcher-bg-hover: #EDF5F0;
 }
 
+.dark {
+    --mine-bg-page: linear-gradient(180deg, #151C19 0%, #1A231F 100%);
 
+    --mine-card-bg: #202925;
+    --mine-card-border: #36423D;
+    --mine-card-border-hover: #45544D;
+
+    --mine-text-primary: #F3F6F4;
+    --mine-text-secondary: #B2C2BA;
+    --mine-text-error: #F87171;
+    --mine-text-link: #52D283;
+
+    --mine-btn-primary-bg: #1A9B5C;
+    --mine-btn-primary-bg-hover: #25B36D;
+    --mine-btn-primary-text: #FFFFFF;
+    --mine-btn-primary-ring-focus: rgba(26, 155, 92, 0.22);
+
+    --mine-btn-danger-bg: #DC2626;
+    --mine-btn-danger-bg-hover: #EF4444;
+    --mine-btn-danger-text: #FFFFFF;
+    --mine-btn-danger-ring-focus: rgba(239, 68, 68, 0.22);
+
+    --mine-btn-ghost-bg: #27312D;
+    --mine-btn-ghost-bg-hover: #313D38;
+    --mine-btn-ghost-text: #D3DDD8;
+    --mine-btn-ghost-ring-focus: rgba(26, 155, 92, 0.18);
+
+    --mine-alert-danger-bg: #332020;
+    --mine-alert-danger-border: #5E3333;
+    --mine-alert-danger-icon: #EF4444;
+    --mine-alert-danger-icon-bg: #311818;
+    --mine-alert-danger-title: #FCA5A5;
+
+    --mine-alert-success-bg: #1C3225;
+    --mine-alert-success-border: #30543C;
+    --mine-alert-success-icon: #34D399;
+    --mine-alert-success-icon-bg: #193122;
+    --mine-alert-success-title: #6EE7A2;
+
+    --mine-alert-warning-bg: #382E1B;
+    --mine-alert-warning-border: #685226;
+    --mine-alert-warning-icon: #FBBF24;
+    --mine-alert-warning-icon-bg: #3A2E18;
+    --mine-alert-warning-title: #F6D365;
+
+    --mine-alert-info-bg: #21314A;
+    --mine-alert-info-border: #365B89;
+    --mine-alert-info-icon: #60A5FA;
+    --mine-alert-info-icon-bg: #1C3152;
+    --mine-alert-info-title: #93C5FD;
+
+    --mine-avatar-bg: #2A4035;
+    --mine-avater-text: #57D08A;
+
+    --mine-modal-bg: #202925;
+    --mine-btn-x-bg-hover: #24302B;
+    --mine-btn-arrow-bg-hover: #24302B;
+
+    --mine-input-bg: #1B2320;
+    --mine-input-autofill-bg: #1B2320;
+    --mine-input-border: #44534C;
+    --mine-input-border-focus: #1A9B5C;
+    --mine-input-ring-focus: rgba(26, 155, 92, 0.22);
+    --mine-input-icon: #8FA19A;
+    --mine-input-placeholder: #879891;
+
+    --mine-input-error-bg: #241616;
+    --mine-input-error-border: #7F3636;
+    --mine-input-error-ring: rgba(239, 68, 68, 0.22);
+
+    --mine-select-selected-bg: #234031;
+    --mine-select-selected-text: #52D283;
+    --mine-select-bg-hover: #2B3531;
+    --mine-select-ring-focus: rgba(26, 155, 92, 0.22);
+
+    --mine-separator-border: #394640;
+
+    --mine-datepicker-pill-bg: #1A9B5C;
+    --mine-datepicker-pill-text: #FFFFFF;
+    --mine-datepicker-pill-bg-hover: #25B36D;
+    --mine-datepicker-pill-between-bg: #2B3933;
+    --mine-datepicker-day-bg-hover: #32403A;
+    --mine-datepicker-day-selected-bg: #1A9B5C;
+    --mine-datepicker-day-selected-text: #FFFFFF;
+    --mine-datepicker-day-selected-bg-hover: #25B36D;
+    --mine-datepicker-day-dim-text: #72857B;
+    --mine-datepicker-today-decoration: #34D399;
+    --mine-datepicker-day-ring-focus: rgba(26, 155, 92, 0.22);
+
+    --mine-checkbox-bg: #1A9B5C;
+    --mine-checkbox-text: #FFFFFF;
+}
 
 @utility bg-page {
     background: var(--mine-bg-page);
 }
 
-@utility text-primary {
+@utility mine-text-primary {
     color: var(--mine-text-primary);
 }
 
@@ -239,11 +332,11 @@
 }
 
 @utility card {
-    @apply relative rounded-2xl;
-    @apply bg-white/70;
+    @apply relative rounded-3xl;
     @apply border border-(--mine-card-border);
     @apply backdrop-blur-md;
     @apply transition-colors duration-300;
+    background: var(--mine-card-bg);
     box-shadow:
         0 1px 2px rgba(15,23,42,.03),
         0 8px 24px rgba(15,23,42,.05);

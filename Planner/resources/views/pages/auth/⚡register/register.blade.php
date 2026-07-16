@@ -1,6 +1,6 @@
 <div class="min-h-dvh bg-page px-6 py-4 flex justify-center items-center">
     <div class="card w-full max-w-120 flex flex-col justify-center p-6">
-        <h1 class="text-center font-medium text-xl text-primary mb-2">Create your account</h1>
+        <h1 class="text-center font-medium text-xl mine-text-primary mb-2">Create your account</h1>
         <p class="text-center text-sm mb-6 text-secondary font-medium">Let's get you started</p>
 
         <form wire:submit="register" class="flex flex-col">
@@ -50,7 +50,7 @@
         </div>
 
         <div class="flex justify-center">
-            <p class="text-sm text-primary font-medium mr-2">Already have an account?</p>
+            <p class="text-sm mine-text-primary font-medium mr-2">Already have an account?</p>
             <a wire:navigate.hover href="{{ route('login') }}" class="text-sm text-(--mine-text-link) font-medium">Sign in</a>
         </div>
     </div>

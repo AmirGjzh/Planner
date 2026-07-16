@@ -1,8 +1,8 @@
 <div class="min-h-dvh bg-page px-6 py-4 flex justify-center items-center">
     <div class="card w-full max-w-120 flex flex-col justify-center p-6">
-        <h1 class="text-center font-medium text-xl text-primary mb-2">Welcome back</h1>
+        <h1 class="text-center font-medium text-xl mine-text-primary mb-2">Welcome back</h1>
         <p class="text-center text-sm mb-6 text-secondary font-medium">Sign in to continue to your workspace</p>
-
+        <x-mine.theme-switcher></x-mine.theme-switcher>
         @if($login_error === 'rate_limited')
             <div class="mb-4">
                 <x-mine.alert variant="warning" title="Login is currently limited.">Please try again in a minute.</x-mine.alert>
@@ -41,7 +41,7 @@
         </div>
 
         <div class="flex justify-center">
-            <p class="text-sm text-primary font-medium mr-2">Don't have an account?</p>
+            <p class="text-sm mine-text-primary font-medium mr-2">Don't have an account?</p>
             <a wire:navigate.hover href="{{ route('register') }}" class="text-sm text-(--mine-text-link) font-medium">Create account</a>
         </div>
     </div>
