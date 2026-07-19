@@ -12,9 +12,12 @@ use Illuminate\Support\Facades\Validator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 new class extends Component
 {
+    use WithPagination;
+
     #[Locked]
     public int $userId;
 
@@ -35,7 +38,7 @@ new class extends Component
         return Category::query()
             ->where('user_id', $this->userId)
             ->withCount('tasks')
-            ->paginate(10);
+            ->paginate(6);
     }
 
     public function addCategory(string $name, CreateCategoryAction $action): void

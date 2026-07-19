@@ -125,18 +125,6 @@ Main Flow:
 4. The user clicks Save.
 5. The system validates and stores the updated information and shows a success message.
 
-#### UC-08 – Logout
-
-Actor: Logged-in user
-
-Description: The user logs out of the system.
-
-Main Flow:
-1. The user clicks Logout in the top navigation bar.
-2. The system invalidates the session or token.
-3. The user is redirected to the homepage or login page.
-4. The navigation bar again shows Login and Register options.
-
 #### UC-04 – Delete Account
 
 Actor: Logged-in user
@@ -154,9 +142,21 @@ Main Flow:
    - Related data is soft-deleted or hard-deleted as configured
 7. The user is logged out and sees a message: "Your account has been deleted."
 
+#### UC-05 – Logout
+
+Actor: Logged-in user
+
+Description: The user logs out of the system.
+
+Main Flow:
+1. The user clicks Logout in the top navigation bar.
+2. The system invalidates the session or token.
+3. The user is redirected to the homepage or login page.
+4. The navigation bar again shows Login and Register options.
+
 ### 3.2 Category Management
 
-#### UC-07 – Manage Categories
+#### UC-06 – Manage Categories
 
 Actor: Logged-in user
 
@@ -179,7 +179,7 @@ Actor: Logged-in user
 
 ### 3.3 Plan Management
 
-#### UC-09 – Manage Plans
+#### UC-07 – Manage Plans
 
 Actor: Logged-in user
 
@@ -193,7 +193,7 @@ Main Flow:
 
 ### 3.4 Task Management
 
-#### UC-10 – Manage Tasks
+#### UC-08 – Manage Tasks
 
 Actor: Logged-in user
 
@@ -208,7 +208,7 @@ Main Flow:
 
 ### 3.5 Task Status
 
-#### UC-13 – Mark Task as Done / Not Done
+#### UC-09 – Mark Task as Done / Not Done
 
 Actor: Logged-in user
 
@@ -224,7 +224,7 @@ System background logic: If a task status is not updated by the end of the day, 
 
 ### 3.6 Workload
 
-#### UC-14 – Daily Workload
+#### UC-10 – Daily Workload
 
 Actor: User (passive — calculated automatically)
 
@@ -236,7 +236,7 @@ Main Flow:
 
 ### 3.7 Views
 
-#### UC-19 – Calendar View (Daily, Weekly, Monthly)
+#### UC-13 – Calendar View (Daily, Weekly, Monthly)
 
 Actor: User
 
@@ -262,7 +262,7 @@ Description: The user sees tasks displayed in different time-based views.
 
 ### 3.8 Overdue and Notifications
 
-#### UC-16 – Overdue Tasks
+#### UC-11 – Overdue Tasks
 
 Actor: User
 
@@ -276,7 +276,7 @@ Main Flow:
 
 Future versions may allow rescheduling.
 
-#### UC-25 – Upcoming Tasks
+#### UC-16 – Upcoming Tasks
 
 Actor: User
 
@@ -291,7 +291,7 @@ Future versions may send these notifications via email.
 
 ### 3.9 Filtering and Sorting
 
-#### UC-24 – Filter and Sort Tasks
+#### UC-15 – Filter and Sort Tasks
 
 Actor: User
 
@@ -313,7 +313,7 @@ The system updates the list accordingly. Multiple filters can be combined. Clear
 
 ### 3.10 Reports
 
-#### UC-18 – Performance Reports
+#### UC-12 – Performance Reports
 
 Actor: User
 
@@ -331,7 +331,7 @@ Main Flow:
 
 ### 3.11 Plan Tracking
 
-#### UC-21 – Plan Progress & Tracking
+#### UC-14 – Plan Progress & Tracking
 
 Actor: Logged-in user
 

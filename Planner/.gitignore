@@ -18,7 +18,7 @@ skills-lock.json
 /.zed
 #/.ai
 /.agents
-mine/
+#mine/
 /auth.json
 /node_modules
 /public/build

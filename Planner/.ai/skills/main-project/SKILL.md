@@ -20,23 +20,23 @@ A Laravel 13 + Livewire 4 task planner application. Users manage tasks, categori
 | 02 | Register | Username, email, password with validation |
 | 03 | View and Edit Profile | View and update personal info |
 | 04 | Delete Account | Soft-delete with password confirmation |
-| 07 | Manage Categories | CRUD with duplicate detection, rate limiting, task-guarded deletion |
-| 08 | Logout | Session invalidation with SPA transition |
-| 09 | Manage Plans | CRUD with duplicate detection, rate limiting, task-guarded deletion |
-| 10 | Manage Tasks | CRUD with category/plan validation, rate limiting |
-| 13 | Toggle Done | Mark task done/not done |
-| 14 | Daily Workload | Total estimated time per day with alerts |
-| 19 | Calendar View | Date range filtering (daily/weekly/monthly deferred) |
-| 16 | Overdue Tasks | Tasks past due date and not done |
-| 25 | Upcoming Tasks | Tasks within notification window |
-| 24 | Filter & Sort | By category, plan, status, priority, date |
-| 18 | Reports | Performance stats over a date range |
-| 21 | Plan Progress & Tracking | Task list, completion %, real-time tracking |
+| 05 | Logout | Session invalidation with SPA transition |
+| 06 | Manage Categories | CRUD with duplicate detection, rate limiting, task-guarded deletion |
+| 07 | Manage Plans | CRUD with duplicate detection, rate limiting, task-guarded deletion |
+| 08 | Manage Tasks | CRUD with category/plan validation, rate limiting |
+| 09 | Toggle Done | Mark task done/not done |
+| 10 | Daily Workload | Total estimated time per day with alerts |
+| 11 | Overdue Tasks | Tasks past due date and not done |
+| 12 | Reports | Performance stats over a date range |
+| 13 | Calendar View | Date range filtering (daily/weekly/monthly deferred) |
+| 14 | Plan Progress & Tracking | Task list, completion %, real-time tracking |
+| 15 | Filter & Sort | By category, plan, status, priority, date |
+| 16 | Upcoming Tasks | Tasks within notification window |
 
 ## Implementation Status
 
-- **Completed:** UC-01, 02, 03, 04, 07, 08, 09, 10, 13, 14, 18, 19, 21, 24, 25
-- **Deferred:** UC-16
+- **Completed:** UC-01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 12, 13, 14, 15, 16
+- **Deferred:** UC-11
 
 ## Phases
 

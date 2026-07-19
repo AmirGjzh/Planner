@@ -213,52 +213,7 @@ The phase is complete when:
 
 **Acceptance Result:** UC-04 is accepted. Authenticated users can delete their account with password confirmation, wrong passwords are rejected with a clear error, brute-force attempts are rate-limited, the account is properly obfuscated and soft-deleted, and the use case is covered by passing tests.
 
-### UC-07 – Manage Categories
-
-**Status:** Completed
-
-**Goal:** Allow an authenticated user to create, rename, and delete categories. Each category name must be unique per user. Deletion is prevented when the category still has tasks assigned.
-
-**Routes:**
-- `GET /category-page` → Livewire page `pages::category-page`, auth-only route.
-
-**Implementation Files:**
-- `routes/web.php` — defines the authenticated category-page route.
-- `resources/views/pages/⚡category-page/category-page.php` — Livewire page state, validation via `Validator::make()` (no `wire:model` — race-condition safe), action calls for create, edit, and delete, result handling for `AlreadyExists`, `RateLimited`, and `HasTasks`, paginated categories computed property, and `unset($this->categories)` cache busting after mutations.
-- `resources/views/pages/⚡category-page/category-page.blade.php` — category creation form with Alpine `x-model` and `$wire.call()` (no `wire:model` race conditions), category list with `withCount('tasks')`, per-category inline edit form with Alpine `x-show` toggled by a parent-scoped `editingId` (at most one open simultaneously, no server round-trip), delete buttons with `wire:click`, pagination links via `$this->categories->links()`, and empty state.
-- `app/Actions/Category/CreateCategoryAction.php` — create category business action; authorization through `abort_unless($user->can('create', ...), 403)`, rate limiting (5 attempts/minute per user+IP) with logging (info on success, warning on errors), checks user-scoped name uniqueness, creates the category, returns `Created`, `AlreadyExists`, or `RateLimited`.
-- `app/Actions/Category/EditCategoryAction.php` — edit category business action; authorization through `abort_unless($user->can('update', ...), 403)`, rate limiting (5 attempts/minute per user+IP) with logging (info on success, warning on errors), checks uniqueness excluding self, updates the name, returns `Updated`, `AlreadyExists`, or `RateLimited`.
-- `app/Actions/Category/DeleteCategoryAction.php` — delete category business action; authorization through `abort_unless($user->can('delete', ...), 403)`, logging (info on success, warning on errors), checks for assigned tasks before deletion, returns `Deleted` or `HasTasks`.
-- `app/Policies/CategoryPolicy.php` — policy with `create` (always true), `update` (ownership), `delete` (ownership) methods. Enforced in Action classes, not the Livewire component — frontend-agnostic and non-bypassable.
-- `app/Enums/CreateCategoryResult.php` — result enum (`Created`, `AlreadyExists`, `RateLimited`).
-- `app/Enums/EditCategoryResult.php` — result enum (`Updated`, `AlreadyExists`, `RateLimited`).
-- `app/Enums/DeleteCategoryResult.php` — result enum (`Deleted`, `HasTasks`).
-- `database/migrations/2026_06_14_152512_create_categories_table.php` — creates `categories` table with `index('user_id')` and `unique(['user_id', 'name'])`, plus `foreignId('user_id')` cascade on delete.
-- `database/migrations/2026_06_14_152651_create_tasks_table.php` — `category_id` foreign key uses `restrictOnDelete` to prevent orphan deletion.
-
-**Testing Files:**
-- `resources/views/pages/⚡category-page/category-page.test.php` — 14 co-located Livewire tests covering: page rendering, empty state, successful create, duplicate create error, required/max-length validation (create and edit), successful edit, duplicate edit error, successful delete, delete-with-tasks prevention, multiple categories display, and task count display.
-- `tests/Feature/Actions/Category/CreateCategoryActionTest.php` — 6 action tests covering: successful creation, duplicate detection per user, cross-user same-name tolerance, rate limiting, time-travel retry, and logging for all outcomes.
-- `tests/Feature/Actions/Category/EditCategoryActionTest.php` — 7 action tests covering: successful update, duplicate detection, keeping the same name, cross-user ownership 403 via AuthorizationException, rate limiting, time-travel retry, and logging for all outcomes.
-- `tests/Feature/Actions/Category/DeleteCategoryActionTest.php` — 4 action tests covering: successful deletion, cross-user ownership 403 via AuthorizationException, has-tasks prevention, and logging for all outcomes.
-- `tests/Feature/Auth/CategoryPageAccessTest.php` — 2 access tests covering: guest redirect to login and authenticated page access.
-
-**Security and Reliability Notes:**
-- Category access is protected by the `auth` middleware.
-- Ownership is verified at three independent layers: (1) relationship-scoped `findOrFail` in the Livewire component, (2) `CategoryPolicy` enforced via `$user->can()` in each Action, (3) database foreign key constraints. The Policy enforcement lives in the Action layer, not the Livewire component — making it frontend-agnostic and non-bypassable from API controllers, queue jobs, or future Vue clients.
-- Category name uniqueness is enforced at the database level with a composite `unique(['user_id', 'name'])` index.
-- Category names are normalized (`Str::ucfirst(Str::lower(...))`) to prevent case-sensitive duplicates.
-- Deleting a category with tasks is blocked by a server-side check before the database call, avoiding an unhandled `QueryException` from the `restrictOnDelete` constraint.
-- Create and edit actions are rate-limited (5 attempts per minute per user+IP) with distinct keys (`create-category:`, `edit-category:`). All rate-limit hits and failures are logged. Delete is not rate-limited (infrequent, destructive action).
-- At-most-one edit form is enforced entirely in Alpine via a shared `editingId` variable — no server round-trip for toggle.
-- Category form inputs use Alpine `x-model` and `$wire.call()` — no `wire:model` in-flight requests can race with submit responses, ensuring inputs clear reliably.
-- Category list is paginated (10 items per page) via `->paginate(10)` in the computed property, with Tailwind-styled links rendered by `->links()`. The paginator resets to page 1 after any create, edit, or delete mutation due to `unset($this->categories)`.
-- The `#[Locked]` attribute on `$userId` prevents client-side tampering.
-- Blade output remains escaped; no raw user-controlled HTML is rendered.
-
-**Acceptance Result:** UC-07 is accepted. Authenticated users can create categories (with duplicate detection and rate limiting), rename categories inline (with duplicate detection and rate limiting), delete categories (blocked if tasks exist), view task counts per category, navigate paginated results, and the use case is covered by 33 passing tests (14 Livewire + 6 create action + 7 edit action + 4 delete action + 2 access).
-
-### UC-08 – Logout
+### UC-05 – Logout
 
 **Status:** Completed
 
@@ -282,9 +237,54 @@ The phase is complete when:
 - The Alpine fetch approach avoids a full page reload — the 204 response is consumed silently and `Livewire.navigate()` provides an SPA transition to the login page.
 - Blade output remains escaped; no raw user-controlled HTML is rendered.
 
-**Acceptance Result:** UC-08 is accepted. Authenticated users can log out with a single click, the session is properly invalidated, and the user is transitioned to the login page without a full browser refresh.
+**Acceptance Result:** UC-05 is accepted. Authenticated users can log out with a single click, the session is properly invalidated, and the user is transitioned to the login page without a full browser refresh.
 
-### UC-09 – Manage Plans
+### UC-06 – Manage Categories
+
+**Status:** Completed
+
+**Goal:** Allow an authenticated user to create, rename, and delete categories. Each category name must be unique per user. Deletion is prevented when the category still has tasks assigned.
+
+**Routes:**
+- `GET /categories` → Livewire page `pages::categories`, auth-only route.
+
+**Implementation Files:**
+- `routes/web.php` — defines the authenticated categories route.
+- `resources/views/pages/⚡categories/categories.php` — Livewire page state, validation via `Validator::make()` (no `wire:model` — race-condition safe), action calls for create, edit, and delete, result handling for `AlreadyExists`, `RateLimited`, and `HasTasks`, paginated categories computed property, and `unset($this->categories)` cache busting after mutations.
+- `resources/views/pages/⚡categories/categories.blade.php` — category creation form with Alpine `x-model` and `$wire.call()` (no `wire:model` race conditions), category list with `withCount('tasks')`, per-category inline edit form with Alpine `x-show` toggled by a parent-scoped `editingId` (at most one open simultaneously, no server round-trip), delete buttons with `wire:click`, pagination links via `$this->categories->links()`, and empty state.
+- `app/Actions/Category/CreateCategoryAction.php` — create category business action; authorization through `abort_unless($user->can('create', ...), 403)`, rate limiting (5 attempts/minute per user+IP) with logging (info on success, warning on errors), checks user-scoped name uniqueness, creates the category, returns `Created`, `AlreadyExists`, or `RateLimited`.
+- `app/Actions/Category/EditCategoryAction.php` — edit category business action; authorization through `abort_unless($user->can('update', ...), 403)`, rate limiting (5 attempts/minute per user+IP) with logging (info on success, warning on errors), checks uniqueness excluding self, updates the name, returns `Updated`, `AlreadyExists`, or `RateLimited`.
+- `app/Actions/Category/DeleteCategoryAction.php` — delete category business action; authorization through `abort_unless($user->can('delete', ...), 403)`, logging (info on success, warning on errors), checks for assigned tasks before deletion, returns `Deleted` or `HasTasks`.
+- `app/Policies/CategoryPolicy.php` — policy with `create` (always true), `update` (ownership), `delete` (ownership) methods. Enforced in Action classes, not the Livewire component — frontend-agnostic and non-bypassable.
+- `app/Enums/CreateCategoryResult.php` — result enum (`Created`, `AlreadyExists`, `RateLimited`).
+- `app/Enums/EditCategoryResult.php` — result enum (`Updated`, `AlreadyExists`, `RateLimited`).
+- `app/Enums/DeleteCategoryResult.php` — result enum (`Deleted`, `HasTasks`).
+- `database/migrations/2026_06_14_152512_create_categories_table.php` — creates `categories` table with `index('user_id')` and `unique(['user_id', 'name'])`, plus `foreignId('user_id')` cascade on delete.
+- `database/migrations/2026_06_14_152651_create_tasks_table.php` — `category_id` foreign key uses `restrictOnDelete` to prevent orphan deletion.
+
+**Testing Files:**
+- `resources/views/pages/⚡categories/categories.test.php` — 14 co-located Livewire tests covering: page rendering, empty state, successful create, duplicate create error, required/max-length validation (create and edit), successful edit, duplicate edit error, successful delete, delete-with-tasks prevention, multiple categories display, and task count display.
+- `tests/Feature/Actions/Category/CreateCategoryActionTest.php` — 6 action tests covering: successful creation, duplicate detection per user, cross-user same-name tolerance, rate limiting, time-travel retry, and logging for all outcomes.
+- `tests/Feature/Actions/Category/EditCategoryActionTest.php` — 7 action tests covering: successful update, duplicate detection, keeping the same name, cross-user ownership 403 via AuthorizationException, rate limiting, time-travel retry, and logging for all outcomes.
+- `tests/Feature/Actions/Category/DeleteCategoryActionTest.php` — 4 action tests covering: successful deletion, cross-user ownership 403 via AuthorizationException, has-tasks prevention, and logging for all outcomes.
+- `tests/Feature/Auth/CategoryPageAccessTest.php` — 2 access tests covering: guest redirect to login and authenticated page access.
+
+**Security and Reliability Notes:**
+- Category access is protected by the `auth` middleware.
+- Ownership is verified at three independent layers: (1) relationship-scoped `findOrFail` in the Livewire component, (2) `CategoryPolicy` enforced via `$user->can()` in each Action, (3) database foreign key constraints. The Policy enforcement lives in the Action layer, not the Livewire component — making it frontend-agnostic and non-bypassable from API controllers, queue jobs, or future Vue clients.
+- Category name uniqueness is enforced at the database level with a composite `unique(['user_id', 'name'])` index.
+- Category names are normalized (`Str::ucfirst(Str::lower(...))`) to prevent case-sensitive duplicates.
+- Deleting a category with tasks is blocked by a server-side check before the database call, avoiding an unhandled `QueryException` from the `restrictOnDelete` constraint.
+- Create and edit actions are rate-limited (5 attempts per minute per user+IP) with distinct keys (`create-category:`, `edit-category:`). All rate-limit hits and failures are logged. Delete is not rate-limited (infrequent, destructive action).
+- At-most-one edit form is enforced entirely in Alpine via a shared `editingId` variable — no server round-trip for toggle.
+- Category form inputs use Alpine `x-model` and `$wire.call()` — no `wire:model` in-flight requests can race with submit responses, ensuring inputs clear reliably.
+- Category list is paginated (10 items per page) via `->paginate(10)` in the computed property, with Tailwind-styled links rendered by `->links()`. The paginator resets to page 1 after any create, edit, or delete mutation due to `unset($this->categories)`.
+- The `#[Locked]` attribute on `$userId` prevents client-side tampering.
+- Blade output remains escaped; no raw user-controlled HTML is rendered.
+
+**Acceptance Result:** UC-06 is accepted. Authenticated users can create categories (with duplicate detection and rate limiting), rename categories inline (with duplicate detection and rate limiting), delete categories (blocked if tasks exist), view task counts per category, navigate paginated results, and the use case is covered by 33 passing tests (14 Livewire + 6 create action + 7 edit action + 4 delete action + 2 access).
+
+### UC-07 – Manage Plans
 
 **Status:** Completed
 
@@ -326,9 +326,9 @@ The phase is complete when:
 - Inline errors via `$this->addError()` and `<x-ui.error>` components.
 - Blade output remains escaped.
 
-**Acceptance Result:** UC-09 is accepted. Authenticated users can create plans (with duplicate detection and rate limiting), edit plans from a modal (with duplicate detection and rate limiting), and delete plans (blocked if tasks exist). The use case is covered by 37 passing tests (6 create + 7 edit + 4 delete action + 18 Livewire + 2 access).
+**Acceptance Result:** UC-07 is accepted. Authenticated users can create plans (with duplicate detection and rate limiting), edit plans from a modal (with duplicate detection and rate limiting), and delete plans (blocked if tasks exist). The use case is covered by 37 passing tests (6 create + 7 edit + 4 delete action + 18 Livewire + 2 access).
 
-### UC-10 – Manage Tasks
+### UC-08 – Manage Tasks
 
 **Status:** Completed
 
@@ -369,16 +369,16 @@ The phase is complete when:
 - Inline errors via `$this->addError()` and `<x-ui.error>` components.
 - Blade output remains escaped.
 
-**Acceptance Result:** UC-10 is accepted. Authenticated users can create tasks with all required/optional fields, edit all fields from a modal, and delete tasks with a single click. Invalid category/plan selections show clear errors, rate limiting prevents abuse, ownership is enforced. The use case is covered by 50 passing tests (10 create + 10 edit + 3 delete action + 25 Livewire + 2 access).
+**Acceptance Result:** UC-08 is accepted. Authenticated users can create tasks with all required/optional fields, edit all fields from a modal, and delete tasks with a single click. Invalid category/plan selections show clear errors, rate limiting prevents abuse, ownership is enforced. The use case is covered by 50 passing tests (10 create + 10 edit + 3 delete action + 25 Livewire + 2 access).
 
-### UC-13 – Toggle Done
+### UC-09 – Toggle Done
 
 **Status:** Completed
 
 **Goal:** Allow an authenticated user to mark a task as done or not done with a single toggle switch.
 
 **Routes:**
-- `GET /task-page` → Livewire page `pages::task-page`, auth-only route (same page as UC-10).
+- `GET /task-page` → Livewire page `pages::task-page`, auth-only route (same page as UC-08).
 
 **Implementation Files:**
 - `resources/views/pages/⚡task-page/task-page.php` — Livewire page state; `toggleTask()` calls `ToggleTaskDoneAction`, handles `RateLimited` result with inline error message, refreshes task list via `unset($this->tasks)`.
@@ -400,16 +400,16 @@ The phase is complete when:
 - The `#[Locked]` attribute on `$userId` prevents client-side tampering.
 - Blade output remains escaped; no raw user-controlled HTML is rendered.
 
-**Acceptance Result:** UC-13 is accepted. Authenticated users can toggle task done status with a single click, ownership is enforced, rate limiting prevents abuse, and the use case is covered by 10 passing tests (6 action + 2 Livewire + 2 access).
+**Acceptance Result:** UC-09 is accepted. Authenticated users can toggle task done status with a single click, ownership is enforced, rate limiting prevents abuse, and the use case is covered by 10 passing tests (6 action + 2 Livewire + 2 access).
 
-### UC-19 – Calendar View (Date Range Filter)
+### UC-13 – Calendar View (Date Range Filter)
 
 **Status:** Completed (simplified — full daily/weekly/monthly views deferred to Layer 2)
 
 **Goal:** Allow users to filter tasks by a custom date range using a range datepicker and a Filter button.
 
 **Routes:**
-- `GET /task-page` → Livewire page `pages::task-page`, auth-only route (same page as UC-10).
+- `GET /task-page` → Livewire page `pages::task-page`, auth-only route (same page as UC-08).
 
 **Implementation Files:**
 - `resources/views/pages/⚡task-page/task-page.php` — `$date_filter` property (DateRange object, defaults to today), `applyDateFilter()` method refreshes task list with the selected range scoping, `tasks()` computed applies `task_date >= start` and `task_date <= end` when the respective dates are present.
@@ -426,9 +426,9 @@ The phase is complete when:
 - Date filtering is safe against SQL injection (uses Eloquent parameter binding via `where`).
 - The date filter applies only to the displayed list — it does not affect task creation, editing, or deletion.
 
-**Acceptance Result:** UC-19 is accepted (Layer 1 simplified). Authenticated users can filter their tasks by a custom date range using a range datepicker and Filter button. The default view shows today's tasks. The use case is covered by 6 passing tests (4 Livewire + 2 access). Full daily/weekly/monthly calendar views with workload colors are deferred to Layer 2.
+**Acceptance Result:** UC-13 is accepted (Layer 1 simplified). Authenticated users can filter their tasks by a custom date range using a range datepicker and Filter button. The default view shows today's tasks. The use case is covered by 6 passing tests (4 Livewire + 2 access). Full daily/weekly/monthly calendar views with workload colors are deferred to Layer 2.
 
-### UC-14 – Daily Workload
+### UC-10 – Daily Workload
 
 **Description:** Show total estimated minutes per day with a workload level and alert. Users see their day's workload at a glance with actionable guidance.
 
@@ -457,16 +457,16 @@ The phase is complete when:
 - No new routes, actions, or models — purely a computed aggregation on existing data, no rate limiting needed.
 - Single-day guard uses simple string comparison — no SQL or complex logic.
 
-**Acceptance Result:** UC-14 is accepted. Authenticated users see workload alerts (Rest/Light/Medium/Heavy) when viewing a single day. For multi-day ranges, no alerts are shown (deferred to Layer 2). The use case is covered by 12 passing tests (all Livewire).
+**Acceptance Result:** UC-10 is accepted. Authenticated users see workload alerts (Rest/Light/Medium/Heavy) when viewing a single day. For multi-day ranges, no alerts are shown (deferred to Layer 2). The use case is covered by 12 passing tests (all Livewire).
 
-### UC-24 – Filter & Sort
+### UC-15 – Filter & Sort
 
 **Status:** Completed
 
 **Goal:** Allow authenticated users to filter their task list by category, plan, status (done/not done), and priority, and sort by date, priority, or estimated minutes (or any combination).
 
 **Routes:**
-- `GET /task-page` → Livewire page `pages::task-page`, auth-only route (same page as UC-10).
+- `GET /task-page` → Livewire page `pages::task-page`, auth-only route (same page as UC-08).
 
 **Implementation Files:**
 - `resources/views/pages/⚡task-page/task-page.php` — 7 new properties (`$filterCategoryId`, `$filterPlanId`, `$filterStatus`, `$filterPriority`, `$sortByDate`, `$sortByPriority`, `$sortByEstimatedMinutes`), updated `tasks()` computed query with filter conditions (`where` clauses for category, plan, status, priority) and dynamic sort (`orderBy` for date, priority, estimated_minutes). Default sort is `task_date desc, created_at desc` when no custom sort is selected.
@@ -485,16 +485,16 @@ The phase is complete when:
 - No new routes, actions, enums, or models — purely query modifications on the existing `tasks()` computed property.
 - Sort direction is ASC only (no DSC toggle) — direction control deferred to Layer 2.
 
-**Acceptance Result:** UC-24 is accepted. Authenticated users can filter tasks by category, plan, status, and priority using dropdown selects. They can sort by date, priority, or estimated minutes using checkboxes (multiple sorts stack). All filters and sorts operate within the user's task scope. The view defaults to date-descending sort when no custom sort is selected. The use case is covered by 228 total passing tests (575 assertions), including 13 filter/sort tests within the 89 task-page Livewire tests.
+**Acceptance Result:** UC-15 is accepted. Authenticated users can filter tasks by category, plan, status, and priority using dropdown selects. They can sort by date, priority, or estimated minutes using checkboxes (multiple sorts stack). All filters and sorts operate within the user's task scope. The view defaults to date-descending sort when no custom sort is selected. The use case is covered by 228 total passing tests (575 assertions), including 13 filter/sort tests within the 89 task-page Livewire tests.
 
-### UC-21, UC-22 & UC-23 – View Plan Tasks, Plan Progress & Progress Tracking
+### UC-14 – View Plan Tasks, Plan Progress & Progress Tracking
 
 **Status:** Completed (Layer 1 — combined implementation)
 
-**Goal:** Allow authenticated users to view tasks assigned to a plan with progress (UC-21), see plan completion percentage (UC-22), and track progress as tasks are toggled done/not-done (UC-23).
+**Goal:** Allow authenticated users to view tasks assigned to a plan with progress, see plan completion percentage, and track progress as tasks are toggled done/not-done.
 
 **Routes:**
-- `GET /plan-page` → Livewire page `pages::plan-page`, auth-only route (same page as UC-09).
+- `GET /plan-page` → Livewire page `pages::plan-page`, auth-only route (same page as UC-07).
 
 **Implementation Files:**
 - `resources/views/pages/⚡plan-page/plan-page.php` — added `->with('tasks')` to the `plans()` computed property to eagerly load tasks for the popover display.
@@ -512,11 +512,11 @@ The phase is complete when:
 - Progress is computed from eager-loaded tasks collection — no additional queries needed.
 - The popover content is rendered server-side (hidden by Alpine until clicked) — no additional API calls needed.
 - No new routes, actions, enums, or models — purely view-level additions.
-- Real-time progress tracking (UC-23) is satisfied for Layer 1: progress is recomputed from the database on every page visit. Cross-component reactivity (e.g., toggling a task on the task page and seeing progress update on the plan page without navigation) is deferred to Layer 2.
+- Real-time progress tracking is satisfied for Layer 1: progress is recomputed from the database on every page visit. Cross-component reactivity (e.g., toggling a task on the task page and seeing progress update on the plan page without navigation) is deferred to Layer 2.
 
-**Acceptance Result:** UC-21, UC-22, and UC-23 are accepted. Authenticated users can view tasks per plan in a popover with done/not-done indicators, see completion percentage with a progress bar, and track plan progress. The use case is covered by 233 total passing tests (583 assertions), including 5 new plan-page tests.
+**Acceptance Result:** UC-14 is accepted. Authenticated users can view tasks per plan in a popover with done/not-done indicators, see completion percentage with a progress bar, and track plan progress. The use case is covered by 233 total passing tests (583 assertions), including 5 new plan-page tests.
 
-### UC-18 – Reports
+### UC-12 – Reports
 
 **Status:** Completed (Layer 1)
 
@@ -538,15 +538,15 @@ The phase is complete when:
 - Page access is protected by the `auth` middleware.
 - Ownership is enforced at the query level by `where('user_id', $this->userId)` in all stats queries.
 - The `#[Locked]` attribute on `$userId` prevents client-side tampering.
-- DateRange synthesizer handles hydration/dehydration between JS and Livewire (reused from UC-19).
+- DateRange synthesizer handles hydration/dehydration between JS and Livewire (reused from UC-13).
 - Stats are computed properties — no mutations, no rate limiting needed.
 - Overdue count is scoped to the selected date range: tasks not done with `task_date < today` within the range.
 - Completion rate returns 0% when no tasks exist in the range (division by zero guard).
 - No new actions, enums, policies, or models — purely read-only computed queries.
 
-**Acceptance Result:** UC-18 is accepted. Authenticated users can navigate to `/reports`, select a date range, and see their performance stats (created, completed, rate, overdue). All four stats are correctly calculated and scoped to the authenticated user. The use case is covered by 237 total passing tests (594 assertions), including 4 new report-page tests.
+**Acceptance Result:** UC-12 is accepted. Authenticated users can navigate to `/reports`, select a date range, and see their performance stats (created, completed, rate, overdue). All four stats are correctly calculated and scoped to the authenticated user. The use case is covered by 237 total passing tests (594 assertions), including 4 new report-page tests.
 
-### UC-25 – Upcoming Tasks
+### UC-16 – Upcoming Tasks
 
 **Status:** Completed (Layer 1)
 
@@ -571,4 +571,4 @@ The phase is complete when:
 - Days-until-due label uses Carbon's `diffInDays()` with `startOfDay()` for consistent day-boundary math.
 - No new routes, actions, enums, policies, or models — purely read-only computed queries on the existing dashboard page.
 
-**Acceptance Result:** UC-25 is accepted. Authenticated users open the dashboard and see all tasks within their notification window, with clear status badges and time-until-due labels. Tasks outside the notification window are hidden. The use case is covered by 242 total passing tests (602 assertions), including 5 new dashboard tests and 2 existing access tests.
+**Acceptance Result:** UC-16 is accepted. Authenticated users open the dashboard and see all tasks within their notification window, with clear status badges and time-until-due labels. Tasks outside the notification window are hidden. The use case is covered by 242 total passing tests (602 assertions), including 5 new dashboard tests and 2 existing access tests.

@@ -123,8 +123,8 @@
                     <x-mine.input label="Username" wire:model="username"/>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-4">
-                    <x-mine.input label="Firstname" wire:model="firstname" />
-                    <x-mine.input label="Lastname" wire:model="lastname" />
+                    <x-mine.input label="Firstname" wire:model="firstname" placeholder="Your Firstname" />
+                    <x-mine.input label="Lastname" wire:model="lastname" placeholder="Your lastname" />
                 </div>
                 <div class="flex flex-col sm:flex-row gap-4">
                     <x-mine.select wire:model="gender" label="Gender" placeholder="Select gender" >
@@ -132,7 +132,7 @@
                         <x-mine.select.option value="female">Female</x-mine.select.option>
                     </x-mine.select>
 
-                    <x-mine.select wire:model="country" label="Country" placeholder="Choose Country"
+                    <x-mine.select wire:model="country" label="Country" placeholder="Select Country"
                                  searchable>
                         @foreach($this->countries as $code => $name)
                             <x-mine.select.option wire:key="{{ $code }}"

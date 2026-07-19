@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\RateLimiter;
 
 function createCategoryRequest(): Request
 {
-    return Request::create('/category-page', 'POST', server: ['REMOTE_ADDR' => '127.0.0.1']);
+    return Request::create('/categories', 'POST', server: ['REMOTE_ADDR' => '127.0.0.1']);
 }
 
 function createCategoryRateLimitKey(User $user): string

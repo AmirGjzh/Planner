@@ -331,6 +331,12 @@
     }
 }
 
+@utility pagination-item {
+    border: 2px solid var(--mine-input-border);
+    background: var(--mine-card-bg);
+    color: var(--mine-text-link);
+}
+
 @utility card {
     @apply relative rounded-3xl;
     @apply border border-(--mine-card-border);

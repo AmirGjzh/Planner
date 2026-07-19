@@ -10,7 +10,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 
 function editCategoryRequest(): Request
 {
-    return Request::create('/category-page', 'POST', server: ['REMOTE_ADDR' => '127.0.0.1']);
+    return Request::create('/categories', 'POST', server: ['REMOTE_ADDR' => '127.0.0.1']);
 }
 
 function editCategoryRateLimitKey(User $user): string
