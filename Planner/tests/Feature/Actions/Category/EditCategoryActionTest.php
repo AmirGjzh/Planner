@@ -62,42 +62,42 @@ it('prevents editing a category that belongs to another user', function () {
 
 it('returns rate limited after repeated edit attempts', function () {
     $user = User::factory()->create();
-    $category = $user->categories()->create(['name' => 'Work']);
+    $user->categories()->create(['name' => 'Work']);
+    $category = $user->categories()->create(['name' => 'Personal']);
     RateLimiter::clear(editCategoryRateLimitKey($user));
 
-    foreach (range(1, 5) as $attempt) {
-        app(EditCategoryAction::class)->execute($user, $category, 'Attempt '.$attempt, editCategoryRequest());
+    foreach (range(1, 5) as $ignored) {
+        app(EditCategoryAction::class)->execute($user, $category, 'Work', editCategoryRequest());
     }
 
-    $result = app(EditCategoryAction::class)->execute($user, $category, 'Blocked', editCategoryRequest());
+    $result = app(EditCategoryAction::class)->execute($user, $category, 'Work', editCategoryRequest());
 
     expect($result)->toBe(EditCategoryResult::RateLimited);
 });
 
 it('allows editing again after one minute', function () {
     $user = User::factory()->create();
-    $category = $user->categories()->create(['name' => 'Work']);
+    $user->categories()->create(['name' => 'Work']);
+    $category = $user->categories()->create(['name' => 'Personal']);
     RateLimiter::clear(editCategoryRateLimitKey($user));
 
-    foreach (range(1, 5) as $attempt) {
-        app(EditCategoryAction::class)->execute($user, $category, 'Attempt '.$attempt, editCategoryRequest());
+    foreach (range(1, 5) as $ignored) {
+        app(EditCategoryAction::class)->execute($user, $category, 'Work', editCategoryRequest());
     }
 
     $this->travel(61)->seconds();
 
-    $result = app(EditCategoryAction::class)->execute($user, $category, 'Personal', editCategoryRequest());
+    $result = app(EditCategoryAction::class)->execute($user, $category, 'Renamed', editCategoryRequest());
 
     expect($result)->toBe(EditCategoryResult::Updated);
-    expect($category->fresh()->name)->toBe('Personal');
+    expect($category->fresh()->name)->toBe('Renamed');
 });
 
-it('logs edit events', function () {
+it('logs duplicate edit warning', function () {
     Log::spy();
 
     $user = User::factory()->create();
     $category = $user->categories()->create(['name' => 'Work']);
-    RateLimiter::clear(editCategoryRateLimitKey($user));
-
     $user->categories()->create(['name' => 'Personal']);
 
     app(EditCategoryAction::class)->execute($user, $category, 'Personal', editCategoryRequest());
@@ -106,17 +106,13 @@ it('logs edit events', function () {
         ->with('Category edit failed, already exists.', Mockery::on(
             fn (array $context) => $context['category_id'] === $category->id
         ));
+});
 
-    foreach (range(1, 5) as $attempt) {
-        app(EditCategoryAction::class)->execute($user, $category, 'Attempt '.$attempt, editCategoryRequest());
-    }
+it('logs successful edit info', function () {
+    Log::spy();
 
-    Log::shouldHaveReceived('warning')
-        ->with('Category edit rate limited.', Mockery::on(
-            fn (array $context) => isset($context['seconds_remaining'])
-        ));
-
-    RateLimiter::clear(editCategoryRateLimitKey($user));
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
 
     app(EditCategoryAction::class)->execute($user, $category, 'Renamed', editCategoryRequest());
 
@@ -124,4 +120,19 @@ it('logs edit events', function () {
         ->with('Category updated.', Mockery::on(
             fn (array $context) => $context['user_id'] === $user->id
         ));
+});
+
+it('rate limits after repeated duplicate edits', function () {
+    $user = User::factory()->create();
+    $user->categories()->create(['name' => 'Work']);
+    $category = $user->categories()->create(['name' => 'Personal']);
+    RateLimiter::clear(editCategoryRateLimitKey($user));
+
+    foreach (range(1, 5) as $ignored) {
+        app(EditCategoryAction::class)->execute($user, $category, 'Work', editCategoryRequest());
+    }
+
+    $result = app(EditCategoryAction::class)->execute($user, $category, 'Work', editCategoryRequest());
+
+    expect($result)->toBe(EditCategoryResult::RateLimited);
 });

@@ -11,7 +11,7 @@ it('renders the category page', function () {
         ->test('pages::categories')
         ->assertStatus(200)
         ->assertSee('Add new category')
-        ->assertSee('Your Categories')
+        ->assertSee('My Categories')
         ->assertSee('Work');
 });
 
@@ -29,7 +29,7 @@ it('creates a new category', function () {
 
     Livewire::actingAs($user)
         ->test('pages::categories')
-        ->call('addCategory', 'Work')
+        ->set('new_category', 'Work')->call('addCategory')
         ->assertHasNoErrors();
 
     expect($user->categories()->where('name', 'Work')->exists())->toBeTrue();
@@ -41,8 +41,8 @@ it('shows error for duplicate category', function () {
 
     Livewire::actingAs($user)
         ->test('pages::categories')
-        ->call('addCategory', 'Work')
-        ->assertHasErrors('new_category');
+        ->set('new_category', 'Work')->call('addCategory')
+        ->assertSet('add_error', 'already_exists');
 });
 
 it('validates new category name is required', function () {
@@ -50,7 +50,7 @@ it('validates new category name is required', function () {
 
     Livewire::actingAs($user)
         ->test('pages::categories')
-        ->call('addCategory', '')
+        ->set('new_category', '')->call('addCategory')
         ->assertHasErrors('new_category');
 });
 
@@ -59,7 +59,7 @@ it('validates new category name max length', function () {
 
     Livewire::actingAs($user)
         ->test('pages::categories')
-        ->call('addCategory', str_repeat('a', 256))
+        ->set('new_category', str_repeat('a', 256))->call('addCategory')
         ->assertHasErrors('new_category');
 });
 
@@ -69,7 +69,7 @@ it('edits a category name', function () {
 
     Livewire::actingAs($user)
         ->test('pages::categories')
-        ->call('editCategory', $category->id, 'Personal')
+        ->set('editing_id', $category->id)->set('edit_name', 'Personal')->call('editCategory')
         ->assertHasNoErrors();
 
     expect($category->fresh()->name)->toBe('Personal');
@@ -82,8 +82,8 @@ it('shows error for duplicate name on edit', function () {
 
     Livewire::actingAs($user)
         ->test('pages::categories')
-        ->call('editCategory', $category->id, 'Work')
-        ->assertHasErrors('edit_category');
+        ->set('editing_id', $category->id)->set('edit_name', 'Work')->call('editCategory')
+        ->assertSet('edit_error', 'already_exists');
 });
 
 it('validates edit category name is required', function () {
@@ -92,8 +92,8 @@ it('validates edit category name is required', function () {
 
     Livewire::actingAs($user)
         ->test('pages::categories')
-        ->call('editCategory', $category->id, '')
-        ->assertHasErrors('edit_category');
+        ->set('editing_id', $category->id)->set('edit_name', '')->call('editCategory')
+        ->assertHasErrors(['edit_name' => ['required']]);
 });
 
 it('validates edit category name max length', function () {
@@ -102,8 +102,8 @@ it('validates edit category name max length', function () {
 
     Livewire::actingAs($user)
         ->test('pages::categories')
-        ->call('editCategory', $category->id, str_repeat('a', 256))
-        ->assertHasErrors('edit_category');
+        ->set('editing_id', $category->id)->set('edit_name', str_repeat('a', 256))->call('editCategory')
+        ->assertHasErrors(['edit_name' => ['max']]);
 });
 
 it('deletes a category', function () {
@@ -112,7 +112,7 @@ it('deletes a category', function () {
 
     Livewire::actingAs($user)
         ->test('pages::categories')
-        ->call('deleteCategory', $category->id)
+        ->set('deleting_id', $category->id)->call('deleteCategory')
         ->assertHasNoErrors();
 
     expect($user->categories()->where('name', 'Work')->exists())->toBeFalse();
@@ -130,8 +130,8 @@ it('prevents deleting a category that has tasks', function () {
 
     Livewire::actingAs($user)
         ->test('pages::categories')
-        ->call('deleteCategory', $category->id)
-        ->assertHasErrors('delete_category');
+        ->set('deleting_id', $category->id)->call('deleteCategory')
+        ->assertSet('delete_error', 'has_tasks');
 
     expect($user->categories()->where('name', 'Work')->exists())->toBeTrue();
 });
@@ -153,5 +153,5 @@ it('shows task count for each category', function () {
 
     Livewire::actingAs($user)
         ->test('pages::categories')
-        ->assertSee('0 Tasks');
+        ->assertSee('No Tasks');
 });

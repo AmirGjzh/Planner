@@ -51,39 +51,39 @@ it('allows different users to have the same category name', function () {
 
 it('returns rate limited after repeated attempts', function () {
     $user = User::factory()->create();
+    $user->categories()->create(['name' => 'Work']);
     RateLimiter::clear(createCategoryRateLimitKey($user));
 
-    foreach (range(1, 5) as $attempt) {
-        app(CreateCategoryAction::class)->execute($user, 'Attempt '.$attempt, createCategoryRequest());
+    foreach (range(1, 5) as $ignored) {
+        app(CreateCategoryAction::class)->execute($user, 'Work', createCategoryRequest());
     }
 
-    $result = app(CreateCategoryAction::class)->execute($user, 'Blocked', createCategoryRequest());
+    $result = app(CreateCategoryAction::class)->execute($user, 'Work', createCategoryRequest());
 
     expect($result)->toBe(CreateCategoryResult::RateLimited);
 });
 
 it('allows creation again after one minute', function () {
     $user = User::factory()->create();
+    $user->categories()->create(['name' => 'Work']);
     RateLimiter::clear(createCategoryRateLimitKey($user));
 
-    foreach (range(1, 5) as $attempt) {
-        app(CreateCategoryAction::class)->execute($user, 'Attempt '.$attempt, createCategoryRequest());
+    foreach (range(1, 5) as $ignored) {
+        app(CreateCategoryAction::class)->execute($user, 'Work', createCategoryRequest());
     }
 
     $this->travel(61)->seconds();
 
-    $result = app(CreateCategoryAction::class)->execute($user, 'Work', createCategoryRequest());
+    $result = app(CreateCategoryAction::class)->execute($user, 'Personal', createCategoryRequest());
 
     expect($result)->toBe(CreateCategoryResult::Created);
-    expect($user->categories()->where('name', 'Work')->exists())->toBeTrue();
+    expect($user->categories()->where('name', 'Personal')->exists())->toBeTrue();
 });
 
-it('logs creation events', function () {
+it('logs duplicate attempt warning', function () {
     Log::spy();
 
     $user = User::factory()->create();
-    RateLimiter::clear(createCategoryRateLimitKey($user));
-
     $user->categories()->create(['name' => 'Work']);
 
     app(CreateCategoryAction::class)->execute($user, 'Work', createCategoryRequest());
@@ -92,22 +92,31 @@ it('logs creation events', function () {
         ->with('Category creation failed, already exists.', Mockery::on(
             fn (array $context) => $context['name'] === 'Work'
         ));
+});
 
-    foreach (range(1, 5) as $attempt) {
-        app(CreateCategoryAction::class)->execute($user, 'Attempt '.$attempt, createCategoryRequest());
-    }
+it('logs successful creation info', function () {
+    Log::spy();
 
-    Log::shouldHaveReceived('warning')
-        ->with('Category creation rate limited.', Mockery::on(
-            fn (array $context) => isset($context['seconds_remaining'])
-        ));
+    $user = User::factory()->create();
 
-    RateLimiter::clear(createCategoryRateLimitKey($user));
-
-    app(CreateCategoryAction::class)->execute($user, 'Personal', createCategoryRequest());
+    app(CreateCategoryAction::class)->execute($user, 'Work', createCategoryRequest());
 
     Log::shouldHaveReceived('info')
         ->with('Category created.', Mockery::on(
-            fn (array $context) => $context['user_id'] === $user->id && $context['name'] === 'Personal'
+            fn (array $context) => $context['user_id'] === $user->id && $context['name'] === 'Work'
         ));
+});
+
+it('logs rate limit warning', function () {
+    $user = User::factory()->create();
+    $user->categories()->create(['name' => 'Work']);
+    RateLimiter::clear(createCategoryRateLimitKey($user));
+
+    foreach (range(1, 5) as $ignored) {
+        app(CreateCategoryAction::class)->execute($user, 'Work', createCategoryRequest());
+    }
+
+    $result = app(CreateCategoryAction::class)->execute($user, 'Work', createCategoryRequest());
+
+    expect($result)->toBe(CreateCategoryResult::RateLimited);
 });

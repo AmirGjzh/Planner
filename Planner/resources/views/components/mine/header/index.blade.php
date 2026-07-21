@@ -1,7 +1,7 @@
 @php $routeName = request()->route()?->getName(); @endphp
 
 <div class=" flex  h-16 px-8 m-2 card justify-between items-center overflow-visible! z-40">
-    <div class="hidden md:flex items-center">
+    <div class="hidden sm:flex items-center">
         {{-- LOGO --}}
         <div class="pr-12">
             <div class="pr-3"></div>
@@ -30,7 +30,7 @@
             </x-mine.nav-link>
         </div>
     </div>
-    <div class="hidden md:flex items-center">
+    <div class="hidden sm:flex items-center">
         <div class="pr-2">
             <x-mine.theme-switcher />
         </div>

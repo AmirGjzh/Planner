@@ -7,18 +7,19 @@ use App\Models\Category;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 
-class DeleteCategoryAction
+final class DeleteCategoryAction
 {
     public function execute(User $user, Category $category): DeleteCategoryResult
     {
         abort_unless($user->can('delete', $category), 403);
+        $tasks_count = $category->tasks()->count();
 
-        if ($category->tasks()->exists()) {
+        if ($tasks_count > 0) {
             Log::warning('Category deletion failed, has tasks assigned.', [
                 'user_id' => $user->id,
                 'category_id' => $category->id,
                 'name' => $category->name,
-                'tasks_count' => $category->tasks()->count(),
+                'tasks_count' => $tasks_count,
             ]);
 
             return DeleteCategoryResult::HasTasks;

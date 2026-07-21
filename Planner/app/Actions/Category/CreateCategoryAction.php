@@ -8,26 +8,31 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 
-class CreateCategoryAction
+final class CreateCategoryAction
 {
+    private const int MAX_ATTEMPTS = 5;
+
+    private const int DECAY_SECONDS = 60;
+
     public function execute(User $user, string $name, Request $request): CreateCategoryResult
     {
         abort_unless($user->can('create', Category::class), 403);
 
-        $key = 'create-category:'.$user->id.'|'.$request->ip();
+        $rate_limit_key = $this->rateLimitKey($user, $request);
 
-        if (RateLimiter::tooManyAttempts($key, 5)) {
+        if (RateLimiter::tooManyAttempts($rate_limit_key, self::MAX_ATTEMPTS)) {
             Log::warning('Category creation rate limited.', [
                 'user_id' => $user->id,
-                'seconds_remaining' => RateLimiter::availableIn($key),
+                'available_in' => RateLimiter::availableIn($rate_limit_key),
             ]);
 
             return CreateCategoryResult::RateLimited;
         }
 
         if ($user->categories()->where('name', $name)->exists()) {
-            RateLimiter::hit($key, 60);
+            RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
             Log::warning('Category creation failed, already exists.', [
                 'user_id' => $user->id,
                 'name' => $name,
@@ -36,12 +41,9 @@ class CreateCategoryAction
             return CreateCategoryResult::AlreadyExists;
         }
 
-        $user->categories()->create([
-            'name' => $name,
-            'user_id' => $user->id,
-        ]);
+        $user->categories()->create(['name' => $name]);
 
-        RateLimiter::hit($key, 60);
+        RateLimiter::clear($rate_limit_key);
 
         Log::info('Category created.', [
             'user_id' => $user->id,
@@ -49,5 +51,10 @@ class CreateCategoryAction
         ]);
 
         return CreateCategoryResult::Created;
+    }
+
+    private function rateLimitKey(User $user, Request $request): string
+    {
+        return Str::transliterate('create-category:'.$user->id.'|'.$request->ip());
     }
 }

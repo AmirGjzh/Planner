@@ -6,122 +6,158 @@ use App\Actions\Category\EditCategoryAction;
 use App\Enums\CreateCategoryResult;
 use App\Enums\DeleteCategoryResult;
 use App\Enums\EditCategoryResult;
+use App\Livewire\Concerns\HasUser;
 use App\Models\Category;
-use App\Models\User;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Locked;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-new class extends Component
-{
-    use WithPagination;
+new class extends Component {
+    use HasUser, WithPagination;
 
-    #[Locked]
-    public int $userId;
+    public string $new_category = '';
 
-    public function mount(): void
-    {
-        $this->userId = auth()->id() ?? abort(403);
-    }
+    public ?string $add_error = null;
 
-    #[Computed]
-    public function user(): User
-    {
-        return User::query()->findOrFail($this->userId);
-    }
+    public ?string $add_success = null;
+
+    public ?int $editing_id = null;
+
+    public string $edit_name = '';
+
+    public ?string $edit_error = null;
+
+    public ?string $edit_success = null;
+
+    public ?int $deleting_id = null;
+
+    public ?string $delete_error = null;
+
+    #[Url]
+    public string $search = '';
 
     #[Computed]
     public function categories()
     {
         return Category::query()
-            ->where('user_id', $this->userId)
+            ->where('user_id', auth()->id())
+            ->when($this->search, fn($q) => $q->where('name', 'like', '%' . $this->search . '%'))
             ->withCount('tasks')
-            ->paginate(6);
+            ->latest()
+            ->paginate(9)->onEachSide(1);
     }
 
-    public function addCategory(string $name, CreateCategoryAction $action): void
+    public function updatingSearch(): void
     {
-        $validator = Validator::make(
-            ['name' => $name],
-            ['name' => ['required', 'string', 'max:255']]
-        );
+        $this->resetPage();
+    }
 
-        if ($validator->fails()) {
-            foreach ($validator->errors()->all() as $error) {
-                $this->addError('new_category', $error);
-            }
+    public function addCategory(CreateCategoryAction $action): void
+    {
+        $this->validate(['new_category' => $this->rules()['new_category']]);
 
-            return;
-        }
-
-        $name = Str::ucfirst(Str::lower($name));
+        $name = Str::ucfirst(Str::lower($this->new_category));
 
         $result = $action->execute($this->user, $name, request());
 
-        if ($result === CreateCategoryResult::AlreadyExists) {
-            $this->addError('new_category', 'This category already exists.');
+        $this->add_error = match ($result) {
+            CreateCategoryResult::AlreadyExists => 'already_exists',
+            CreateCategoryResult::RateLimited => 'rate_limited',
+            CreateCategoryResult::Created => null,
+        };
 
+        if ($this->add_error) {
+            $this->add_success = null;
             return;
         }
 
-        if ($result === CreateCategoryResult::RateLimited) {
-            $this->addError('new_category', 'Too many attempts. Please try again later.');
-
-            return;
-        }
-
+        $this->new_category = '';
+        $this->add_success = 'created';
         unset($this->categories);
     }
 
-    public function editCategory(int $categoryId, string $name, EditCategoryAction $action): void
+    public function cancelAdd(): void
     {
-        $validator = Validator::make(
-            ['name' => $name],
-            ['name' => ['required', 'string', 'max:255']]
-        );
+        $this->add_error = null;
+        $this->add_success = null;
+        $this->new_category = '';
+        $this->resetValidation();
+    }
 
-        if ($validator->fails()) {
-            foreach ($validator->errors()->all() as $error) {
-                $this->addError('edit_category', $error);
-            }
+    public function editCategory(EditCategoryAction $action): void
+    {
+        $this->validate(['edit_name' => $this->rules()['edit_name']]);
 
-            return;
-        }
+        $name = Str::ucfirst(Str::lower($this->edit_name));
 
-        $name = Str::ucfirst(Str::lower($name));
-
-        $category = $this->user->categories()->findOrFail($categoryId);
+        $category = $this->user->categories()->findOrFail($this->editing_id);
         $result = $action->execute($this->user, $category, $name, request());
 
-        if ($result === EditCategoryResult::AlreadyExists) {
-            $this->addError('edit_category', 'This category already exists.');
+        $this->edit_error = match ($result) {
+            EditCategoryResult::AlreadyExists => 'already_exists',
+            EditCategoryResult::RateLimited => 'rate_limited',
+            EditCategoryResult::Updated => null,
+        };
 
+        if ($this->edit_error) {
+            $this->edit_success = null;
             return;
         }
 
-        if ($result === EditCategoryResult::RateLimited) {
-            $this->addError('edit_category', 'Too many attempts. Please try again later.');
-
-            return;
-        }
-
+        $this->edit_name = '';
+        $this->editing_id = null;
+        $this->edit_success = 'updated';
         unset($this->categories);
     }
 
-    public function deleteCategory(int $categoryId, DeleteCategoryAction $action): void
+    public function cancelEdit(): void
     {
-        $category = $this->user->categories()->findOrFail($categoryId);
+        $this->edit_error = null;
+        $this->edit_success = null;
+        $this->resetValidation();
+    }
+
+    public function deleteCategory(DeleteCategoryAction $action): void
+    {
+        $category = $this->user->categories()->findOrFail($this->deleting_id);
 
         $result = $action->execute($this->user, $category);
 
-        if ($result === DeleteCategoryResult::HasTasks) {
-            $this->addError('delete_category', 'Cannot delete a category that has tasks. Reassign or delete the tasks first.');
+        $this->delete_error = match ($result) {
+            DeleteCategoryResult::HasTasks => 'has_tasks',
+            DeleteCategoryResult::Deleted => null,
+        };
 
-            return;
+        if ($result === DeleteCategoryResult::Deleted) {
+            $this->deleting_id = null;
+            unset($this->categories);
+            $this->dispatch('close-modal', id: 'delete-category-confirmation');
         }
+    }
 
-        unset($this->categories);
+    public function cancelDelete(): void
+    {
+        $this->delete_error = null;
+        $this->resetValidation();
+    }
+
+    protected function rules(): array
+    {
+        return [
+            'new_category' => ['required', 'string', 'max:255'],
+            'edit_name' => ['required', 'string', 'max:255'],
+        ];
+    }
+
+    protected function messages(): array
+    {
+        return [
+            'new_category.required' => 'Category name is required.',
+            'new_category.max' => 'Category name must not exceed 255 characters.',
+            'edit_name.required' => 'Category name is required.',
+            'edit_name.max' => 'Category name must not exceed 255 characters.',
+        ];
     }
 };

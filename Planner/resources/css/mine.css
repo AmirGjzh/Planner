@@ -335,6 +335,12 @@
     border: 2px solid var(--mine-input-border);
     background: var(--mine-card-bg);
     color: var(--mine-text-link);
+    @apply rounded-xl;
+    @apply text-sm font-medium;
+
+    &:hover {
+        @apply bg-(--mine-btn-ghost-bg-hover);
+    }
 }
 
 @utility card {
@@ -350,7 +356,6 @@
 
 @utility card-interactive {
     @apply card;
-    @apply cursor-pointer;
     @apply transition-all duration-200 ease-out;
     @apply hover:-translate-y-0.5;
     @apply hover:border-(--mine-card-border-hover);
@@ -365,7 +370,7 @@
             0 12px 32px rgba(15,23,42,.08);
     }
     &:active {
-        transform: translateY(0) scale(.995);
+        transform: translateY(0) scale(.97);
     }
 }
 

@@ -8,6 +8,7 @@
 @source '../../storage/framework/views/*.php';
 
 @theme {
+    --breakpoint-md: 56rem;
     --font-sans:
         "Instrument Sans", ui-sans-serif, system-ui, sans-serif,
         "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",

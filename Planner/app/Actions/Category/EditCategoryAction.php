@@ -8,19 +8,24 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 
-class EditCategoryAction
+final class EditCategoryAction
 {
+    private const int MAX_ATTEMPTS = 5;
+
+    private const int DECAY_SECONDS = 60;
+
     public function execute(User $user, Category $category, string $name, Request $request): EditCategoryResult
     {
         abort_unless($user->can('update', $category), 403);
 
-        $key = 'edit-category:'.$user->id.'|'.$request->ip();
+        $rate_limit_key = $this->rateLimitKey($user, $request);
 
-        if (RateLimiter::tooManyAttempts($key, 5)) {
+        if (RateLimiter::tooManyAttempts($rate_limit_key, self::MAX_ATTEMPTS)) {
             Log::warning('Category edit rate limited.', [
                 'user_id' => $user->id,
-                'seconds_remaining' => RateLimiter::availableIn($key),
+                'available_in' => RateLimiter::availableIn($rate_limit_key),
             ]);
 
             return EditCategoryResult::RateLimited;
@@ -32,7 +37,7 @@ class EditCategoryAction
             ->first();
 
         if ($existing) {
-            RateLimiter::hit($key, 60);
+            RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
             Log::warning('Category edit failed, already exists.', [
                 'user_id' => $user->id,
                 'category_id' => $category->id,
@@ -44,7 +49,7 @@ class EditCategoryAction
 
         $category->update(['name' => $name]);
 
-        RateLimiter::hit($key, 60);
+        RateLimiter::clear($rate_limit_key);
 
         Log::info('Category updated.', [
             'user_id' => $user->id,
@@ -53,5 +58,10 @@ class EditCategoryAction
         ]);
 
         return EditCategoryResult::Updated;
+    }
+
+    private function rateLimitKey(User $user, Request $request): string
+    {
+        return Str::transliterate('edit-category:'.$user->id.'|'.$request->ip());
     }
 }

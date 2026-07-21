@@ -15,7 +15,7 @@
                 </div>
             </div>
             <div class="mt-4 sm:mt-0 md:w-full md:px-4 md:mt-auto">
-                <x-mine.modal.trigger class="w-full" id="edit-profile-form" @click="$wire.cancelEdit()">
+                <x-mine.modal.trigger class="w-full" id="edit-profile-form">
                     <x-mine.button
                         type="button"
                         class=" btn-outline-primary">
@@ -72,7 +72,7 @@
                         data.</p>
                 </div>
                 <div class="flex justify-center items-center">
-                    <x-mine.modal.trigger class="w-full" id="delete-account-confirmation" @click="$wire.cancelDelete()">
+                    <x-mine.modal.trigger class="w-full" id="delete-account-confirmation">
                         <x-mine.button
                             type="button"
                             class="btn-outline-danger"
@@ -177,12 +177,13 @@
             @endif
 
             @unless($delete_error)
-                <x-mine.alert variant="info" title="Be Careful." class="mb-4">
+                <x-mine.alert variant="warning" title="Be Careful!" class="mb-4">
                     This action is permanent and cannot be undone.<br>Enter your password to continue.
                 </x-mine.alert>
             @endunless
 
-            <form wire:submit="deleteAccount" class="flex flex-col gap-6">
+            <form wire:submit="deleteAccount" class="flex flex-col gap-6"
+                @open-modal.window="if ($event.detail.id === 'delete-account-confirmation') { $nextTick(() => $el.querySelector('input')?.focus()) }">
                 <x-mine.input wire:model="password" label="Password"
                               placeholder="Enter your password" type="password" leftIcon="lock-closed" />
                 <div class="flex gap-4 justify-between items-center">
