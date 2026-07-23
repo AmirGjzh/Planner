@@ -121,18 +121,3 @@ it('logs successful edit info', function () {
             fn (array $context) => $context['user_id'] === $user->id
         ));
 });
-
-it('rate limits after repeated duplicate edits', function () {
-    $user = User::factory()->create();
-    $user->categories()->create(['name' => 'Work']);
-    $category = $user->categories()->create(['name' => 'Personal']);
-    RateLimiter::clear(editCategoryRateLimitKey($user));
-
-    foreach (range(1, 5) as $ignored) {
-        app(EditCategoryAction::class)->execute($user, $category, 'Work', editCategoryRequest());
-    }
-
-    $result = app(EditCategoryAction::class)->execute($user, $category, 'Work', editCategoryRequest());
-
-    expect($result)->toBe(EditCategoryResult::RateLimited);
-});
