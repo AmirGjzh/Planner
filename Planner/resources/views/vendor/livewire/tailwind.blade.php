@@ -45,7 +45,7 @@ if (count($elements) === 1 && is_array($elements[0])) {
 
 <div class="w-full">
     @if ($paginator->hasPages())
-        <nav role="navigation" aria-label="Pagination Navigation" class="w-full card h-18 flex items-center px-4 sm:px-6">
+        <nav role="navigation" aria-label="Pagination Navigation" class="w-full mine-card h-18 flex items-center px-4 sm:px-6">
             {{-- Mobile view --}}
             <div class="w-full flex justify-between sm:hidden">
                 @if ($paginator->onFirstPage())
@@ -76,7 +76,7 @@ if (count($elements) === 1 && is_array($elements[0])) {
             {{-- Desktop view --}}
             <div class="hidden sm:flex sm:items-center sm:justify-between w-full gap-4">
                 <div class="shrink-0">
-                    <p class="text-sm text-secondary font-medium">
+                    <p class="text-sm mine-text-secondary font-medium">
                         <span>{!! __('Showing') !!}</span>
                         <span class="font-medium mine-text-primary">{{ $paginator->firstItem() }}</span>
                         <span>{!! __('to') !!}</span>

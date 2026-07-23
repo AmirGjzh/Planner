@@ -3,22 +3,21 @@
         <h1 class="font-bold text-md mine-text-primary">My Profile</h1>
     </div>
     <div class="flex flex-col md:flex-row gap-6">
-        <div
-            class="card  flex-1 p-4 sm:p-6  flex flex-col sm:flex-row sm:items-center sm:justify-between md:flex-col md:items-center md:justify-center gap-4">
+        <div class="mine-card flex-1 p-4 sm:p-6  flex flex-col sm:flex-row sm:items-center sm:justify-between md:flex-col md:items-center md:justify-center gap-4">
             <div class="flex items-center gap-4 md:flex-col">
-                <div class="md:mt-20 size-20 rounded-full avatar flex justify-center items-center">
+                <div class="md:mt-20 size-20 rounded-full mine-badge-primary flex justify-center items-center">
                     <h1 class="font-bold text-xl">{{ strtoupper($this->user->firstname && $this->user->lastname ? substr($this->user->firstname, 0, 1) . substr($this->user->lastname, 0, 1) : substr($this->user->username, 0, 2)) }}</h1>
                 </div>
                 <div class="md:text-center md:flex-0 sm:flex-1 md:my-2">
                     <h1 class="font-bold text-md mine-text-primary mb-1">{{ $this->user->username }}</h1>
-                    <p class="font-medium text-sm text-secondary">{{ $this->user->email }}</p>
+                    <p class="font-medium text-sm mine-text-secondary">{{ $this->user->email }}</p>
                 </div>
             </div>
             <div class="mt-4 sm:mt-0 md:w-full md:px-4 md:mt-auto">
                 <x-mine.modal.trigger class="w-full" id="edit-profile-form">
                     <x-mine.button
                         type="button"
-                        class=" btn-outline-primary">
+                        class=" mine-btn-outline-primary">
                         <div class="flex justify-center items-center gap-2">
                             <x-mine.icon name="pencil-square" class="inline"/>
                             Edit Profile
@@ -29,53 +28,52 @@
         </div>
 
         <div class="md:flex-2 flex flex-col">
-            <div class="card p-6 sm:p-8 flex flex-col gap-4">
+            <div class="mine-card p-6 sm:p-8 flex flex-col gap-4">
                 <div class="mb-4">
                     <h1 class="font-bold text-sm mine-text-primary">Personal Information</h1>
                 </div>
                 <div class="flex justify-between px-2">
-                    <p class="text-sm font-medium text-secondary">Firstname</p>
-                    <p class="text-sm font-medium text-secondary">
+                    <p class="text-sm font-medium mine-text-secondary">Firstname</p>
+                    <p class="text-sm font-medium mine-text-secondary">
                         {{ $this->user->firstname ?? '—' }}
                     </p>
                 </div>
                 <div class="flex justify-between px-2">
-                    <p class="text-sm font-medium text-secondary">Lastname</p>
-                    <p class="text-sm font-medium text-secondary">
+                    <p class="text-sm font-medium mine-text-secondary">Lastname</p>
+                    <p class="text-sm font-medium mine-text-secondary">
                         {{ $this->user->lastname ?? '—' }}
                     </p>
                 </div>
                 <div class="flex justify-between px-2">
-                    <p class="text-sm font-medium text-secondary">Birthday</p>
-                    <p class="text-sm font-medium text-secondary">
+                    <p class="text-sm font-medium mine-text-secondary">Birthday</p>
+                    <p class="text-sm font-medium mine-text-secondary">
                         {{ $this->user->birthday?->format('Y-m-d') ?? '—' }}
                     </p>
                 </div>
                 <div class="flex justify-between px-2">
-                    <p class="text-sm font-medium text-secondary">Gender</p>
-                    <p class="text-sm font-medium text-secondary">{{ $this->user->gender ? ucfirst($this->user->gender->value) : '—' }}
+                    <p class="text-sm font-medium mine-text-secondary">Gender</p>
+                    <p class="text-sm font-medium mine-text-secondary">{{ $this->user->gender ? ucfirst($this->user->gender->value) : '—' }}
                     </p>
                 </div>
                 <div class="flex justify-between px-2">
-                    <p class="text-sm font-medium text-secondary">Country</p>
-                    <p class="text-sm font-medium text-secondary">{{ $this->countries[$this->user->country] ?? '—' }}
+                    <p class="text-sm font-medium mine-text-secondary">Country</p>
+                    <p class="text-sm font-medium mine-text-secondary">{{ $this->countries[$this->user->country] ?? '—' }}
                     </p>
                 </div>
             </div>
-            <div
-                class="flex flex-col sm:flex-row gap-4 px-4 sm:px-6 py-4 mt-6 sm:justify-between alert-danger-box">
+            <div class="flex flex-col sm:flex-row gap-4 px-4 sm:px-6 py-4 mt-6 sm:justify-between alert-danger-box">
                 <div class="flex items-center justify-center gap-4">
-                    <div class="size-12 rounded-full danger-icon flex justify-center items-center">
+                    <div class="size-12 rounded-full mine-badge-danger flex justify-center items-center">
                         <x-mine.icon name="trash" class="size-6"/>
                     </div>
-                    <p class="text-sm font-medium text-secondary">Delete your account and all of your
+                    <p class="text-sm font-medium mine-text-secondary">Delete your account and all of your
                         data.</p>
                 </div>
                 <div class="flex justify-center items-center">
                     <x-mine.modal.trigger class="w-full" id="delete-account-confirmation">
                         <x-mine.button
                             type="button"
-                            class="btn-outline-danger"
+                            class="mine-btn-outline-danger"
                         >
                             Delete Account
                         </x-mine.button>
@@ -145,10 +143,10 @@
                                        :years-range="[-100, 100]" wire:model="birthday" label="Birthday"/>
                 </div>
                 <div class="flex gap-4 justify-end mt-4">
-                    <x-mine.button type="button" @click="close(); $wire.cancelEdit()" class="btn-ghost">
+                    <x-mine.button type="button" @click="close(); $wire.cancelEdit()" class="mine-btn-ghost">
                         Cancel
                     </x-mine.button>
-                    <x-mine.button wire:target="editProfile" class="btn-primary">Save</x-mine.button>
+                    <x-mine.button wire:target="editProfile" class="mine-btn-primary">Save</x-mine.button>
                 </div>
             </form>
         </div>
@@ -188,9 +186,9 @@
                               placeholder="Enter your password" type="password" leftIcon="lock-closed" />
                 <div class="flex gap-4 justify-between items-center">
                     <x-mine.button type="button" @click="close(); $wire.cancelDelete()"
-                                   class="btn-ghost">Cancel
+                                   class="mine-btn-ghost">Cancel
                     </x-mine.button>
-                    <x-mine.button wire:target="deleteAccount" class="btn-danger">Delete Account
+                    <x-mine.button wire:target="deleteAccount" class="mine-btn-danger">Delete Account
                     </x-mine.button>
                 </div>
             </form>

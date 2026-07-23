@@ -113,7 +113,7 @@ $positionClass = match ($position) {
                     x-transition:leave="transition ease-in duration-150"
                     x-transition:leave-start="opacity-100 scale-100"
                     x-transition:leave-end="opacity-0 scale-95"
-                    class="relative w-full {{ $widthClass }} card bg-(--mine-modal-bg)"
+                    class="relative w-full {{ $widthClass }} mine-card bg-(--mine-modal-bg)"
                 >
                     {{ $slot }}
                 </div>

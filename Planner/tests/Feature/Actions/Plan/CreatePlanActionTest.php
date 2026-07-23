@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\RateLimiter;
 
 function createPlanRequest(): Request
 {
-    return Request::create('/plan-page', 'POST', server: ['REMOTE_ADDR' => '127.0.0.1']);
+    return Request::create('/plans', 'POST', server: ['REMOTE_ADDR' => '127.0.0.1']);
 }
 
 function createPlanRateLimitKey(User $user): string

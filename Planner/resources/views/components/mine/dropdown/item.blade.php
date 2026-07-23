@@ -15,10 +15,10 @@
     tabindex="-1"
     @click="close()"
     {{ $attributes->class([
-        'flex w-full items-center rounded-lg px-2 py-2 transition-all duration-200 ease-out outline-none no-underline',
-        'hover:bg-gray-100 focus:bg-[#ECF8F1] focus-visible:ring-4 focus-visible:ring-[#DDF3E7]'
+        'flex w-full items-center rounded-lg transition-all duration-200 ease-out outline-none no-underline text-sm mine-text-primary',
+        'hover:bg-(--mine-btn-ghost-bg-hover) focus:bg-(--mine-btn-ghost-bg-hover) focus-visible:ring-4 focus-visible:ring-(--mine-input-ring-focus)'
             => ! $destructive,
-        'hover:bg-[#FEF2F2] focus:bg-[#FDE8E8] focus-visible:ring-[#FAD4D4]'
+        'hover:bg-(--mine-alert-danger-icon-bg) focus:bg-(--mine-alert-danger-icon-bg) focus-visible:ring-4 focus-visible:ring-(--mine-alert-danger-border)'
             => $destructive,
         'cursor-not-allowed opacity-50'
             => $disabled,
@@ -34,10 +34,10 @@
     @disabled($disabled)
     @click="close()"
     {{ $attributes->class([
-        'flex w-full items-center rounded-lg px-2 py-2 transition-all duration-200 ease-out outline-none',
-        'hover:bg-gray-100 focus:bg-[#ECF8F1] focus-visible:ring-4 focus-visible:ring-[#DDF3E7]'
+        'flex w-full items-center rounded-lg transition-all duration-200 ease-out outline-none text-sm mine-text-primary',
+        'hover:bg-(--mine-btn-ghost-bg-hover) focus:bg-(--mine-btn-ghost-bg-hover) focus-visible:ring-4 focus-visible:ring-(--mine-input-ring-focus)'
             => ! $destructive,
-        'hover:bg-[#FEF2F2] focus:bg-[#FDE8E8] focus-visible:ring-[#FAD4D4]'
+        'hover:bg-(--mine-alert-danger-icon-bg) focus:bg-(--mine-alert-danger-icon-bg) focus-visible:ring-4 focus-visible:ring-(--mine-alert-danger-border)'
             => $destructive,
         'cursor-not-allowed opacity-50'
             => $disabled,

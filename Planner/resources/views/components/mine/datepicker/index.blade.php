@@ -336,7 +336,7 @@
                 <button
                     type="button"
                     x-on:click="prevMonth()"
-                    class="p-1.5 rounded-lg hover:cursor-pointer hover:bg-[var(--mine-btn-arrow-bg-hover)] transition-colors duration-200 text-secondary focus-visible:outline-none"
+                    class="p-1.5 rounded-lg hover:cursor-pointer hover:bg-[var(--mine-btn-arrow-bg-hover)] transition-colors duration-200 mine-text-secondary focus-visible:outline-none"
                 >
                     <x-mine.icon name="chevron-left" variant="mini" class="size-4" />
                 </button>
@@ -369,14 +369,14 @@
                         </select>
                     </template>
                     <template x-if="!selectableYears">
-                        <span class="text-sm text-secondary" x-text="year"></span>
+                        <span class="text-sm mine-text-secondary" x-text="year"></span>
                     </template>
                 </div>
 
                 <button
                     type="button"
                     x-on:click="nextMonth()"
-                    class="p-1.5 rounded-lg hover:cursor-pointer hover:bg-[var(--mine-btn-arrow-bg-hover)] transition-colors duration-200 text-secondary focus-visible:outline-none"
+                    class="p-1.5 rounded-lg hover:cursor-pointer hover:bg-[var(--mine-btn-arrow-bg-hover)] transition-colors duration-200 mine-text-secondary focus-visible:outline-none"
                 >
                     <x-mine.icon name="chevron-right" variant="mini" class="size-4" />
                 </button>
@@ -385,7 +385,7 @@
             <div class="grid justify-items-center grid-cols-7 mb-1">
                 <template x-for="day in dayLabels" :key="day">
                     <div class="flex items-center justify-center h-8">
-                        <span class="text-xs font-medium text-secondary" x-text="day"></span>
+                        <span class="text-xs font-medium mine-text-secondary" x-text="day"></span>
                     </div>
                 </template>
             </div>

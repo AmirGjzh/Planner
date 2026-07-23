@@ -12,7 +12,7 @@
     @livewireStyles
 </head>
 
-<body class="min-h-dvh flex flex-col bg-page">
+<body class="min-h-dvh flex flex-col mine-page-bg">
     <x-mine.header />
     {{ $slot }}
 </body>

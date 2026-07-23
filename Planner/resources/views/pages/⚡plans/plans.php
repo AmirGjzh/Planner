@@ -15,6 +15,9 @@ use Livewire\Component;
 
 new class extends Component
 {
+
+    public string $search = '';
+
     #[Locked]
     public int $userId;
 

@@ -1,18 +1,22 @@
 :root {
-    --mine-bg-page: linear-gradient(180deg, #FAFBFA 0%, #F1F6F3 100%);
+    --mine-page-bg: linear-gradient(180deg, #FCFDFC 0%, #F2F7F4 100%);
 
-    --mine-card-bg: rgba(255, 255, 255, 0.7);
-    --mine-card-border: #EAF0ED;
-    --mine-card-border-hover: #D6E2DB;
+    --mine-card-bg: rgba(255, 255, 255, .78);
+    --mine-card-bg-hover: rgba(255, 255, 255, .84);
+    --mine-card-border: #E9EFEB;
+    --mine-card-border-hover: #D8E2DC;
 
-    --mine-text-primary: #0f172b;
-    --mine-text-secondary: #4F6380;
-    --mine-text-error: #E53935;
-    --mine-text-link: #128047;
+    --mine-text-primary: #0F172B;
+    --mine-text-secondary: #5E6D67;
+    --mine-text-error: #DC2626;
+
+    --mine-text-link: #178A50;
+    --mine-text-link-hover: #128047;
+    --mine-text-link-ring-focus: #C8EAD6;
 
     --mine-btn-primary-bg: #1A9B5C;
-    --mine-btn-primary-bg-hover: #128047;
-    --mine-btn-primary-text: #ffffff;
+    --mine-btn-primary-bg-hover: #178A50;
+    --mine-btn-primary-text: #FFFFFF;
     --mine-btn-primary-ring-focus: #C8EAD6;
 
     --mine-btn-danger-bg: #DC2626;
@@ -20,60 +24,101 @@
     --mine-btn-danger-text: #ffffff;
     --mine-btn-danger-ring-focus: #FAD5D5;
 
-    --mine-btn-ghost-bg: #F8FAF9;
-    --mine-btn-ghost-bg-hover: #EDF5F0;
-    --mine-btn-ghost-text: #4F6380;
-    --mine-btn-ghost-ring-focus: #DFF5E7;
+    --mine-btn-ghost-bg: #F5F8F6;
+    --mine-btn-ghost-bg-hover: #EAF3ED;
+    --mine-btn-ghost-text: #5E6D67;
+    --mine-btn-ghost-ring-focus: #C8EAD6;
+
+    --mine-input-bg: #FAFBFA;
+    --mine-input-autofill-bg: #FAFBFA;
+    --mine-input-border: #D2DFD8;
+    --mine-input-border-focus: #1A9B5C;
+    --mine-input-ring-focus: #C8EAD6;
+    --mine-input-icon: #9AAEA0;
+    --mine-input-placeholder: #A2B0A9;
+    --mine-input-error-bg: #FDF2F2;
+    --mine-input-error-border: #F28B8B;
+    --mine-input-error-ring: #FAD5D5;
+
+    --mine-checkbox-bg: #1A9B5C;
+    --mine-checkbox-text: #ffffff;
 
     --mine-alert-danger-bg: #FDF2F2;
-    --mine-alert-danger-border: #ECC5C5;
+    --mine-alert-danger-border: #F2CACA;
     --mine-alert-danger-icon: #DC2626;
-    --mine-alert-danger-icon-bg: #f8e4e4;
+    --mine-alert-danger-icon-bg: #FEE2E2;
     --mine-alert-danger-title: #991B1B;
 
     --mine-alert-success-bg: #F0F9F4;
-    --mine-alert-success-border: #C5E6D3;
+    --mine-alert-success-border: #C8E8D5;
     --mine-alert-success-icon: #1A9B5C;
     --mine-alert-success-icon-bg: #E0F2E8;
     --mine-alert-success-title: #166534;
 
-    --mine-alert-warning-bg: #FFFBF0;
-    --mine-alert-warning-border: #FDE8C4;
-    --mine-alert-warning-icon: #f59e0b;
-    --mine-alert-warning-icon-bg: #F5EDD6;
+    --mine-alert-warning-bg: #FFF9EE;
+    --mine-alert-warning-border: #F6E3B8;
+    --mine-alert-warning-icon: #D97706;
+    --mine-alert-warning-icon-bg: #F8EDD3;
     --mine-alert-warning-title: #92400E;
 
-    --mine-alert-info-bg: #F0F5FF;
-    --mine-alert-info-border: #C8D9F8;
-    --mine-alert-info-icon: #3b82f6;
-    --mine-alert-info-icon-bg: #DCE8FA;
-    --mine-alert-info-title: #1e40af;
+    --mine-alert-info-bg: #F3F7FF;
+    --mine-alert-info-border: #D2E0F8;
+    --mine-alert-info-icon: #2563EB;
+    --mine-alert-info-icon-bg: #E3ECFC;
+    --mine-alert-info-title: #1D4ED8;
 
-    --mine-avatar-bg: #E8F1EC;
-    --mine-avater-text: #128047;
+    --mine-separator-border: #E3EBE7;
+
+    --mine-badge-primary-bg: #E6F3EC;
+    --mine-badge-primary-text: #128047;
+
+    --mine-badge-danger-bg: #f7e4e4;
+    --mine-badge-danger-text: #B42318;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    --mine-btn-secondary-bg: #4F6380;
+    --mine-btn-secondary-bg-hover: #475569;
+    --mine-btn-secondary-text: #FFFFFF;
+    --mine-btn-secondary-ring-focus: #E2E8F0;
+
+
+
+
+
+    --mine-avatar-secondary-bg: #F0F3F5;
+    --mine-avater-secondary-text: #4F6380;
 
     --mine-modal-bg: #ffffff;
     --mine-btn-x-bg-hover: #EDF5F0;
     --mine-btn-arrow-bg-hover: #EDF5F0;
 
-    --mine-input-bg: #FAFBFA;
-    --mine-input-autofill-bg: #FAFBFA;
-    --mine-input-border: #DAE6E0;
-    --mine-input-border-focus: #1A9B5C;
-    --mine-input-ring-focus: #DFF5E7;
-    --mine-input-icon: #9AAEA0;
-    --mine-input-placeholder: #98A8A0;
 
-    --mine-input-error-bg: #FDF2F2;
-    --mine-input-error-border: #EF9292;
-    --mine-input-error-ring: #F4DDDD;
 
     --mine-select-selected-bg: #F0F9F4;
     --mine-select-selected-text: #1A9B5C;
     --mine-select-bg-hover: #F5F8F6;
     --mine-select-ring-focus: #DFF5E7;
 
-    --mine-separator-border: #DAE6E0;
 
     --mine-datepicker-pill-bg: #1A9B5C;
     --mine-datepicker-pill-text: #ffffff;
@@ -87,10 +132,14 @@
     --mine-datepicker-today-decoration: #1A9B5C;
     --mine-datepicker-day-ring-focus: #DFF5E7;
 
-    --mine-checkbox-bg: #1A9B5C;
-    --mine-checkbox-text: #ffffff;
 
 
+    --mine-progress-track: #DAE6E0;
+    --mine-progress-gray-track: #E2E8F0;
+    --mine-progress-danger-track: #FEE2E2;
+    --mine-progress-fill: #1A9B5C;
+    --mine-progress-gray-fill: #4F6380;
+    --mine-progress-danger-fill: #DC2626;
 
     /* valid colors */
 
@@ -136,81 +185,114 @@
 }
 
 .dark {
-    --mine-bg-page: linear-gradient(180deg, #151C19 0%, #1A231F 100%);
+    --mine-page-bg: linear-gradient(180deg, #161D1B 0%, #1F2926 100%);
 
-    --mine-card-bg: #202925;
-    --mine-card-border: #36423D;
-    --mine-card-border-hover: #45544D;
+    --mine-card-bg: #222C28;
+    --mine-card-bg-hover: #26312D;
+    --mine-card-border: #384540;
+    --mine-card-border-hover: #46554E;
 
     --mine-text-primary: #F3F6F4;
-    --mine-text-secondary: #B2C2BA;
+    --mine-text-secondary: #AEBEB6;
     --mine-text-error: #F87171;
+
     --mine-text-link: #52D283;
+    --mine-text-link-hover: #67DB93;
+    --mine-text-link-ring-focus: rgba(82, 210, 131, .28);
 
     --mine-btn-primary-bg: #1A9B5C;
     --mine-btn-primary-bg-hover: #25B36D;
     --mine-btn-primary-text: #FFFFFF;
-    --mine-btn-primary-ring-focus: rgba(26, 155, 92, 0.22);
+    --mine-btn-primary-ring-focus: rgba(26, 155, 92, .28);
 
     --mine-btn-danger-bg: #DC2626;
     --mine-btn-danger-bg-hover: #EF4444;
     --mine-btn-danger-text: #FFFFFF;
-    --mine-btn-danger-ring-focus: rgba(239, 68, 68, 0.22);
+    --mine-btn-danger-ring-focus: rgba(239, 68, 68, .28);
 
     --mine-btn-ghost-bg: #27312D;
     --mine-btn-ghost-bg-hover: #313D38;
-    --mine-btn-ghost-text: #D3DDD8;
-    --mine-btn-ghost-ring-focus: rgba(26, 155, 92, 0.18);
-
-    --mine-alert-danger-bg: #332020;
-    --mine-alert-danger-border: #5E3333;
-    --mine-alert-danger-icon: #EF4444;
-    --mine-alert-danger-icon-bg: #311818;
-    --mine-alert-danger-title: #FCA5A5;
-
-    --mine-alert-success-bg: #1C3225;
-    --mine-alert-success-border: #30543C;
-    --mine-alert-success-icon: #34D399;
-    --mine-alert-success-icon-bg: #193122;
-    --mine-alert-success-title: #6EE7A2;
-
-    --mine-alert-warning-bg: #382E1B;
-    --mine-alert-warning-border: #685226;
-    --mine-alert-warning-icon: #FBBF24;
-    --mine-alert-warning-icon-bg: #3A2E18;
-    --mine-alert-warning-title: #F6D365;
-
-    --mine-alert-info-bg: #21314A;
-    --mine-alert-info-border: #365B89;
-    --mine-alert-info-icon: #60A5FA;
-    --mine-alert-info-icon-bg: #1C3152;
-    --mine-alert-info-title: #93C5FD;
-
-    --mine-avatar-bg: #2A4035;
-    --mine-avater-text: #57D08A;
-
-    --mine-modal-bg: #202925;
-    --mine-btn-x-bg-hover: #24302B;
-    --mine-btn-arrow-bg-hover: #24302B;
+    --mine-btn-ghost-text: #C9D5CF;
+    --mine-btn-ghost-ring-focus: rgba(26, 155, 92, .28);
 
     --mine-input-bg: #1B2320;
     --mine-input-autofill-bg: #1B2320;
     --mine-input-border: #44534C;
     --mine-input-border-focus: #1A9B5C;
-    --mine-input-ring-focus: rgba(26, 155, 92, 0.22);
+    --mine-input-ring-focus: rgba(26,155,92,.28);
     --mine-input-icon: #8FA19A;
-    --mine-input-placeholder: #879891;
-
+    --mine-input-placeholder: #92A29A;
     --mine-input-error-bg: #241616;
     --mine-input-error-border: #7F3636;
-    --mine-input-error-ring: rgba(239, 68, 68, 0.22);
+    --mine-input-error-ring: rgba(239,68,68,.28);
+
+    --mine-checkbox-bg: #1A9B5C;
+    --mine-checkbox-text: #FFFFFF;
+
+    --mine-alert-danger-bg: #332020;
+    --mine-alert-danger-border: #6A3B3B;
+    --mine-alert-danger-icon: #F87171;
+    --mine-alert-danger-icon-bg: #4A2222;
+    --mine-alert-danger-title: #FCA5A5;
+
+    --mine-alert-success-bg: #1C3225;
+    --mine-alert-success-border: #396347;
+    --mine-alert-success-icon: #34D399;
+    --mine-alert-success-icon-bg: #193122;
+    --mine-alert-success-title: #6EE7A2;
+
+    --mine-alert-warning-bg: #382E1B;
+    --mine-alert-warning-border: #755D2E;
+    --mine-alert-warning-icon: #FBBF24;
+    --mine-alert-warning-icon-bg: #41331A;
+    --mine-alert-warning-title: #F6D365;
+
+    --mine-alert-info-bg: #21314A;
+    --mine-alert-info-border: #426A9C;
+    --mine-alert-info-icon: #60A5FA;
+    --mine-alert-info-icon-bg: #223858;
+    --mine-alert-info-title: #93C5FD;
+
+    --mine-separator-border: #36423D;
+
+    --mine-badge-primary-bg: #2A4035;
+    --mine-badge-primary-text: #52D283;
+
+    --mine-badge-danger-bg: #4A2222;
+    --mine-badge-danger-text: #F87171;
+
+
+
+
+
+
+
+
+
+
+
+    --mine-btn-secondary-bg: #475569;
+    --mine-btn-secondary-bg-hover: #64748B;
+    --mine-btn-secondary-text: #FFFFFF;
+    --mine-btn-secondary-ring-focus: rgba(71, 85, 105, 0.22);
+
+
+
+
+    --mine-avatar-secondary-bg: #2E383D;
+    --mine-avater-secondary-text: #B2C2BA;
+
+    --mine-modal-bg: #202925;
+    --mine-btn-x-bg-hover: #24302B;
+    --mine-btn-arrow-bg-hover: #24302B;
+
+
 
     --mine-select-selected-bg: #234031;
     --mine-select-selected-text: #52D283;
     --mine-select-bg-hover: #2B3531;
     --mine-select-ring-focus: rgba(26, 155, 92, 0.22);
 
-    --mine-separator-border: #394640;
 
     --mine-datepicker-pill-bg: #1A9B5C;
     --mine-datepicker-pill-text: #FFFFFF;
@@ -224,110 +306,118 @@
     --mine-datepicker-today-decoration: #34D399;
     --mine-datepicker-day-ring-focus: rgba(26, 155, 92, 0.22);
 
-    --mine-checkbox-bg: #1A9B5C;
-    --mine-checkbox-text: #FFFFFF;
+
+    --mine-progress-track: #36423D;
+    --mine-progress-gray-track: #2a3646;
+    --mine-progress-danger-track: #451A1A;
+    --mine-progress-fill: #52D283;
+    --mine-progress-gray-fill: #475569;
+    --mine-progress-danger-fill: #EF4444;
 }
 
-@utility bg-page {
-    background: var(--mine-bg-page);
+@utility mine-page-bg {
+    background: var(--mine-page-bg);
 }
 
 @utility mine-text-primary {
-    color: var(--mine-text-primary);
+    @apply text-(--mine-text-primary);
 }
 
-@utility text-secondary {
-    color: var(--mine-text-secondary);
+@utility mine-text-secondary {
+    @apply text-(--mine-text-secondary);
 }
 
-@utility text-error {
-    color: var(--mine-text-error);
+@utility mine-text-error {
+    @apply text-(--mine-text-error);
 }
 
-@utility btn-primary {
-    background: var(--mine-btn-primary-bg);
-    color: var(--mine-btn-primary-text);
-    box-shadow:
-        0 1px 2px rgba(15,23,42,.06),
-        0 4px 12px rgba(26,155,92,.15);
-
-    &:hover {
-        background: var(--mine-btn-primary-bg-hover);
-        box-shadow:
-            0 2px 4px rgba(15,23,42,.08),
-            0 6px 16px rgba(26,155,92,.22);
-    }
-
-    &:focus-visible {
-        box-shadow:
-            0 1px 2px rgba(15,23,42,.06),
-            0 4px 12px rgba(26,155,92,.15),
-            0 0 0 4px var(--mine-btn-primary-ring-focus);
-    }
+@utility mine-text-link {
+    @apply text-(--mine-text-link);
+    @apply transition-all duration-200 ease-out;
+    @apply hover:text-(--mine-text-link-hover);
+    @apply focus-visible:outline-none;
+    @apply focus-visible:ring-2;
+    @apply focus-visible:ring-(--mine-text-link-ring-focus);
+    @apply rounded-sm;
 }
 
-@utility btn-danger {
-    background: var(--mine-btn-danger-bg);
-    color: var(--mine-btn-danger-text);
-    box-shadow:
-        0 1px 2px rgba(15,23,42,.06),
-        0 4px 12px rgba(220,38,38,.15);
-
-    &:hover {
-        background: var(--mine-btn-danger-bg-hover);
-        box-shadow:
-            0 2px 4px rgba(15,23,42,.08),
-            0 6px 16px rgba(220,38,38,.22);
-    }
-
-    &:focus-visible {
-        box-shadow:
-            0 1px 2px rgba(15,23,42,.06),
-            0 4px 12px rgba(220,38,38,.15),
-            0 0 0 4px var(--mine-btn-danger-ring-focus);
-    }
+@utility mine-btn-primary {
+    @apply bg-(--mine-btn-primary-bg);
+    @apply text-(--mine-btn-primary-text);
+    @apply transition-all duration-200 ease-out;
+    @apply hover:bg-(--mine-btn-primary-bg-hover);
+    @apply hover:-translate-y-px;
+    @apply active:translate-y-0;
+    @apply active:scale-[.98];
+    @apply focus-visible:outline-none;
+    @apply focus-visible:ring-4;
+    @apply focus-visible:ring-(--mine-btn-primary-ring-focus);
 }
 
-@utility btn-ghost {
-    background: var(--mine-btn-ghost-bg);
-    color: var(--mine-btn-ghost-text);
-
-    &:hover {
-        background: var(--mine-btn-ghost-bg-hover);
-    }
-
-    &:focus-visible {
-        box-shadow: 0 0 0 4px var(--mine-btn-ghost-ring-focus);
-    }
+@utility mine-btn-danger {
+    @apply bg-(--mine-btn-danger-bg);
+    @apply text-(--mine-btn-danger-text);
+    @apply transition-all duration-200 ease-out;
+    @apply hover:bg-(--mine-btn-danger-bg-hover);
+    @apply active:scale-[.98];
+    @apply focus-visible:outline-none;
+    @apply focus-visible:ring-4;
+    @apply focus-visible:ring-(--mine-btn-danger-ring-focus);
 }
 
-@utility btn-outline-primary {
+@utility mine-btn-ghost {
+    @apply bg-(--mine-btn-ghost-bg);
+    @apply text-(--mine-btn-ghost-text);
+    @apply transition-all duration-200 ease-out;
+    @apply hover:bg-(--mine-btn-ghost-bg-hover);
+    @apply active:scale-[.98];
+    @apply focus-visible:outline-none;
+    @apply focus-visible:ring-4;
+    @apply focus-visible:ring-(--mine-btn-ghost-ring-focus);
+}
+
+@utility mine-btn-outline-primary {
+    @apply bg-transparent;
+    @apply text-(--mine-btn-primary-bg);
+    @apply border-2;
+    @apply border-(--mine-btn-primary-bg);
+    @apply transition-all duration-200 ease-out;
+    @apply hover:bg-(--mine-btn-primary-bg);
+    @apply hover:text-(--mine-btn-primary-text);
+    @apply hover:border-transparent;
+    @apply active:scale-[.98];
+    @apply focus-visible:outline-none;
+    @apply focus-visible:ring-4;
+    @apply focus-visible:ring-(--mine-btn-primary-ring-focus);
+}
+
+@utility mine-btn-outline-danger {
+    @apply bg-transparent;
+    @apply text-(--mine-btn-danger-bg);
+    @apply border-2;
+    @apply border-(--mine-btn-danger-bg);
+    @apply transition-all duration-200 ease-out;
+    @apply hover:bg-(--mine-btn-danger-bg);
+    @apply hover:text-(--mine-btn-danger-text);
+    @apply hover:border-transparent;
+    @apply active:scale-[.98];
+    @apply focus-visible:outline-none;
+    @apply focus-visible:ring-4;
+    @apply focus-visible:ring-(--mine-btn-danger-ring-focus);
+}
+
+@utility btn-outline-secondary {
     background: transparent;
-    color: var(--mine-btn-primary-bg-hover);
-    border: 2px solid var(--mine-btn-primary-bg);
+    color: var(--mine-btn-secondary-bg-hover);
+    border: 2px solid var(--mine-btn-secondary-bg);
 
     &:hover {
-        background: var(--mine-btn-primary-bg);
-        color: var(--mine-btn-primary-text);
+        background: var(--mine-btn-secondary-bg);
+        color: var(--mine-btn-secondary-text);
     }
 
     &:focus-visible {
-        box-shadow: 0 0 0 4px var(--mine-btn-primary-ring-focus);
-    }
-}
-
-@utility btn-outline-danger {
-    background: transparent;
-    color: var(--mine-btn-danger-bg-hover);
-    border: 2px solid var(--mine-btn-danger-bg);
-
-    &:hover {
-        background: var(--mine-btn-danger-bg);
-        color: var(--mine-btn-danger-text);
-    }
-
-    &:focus-visible {
-        box-shadow: 0 0 0 4px var(--mine-btn-danger-ring-focus);
+        box-shadow: 0 0 0 4px var(--mine-btn-secondary-ring-focus);
     }
 }
 
@@ -343,49 +433,53 @@
     }
 }
 
-@utility card {
-    @apply relative rounded-3xl;
+@utility mine-card {
+    @apply relative rounded-xl;
     @apply border border-(--mine-card-border);
+    @apply bg-(--mine-card-bg);
     @apply backdrop-blur-md;
-    @apply transition-colors duration-300;
-    background: var(--mine-card-bg);
+
     box-shadow:
-        0 1px 2px rgba(15,23,42,.03),
-        0 8px 24px rgba(15,23,42,.05);
+        0 1px 2px rgba(15, 23, 42, .02),
+        0 8px 18px rgba(15, 23, 42, .05),
+        0 20px 40px rgba(15, 23, 42, .03);
 }
 
-@utility card-interactive {
-    @apply card;
-    @apply transition-all duration-200 ease-out;
+@utility mine-card-interactive {
+    @apply mine-card;
     @apply hover:-translate-y-0.5;
     @apply hover:border-(--mine-card-border-hover);
-
-    box-shadow:
-        0 1px 2px rgba(15,23,42,.03),
-        0 8px 24px rgba(15,23,42,.05);
+    @apply hover:bg-(--mine-card-bg-hover);
+    @apply active:translate-y-0;
+    @apply active:scale-[.992];
+    @apply transition-all duration-200 ease-out;
 
     &:hover {
         box-shadow:
-            0 2px 4px rgba(15,23,42,.04),
-            0 12px 32px rgba(15,23,42,.08);
-    }
-    &:active {
-        transform: translateY(0) scale(.97);
+            0 2px 4px rgba(15, 23, 42, .03),
+            0 12px 26px rgba(15, 23, 42, .06),
+            0 28px 50px rgba(15, 23, 42, .04);
     }
 }
 
 @utility alert-danger-box {
-    @apply rounded-2xl;
-    background: var(--mine-alert-danger-bg);
-    border: 2px solid var(--mine-alert-danger-border);
+    @apply rounded-xl;
+    @apply bg-(--mine-alert-danger-bg);
+    @apply border-2 border-(--mine-alert-danger-border);
 }
 
-@utility danger-icon {
-    background: var(--mine-alert-danger-icon-bg);
-    color: var(--mine-alert-danger-icon);
+@utility mine-badge-primary {
+    @apply bg-(--mine-badge-primary-bg);
+    @apply text-(--mine-badge-primary-text);
 }
 
-@utility avatar {
-    background: var(--mine-avatar-bg);
-    color: var(--mine-avater-text);
+@utility mine-badge-danger {
+     @apply bg-(--mine-badge-danger-bg);
+    @apply text-(--mine-badge-danger-text);
+}
+
+
+@utility avatar-secondary {
+    background: var(--mine-avatar-secondary-bg);
+    color: var(--mine-avater-secondary-text);
 }

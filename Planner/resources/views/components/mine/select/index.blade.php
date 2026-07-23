@@ -209,7 +209,7 @@
                         data-select-search
                         type="text"
                         placeholder="Search..."
-                        class="w-full h-8 bg-transparent text-sm text-[var(--mine-text-primary)] placeholder:text-[var(--mine-input-placeholder)] outline-none"
+                        class="w-full h-8 bg-transparent text-sm mine-text-primary placeholder:text-[var(--mine-input-placeholder)] outline-none"
                     />
                 </div>
             @endif
@@ -222,7 +222,7 @@
 
                 <li
                     x-show="isOpen && search !== '' && resultsCount === 0"
-                    class="flex items-center justify-center h-14 text-sm text-[var(--mine-text-secondary)]"
+                    class="flex items-center justify-center h-14 text-sm mine-text-secondary"
                 >
                     No results found
                 </li>

@@ -41,14 +41,14 @@
             'bg-[var(--mine-input-bg)]' => !$errors->has($name),
             'bg-[var(--mine-input-error-bg)]' => $errors->has($name),
             'border-[var(--mine-input-border)]' => !$errors->has($name),
-            'border-[var(--mine-input-error-border)] ring-4 ring-[var(--mine-input-error-ring)]' => $errors->has($name),
+            'border-[var(--mine-input-error-border)]' => $errors->has($name),
             'focus-within:border-[var(--mine-input-border-focus)] focus-within:ring-4 focus-within:ring-[var(--mine-input-ring-focus)]' => !$errors->has($name),
             'focus-within:border-[var(--mine-input-error-border)] focus-within:ring-[var(--mine-input-error-ring)] focus-within:ring-4' => $errors->has($name)
         ])
         @if($errors->has($name)) style="--mine-input-autofill-bg: var(--mine-input-error-bg)" @endif
     >
         @if($leftIcon)
-            <div class="flex h-full items-center pl-4 text-(--mine-input-icon)">
+            <div class="flex h-full items-center pl-4 text-(--mine-input-icon) group-focus-within:text-(--mine-input-border-focus)">
                 <x-mine.icon variant="solid" :name="$leftIcon" />
             </div>
         @endif
@@ -77,7 +77,7 @@
                 type="button"
                 @click="show = !show"
                 tabindex="-1"
-                class="flex h-full items-center pr-4 text-(--mine-input-icon) hover:cursor-pointer transition-colors duration-200"
+                class="flex h-full items-center pr-4 text-(--mine-input-icon) group-focus-within:text-(--mine-input-border-focus) hover:cursor-pointer transition-colors duration-200"
             >
                 <template x-if="!show">
                     <x-mine.icon variant="solid" name="eye-slash" />

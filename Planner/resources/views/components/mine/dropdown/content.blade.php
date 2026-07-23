@@ -4,10 +4,10 @@
 
 @php
 $placements = [
-    'bottom-start' => 'left-0 top-full mt-2 origin-top-left',
-    'bottom-end' => 'right-0 top-full mt-2 origin-top-right',
-    'top-start' => 'left-0 bottom-full mb-2 origin-bottom-left',
-    'top-end' => 'right-0 bottom-full mb-2 origin-bottom-right',
+    'bottom-start' => 'left-0 top-full mt-0 origin-top-left',
+    'bottom-end' => 'right-0 top-full mt-0 origin-top-right',
+    'top-start' => 'left-0 bottom-full mb-0 origin-bottom-left',
+    'top-end' => 'right-0 bottom-full mb-0 origin-bottom-right',
 ];
 $position = $placements[$placement] ?? $placements['bottom-end'];
 @endphp
@@ -32,12 +32,12 @@ $position = $placements[$placement] ?? $placements['bottom-end'];
         z-50
         w-max max-w-80
         {{ $position }}
+        bg-[var(--mine-input-bg)]
         rounded-xl
-        border
-        border-[#E4ECE7]
-        bg-white
-        shadow-md
-        p-2
+        border-2
+        border-[var(--mine-input-border)]
+        shadow-lg
+        p-1
     "
     {{ $attributes }}
 >

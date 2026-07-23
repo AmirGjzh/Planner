@@ -1,6 +1,6 @@
 @php $routeName = request()->route()?->getName(); @endphp
 
-<div class=" flex  h-16 px-8 m-2 card justify-between items-center overflow-visible! z-40">
+<div class=" flex  h-16 px-8 m-2 mine-card justify-between items-center overflow-visible! z-40">
     <div class="hidden sm:flex items-center">
         {{-- LOGO --}}
         <div class="pr-12">
@@ -17,7 +17,7 @@
                 Tasks
             </x-mine.nav-link>
 
-            <x-mine.nav-link href="{{ route('plan-page') }}" :route="'plan-page'" :active="$routeName === 'plan-page'">
+            <x-mine.nav-link href="{{ route('plans') }}" :route="'plans'" :active="$routeName === 'plans'">
                 Plans
             </x-mine.nav-link>
 

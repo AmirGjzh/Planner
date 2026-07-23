@@ -291,12 +291,12 @@ The phase is complete when:
 **Goal:** Allow an authenticated user to create, edit, and delete plans. Creating a plan requires a name, optional description, and a required date range (start/end). Editing allows modifying name, description, or date range from a modal. Deletion is blocked when the plan still has tasks assigned.
 
 **Routes:**
-- `GET /plan-page` → Livewire page `pages::plan-page`, auth-only route.
+- `GET /plans` → Livewire page `pages::plans`, auth-only route.
 
 **Implementation Files:**
-- `routes/web.php` — defines the authenticated plan-page route.
-- `resources/views/pages/⚡plan-page/plan-page.php` — Livewire page state; `addPlan()` validates fields and calls `CreatePlanAction`; `startEditing()` queries the plan, `updatePlan()` calls `EditPlanAction`; `deletePlan()` calls `DeletePlanAction`. All three handle result enums with inline errors and bust cache via `unset($this->plans)`.
-- `resources/views/pages/⚡plan-page/plan-page.blade.php` — creation form, edit modal (Alpine `$dispatch('open-modal')` + `$wire.startEditing()`), delete buttons, plan list with `withCount('tasks')`, empty state.
+- `routes/web.php` — defines the authenticated plans route.
+- `resources/views/pages/⚡plans/plans.php` — Livewire page state; `addPlan()` validates fields and calls `CreatePlanAction`; `startEditing()` queries the plan, `updatePlan()` calls `EditPlanAction`; `deletePlan()` calls `DeletePlanAction`. All three handle result enums with inline errors and bust cache via `unset($this->plans)`.
+- `resources/views/pages/⚡plans/plans.blade.php` — creation form, edit modal (Alpine `$dispatch('open-modal')` + `$wire.startEditing()`), delete buttons, plan list with `withCount('tasks')`, empty state.
 - `app/Actions/Plan/CreatePlanAction.php` — create action; authorization via `$user->can('create', Plan::class)`, rate limiting (5/min) before duplicate-name check, user-scoped uniqueness, returns `Created`, `AlreadyExists`, or `RateLimited`.
 - `app/Actions/Plan/EditPlanAction.php` — edit action; authorization via `$user->can('update', $plan)`, rate limiting (5/min), uniqueness excluding self, returns `Updated`, `AlreadyExists`, or `RateLimited`.
 - `app/Actions/Plan/DeletePlanAction.php` — delete action; authorization via `$user->can('delete', $plan)`, checks `$plan->tasks()->count()` before deletion, returns `Deleted` or `HasTasks`.
@@ -311,7 +311,7 @@ The phase is complete when:
 - `tests/Feature/Actions/Plan/CreatePlanActionTest.php` — 6 action tests: creation, duplicate, cross-user, rate limiting, retry, logging.
 - `tests/Feature/Actions/Plan/EditPlanActionTest.php` — 7 action tests: update, duplicate, same-name, ownership, rate limiting, retry, logging.
 - `tests/Feature/Actions/Plan/DeletePlanActionTest.php` — 4 action tests: deletion, ownership, has-tasks prevention, logging.
-- `resources/views/pages/⚡plan-page/plan-page.test.php` — 18 co-located Livewire tests covering all CRUD operations with validation, errors, and rate limiting.
+- `resources/views/pages/⚡plans/plans.test.php` — 18 co-located Livewire tests covering all CRUD operations with validation, errors, and rate limiting.
 - `tests/Feature/Auth/PlanPageAccessTest.php` — 2 access tests for guest redirect and authenticated access.
 
 **Security and Reliability Notes:**
@@ -494,16 +494,16 @@ The phase is complete when:
 **Goal:** Allow authenticated users to view tasks assigned to a plan with progress, see plan completion percentage, and track progress as tasks are toggled done/not-done.
 
 **Routes:**
-- `GET /plan-page` → Livewire page `pages::plan-page`, auth-only route (same page as UC-07).
+- `GET /plans` → Livewire page `pages::plans`, auth-only route (same page as UC-07).
 
 **Implementation Files:**
-- `resources/views/pages/⚡plan-page/plan-page.php` — added `->with('tasks')` to the `plans()` computed property to eagerly load tasks for the popover display.
-- `resources/views/pages/⚡plan-page/plan-page.blade.php` — added a `<x-ui.popover>` per plan card containing: a task list (title + done/not-done icon) via `@forelse($plan->tasks)`, a progress display showing `doneCount/tasks_count (progress%)` with an `<x-ui.progress>` bar, and an empty state for plans with no tasks. "View Tasks" button replaced the previous placeholder.
+- `resources/views/pages/⚡plans/plans.php` — added `->with('tasks')` to the `plans()` computed property to eagerly load tasks for the popover display.
+- `resources/views/pages/⚡plans/plans.blade.php` — added a `<x-ui.popover>` per plan card containing: a task list (title + done/not-done icon) via `@forelse($plan->tasks)`, a progress display showing `doneCount/tasks_count (progress%)` with an `<x-ui.progress>` bar, and an empty state for plans with no tasks. "View Tasks" button replaced the previous placeholder.
 - `resources/js/app.js` — added `import './components/progress.js';` to register the progress bar Alpine component (previously missing, causing `progressComponent is not defined` JS errors).
 - `resources/js/components/progress.js` — existing progress bar Alpine component (was not imported in `app.js`).
 
 **Testing Files:**
-- `resources/views/pages/⚡plan-page/plan-page.test.php` — 5 new tests covering: view tasks popover with task list, progress with mixed done tasks, 100% progress, 0% progress, and empty state for plans with no tasks.
+- `resources/views/pages/⚡plans/plans.test.php` — 5 new tests covering: view tasks popover with task list, progress with mixed done tasks, 100% progress, 0% progress, and empty state for plans with no tasks.
 
 **Security and Reliability Notes:**
 - Plan access is protected by the `auth` middleware.
@@ -514,7 +514,7 @@ The phase is complete when:
 - No new routes, actions, enums, or models — purely view-level additions.
 - Real-time progress tracking is satisfied for Layer 1: progress is recomputed from the database on every page visit. Cross-component reactivity (e.g., toggling a task on the task page and seeing progress update on the plan page without navigation) is deferred to Layer 2.
 
-**Acceptance Result:** UC-14 is accepted. Authenticated users can view tasks per plan in a popover with done/not-done indicators, see completion percentage with a progress bar, and track plan progress. The use case is covered by 233 total passing tests (583 assertions), including 5 new plan-page tests.
+**Acceptance Result:** UC-14 is accepted. Authenticated users can view tasks per plan in a popover with done/not-done indicators, see completion percentage with a progress bar, and track plan progress. The use case is covered by 233 total passing tests (583 assertions), including 5 new plans tests.
 
 ### UC-12 – Reports
 

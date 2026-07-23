@@ -33,8 +33,7 @@
         'px-4',
         'text-[15px]',
         'font-semibold',
-        'active:translate-y-[1px]',
-        'transition-all',
+        'transition',
         'duration-200',
         'ease-out',
         'cursor-pointer',
@@ -42,8 +41,8 @@
         'whitespace-nowrap',
         'focus-visible:outline-none',
         '[&>[data-loading=true]:first-child]:flex' => true,
-        '[&>[data-loading=true]:first-child~*]:opacity-0' => true,
-        'btn-primary' => ! $userHasClass,
+        '[&>[data-loading=true]:first-child~*]:invisible' => true,
+        'mine-btn-primary' => ! $userHasClass,
     ];
 @endphp
 
@@ -58,7 +57,7 @@
         {{ $loadingAttributes }}
     >
         <svg
-            class="size-5 animate-spin text-(--mine-btn-primary-text)"
+            class="size-5 animate-spin text-current"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"

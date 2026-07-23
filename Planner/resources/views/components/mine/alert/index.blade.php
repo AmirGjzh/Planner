@@ -36,11 +36,11 @@
 
 <div
     {{ $attributes->class([
-        'flex items-center gap-4 rounded-2xl border-2 p-4',
+        'flex items-start gap-4 rounded-xl border-2 p-4',
         $style['container'],
     ]) }}
 >
-    <div class="{{ $style['icon-color'] }}">
+    <div class="{{ $style['icon-color'] }} pt-0.5">
         <x-mine.icon name="{{ $style['icon'] }}" class="size-7" />
     </div>
     <div>
@@ -49,7 +49,7 @@
                 {{ $title }}
             </h3>
         @endif
-        <div class="mt-1 font-medium text-sm text-secondary">
+        <div class="mt-1 font-medium text-sm mine-text-secondary">
             {{ $slot }}
         </div>
     </div>

@@ -20,7 +20,7 @@
             items-center
             justify-center
             focus-visible:ring-4
-            focus-visible:ring-[#DDF3E7]
+            focus-visible:ring-(--mine-input-ring-focus)
             focus-visible:outline-none
             transition-all
             duration-200
@@ -51,7 +51,7 @@
             justify-center
             cursor-pointer
             focus-visible:ring-4
-            focus-visible:ring-[#DDF3E7]
+            focus-visible:ring-(--mine-input-ring-focus)
             focus-visible:outline-none
             transition-all
             duration-200

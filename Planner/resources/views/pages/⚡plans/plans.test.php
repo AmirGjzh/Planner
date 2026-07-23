@@ -10,7 +10,7 @@ it('renders the plan page', function () {
     $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
 
     Livewire::actingAs($user)
-        ->test('pages::plan-page')
+        ->test('pages::plans')
         ->assertStatus(200)
         ->assertSee('Add new plan')
         ->assertSee('Your Plans')
@@ -21,7 +21,7 @@ it('shows empty state when no plans exist', function () {
     $user = User::factory()->create();
 
     Livewire::actingAs($user)
-        ->test('pages::plan-page')
+        ->test('pages::plans')
         ->assertSee('No plans yet. Create one above.');
 });
 
@@ -29,7 +29,7 @@ it('creates a new plan', function () {
     $user = User::factory()->create();
 
     Livewire::actingAs($user)
-        ->test('pages::plan-page')
+        ->test('pages::plans')
         ->set('plan_name', 'Work')
         ->set('range', ['start' => '2026-01-01', 'end' => '2026-01-31'])
         ->call('addPlan')
@@ -43,7 +43,7 @@ it('shows error for duplicate plan name', function () {
     $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
 
     Livewire::actingAs($user)
-        ->test('pages::plan-page')
+        ->test('pages::plans')
         ->set('plan_name', 'Work')
         ->set('range', ['start' => '2026-02-01', 'end' => '2026-02-28'])
         ->call('addPlan')
@@ -54,7 +54,7 @@ it('validates plan name is required', function () {
     $user = User::factory()->create();
 
     Livewire::actingAs($user)
-        ->test('pages::plan-page')
+        ->test('pages::plans')
         ->set('plan_name', '')
         ->set('range', ['start' => '2026-01-01', 'end' => '2026-01-31'])
         ->call('addPlan')
@@ -65,7 +65,7 @@ it('validates plan name max length', function () {
     $user = User::factory()->create();
 
     Livewire::actingAs($user)
-        ->test('pages::plan-page')
+        ->test('pages::plans')
         ->set('plan_name', str_repeat('a', 256))
         ->set('range', ['start' => '2026-01-01', 'end' => '2026-01-31'])
         ->call('addPlan')
@@ -78,7 +78,7 @@ it('returns rate limited on create after too many attempts', function () {
 
     foreach (range(1, 5) as $i) {
         Livewire::actingAs($user)
-            ->test('pages::plan-page')
+            ->test('pages::plans')
             ->set('plan_name', 'Plan '.$i)
             ->set('range', ['start' => '2026-01-01', 'end' => '2026-01-31'])
             ->call('addPlan')
@@ -86,7 +86,7 @@ it('returns rate limited on create after too many attempts', function () {
     }
 
     Livewire::actingAs($user)
-        ->test('pages::plan-page')
+        ->test('pages::plans')
         ->set('plan_name', 'Blocked')
         ->set('range', ['start' => '2026-02-01', 'end' => '2026-02-28'])
         ->call('addPlan')
@@ -98,7 +98,7 @@ it('edits a plan', function () {
     $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
 
     Livewire::actingAs($user)
-        ->test('pages::plan-page')
+        ->test('pages::plans')
         ->call('startEditing', $plan->id)
         ->assertSet('editingPlanId', $plan->id)
         ->assertSet('editName', 'Work')
@@ -107,7 +107,7 @@ it('edits a plan', function () {
     RateLimiter::clear('edit-plan:'.$user->id.'|127.0.0.1');
 
     Livewire::actingAs($user)
-        ->test('pages::plan-page')
+        ->test('pages::plans')
         ->call('startEditing', $plan->id)
         ->set('editName', 'Personal')
         ->set('editRange', ['start' => '2026-03-01', 'end' => '2026-03-31'])
@@ -122,7 +122,7 @@ it('populates edit fields via startEditing', function () {
     $plan = $user->plans()->create(['name' => 'Work', 'description' => 'My plan', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
 
     Livewire::actingAs($user)
-        ->test('pages::plan-page')
+        ->test('pages::plans')
         ->call('startEditing', $plan->id)
         ->assertSet('editingPlanId', $plan->id)
         ->assertSet('editName', 'Work')
@@ -134,7 +134,7 @@ it('resets edit fields via cancelEditing', function () {
     $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
 
     Livewire::actingAs($user)
-        ->test('pages::plan-page')
+        ->test('pages::plans')
         ->call('startEditing', $plan->id)
         ->call('cancelEditing')
         ->assertSet('editingPlanId', null)
@@ -147,7 +147,7 @@ it('shows duplicate name error on edit', function () {
     $plan = $user->plans()->create(['name' => 'Personal', 'start_date' => '2026-02-01', 'finish_date' => '2026-02-28']);
 
     Livewire::actingAs($user)
-        ->test('pages::plan-page')
+        ->test('pages::plans')
         ->call('startEditing', $plan->id)
         ->set('editName', 'Work')
         ->set('editRange', ['start' => '2026-03-01', 'end' => '2026-03-31'])
@@ -160,7 +160,7 @@ it('validates edit name is required', function () {
     $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
 
     Livewire::actingAs($user)
-        ->test('pages::plan-page')
+        ->test('pages::plans')
         ->call('startEditing', $plan->id)
         ->set('editName', '')
         ->set('editRange', ['start' => '2026-03-01', 'end' => '2026-03-31'])
@@ -173,7 +173,7 @@ it('validates edit name max length', function () {
     $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
 
     Livewire::actingAs($user)
-        ->test('pages::plan-page')
+        ->test('pages::plans')
         ->call('startEditing', $plan->id)
         ->set('editName', str_repeat('a', 256))
         ->set('editRange', ['start' => '2026-03-01', 'end' => '2026-03-31'])
@@ -188,7 +188,7 @@ it('returns rate limited on edit after too many attempts', function () {
 
     foreach (range(1, 5) as $i) {
         Livewire::actingAs($user)
-            ->test('pages::plan-page')
+            ->test('pages::plans')
             ->call('startEditing', $plan->id)
             ->set('editName', 'Edit '.$i)
             ->set('editRange', ['start' => '2026-03-01', 'end' => '2026-03-31'])
@@ -197,7 +197,7 @@ it('returns rate limited on edit after too many attempts', function () {
     }
 
     Livewire::actingAs($user)
-        ->test('pages::plan-page')
+        ->test('pages::plans')
         ->call('startEditing', $plan->id)
         ->set('editName', 'Blocked')
         ->set('editRange', ['start' => '2026-04-01', 'end' => '2026-04-30'])
@@ -210,7 +210,7 @@ it('deletes a plan', function () {
     $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
 
     Livewire::actingAs($user)
-        ->test('pages::plan-page')
+        ->test('pages::plans')
         ->call('deletePlan', $plan->id)
         ->assertHasNoErrors();
 
@@ -230,7 +230,7 @@ it('prevents deleting a plan that has tasks', function () {
     ]);
 
     Livewire::actingAs($user)
-        ->test('pages::plan-page')
+        ->test('pages::plans')
         ->call('deletePlan', $plan->id)
         ->assertHasErrors('plan_form');
 
@@ -243,7 +243,7 @@ it('shows all plans on the page', function () {
     $user->plans()->create(['name' => 'Personal', 'start_date' => '2026-02-01', 'finish_date' => '2026-02-28']);
 
     Livewire::actingAs($user)
-        ->test('pages::plan-page')
+        ->test('pages::plans')
         ->assertSee('Work')
         ->assertSee('Personal');
 });
@@ -253,7 +253,7 @@ it('shows task count for each plan', function () {
     $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
 
     Livewire::actingAs($user)
-        ->test('pages::plan-page')
+        ->test('pages::plans')
         ->assertSee('No Tasks');
 });
 
@@ -265,7 +265,7 @@ it('shows view tasks popover with task list', function () {
     $user->tasks()->create(['title' => 'Task B', 'task_date' => '2026-01-16', 'estimated_minutes' => 45, 'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'plan_id' => $plan->id, 'category_id' => $category->id]);
 
     Livewire::actingAs($user)
-        ->test('pages::plan-page')
+        ->test('pages::plans')
         ->assertSee('View Tasks')
         ->assertSee('Task A')
         ->assertSee('Task B');
@@ -279,7 +279,7 @@ it('shows progress for plan with mixed done tasks', function () {
     $user->tasks()->create(['title' => 'Not done B', 'task_date' => '2026-01-16', 'estimated_minutes' => 45, 'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'plan_id' => $plan->id, 'category_id' => $category->id]);
 
     Livewire::actingAs($user)
-        ->test('pages::plan-page')
+        ->test('pages::plans')
         ->assertSee('1/2 (50%) Progress');
 });
 
@@ -291,7 +291,7 @@ it('shows 100% progress when all tasks are done', function () {
     $user->tasks()->create(['title' => 'Task B', 'task_date' => '2026-01-16', 'estimated_minutes' => 45, 'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'plan_id' => $plan->id, 'category_id' => $category->id, 'done' => true]);
 
     Livewire::actingAs($user)
-        ->test('pages::plan-page')
+        ->test('pages::plans')
         ->assertSee('2/2 (100%) Progress');
 });
 
@@ -303,7 +303,7 @@ it('shows 0% progress when no tasks are done', function () {
     $user->tasks()->create(['title' => 'Task B', 'task_date' => '2026-01-16', 'estimated_minutes' => 45, 'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'plan_id' => $plan->id, 'category_id' => $category->id]);
 
     Livewire::actingAs($user)
-        ->test('pages::plan-page')
+        ->test('pages::plans')
         ->assertSee('0/2 (0%) Progress');
 });
 
@@ -312,7 +312,7 @@ it('shows empty state for plan with no tasks', function () {
     $user->plans()->create(['name' => 'Empty Plan', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
 
     Livewire::actingAs($user)
-        ->test('pages::plan-page')
+        ->test('pages::plans')
         ->assertSee('Empty Plan')
         ->assertSee('No tasks assigned to this plan.');
 });

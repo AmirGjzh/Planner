@@ -15,6 +15,6 @@
     {{ $slot }}
 
     @if($required)
-        <span class="text-error">*</span>
+        <span class="mine-text-error">*</span>
     @endif
 </label>
