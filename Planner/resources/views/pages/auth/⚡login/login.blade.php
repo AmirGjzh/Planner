@@ -2,7 +2,6 @@
     <div class="mine-card w-full max-w-120 flex flex-col justify-center p-6">
         <h1 class="text-center font-medium text-xl mine-text-primary mb-2">Welcome back</h1>
         <p class="text-center text-sm mb-6 mine-text-secondary font-medium">Sign in to continue to your workspace</p>
-        <x-mine.theme-switcher></x-mine.theme-switcher>
 
         <form wire:submit="login" class="flex flex-col">
             @if($login_error === 'rate_limited')
@@ -18,7 +17,7 @@
             @endif
 
             <div class="mb-4">
-                <x-mine.input wire:model="email" label="Email Address" placeholder="Email" leftIcon="envelope" height="h-12">
+                <x-mine.input wire:model="email" label="Email Address" placeholder="Email Address" leftIcon="envelope" height="h-12">
                 </x-mine.input>
             </div>
 

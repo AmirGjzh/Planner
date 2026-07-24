@@ -14,21 +14,6 @@
     --mine-text-link-hover: #128047;
     --mine-text-link-ring-focus: #C8EAD6;
 
-    --mine-btn-primary-bg: #1A9B5C;
-    --mine-btn-primary-bg-hover: #178A50;
-    --mine-btn-primary-text: #FFFFFF;
-    --mine-btn-primary-ring-focus: #C8EAD6;
-
-    --mine-btn-danger-bg: #DC2626;
-    --mine-btn-danger-bg-hover: #B91C1C;
-    --mine-btn-danger-text: #ffffff;
-    --mine-btn-danger-ring-focus: #FAD5D5;
-
-    --mine-btn-ghost-bg: #F5F8F6;
-    --mine-btn-ghost-bg-hover: #EAF3ED;
-    --mine-btn-ghost-text: #5E6D67;
-    --mine-btn-ghost-ring-focus: #C8EAD6;
-
     --mine-input-bg: #FAFBFA;
     --mine-input-autofill-bg: #FAFBFA;
     --mine-input-border: #D2DFD8;
@@ -37,8 +22,8 @@
     --mine-input-icon: #9AAEA0;
     --mine-input-placeholder: #A2B0A9;
     --mine-input-error-bg: #FDF2F2;
-    --mine-input-error-border: #F28B8B;
-    --mine-input-error-ring: #FAD5D5;
+    --mine-input-error-border: #e17575;
+    --mine-input-error-ring: #f4c8c8;
 
     --mine-checkbox-bg: #1A9B5C;
     --mine-checkbox-text: #ffffff;
@@ -68,21 +53,104 @@
     --mine-alert-info-title: #1D4ED8;
 
     --mine-separator-border: #E3EBE7;
+    --mine-scrollbar-thumb: #C5D1CB;
+    --mine-scrollbar-thumb-hover: #A8B8B0;
 
+    --mine-modal-bg: #ffffff;
+    --mine-btn-icon-bg-hover: #EEF5F1;
+
+    --mine-select-selected-bg: #EAF6EF;
+    --mine-select-selected-text: #1A9B5C;
+    --mine-select-bg-hover: #F4F7F5;
+    --mine-select-ring-focus: #DFF5E7;
+
+    --mine-datepicker-pill-bg: #1A9B5C;
+    --mine-datepicker-pill-text: #FFFFFF;
+    --mine-datepicker-pill-bg-hover: #128047;
+    --mine-datepicker-pill-between-bg: #EDF5F0;
+    --mine-datepicker-pill-between-text: #0F172B;
+    --mine-datepicker-day-bg-hover: #F5F8F6;
+    --mine-datepicker-day-selected-bg: #1A9B5C;
+    --mine-datepicker-day-selected-text: #FFFFFF;
+    --mine-datepicker-day-selected-bg-hover: #128047;
+    --mine-datepicker-day-dim-text: #98A8A0;
+    --mine-datepicker-today-decoration: #1A9B5C;
+    --mine-datepicker-day-ring-focus: #DFF5E7;
+
+    /* Category */
+    --mine-category-border-left-green: #1A9B5C;
+    --mine-category-border-left-green-hover: #128047;
+    --mine-category-border-left-blue: #3B82F6;
+    --mine-category-border-left-blue-hover: #2563EB;
+    --mine-category-border-left-yellow: #F59E0B;
+    --mine-category-border-left-yellow-hover: #D97706;
+    --mine-category-border-left-red: #DC2626;
+    --mine-category-border-left-red-hover: #B91C1C;
+    --mine-category-border-left-purple: #8B5CF6;
+    --mine-category-border-left-purple-hover: #7C3AED;
+
+    /* Badge */
     --mine-badge-primary-bg: #E6F3EC;
     --mine-badge-primary-text: #128047;
 
     --mine-badge-danger-bg: #f7e4e4;
     --mine-badge-danger-text: #B42318;
 
+    --mine-badge-green-bg: #E6F3EC;
+    --mine-badge-green-text: #128047;
 
+    --mine-badge-blue-bg: #EAF3FF;
+    --mine-badge-blue-text: #2563EB;
 
+    --mine-badge-yellow-bg: #FFF8E7;
+    --mine-badge-yellow-text: #D97706;
 
+    --mine-badge-red-bg: #FDECEC;
+    --mine-badge-red-text: #DC2626;
 
+    --mine-badge-purple-bg: #F2ECFF;
+    --mine-badge-purple-text: #7C3AED;
 
+    /* Button */
+    --mine-btn-primary-bg: #1A9B5C;
+    --mine-btn-primary-bg-hover: #178A50;
+    --mine-btn-primary-text: #FFFFFF;
+    --mine-btn-primary-ring-focus: #C8EAD6;
 
+    --mine-btn-danger-bg: #DC2626;
+    --mine-btn-danger-bg-hover: #B91C1C;
+    --mine-btn-danger-text: #ffffff;
+    --mine-btn-danger-ring-focus: #FAD5D5;
 
+    --mine-btn-ghost-bg: #F5F8F6;
+    --mine-btn-ghost-bg-hover: #EAF3ED;
+    --mine-btn-ghost-text: #5E6D67;
+    --mine-btn-ghost-ring-focus: #C8EAD6;
 
+    --mine-btn-green-bg: #1A9B5C;
+    --mine-btn-green-bg-hover: #178A50;
+    --mine-btn-green-text: #FFFFFF;
+    --mine-btn-green-ring-focus: #C8EAD6;
+
+    --mine-btn-blue-bg: #3B82F6;
+    --mine-btn-blue-bg-hover: #2563EB;
+    --mine-btn-blue-text: #FFFFFF;
+    --mine-btn-blue-ring-focus: #DBEAFE;
+
+    --mine-btn-yellow-bg: #F59E0B;
+    --mine-btn-yellow-bg-hover: #D97706;
+    --mine-btn-yellow-text: #FFFFFF;
+    --mine-btn-yellow-ring-focus: #FDECC8;
+
+    --mine-btn-red-bg: #DC2626;
+    --mine-btn-red-bg-hover: #B91C1C;
+    --mine-btn-red-text: #FFFFFF;
+    --mine-btn-red-ring-focus: #FAD5D5;
+
+    --mine-btn-purple-bg: #8B5CF6;
+    --mine-btn-purple-bg-hover: #7C3AED;
+    --mine-btn-purple-text: #FFFFFF;
+    --mine-btn-purple-ring-focus: #E9DDFE;
 
 
 
@@ -108,29 +176,10 @@
     --mine-avatar-secondary-bg: #F0F3F5;
     --mine-avater-secondary-text: #4F6380;
 
-    --mine-modal-bg: #ffffff;
-    --mine-btn-x-bg-hover: #EDF5F0;
-    --mine-btn-arrow-bg-hover: #EDF5F0;
 
 
 
-    --mine-select-selected-bg: #F0F9F4;
-    --mine-select-selected-text: #1A9B5C;
-    --mine-select-bg-hover: #F5F8F6;
-    --mine-select-ring-focus: #DFF5E7;
 
-
-    --mine-datepicker-pill-bg: #1A9B5C;
-    --mine-datepicker-pill-text: #ffffff;
-    --mine-datepicker-pill-bg-hover: #128047;
-    --mine-datepicker-pill-between-bg: #EDF5F0;
-    --mine-datepicker-day-bg-hover: #EDF5F0;
-    --mine-datepicker-day-selected-bg: #1A9B5C;
-    --mine-datepicker-day-selected-text: #ffffff;
-    --mine-datepicker-day-selected-bg-hover: #128047;
-    --mine-datepicker-day-dim-text: #98A8A0;
-    --mine-datepicker-today-decoration: #1A9B5C;
-    --mine-datepicker-day-ring-focus: #DFF5E7;
 
 
 
@@ -254,6 +303,8 @@
     --mine-alert-info-title: #93C5FD;
 
     --mine-separator-border: #36423D;
+    --mine-scrollbar-thumb: #4D5B54;
+    --mine-scrollbar-thumb-hover: #5E6E66;
 
     --mine-badge-primary-bg: #2A4035;
     --mine-badge-primary-text: #52D283;
@@ -261,8 +312,26 @@
     --mine-badge-danger-bg: #4A2222;
     --mine-badge-danger-text: #F87171;
 
+    --mine-modal-bg: #202925;
+    --mine-btn-icon-bg-hover: #2A3631;
 
+    --mine-select-selected-bg: #294235;
+    --mine-select-selected-text: #52D283;
+    --mine-select-bg-hover: #2D3733;
+    --mine-select-ring-focus: rgba(26,155,92,.22);
 
+    --mine-datepicker-pill-bg: #1A9B5C;
+    --mine-datepicker-pill-text: #FFFFFF;
+    --mine-datepicker-pill-bg-hover: #25B36D;
+    --mine-datepicker-pill-between-bg: #2D3D36;
+    --mine-datepicker-pill-between-text: #D1E0D7;
+    --mine-datepicker-day-bg-hover: #313D38;
+    --mine-datepicker-day-selected-bg: #1A9B5C;
+    --mine-datepicker-day-selected-text: #FFFFFF;
+    --mine-datepicker-day-selected-bg-hover: #25B36D;
+    --mine-datepicker-day-dim-text: #7B8F84;
+    --mine-datepicker-today-decoration: #34D399;
+    --mine-datepicker-day-ring-focus: rgba(26,155,92,.22);
 
 
 
@@ -282,29 +351,11 @@
     --mine-avatar-secondary-bg: #2E383D;
     --mine-avater-secondary-text: #B2C2BA;
 
-    --mine-modal-bg: #202925;
-    --mine-btn-x-bg-hover: #24302B;
-    --mine-btn-arrow-bg-hover: #24302B;
 
 
 
-    --mine-select-selected-bg: #234031;
-    --mine-select-selected-text: #52D283;
-    --mine-select-bg-hover: #2B3531;
-    --mine-select-ring-focus: rgba(26, 155, 92, 0.22);
 
 
-    --mine-datepicker-pill-bg: #1A9B5C;
-    --mine-datepicker-pill-text: #FFFFFF;
-    --mine-datepicker-pill-bg-hover: #25B36D;
-    --mine-datepicker-pill-between-bg: #2B3933;
-    --mine-datepicker-day-bg-hover: #32403A;
-    --mine-datepicker-day-selected-bg: #1A9B5C;
-    --mine-datepicker-day-selected-text: #FFFFFF;
-    --mine-datepicker-day-selected-bg-hover: #25B36D;
-    --mine-datepicker-day-dim-text: #72857B;
-    --mine-datepicker-today-decoration: #34D399;
-    --mine-datepicker-day-ring-focus: rgba(26, 155, 92, 0.22);
 
 
     --mine-progress-track: #36423D;
@@ -462,7 +513,7 @@
     }
 }
 
-@utility alert-danger-box {
+@utility mine-alert-danger-box {
     @apply rounded-xl;
     @apply bg-(--mine-alert-danger-bg);
     @apply border-2 border-(--mine-alert-danger-border);
@@ -474,12 +525,81 @@
 }
 
 @utility mine-badge-danger {
-     @apply bg-(--mine-badge-danger-bg);
+    @apply bg-(--mine-badge-danger-bg);
     @apply text-(--mine-badge-danger-text);
 }
 
+@utility mine-badge-green {
+    @apply bg-(--mine-badge-green-bg);
+    @apply text-(--mine-badge-green-text);
+}
+
+@utility mine-badge-blue {
+    @apply bg-(--mine-badge-blue-bg);
+    @apply text-(--mine-badge-blue-text);
+}
+
+@utility mine-badge-red {
+    @apply bg-(--mine-badge-red-bg);
+    @apply text-(--mine-badge-red-text);
+}
+
+@utility mine-badge-yellow {
+    @apply bg-(--mine-badge-yellow-bg);
+    @apply text-(--mine-badge-yellow-text);
+}
+
+@utility mine-badge-purple {
+    @apply bg-(--mine-badge-purple-bg);
+    @apply text-(--mine-badge-purple-text);
+}
 
 @utility avatar-secondary {
     background: var(--mine-avatar-secondary-bg);
     color: var(--mine-avater-secondary-text);
+}
+
+@utility mine-btn-x {
+    @apply mine-text-secondary;
+    @apply hover:mine-text-primary;
+    @apply hover:cursor-pointer;
+    @apply hover:bg-(--mine-btn-icon-bg-hover);
+    @apply hover:cursor-pointer;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@utility mine-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--mine-scrollbar-thumb) transparent;
+
+    &::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: var(--mine-scrollbar-thumb);
+        border-radius: 9999px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background-color: var(--mine-scrollbar-thumb-hover);
+    }
 }

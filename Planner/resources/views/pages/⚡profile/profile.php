@@ -45,6 +45,7 @@ new class extends Component
     {
         $countries = Countries::getNames('en');
         asort($countries);
+
         return $countries;
     }
 
@@ -68,6 +69,7 @@ new class extends Component
         };
         if ($this->edit_error) {
             $this->edit_success = null;
+
             return;
         }
         $this->edit_success = 'updated';

@@ -26,7 +26,7 @@
             </div>
 
             <div class="mb-4">
-                <x-mine.input wire:model="email" label="Email Address" placeholder="Email" leftIcon="envelope" height="h-12">
+                <x-mine.input wire:model="email" label="Email Address" placeholder="Email Address" leftIcon="envelope" height="h-12">
                 </x-mine.input>
             </div>
 

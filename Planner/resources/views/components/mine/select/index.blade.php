@@ -13,6 +13,10 @@
     $positionClasses = str_starts_with($position, 'top')
         ? 'bottom-full mb-1.5 left-0 right-0'
         : 'top-full mt-1.5 left-0 right-0';
+
+    if ($name && $errors->has($name)) {
+        $invalid = true;
+    }
 @endphp
 
 <div
@@ -195,27 +199,27 @@
             x-transition:enter="transition ease-out duration-200"
             x-transition:enter-start="opacity-0 scale-95"
             x-transition:enter-end="opacity-100 scale-100"
-            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave="transition ease-in duration-200"
             x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95"
             x-on:click.away="handleClickAway($event.target)"
-            class="absolute {{ $positionClasses }} z-50 bg-[var(--mine-input-bg)] rounded-xl border-2 border-[var(--mine-input-border)] shadow-lg"
+            class="absolute {{ $positionClasses }} z-50 bg-(--mine-input-bg) rounded-xl border-2 border-(--mine-input-border) shadow-lg"
         >
             @if ($searchable)
-                <div class="flex items-center gap-2 px-3 py-2 border-b border-[var(--mine-input-border)]">
-                    <x-mine.icon name="magnifying-glass" class="size-5 text-[var(--mine-input-icon)] shrink-0" />
+                <div class="flex items-center gap-2 px-4 py-2 border-b border-(--mine-input-border)">
+                    <x-mine.icon name="magnifying-glass" class="size-5 text-(--mine-input-icon) shrink-0" />
                     <input
                         x-model="search"
                         data-select-search
                         type="text"
                         placeholder="Search..."
-                        class="w-full h-8 bg-transparent text-sm mine-text-primary placeholder:text-[var(--mine-input-placeholder)] outline-none"
+                        class="w-full h-8 bg-transparent text-sm mine-text-primary placeholder:text-(--mine-input-placeholder) focus:outline-none focus-visible:outline-none"
                     />
                 </div>
             @endif
 
             <ul
-                class="max-h-60 overflow-y-auto p-1"
+                class="max-h-60 overflow-y-auto mine-scrollbar p-1"
                 role="listbox"
             >
                 {{ $slot }}
@@ -229,4 +233,8 @@
             </ul>
         </div>
     </div>
+
+    @error($name)
+        <p class="mt-2 text-sm font-medium mine-text-error">{{ $message }}</p>
+    @enderror
 </div>

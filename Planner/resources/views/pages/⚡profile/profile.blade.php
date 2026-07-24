@@ -17,11 +17,9 @@
                 <x-mine.modal.trigger class="w-full" id="edit-profile-form">
                     <x-mine.button
                         type="button"
-                        class=" mine-btn-outline-primary">
-                        <div class="flex justify-center items-center gap-2">
-                            <x-mine.icon name="pencil-square" class="inline"/>
-                            Edit Profile
-                        </div>
+                        class=" mine-btn-outline-primary"
+                    >
+                        Edit Profile
                     </x-mine.button>
                 </x-mine.modal.trigger>
             </div>
@@ -61,7 +59,7 @@
                     </p>
                 </div>
             </div>
-            <div class="flex flex-col sm:flex-row gap-4 px-4 sm:px-6 py-4 mt-6 sm:justify-between alert-danger-box">
+            <div class="flex flex-col sm:flex-row gap-4 px-4 sm:px-6 py-4 mt-6 sm:justify-between mine-alert-danger-box">
                 <div class="flex items-center justify-center gap-4">
                     <div class="size-12 rounded-full mine-badge-danger flex justify-center items-center">
                         <x-mine.icon name="trash" class="size-6"/>
@@ -88,8 +86,8 @@
         <div class="px-6 sm:px-8 py-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-lg font-semibold mine-text-primary">Edit your information</h2>
-                <button @click="close(); $wire.cancelEdit()"
-                        class="mine-text-primary hover:bg-(--mine-btn-x-bg-hover) p-2 rounded-xl hover:cursor-pointer">
+                <button type="button" @click="close(); $wire.cancelEdit()"
+                        class="mine-btn-x p-2 rounded-xl">
                     <x-mine.icon name="x-mark"/>
                 </button>
             </div>
@@ -140,7 +138,7 @@
                 </div>
                 <div>
                     <x-mine.datepicker mode="single" selectable-months selectable-years position="top-end"
-                                       :years-range="[-100, 100]" wire:model="birthday" label="Birthday"/>
+                                       :years-range="[-50, 0]" wire:model="birthday" label="Birthday"/>
                 </div>
                 <div class="flex gap-4 justify-end mt-4">
                     <x-mine.button type="button" @click="close(); $wire.cancelEdit()" class="mine-btn-ghost">
@@ -157,8 +155,8 @@
         <div class="px-6 sm:px-8 py-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-lg font-semibold mine-text-primary">Delete your account</h2>
-                <button @click="close(); $wire.cancelDelete()"
-                        class="mine-text-primary hover:bg-(--mine-btn-x-bg-hover) p-2 rounded-xl hover:cursor-pointer">
+                <button type="button" @click="close(); $wire.cancelDelete()"
+                        class="mine-btn-x p-2 rounded-xl">
                     <x-mine.icon name="x-mark"/>
                 </button>
             </div>

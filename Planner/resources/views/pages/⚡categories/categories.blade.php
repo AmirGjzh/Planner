@@ -19,23 +19,26 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         @forelse ($this->categories as $category)
             <div wire:key="category-{{ $category->id }}"
-                class="mine-card-interactive w-full flex flex-col justify-between gap-4 px-4 py-4">
+                class="mine-card-interactive border-l-8
+                    border-l-(--mine-category-border-left-green)
+                    hover:border-l-(--mine-category-border-left-green-hover)
+                    w-full flex flex-col justify-between gap-5 px-4 py-4
+                    "
+            >
                 <div class="flex justify-between items-start">
                     <div class="flex gap-3">
-                        <div class="rounded-full size-14 mine-badge-primary flex justify-center items-center">
+                        <div class="rounded-xl size-14 mine-badge-primary flex justify-center items-center">
                             <x-mine.icon name="folder" class="size-7" />
                         </div>
                         <div class="flex flex-col justify-between py-0.5">
                             <h2 class="mine-text-primary font-medium text-[15px]">{{ $category->name }}</h2>
-                            <p class="mine-text-secondary text-[13px] font-medium">{{ $category->tasks_count ?: 'No'}}
-                                {{ Str::plural('Task', $category->tasks_count) }}
-                            </p>
+                            <p class="mine-text-secondary text-[13px] font-medium">{{ $category->tasks_count ?: 'No' }} {{ Str::plural('Task', $category->tasks_count) }}</p>
                         </div>
                     </div>
                     <x-mine.dropdown>
                         <x-mine.dropdown.trigger>
                             <div
-                                class="mine-text-primary hover:bg-(--mine-btn-x-bg-hover) p-2 rounded-xl hover:cursor-pointer">
+                                class="mine-btn-x p-2 rounded-xl">
                                 <x-mine.icon name="ellipsis-horizontal" class="size-5" />
                             </div>
                         </x-mine.dropdown.trigger>
@@ -63,36 +66,13 @@
                     </x-mine.dropdown>
 
                 </div>
-                {{-- <div class="hidden sm:block sm:px-4 sm:opacity-60">
-                    <x-mine.separator />
-                </div> --}}
                 <div class="flex justify-center items-center">
-                    <x-mine.button wire:target="" class="mine-btn-outline-primary h-10!">
+                    <x-mine.button type="button" wire:target="" class="mine-btn-outline-primary h-10!">
                         <div class="flex items-center gap-2">
                             <p class="text-sm font-medium">View Tasks</p>
                             <x-mine.icon name="arrow-long-right" variant="mini" class="size-4 mt-1" />
                         </div>
                     </x-mine.button>
-                    {{-- <div wire:key="edit-{{ $category->id }}"
-                        class="w-full py-4 pl-2 flex justify-center items-center gap-2 text-[13px] font-medium text-(--mine-btn-primary-bg-hover) hover:cursor-pointer"
-                        @click.stop="
-                                            $wire.set('editing_id', {{ $category->id }}, false);
-                                            $wire.set('edit_name', @js($category->name), false);
-                                            $dispatch('open-modal', { id: 'edit-category-form' })">
-                        <x-mine.icon name="pencil-square" class="size-6 sm:size-5" />
-                        <p class="hidden sm:block">Edit</p>
-                    </div>
-                    <div class="hidden sm:block sm:my-2 sm:mx-1 sm:opacity-60">
-                        <x-mine.separator vertical />
-                    </div>
-                    <div wire:key="delete-{{ $category->id }}"
-                        class="w-full py-4 pr-2 flex justify-center items-center gap-2 text-[13px] font-medium text-(--mine-btn-danger-bg-hover) hover:cursor-pointer"
-                        @click.stop="
-                                            $wire.set('deleting_id', {{ $category->id }}, false);
-                                            $dispatch('open-modal', { id: 'delete-category-confirmation' })">
-                        <x-mine.icon name="trash" class="size-6 sm:size-5" />
-                        <p class="hidden sm:block">Delete</p>
-                    </div> --}}
                 </div>
             </div>
         @empty
@@ -117,8 +97,8 @@
         <div class="px-6 sm:px-8 py-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-lg font-semibold mine-text-primary">Add new category</h2>
-                <button @click="close(); $wire.cancelAdd()"
-                    class="mine-text-primary hover:bg-(--mine-btn-x-bg-hover) p-2 rounded-xl hover:cursor-pointer">
+                <button type="button" @click="close(); $wire.cancelAdd()"
+                    class="mine-btn-x p-2 rounded-xl">
                     <x-mine.icon name="x-mark" />
                 </button>
             </div>
@@ -146,7 +126,7 @@
             <form class="flex flex-col gap-4" wire:submit="addCategory"
                 @open-modal.window="if ($event.detail.id === 'add-category-form') { $nextTick(() => $refs.addCategoryInput?.focus()) }">
                 <div>
-                    <x-mine.input label="Category Name" wire:model="new_category" placeholder="Enter category name"
+                    <x-mine.input label="Category Name" wire:model="add_category" placeholder="Enter category name"
                         x-ref="addCategoryInput" />
                 </div>
                 <div class="flex gap-4 justify-end mt-4">
@@ -163,8 +143,8 @@
         <div class="px-6 sm:px-8 py-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-lg font-semibold mine-text-primary">Edit category</h2>
-                <button @click="close(); $wire.cancelEdit()"
-                    class="mine-text-primary hover:bg-(--mine-btn-x-bg-hover) p-2 rounded-xl hover:cursor-pointer">
+                <button type="button" @click="close(); $wire.cancelEdit()"
+                    class="mine-btn-x p-2 rounded-xl">
                     <x-mine.icon name="x-mark" />
                 </button>
             </div>
@@ -209,8 +189,8 @@
         <div class="px-6 sm:px-8 py-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-lg font-semibold mine-text-primary">Delete category</h2>
-                <button @click="close(); $wire.cancelDelete()"
-                    class="mine-text-primary hover:bg-(--mine-btn-x-bg-hover) p-2 rounded-xl hover:cursor-pointer">
+                <button type="button" @click="close(); $wire.cancelDelete()"
+                    class="mine-btn-x p-2 rounded-xl">
                     <x-mine.icon name="x-mark" />
                 </button>
             </div>

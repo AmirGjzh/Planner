@@ -34,11 +34,11 @@
     <div class="relative size-5">
         <x-mine.icon
             name="sun"
-            class="absolute inset-0 transition-all duration-300 ease-out opacity-100 scale-100 dark:opacity-0 dark:scale-75"
+            class="absolute inset-0 transition-all duration-200 ease-out opacity-100 scale-100 dark:opacity-0 dark:scale-75"
         />
         <x-mine.icon
             name="moon"
-            class="absolute inset-0 transition-all duration-300 ease-out opacity-0 scale-75 dark:opacity-100 dark:scale-100"
+            class="absolute inset-0 transition-all duration-200 ease-out opacity-0 scale-75 dark:opacity-100 dark:scale-100"
         />
     </div>
 </button>

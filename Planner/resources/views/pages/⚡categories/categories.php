@@ -14,10 +14,11 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-new class extends Component {
+new class extends Component
+{
     use HasUser, WithPagination;
 
-    public string $new_category = '';
+    public string $add_category = '';
 
     public ?string $add_error = null;
 
@@ -43,10 +44,10 @@ new class extends Component {
     {
         return Category::query()
             ->where('user_id', auth()->id())
-            ->when($this->search, fn($q) => $q->where('name', 'like', '%' . $this->search . '%'))
+            ->when($this->search, fn ($q) => $q->where('name', 'like', '%'.$this->search.'%'))
             ->withCount('tasks')
             ->latest()
-            ->paginate(9)->onEachSide(1);
+            ->paginate(6)->onEachSide(1);
     }
 
     public function updatingSearch(): void
@@ -56,9 +57,11 @@ new class extends Component {
 
     public function addCategory(CreateCategoryAction $action): void
     {
-        $this->validate(['new_category' => $this->rules()['new_category']]);
+        $this->validate([
+            'add_category' => $this->rules()['add_category'],
+        ]);
 
-        $name = Str::ucfirst(Str::lower($this->new_category));
+        $name = Str::ucfirst(Str::lower($this->add_category));
 
         $result = $action->execute($this->user, $name, request());
 
@@ -73,7 +76,7 @@ new class extends Component {
             return;
         }
 
-        $this->new_category = '';
+        $this->add_category = '';
         $this->add_success = 'created';
         unset($this->categories);
     }
@@ -82,13 +85,15 @@ new class extends Component {
     {
         $this->add_error = null;
         $this->add_success = null;
-        $this->new_category = '';
+        $this->add_category = '';
         $this->resetValidation();
     }
 
     public function editCategory(EditCategoryAction $action): void
     {
-        $this->validate(['edit_name' => $this->rules()['edit_name']]);
+        $this->validate([
+            'edit_name' => $this->rules()['edit_name'],
+        ]);
 
         $name = Str::ucfirst(Str::lower($this->edit_name));
 
@@ -103,6 +108,7 @@ new class extends Component {
 
         if ($this->edit_error) {
             $this->edit_success = null;
+
             return;
         }
 
@@ -146,7 +152,7 @@ new class extends Component {
     protected function rules(): array
     {
         return [
-            'new_category' => ['required', 'string', 'max:255'],
+            'add_category' => ['required', 'string', 'max:255'],
             'edit_name' => ['required', 'string', 'max:255'],
         ];
     }
@@ -154,8 +160,8 @@ new class extends Component {
     protected function messages(): array
     {
         return [
-            'new_category.required' => 'Category name is required.',
-            'new_category.max' => 'Category name must not exceed 255 characters.',
+            'add_category.required' => 'Category name is required.',
+            'add_category.max' => 'Category name must not exceed 255 characters.',
             'edit_name.required' => 'Category name is required.',
             'edit_name.max' => 'Category name must not exceed 255 characters.',
         ];

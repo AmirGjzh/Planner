@@ -29,7 +29,7 @@ it('creates a new category', function () {
 
     Livewire::actingAs($user)
         ->test('pages::categories')
-        ->set('new_category', 'Work')->call('addCategory')
+        ->set('add_category', 'Work')->call('addCategory')
         ->assertHasNoErrors();
 
     expect($user->categories()->where('name', 'Work')->exists())->toBeTrue();
@@ -41,7 +41,7 @@ it('shows error for duplicate category', function () {
 
     Livewire::actingAs($user)
         ->test('pages::categories')
-        ->set('new_category', 'Work')->call('addCategory')
+        ->set('add_category', 'Work')->call('addCategory')
         ->assertSet('add_error', 'already_exists');
 });
 
@@ -50,8 +50,8 @@ it('validates new category name is required', function () {
 
     Livewire::actingAs($user)
         ->test('pages::categories')
-        ->set('new_category', '')->call('addCategory')
-        ->assertHasErrors('new_category');
+        ->set('add_category', '')->call('addCategory')
+        ->assertHasErrors('add_category');
 });
 
 it('validates new category name max length', function () {
@@ -59,8 +59,8 @@ it('validates new category name max length', function () {
 
     Livewire::actingAs($user)
         ->test('pages::categories')
-        ->set('new_category', str_repeat('a', 256))->call('addCategory')
-        ->assertHasErrors('new_category');
+        ->set('add_category', str_repeat('a', 256))->call('addCategory')
+        ->assertHasErrors('add_category');
 });
 
 it('edits a category name', function () {

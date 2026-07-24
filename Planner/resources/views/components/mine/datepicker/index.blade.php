@@ -123,7 +123,7 @@
             const firstDay = this.firstDayOfMonth
 
             for (let i = 0; i < firstDay; i++) {
-                cells.push({ key: 'pre-' + i, blank: true, isInMonth: false })
+                cells.push({ key: 'pre-' + i, blank: true, isInMonth: false, col: cells.length % 7 })
             }
 
             for (let d = 1; d <= totalDays; d++) {
@@ -159,6 +159,7 @@
                     isRangeStart,
                     isRangeEnd,
                     isInRange,
+                    col: cells.length % 7,
                 })
             }
 
@@ -299,25 +300,25 @@
             data-datepicker-trigger
             :data-open="open"
             @class([
-                'flex items-center justify-between w-full px-4 rounded-xl border-2 bg-[var(--mine-input-bg)] transition-all duration-200 ease-out cursor-pointer',
+                'flex items-center justify-between w-full px-4 rounded-xl border-2 bg-(--mine-input-bg) transition-all duration-200 ease-out cursor-pointer',
                 $height => true,
-                'border-[var(--mine-input-border)] data-open:border-[var(--mine-input-border-focus)]',
-                'data-open:ring-4 data-open:ring-[var(--mine-input-ring-focus)]',
-                'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--mine-input-ring-focus)]',
+                'border-(--mine-input-border) data-open:border-(--mine-input-border-focus)',
+                'data-open:ring-4 data-open:ring-(--mine-input-ring-focus)',
+                'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-(--mine-input-ring-focus)',
             ])
         >
             @if($showIcon)
-                <x-mine.icon name="calendar" variant="mini" class="size-5 text-[var(--mine-input-icon)] shrink-0 mr-2" />
+                <x-mine.icon name="calendar" variant="mini" class="size-5 text-(--mine-input-icon) shrink-0 mr-2" />
             @endif
 
             <span
                 x-text="triggerLabel"
                 class="flex-1 text-sm truncate text-left {{ $showIcon ? 'mx-2' : 'mr-2' }}"
-                :class="hasState ? 'mine-text-primary' : 'text-[var(--mine-input-placeholder)]'"
+                :class="hasState ? 'mine-text-primary' : 'text-(--mine-input-placeholder)'"
             ></span>
 
             <div :class="open ? 'rotate-180' : ''" class="shrink-0 transition-transform duration-200">
-                <x-mine.icon name="chevron-up-down" variant="mini" class="size-5 text-[var(--mine-input-icon)]" />
+                <x-mine.icon name="chevron-up-down" variant="mini" class="size-5 text-(--mine-input-icon)" />
             </div>
         </button>
 
@@ -326,57 +327,67 @@
             x-transition:enter="transition ease-out duration-200"
             x-transition:enter-start="opacity-0 scale-95"
             x-transition:enter-end="opacity-100 scale-100"
-            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave="transition ease-in duration-200"
             x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95"
-            class="absolute {{ $positionClasses }} overflow-x-auto z-50 bg-[var(--mine-input-bg)] rounded-xl border-2 border-[var(--mine-input-border)] shadow-lg p-4"
+            class="absolute {{ $positionClasses }} z-50 bg-(--mine-input-bg) rounded-xl border-2 border-(--mine-input-border) shadow-lg p-4"
             x-cloak
         >
             <div class="flex items-center justify-between mb-2">
                 <button
                     type="button"
                     x-on:click="prevMonth()"
-                    class="p-1.5 rounded-lg hover:cursor-pointer hover:bg-[var(--mine-btn-arrow-bg-hover)] transition-colors duration-200 mine-text-secondary focus-visible:outline-none"
+                    class="p-1.5 rounded-lg mine-btn-x transition-colors duration-200 mine-text-secondary focus-visible:outline-none"
                 >
                     <x-mine.icon name="chevron-left" variant="mini" class="size-4" />
                 </button>
 
-                <div class="flex items-center gap-1.5">
+                <div class="flex items-center gap-3">
                     <template x-if="selectableMonths">
-                        <select
-                            x-model="month"
-                            x-on:input="month = parseInt($event.target.value)"
-                            class="h-8 py-0 border-0 text-sm appearance-none rounded-lg bg-[var(--mine-nav-link-bg-hover)] px-2 mine-text-primary font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--mine-btn-primary-ring-focus)]"
-                        >
+                        <x-mine.datepicker.select label="monthName">
                             <template x-for="(m, i) in months" :key="i">
-                                <option x-text="m" :value="i"></option>
+                                <button
+                                    type="button"
+                                    @click="month = i; open = false"
+                                    :class="month === i
+                                        ? 'bg-(--mine-select-selected-bg) text-(--mine-select-selected-text) font-medium'
+                                        : 'hover:bg-(--mine-select-bg-hover) mine-text-primary'"
+                                    class="flex items-center w-full px-3 py-1.5 rounded-lg text-sm text-left transition-colors duration-200 hover:cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--mine-select-ring-focus)"
+                                >
+                                    <span x-text="m"></span>
+                                </button>
                             </template>
-                        </select>
+                        </x-mine.datepicker.select>
                     </template>
                     <template x-if="!selectableMonths">
                         <span class="text-sm font-semibold mine-text-primary" x-text="monthName"></span>
                     </template>
 
                     <template x-if="selectableYears">
-                        <select
-                            x-model="year"
-                            x-on:input="year = parseInt($event.target.value)"
-                            class="h-8 py-0 border-0 text-sm appearance-none rounded-lg bg-[var(--mine-nav-link-bg-hover)] px-2 mine-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--mine-btn-primary-ring-focus)]"
-                        >
+                        <x-mine.datepicker.select :label="'year'">
                             <template x-for="y in years" :key="y">
-                                <option x-text="y" :value="y"></option>
+                                <button
+                                    type="button"
+                                    @click="year = y; open = false"
+                                    :class="year === y
+                                        ? 'bg-(--mine-select-selected-bg) text-(--mine-select-selected-text) font-medium'
+                                        : 'hover:bg-(--mine-select-bg-hover) mine-text-primary'"
+                                    class="flex items-center w-full px-3 py-1.5 rounded-lg text-sm text-left transition-colors duration-200 hover:cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--mine-select-ring-focus)"
+                                >
+                                    <span x-text="y"></span>
+                                </button>
                             </template>
-                        </select>
+                        </x-mine.datepicker.select>
                     </template>
                     <template x-if="!selectableYears">
-                        <span class="text-sm mine-text-secondary" x-text="year"></span>
+                        <span class="text-sm font-medium mine-text-secondary" x-text="year"></span>
                     </template>
                 </div>
 
                 <button
                     type="button"
                     x-on:click="nextMonth()"
-                    class="p-1.5 rounded-lg hover:cursor-pointer hover:bg-[var(--mine-btn-arrow-bg-hover)] transition-colors duration-200 mine-text-secondary focus-visible:outline-none"
+                    class="p-1.5 rounded-lg mine-btn-x transition-colors duration-200 mine-text-secondary focus-visible:outline-none"
                 >
                     <x-mine.icon name="chevron-right" variant="mini" class="size-4" />
                 </button>
@@ -401,17 +412,22 @@
                                 type="button"
                                 x-on:click="selectDay(cell)"
                                 :class="{
-                                    'bg-[var(--mine-datepicker-pill-bg)] text-[var(--mine-datepicker-pill-text)] hover:bg-[var(--mine-datepicker-pill-bg-hover)] shadow-sm font-bold': cell.isRangeStart || cell.isRangeEnd,
-                                    'bg-[var(--mine-datepicker-pill-between-bg)]': cell.isInRange && !cell.isRangeStart && !cell.isRangeEnd,
-                                    'hover:bg-[var(--mine-datepicker-day-bg-hover)] mine-text-primary': !cell.isSelected && !cell.isInRange,
-                                    'text-[var(--mine-datepicker-day-dim-text)]': !cell.isInMonth && !cell.isSelected && !cell.isInRange,
-                                    'bg-[var(--mine-datepicker-day-selected-bg)] text-[var(--mine-datepicker-day-selected-text)] hover:bg-[var(--mine-datepicker-day-selected-bg-hover)] shadow-sm font-bold': cell.isSelected && !cell.isRangeStart && !cell.isRangeEnd
+                                    'bg-(--mine-datepicker-pill-bg) text-(--mine-datepicker-pill-text) hover:bg-(--mine-datepicker-pill-bg-hover) shadow-sm font-bold z-40': cell.isRangeStart || cell.isRangeEnd,
+                                    'hover:bg-(--mine-datepicker-day-bg-hover) mine-text-primary': !cell.isSelected && !cell.isInRange,
+                                    'text-(--mine-datepicker-day-dim-text)': !cell.isInMonth && !cell.isSelected && !cell.isInRange,
+                                    'bg-(--mine-datepicker-day-selected-bg) text-(--mine-datepicker-day-selected-text) hover:bg-(--mine-datepicker-day-selected-bg-hover) shadow-sm font-bold': cell.isSelected && !cell.isRangeStart && !cell.isRangeEnd
                                 }"
-                                class="flex items-center justify-center h-11 w-11 hover:cursor-pointer mx-auto rounded-lg text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--mine-datepicker-day-ring-focus)]"
+                                class="flex items-center justify-center h-11 w-11 hover:cursor-pointer mx-auto rounded-lg text-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--mine-datepicker-day-ring-focus)"
                             >
                                 <span
-                                    x-text="cell.day"
-                                ></span>
+                                    :class="cell.isInRange && !cell.isRangeStart && !cell.isRangeEnd
+                                        ? 'flex items-center justify-center h-9 w-full bg-(--mine-datepicker-pill-between-bg) text-(--mine-datepicker-pill-between-text) ' + (cell.col === 0 ? 'rounded-s-lg' : cell.col === 6 ? 'rounded-e-lg' : 'rounded-none')
+                                        : ''"
+                                >
+                                    <span
+                                        x-text="cell.day"
+                                    ></span>
+                                </span>
                             </button>
                         </template>
                     </div>
