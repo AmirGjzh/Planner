@@ -1,7 +1,5 @@
 @import "tailwindcss";
-@import './theme.css'; /* By Sheaf.dev */
 @import './mine.css';
-@import './components/calendar/cell.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../resources/views/vendor/livewire/*.blade.php';
@@ -14,8 +12,6 @@
         "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
         "Noto Color Emoji";
 }
-
-@custom-variant dark (&:where(.dark, .dark *)); /* By Sheaf.dev */
 
 [data-slot="control"][type="password"]::-ms-reveal,
 [data-slot="control"][type="password"]::-ms-clear {

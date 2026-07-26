@@ -32,7 +32,7 @@
     </div>
     <div class="hidden sm:flex items-center">
         <div class="pr-2">
-            <x-mine.theme-switcher />
+            {{-- <x-mine.theme-switcher /> --}}
         </div>
         <x-mine.dropdown trigger-mode="hover">
             <x-mine.dropdown.trigger class="h-10 flex items-center rounded-xl p-2 hover:cursor-pointer text-[var(--mine-theme-switcher-color)] hover:bg-[var(--mine-theme-switcher-bg-hover)]">

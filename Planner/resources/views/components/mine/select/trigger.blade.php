@@ -13,7 +13,7 @@
     :data-open="isOpen"
     tabindex="0"
     role="button"
-    :aria-disabled="$disabled ? 'true' : null"
+    aria-disabled="@if($disabled) true @endif"
     @class([
         'flex items-center justify-between w-full px-4 rounded-xl border-2 bg-(--mine-input-bg) transition-all duration-200 ease-out cursor-pointer focus-visible:outline-none',
         $height => true,
