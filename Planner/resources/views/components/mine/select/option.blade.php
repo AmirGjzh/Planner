@@ -15,7 +15,7 @@
 
 <li
     role="option"
-    tabindex="-1"
+    tabindex="0"
     data-value="{{ $value }}"
     data-label="{{ $label }}"
     data-search="{{ $searchLabel }}"

@@ -1,15 +1,25 @@
 @props([
     'triggerMode' => 'click',
+    'group' => null,
 ])
 
 <div
     x-data="{
         open: false,
         triggerMode: @js($triggerMode),
+        group: @js($group),
         hoverTimeout: null,
+        init() {
+            if (this.group) {
+                window.addEventListener('close-dropdowns-'+this.group, () => this.close())
+            }
+        },
         show() {
             if (this.triggerMode !== 'hover') return
             this.cancelHide()
+            if (this.group && !this.open) {
+                window.dispatchEvent(new CustomEvent('close-dropdowns-'+this.group))
+            }
             this.open = true
         },
         hide(delay = 0) {
@@ -28,6 +38,9 @@
             if (this.triggerMode === 'hover') {
                 this.show()
                 return
+            }
+            if (this.group && !this.open) {
+                window.dispatchEvent(new CustomEvent('close-dropdowns-'+this.group))
             }
             this.open = !this.open
         },

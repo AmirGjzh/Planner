@@ -45,11 +45,13 @@
             'focus-within:border-[var(--mine-input-border-focus)] focus-within:ring-4 focus-within:ring-[var(--mine-input-ring-focus)]' => !$errors->has($name),
             'focus-within:border-[var(--mine-input-error-border)] focus-within:ring-[var(--mine-input-error-ring)] focus-within:ring-4' => $errors->has($name)
         ])
-        @if($errors->has($name)) style="--mine-input-autofill-bg: var(--mine-input-error-bg)" @endif
+        @if($errors->has($name)) style="--mine-input-autofill-bg: var(--mine-input-error-bg); --mine-input-placeholder: var(--mine-input-error-placeholder)" @endif
     >
         @if($leftIcon)
             <div @class([
-                'flex h-full items-center pl-4 text-(--mine-input-icon)',
+                'flex h-full items-center pl-4',
+                'text-(--mine-input-icon)' => !$errors->has($name),
+                'text-(--mine-input-error-icon)' => $errors->has($name),
                 'group-focus-within:text-(--mine-input-border-focus)' => !$errors->has($name),
                 'group-focus-within:text-(--mine-input-error-border)' => $errors->has($name),
             ])>
@@ -80,11 +82,14 @@
             <button
                 type="button"
                 @click="show = !show"
-                tabindex="-1"
                 @class([
-                    'flex h-full items-center pr-4 text-(--mine-input-icon) hover:cursor-pointer transition-colors duration-200',
+                    'flex h-full items-center pr-4 hover:cursor-pointer transition-colors duration-200 focus-visible:outline-none',
+                    'text-(--mine-input-icon)' => !$errors->has($name),
+                    'text-(--mine-input-error-icon)' => $errors->has($name),
                     'group-focus-within:text-(--mine-input-border-focus)' => !$errors->has($name),
                     'group-focus-within:text-(--mine-input-error-border)' => $errors->has($name),
+                    'focus-visible:ring-4 focus-visible:ring-(--mine-input-ring-focus)' => !$errors->has($name),
+                    'focus-visible:ring-4 focus-visible:ring-(--mine-input-error-ring)' => $errors->has($name),
                 ])
             >
                 <template x-if="!show">

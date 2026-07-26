@@ -39,6 +39,8 @@ new class extends Component
     #[Url]
     public string $search = '';
 
+    public string $sort = 'latest';
+
     #[Computed]
     public function categories()
     {
@@ -46,7 +48,8 @@ new class extends Component
             ->where('user_id', auth()->id())
             ->when($this->search, fn ($q) => $q->where('name', 'like', '%'.$this->search.'%'))
             ->withCount('tasks')
-            ->latest()
+            ->when($this->sort === 'name', fn ($q) => $q->orderBy('name'))
+            ->when($this->sort === 'latest', fn ($q) => $q->latest())
             ->paginate(6)->onEachSide(1);
     }
 
@@ -73,6 +76,7 @@ new class extends Component
 
         if ($this->add_error) {
             $this->add_success = null;
+
             return;
         }
 
@@ -122,6 +126,8 @@ new class extends Component
     {
         $this->edit_error = null;
         $this->edit_success = null;
+        $this->edit_name = '';
+        $this->editing_id = null;
         $this->resetValidation();
     }
 

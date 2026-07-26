@@ -19,6 +19,7 @@
             inline-flex
             items-center
             justify-center
+            rounded-xl
             focus-visible:ring-4
             focus-visible:ring-(--mine-input-ring-focus)
             focus-visible:outline-none
@@ -50,12 +51,15 @@
             items-center
             justify-center
             cursor-pointer
+            rounded-xl
             focus-visible:ring-4
             focus-visible:ring-(--mine-input-ring-focus)
             focus-visible:outline-none
             transition-all
             duration-200
             ease-out
+            flex-shrink-0
+            whitespace-nowrap
         ',
     ]) }}
 >

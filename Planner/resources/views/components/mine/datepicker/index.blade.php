@@ -279,6 +279,7 @@
         },
     }"
     x-on:click.away="close()"
+    x-on:keydown.escape.window="close()"
     @class([
         'relative w-full',
     ])
@@ -302,7 +303,7 @@
             @class([
                 'flex items-center justify-between w-full px-4 rounded-xl border-2 bg-(--mine-input-bg) transition-all duration-200 ease-out cursor-pointer',
                 $height => true,
-                'border-(--mine-input-border) data-open:border-(--mine-input-border-focus)',
+                'border-(--mine-input-border) data-open:border-(--mine-input-border-focus) focus-visible:border-(--mine-input-border-focus)',
                 'data-open:ring-4 data-open:ring-(--mine-input-ring-focus)',
                 'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-(--mine-input-ring-focus)',
             ])
@@ -337,7 +338,7 @@
                 <button
                     type="button"
                     x-on:click="prevMonth()"
-                    class="p-1.5 rounded-lg mine-btn-x transition-colors duration-200 mine-text-secondary focus-visible:outline-none"
+                    class="p-1.5 rounded-lg mine-btn-icon transition-colors duration-200 mine-text-secondary focus-visible:outline-none"
                 >
                     <x-mine.icon name="chevron-left" variant="mini" class="size-4" />
                 </button>
@@ -387,7 +388,7 @@
                 <button
                     type="button"
                     x-on:click="nextMonth()"
-                    class="p-1.5 rounded-lg mine-btn-x transition-colors duration-200 mine-text-secondary focus-visible:outline-none"
+                    class="p-1.5 rounded-lg mine-btn-icon transition-colors duration-200 mine-text-secondary focus-visible:outline-none"
                 >
                     <x-mine.icon name="chevron-right" variant="mini" class="size-4" />
                 </button>

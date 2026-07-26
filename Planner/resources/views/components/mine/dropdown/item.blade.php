@@ -12,13 +12,13 @@
     href="{{ $href }}"
     wire:navigate.hover
     role="menuitem"
-    tabindex="-1"
+    tabindex="0"
     @click="close()"
     {{ $attributes->class([
         'flex w-full items-center rounded-lg transition-all duration-200 ease-out outline-none no-underline text-sm mine-text-primary',
-        'hover:bg-(--mine-btn-ghost-bg-hover) focus:bg-(--mine-btn-ghost-bg-hover) focus-visible:ring-4 focus-visible:ring-(--mine-input-ring-focus)'
+        'hover:bg-(--mine-dropdown-item-bg-hover) focus:bg-(--mine-dropdown-item-bg-hover) focus-visible:ring-4 focus-visible:ring-(--mine-dropdown-item-ring)'
             => ! $destructive,
-        'hover:bg-(--mine-alert-danger-icon-bg) focus:bg-(--mine-alert-danger-icon-bg) focus-visible:ring-4 focus-visible:ring-(--mine-alert-danger-border)'
+        'hover:bg-(--mine-dropdown-destructive-item-bg-hover) focus:bg-(--mine-dropdown-destructive-item-bg-hover) focus-visible:ring-4 focus-visible:ring-(--mine-dropdown-destructive-item-ring) text-(--mine-dropdown-item-text-danger)'
             => $destructive,
         'cursor-not-allowed opacity-50'
             => $disabled,
@@ -30,14 +30,16 @@
 <button
     type="button"
     role="menuitem"
-    tabindex="-1"
+    tabindex="0"
     @disabled($disabled)
+    @keydown.enter.prevent="$el.firstElementChild?.dispatchEvent(new MouseEvent('click', { bubbles: true }))"
+    @keydown.space.prevent="$el.firstElementChild?.dispatchEvent(new MouseEvent('click', { bubbles: true }))"
     @click="close()"
     {{ $attributes->class([
         'flex w-full items-center rounded-lg transition-all duration-200 ease-out outline-none text-sm mine-text-primary',
-        'hover:bg-(--mine-btn-ghost-bg-hover) focus:bg-(--mine-btn-ghost-bg-hover) focus-visible:ring-4 focus-visible:ring-(--mine-input-ring-focus)'
+        'hover:bg-(--mine-dropdown-item-bg-hover) focus:bg-(--mine-dropdown-item-bg-hover) focus-visible:ring-4 focus-visible:ring-(--mine-dropdown-item-ring)'
             => ! $destructive,
-        'hover:bg-(--mine-alert-danger-icon-bg) focus:bg-(--mine-alert-danger-icon-bg) focus-visible:ring-4 focus-visible:ring-(--mine-alert-danger-border)'
+        'hover:bg-(--mine-dropdown-destructive-item-bg-hover) focus:bg-(--mine-dropdown-destructive-item-bg-hover) focus-visible:ring-4 focus-visible:ring-(--mine-dropdown-destructive-item-ring) text-(--mine-dropdown-item-text-danger)'
             => $destructive,
         'cursor-not-allowed opacity-50'
             => $disabled,

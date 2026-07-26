@@ -87,7 +87,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-lg font-semibold mine-text-primary">Edit your information</h2>
                 <button type="button" @click="close(); $wire.cancelEdit()"
-                        class="mine-btn-x p-2 rounded-xl">
+                        class="mine-btn-icon p-2 rounded-xl">
                     <x-mine.icon name="x-mark"/>
                 </button>
             </div>
@@ -156,7 +156,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-lg font-semibold mine-text-primary">Delete your account</h2>
                 <button type="button" @click="close(); $wire.cancelDelete()"
-                        class="mine-btn-x p-2 rounded-xl">
+                        class="mine-btn-icon p-2 rounded-xl">
                     <x-mine.icon name="x-mark"/>
                 </button>
             </div>

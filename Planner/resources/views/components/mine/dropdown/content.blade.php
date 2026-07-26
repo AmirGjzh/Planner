@@ -27,19 +27,20 @@ $position = $placements[$placement] ?? $placements['bottom-end'];
     @keydown.up.prevent="focusPrev()"
     @keydown.home.prevent="focusFirst()"
     @keydown.end.prevent="focusLast()"
-    class="
-        absolute
-        z-50
-        w-max max-w-80
-        {{ $position }}
-        bg-[var(--mine-input-bg)]
-        rounded-xl
-        border-2
-        border-[var(--mine-input-border)]
-        shadow-lg
-        p-1
-    "
-    {{ $attributes }}
+    {{ $attributes->merge([
+        'class' => '
+            absolute
+            z-50
+            min-w-full '.
+            $position.
+            ' bg-(--mine-dropdown-bg)
+            rounded-xl
+            border-2
+            border-(--mine-dropdown-border)
+            shadow-lg
+            p-1
+        ',
+    ]) }}
 >
     {{ $slot }}
 </div>

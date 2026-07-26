@@ -11,10 +11,9 @@
         type="button"
         @click="open = !open"
         :data-open="open"
-        class="flex items-center gap-1 py-1.5 px-3 rounded-xl border-2 bg-(--mine-input-bg) border-(--mine-input-border)/70 text-sm mine-text-primary font-medium transition-all duration-200 cursor-pointer data-open:border-(--mine-input-border-focus) data-open:ring-2 data-open:ring-(--mine-input-ring-focus) focus-visible:outline-none"
+        class="flex items-center gap-1 py-1.5 px-3 rounded-xl border-2 bg-(--mine-input-bg) border-(--mine-input-border)/0 text-sm mine-text-primary font-medium transition-all duration-200 cursor-pointer data-open:border-(--mine-input-border-focus) data-open:ring-2 data-open:ring-(--mine-input-ring-focus) focus-visible:ring-2 focus-visible:ring-(--mine-input-ring-focus) focus-visible:outline-none"
     >
         <span x-text="{{ $label }}"></span>
-        <x-mine.icon name="chevron-up-down" variant="mini" class="size-3.5 text-(--mine-input-icon) shrink-0" />
     </button>
 
     <div

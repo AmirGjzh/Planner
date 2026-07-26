@@ -35,7 +35,7 @@
                         </div>
                     </div>
                     <div class="flex justify-end items-start h-full">
-                        <div class="mine-text-primary hover:bg-(--mine-btn-x-bg-hover) p-2 rounded-xl hover:cursor-pointer">
+                        <div class="mine-text-primary hover:bg-(--mine-btn-icon-bg-hover) p-2 rounded-xl hover:cursor-pointer">
                             <x-mine.icon name="ellipsis-horizontal" class="size-6" />
                         </div>
                     </div>
@@ -114,7 +114,7 @@
                         </div>
                     </div>
                     <div class="flex justify-end items-start h-full">
-                        <div class="mine-text-primary hover:bg-(--mine-btn-x-bg-hover) p-2 rounded-xl hover:cursor-pointer">
+                        <div class="mine-text-primary hover:bg-(--mine-btn-icon-bg-hover) p-2 rounded-xl hover:cursor-pointer">
                             <x-mine.icon name="ellipsis-horizontal" class="size-6" />
                         </div>
                     </div>
@@ -200,7 +200,7 @@
                         </div>
                     </div>
                     <div class="flex justify-end items-start h-full">
-                        <div class="mine-text-primary hover:bg-(--mine-btn-x-bg-hover) p-2 rounded-xl hover:cursor-pointer">
+                        <div class="mine-text-primary hover:bg-(--mine-btn-icon-bg-hover) p-2 rounded-xl hover:cursor-pointer">
                             <x-mine.icon name="ellipsis-horizontal" class="size-6" />
                         </div>
                     </div>
@@ -289,7 +289,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-lg font-semibold mine-text-primary">Add New Plan</h2>
                 <button @click="close();"
-                    class="mine-text-primary hover:bg-(--mine-btn-x-bg-hover) p-2 rounded-xl hover:cursor-pointer">
+                    class="mine-text-primary hover:bg-(--mine-btn-icon-bg-hover) p-2 rounded-xl hover:cursor-pointer">
                     <x-mine.icon name="x-mark" />
                 </button>
             </div>
