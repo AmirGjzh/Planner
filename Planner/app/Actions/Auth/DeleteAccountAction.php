@@ -7,12 +7,16 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use Psr\Log\LoggerInterface;
 
 final class DeleteAccountAction
 {
+    public function __construct(
+        private readonly LoggerInterface $logger,
+    ) {}
+
     private const int MAX_ATTEMPTS = 5;
 
     private const int DECAY_SECONDS = 60;
@@ -24,7 +28,7 @@ final class DeleteAccountAction
         $rate_limit_key = $this->rateLimitKey($user, $request);
 
         if (RateLimiter::tooManyAttempts($rate_limit_key, self::MAX_ATTEMPTS)) {
-            Log::warning('Account deletion rate limited.', [
+            $this->logger->warning('Account deletion rate limited.', [
                 'user_id' => $user->id,
                 'ip' => $request->ip(),
                 'seconds_remaining' => RateLimiter::availableIn($rate_limit_key),
@@ -35,7 +39,7 @@ final class DeleteAccountAction
 
         if (! Hash::check($password, $user->password)) {
             RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
-            Log::warning('Account deletion failed, wrong password.', [
+            $this->logger->warning('Account deletion failed, wrong password.', [
                 'user_id' => $user->id,
                 'ip' => $request->ip(),
             ]);
@@ -57,7 +61,7 @@ final class DeleteAccountAction
 
         RateLimiter::clear($rate_limit_key);
 
-        Log::info('User account deleted.', [
+        $this->logger->info('User account deleted.', [
             'user_id' => $userId,
             'ip' => $request->ip(),
         ]);

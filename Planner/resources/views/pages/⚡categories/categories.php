@@ -39,12 +39,14 @@ new class extends Component
     #[Url]
     public string $search = '';
 
+    #[Url]
     public string $sort = 'latest';
 
     #[Computed]
     public function categories()
     {
         return Category::query()
+            ->select(['id', 'name', 'user_id', 'created_at'])
             ->where('user_id', auth()->id())
             ->when($this->search, fn ($q) => $q->where('name', 'like', '%'.$this->search.'%'))
             ->withCount('tasks')

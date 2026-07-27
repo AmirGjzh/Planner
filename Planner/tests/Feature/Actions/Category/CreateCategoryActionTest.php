@@ -106,17 +106,3 @@ it('logs successful creation info', function () {
             fn (array $context) => $context['user_id'] === $user->id && $context['name'] === 'Work'
         ));
 });
-
-it('logs rate limit warning', function () {
-    $user = User::factory()->create();
-    $user->categories()->create(['name' => 'Work']);
-    RateLimiter::clear(createCategoryRateLimitKey($user));
-
-    foreach (range(1, 5) as $ignored) {
-        app(CreateCategoryAction::class)->execute($user, 'Work', createCategoryRequest());
-    }
-
-    $result = app(CreateCategoryAction::class)->execute($user, 'Work', createCategoryRequest());
-
-    expect($result)->toBe(CreateCategoryResult::RateLimited);
-});

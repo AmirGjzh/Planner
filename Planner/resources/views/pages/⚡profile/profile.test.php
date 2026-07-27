@@ -175,6 +175,24 @@ it('shows username taken error', function () {
     expect($user->refresh()->username)->toBe('amir_user');
 });
 
+it('shows username taken error for mixed-case username', function () {
+    profileUser([
+        'username' => 'taken_user',
+    ]);
+
+    $user = profileUser([
+        'username' => 'amir_user',
+    ]);
+
+    Livewire::actingAs($user)
+        ->test('pages::profile')
+        ->set('username', 'Taken_User')
+        ->call('editProfile')
+        ->assertSet('edit_error', 'username_taken');
+
+    expect($user->refresh()->username)->toBe('amir_user');
+});
+
 it('shows rate limit error after too many profile update attempts', function () {
     $user = profileUser(['username' => 'amir_user']);
     profileUser(['username' => 'taken_user']);

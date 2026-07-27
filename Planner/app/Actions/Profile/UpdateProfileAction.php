@@ -6,12 +6,16 @@ use App\Enums\UpdateProfileResult;
 use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use Psr\Log\LoggerInterface;
 
 final class UpdateProfileAction
 {
+    public function __construct(
+        private readonly LoggerInterface $logger,
+    ) {}
+
     private const int MAX_ATTEMPTS = 5;
 
     private const int DECAY_SECONDS = 60;
@@ -28,10 +32,12 @@ final class UpdateProfileAction
     ): UpdateProfileResult {
         abort_unless($user->is(auth()->user()), 403);
 
+        $username = Str::lower($username);
+
         $rate_limit_key = $this->rateLimitKey($user, $request);
 
         if (RateLimiter::tooManyAttempts($rate_limit_key, self::MAX_ATTEMPTS)) {
-            Log::warning('Profile update rate limited.', [
+            $this->logger->warning('Profile update rate limited.', [
                 'user_id' => $user->id,
                 'ip' => $request->ip(),
                 'seconds_remaining' => RateLimiter::availableIn($rate_limit_key),
@@ -55,7 +61,7 @@ final class UpdateProfileAction
             }
 
             RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
-            Log::warning('Profile update failed, username already taken.', [
+            $this->logger->warning('Profile update failed, username already taken.', [
                 'user_id' => $user->id,
                 'attempted_username' => $username,
                 'ip' => $request->ip(),
@@ -65,7 +71,7 @@ final class UpdateProfileAction
         }
 
         RateLimiter::clear($rate_limit_key);
-        Log::info('Profile updated.', [
+        $this->logger->info('Profile updated.', [
             'user_id' => $user->id,
             'ip' => $request->ip(),
         ]);

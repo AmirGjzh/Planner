@@ -27,8 +27,9 @@ it('returns success and soft-deletes the user with correct password', function (
 
     expect($result)->toBe(DeleteAccountResult::Success)
         ->and(Auth::check())->toBeFalse()
-        ->and($user->find($user->id))->toBeNull()
-        ->and(User::withTrashed()->find($user->id))->not->toBeNull();
+        ->and($user->find($user->id))->toBeNull();
+
+    $this->assertSoftDeleted($user);
 });
 
 it('obfuscates email and username after deletion', function () {

@@ -23,11 +23,13 @@ it('returns success and creates a user', function () {
 
     expect($result)->toBe(RegisterResult::Success);
 
-    $user = User::where('email', 'amir@example.com')->first();
+    $this->assertDatabaseHas('users', [
+        'email' => 'amir@example.com',
+        'username' => 'amir_user',
+    ]);
 
-    expect($user)->not->toBeNull()
-        ->and($user->username)->toBe('amir_user')
-        ->and(Hash::check('password123', $user->password))->toBeTrue();
+    $user = User::where('email', 'amir@example.com')->first();
+    expect(Hash::check('password123', $user->password))->toBeTrue();
 });
 
 it('returns username taken when username already exists', function () {
@@ -38,6 +40,18 @@ it('returns username taken when username already exists', function () {
 
     $result = app(RegisterUserAction::class)
         ->execute('amir_user', 'amir@example.com', 'password123', registerRequest());
+
+    expect($result)->toBe(RegisterResult::UsernameTaken);
+});
+
+it('returns username taken for mixed-case username that matches existing lowercase', function () {
+    User::factory()->create([
+        'username' => 'amir_user',
+        'email' => 'old@example.com',
+    ]);
+
+    $result = app(RegisterUserAction::class)
+        ->execute('Amir_User', 'amir@example.com', 'password123', registerRequest());
 
     expect($result)->toBe(RegisterResult::UsernameTaken);
 });

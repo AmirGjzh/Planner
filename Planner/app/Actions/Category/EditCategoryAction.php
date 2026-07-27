@@ -6,12 +6,16 @@ use App\Enums\EditCategoryResult;
 use App\Models\Category;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use Psr\Log\LoggerInterface;
 
 final class EditCategoryAction
 {
+    public function __construct(
+        private readonly LoggerInterface $logger,
+    ) {}
+
     private const int MAX_ATTEMPTS = 5;
 
     private const int DECAY_SECONDS = 60;
@@ -20,10 +24,12 @@ final class EditCategoryAction
     {
         abort_unless($user->can('update', $category), 403);
 
+        $name = Str::ucfirst(Str::lower($name));
+
         $rate_limit_key = $this->rateLimitKey($user, $request);
 
         if (RateLimiter::tooManyAttempts($rate_limit_key, self::MAX_ATTEMPTS)) {
-            Log::warning('Category edit rate limited.', [
+            $this->logger->warning('Category edit rate limited.', [
                 'user_id' => $user->id,
                 'available_in' => RateLimiter::availableIn($rate_limit_key),
             ]);
@@ -38,7 +44,7 @@ final class EditCategoryAction
 
         if ($existing) {
             RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
-            Log::warning('Category edit failed, already exists.', [
+            $this->logger->warning('Category edit failed, already exists.', [
                 'user_id' => $user->id,
                 'category_id' => $category->id,
                 'name' => $name,
@@ -51,7 +57,7 @@ final class EditCategoryAction
 
         RateLimiter::clear($rate_limit_key);
 
-        Log::info('Category updated.', [
+        $this->logger->info('Category updated.', [
             'user_id' => $user->id,
             'category_id' => $category->id,
             'name' => $name,

@@ -5,17 +5,21 @@ namespace App\Actions\Category;
 use App\Enums\DeleteCategoryResult;
 use App\Models\Category;
 use App\Models\User;
-use Illuminate\Support\Facades\Log;
+use Psr\Log\LoggerInterface;
 
 final class DeleteCategoryAction
 {
+    public function __construct(
+        private readonly LoggerInterface $logger,
+    ) {}
+
     public function execute(User $user, Category $category): DeleteCategoryResult
     {
         abort_unless($user->can('delete', $category), 403);
         $tasks_count = $category->tasks()->count();
 
         if ($tasks_count > 0) {
-            Log::warning('Category deletion failed, has tasks assigned.', [
+            $this->logger->warning('Category deletion failed, has tasks assigned.', [
                 'user_id' => $user->id,
                 'category_id' => $category->id,
                 'name' => $category->name,
@@ -27,7 +31,7 @@ final class DeleteCategoryAction
 
         $category->delete();
 
-        Log::info('Category deleted.', [
+        $this->logger->info('Category deleted.', [
             'user_id' => $user->id,
             'category_id' => $category->id,
             'name' => $category->name,

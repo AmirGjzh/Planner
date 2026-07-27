@@ -2,7 +2,6 @@
 
 use App\Actions\Profile\UpdateProfileAction;
 use App\Enums\UpdateProfileResult;
-use App\Enums\UserGender;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -30,14 +29,17 @@ it('returns success and updates profile fields', function () {
 
     expect($result)->toBe(UpdateProfileResult::Success);
 
-    $user->refresh();
+    $this->assertDatabaseHas('users', [
+        'id' => $user->id,
+        'username' => 'new_user',
+        'firstname' => 'Amir',
+        'lastname' => 'Planner',
+        'gender' => 'male',
+        'country' => 'IR',
+    ]);
 
-    expect($user->username)->toBe('new_user')
-        ->and($user->firstname)->toBe('Amir')
-        ->and($user->lastname)->toBe('Planner')
-        ->and($user->gender)->toBe(UserGender::Male)
-        ->and($user->country)->toBe('IR')
-        ->and($user->birthday->format('Y-m-d'))->toBe('2000-01-15');
+    $user->refresh();
+    expect($user->birthday->format('Y-m-d'))->toBe('2000-01-15');
 });
 
 it('returns username taken when username belongs to another user', function () {
@@ -53,6 +55,24 @@ it('returns username taken when username belongs to another user', function () {
     RateLimiter::clear(profileRateLimitKey($user));
 
     $result = app(UpdateProfileAction::class)->execute($user, 'taken_user', null, null, null, null, null, profileRequest());
+
+    expect($result)->toBe(UpdateProfileResult::UsernameTaken)
+        ->and($user->refresh()->username)->toBe('amir_user');
+});
+
+it('returns username taken for mixed-case username matching existing lowercase', function () {
+    User::factory()->create([
+        'username' => 'taken_user',
+    ]);
+
+    $user = User::factory()->create([
+        'username' => 'amir_user',
+    ]);
+    $this->actingAs($user);
+
+    RateLimiter::clear(profileRateLimitKey($user));
+
+    $result = app(UpdateProfileAction::class)->execute($user, 'Taken_User', null, null, null, null, null, profileRequest());
 
     expect($result)->toBe(UpdateProfileResult::UsernameTaken)
         ->and($user->refresh()->username)->toBe('amir_user');

@@ -85,6 +85,21 @@ it('shows username taken error', function () {
         ->assertSet('register_error', 'username_taken');
 });
 
+it('shows username taken error for mixed-case username', function () {
+    User::factory()->create([
+        'username' => 'amir_user',
+        'email' => 'old@example.com',
+    ]);
+
+    Livewire::test('pages::auth.register')
+        ->set('username', 'Amir_User')
+        ->set('email', 'amir@example.com')
+        ->set('password', 'password123')
+        ->set('password_confirmation', 'password123')
+        ->call('register')
+        ->assertSet('register_error', 'username_taken');
+});
+
 it('shows email taken error', function () {
     User::factory()->create([
         'username' => 'old_user',

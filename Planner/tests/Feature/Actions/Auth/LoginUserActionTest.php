@@ -45,6 +45,17 @@ it('returns rate limited after repeated failures', function () {
     expect($result)->toBe(LoginResult::RateLimited);
 });
 
+it('normalizes email casing before authenticating', function () {
+    User::factory()->create([
+        'email' => 'amir@example.com',
+        'password' => 'password',
+    ]);
+    $result = app(LoginUserAction::class)
+        ->execute('Amir@Example.com', 'password', true, loginRequest());
+    expect($result)->toBe(LoginResult::Success);
+    $this->assertAuthenticated();
+});
+
 it('logs failed, limited, and successful login events', function () {
     Log::spy();
     User::factory()->create(['email' => 'amir@example.com', 'password' => 'password']);

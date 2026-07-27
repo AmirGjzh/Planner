@@ -25,7 +25,6 @@ new #[Layout('layouts::auth')] class extends Component
             request()
         );
         if ($result === LoginResult::Success) {
-            // TODO: Maybe a welcome toast notification in dashboard page
             $this->login_error = null;
 
             return $this->redirectRoute('dashboard', navigate: true);

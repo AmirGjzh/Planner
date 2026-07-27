@@ -6,12 +6,16 @@ use App\Enums\RegisterResult;
 use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use Psr\Log\LoggerInterface;
 
 final class RegisterUserAction
 {
+    public function __construct(
+        private readonly LoggerInterface $logger,
+    ) {}
+
     private const int MAX_ATTEMPTS = 5;
 
     private const int DECAY_SECONDS = 60;
@@ -23,9 +27,10 @@ final class RegisterUserAction
         Request $request,
     ): RegisterResult {
         $rate_limit_key = $this->rateLimitKey($request);
+        $username = Str::lower($username);
         $email = Str::lower($email);
         if (RateLimiter::tooManyAttempts($rate_limit_key, self::MAX_ATTEMPTS)) {
-            Log::warning('Register rate limited.', [
+            $this->logger->warning('Register rate limited.', [
                 'email' => $email,
                 'ip' => $request->ip(),
                 'available_in' => RateLimiter::availableIn($rate_limit_key),
@@ -45,7 +50,7 @@ final class RegisterUserAction
             }
             RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
             if (User::where('username', $username)->exists()) {
-                Log::warning('Register failed, username already taken.', [
+                $this->logger->warning('Register failed, username already taken.', [
                     'username' => $username,
                     'email' => $email,
                     'ip' => $request->ip(),
@@ -54,7 +59,7 @@ final class RegisterUserAction
                 return RegisterResult::UsernameTaken;
             }
             if (User::where('email', $email)->exists()) {
-                Log::warning('Register failed, email already taken.', [
+                $this->logger->warning('Register failed, email already taken.', [
                     'username' => $username,
                     'email' => $email,
                     'ip' => $request->ip(),
@@ -65,7 +70,7 @@ final class RegisterUserAction
             throw $e;
         }
         RateLimiter::clear($rate_limit_key);
-        Log::info('User registered.', [
+        $this->logger->info('User registered.', [
             'username' => $username,
             'email' => $email,
             'ip' => $request->ip(),

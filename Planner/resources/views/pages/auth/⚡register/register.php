@@ -27,16 +27,15 @@ new #[Layout('layouts::auth')] class extends Component
             request()
         );
 
+        if ($result === RegisterResult::Success) {
+            return $this->redirectRoute('login', navigate: true);
+        }
+
         $this->register_error = match ($result) {
-            RegisterResult::Success => null,
             RegisterResult::RateLimited => 'rate_limited',
             RegisterResult::UsernameTaken => 'username_taken',
             RegisterResult::EmailTaken => 'email_taken',
         };
-
-        if ($result === RegisterResult::Success) {
-            return $this->redirectRoute('login', navigate: true);
-        }
 
         $this->reset('password', 'password_confirmation');
     }

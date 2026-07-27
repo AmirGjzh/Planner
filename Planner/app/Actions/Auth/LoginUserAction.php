@@ -5,12 +5,16 @@ namespace App\Actions\Auth;
 use App\Enums\LoginResult;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use Psr\Log\LoggerInterface;
 
 final class LoginUserAction
 {
+    public function __construct(
+        private readonly LoggerInterface $logger,
+    ) {}
+
     private const int MAX_ATTEMPTS = 5;
 
     private const int DECAY_SECONDS = 60;
@@ -21,10 +25,12 @@ final class LoginUserAction
         bool $remember,
         Request $request,
     ): LoginResult {
+        $email = Str::lower($email);
+
         $rate_limit_key = $this->rateLimitKey($email, $request);
         if (RateLimiter::tooManyAttempts($rate_limit_key, self::MAX_ATTEMPTS)) {
-            Log::warning('Login rate limited.', [
-                'email' => Str::lower($email),
+            $this->logger->warning('Login rate limited.', [
+                'email' => $email,
                 'ip' => $request->ip(),
                 'available_in' => RateLimiter::availableIn($rate_limit_key),
             ]);
@@ -33,8 +39,8 @@ final class LoginUserAction
         }
         if (! Auth::attempt(['email' => $email, 'password' => $password], $remember)) {
             RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
-            Log::warning('Login failed.', [
-                'email' => Str::lower($email),
+            $this->logger->warning('Login failed.', [
+                'email' => $email,
                 'ip' => $request->ip(),
             ]);
 
@@ -42,7 +48,7 @@ final class LoginUserAction
         }
         RateLimiter::clear($rate_limit_key);
         session()->regenerate();
-        Log::info('User logged in.', [
+        $this->logger->info('User logged in.', [
             'user_id' => Auth::id(),
             'ip' => $request->ip(),
         ]);
@@ -52,6 +58,6 @@ final class LoginUserAction
 
     private function rateLimitKey(string $email, Request $request): string
     {
-        return Str::transliterate('login:'.Str::lower($email).'|'.$request->ip());
+        return Str::transliterate('login:'.$email.'|'.$request->ip());
     }
 }
