@@ -53,12 +53,12 @@
                         w-full flex flex-col justify-between gap-5 px-4 py-4
                         ">
                 <div class="flex justify-between items-start">
-                    <div class="flex gap-3">
-                        <div class="rounded-xl size-14 mine-badge-primary flex justify-center items-center">
+                    <div class="flex gap-3 min-w-0">
+                        <div class="rounded-xl size-14 shrink-0 mine-badge-primary flex justify-center items-center">
                             <x-mine.icon name="folder" class="size-7" />
                         </div>
-                        <div class="flex flex-col justify-between py-0.5">
-                            <h2 class="mine-text-primary font-medium text-[15px]">{{ $category->name }}</h2>
+                        <div class="flex flex-col justify-between py-0.5 min-w-0">
+                            <h2 class="mine-text-primary font-medium text-[15px] truncate">{{ $category->name }}</h2>
                             <p class="mine-text-secondary text-[13px] font-medium">{{ $category->tasks_count ?: 'No' }} {{ Str::plural('Task', $category->tasks_count) }}</p>
                         </div>
                     </div>

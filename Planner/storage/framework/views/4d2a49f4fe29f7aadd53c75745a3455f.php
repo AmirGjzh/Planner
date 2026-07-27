@@ -1,16 +1,16 @@
 <div class="flex-1 px-4 sm:px-8 md:px-16 pb-6 pt-4 flex flex-col">
-    <div class="mb-6 ml-2">
+    <div class="mb-6">
         <h1 class="font-bold text-md mine-text-primary">My Profile</h1>
     </div>
     <div class="flex flex-col md:flex-row gap-6">
         <div class="mine-card flex-1 p-4 sm:p-6  flex flex-col sm:flex-row sm:items-center sm:justify-between md:flex-col md:items-center md:justify-center gap-4">
             <div class="flex items-center gap-4 md:flex-col">
-                <div class="md:mt-20 size-20 rounded-full mine-badge-primary flex justify-center items-center">
+                <div class="md:mt-20 size-20 shrink-0 rounded-full mine-badge-primary flex justify-center items-center">
                     <h1 class="font-bold text-xl"><?php echo e(strtoupper($this->user->firstname && $this->user->lastname ? substr($this->user->firstname, 0, 1) . substr($this->user->lastname, 0, 1) : substr($this->user->username, 0, 2))); ?></h1>
                 </div>
-                <div class="md:text-center md:flex-0 sm:flex-1 md:my-2">
-                    <h1 class="font-bold text-md mine-text-primary mb-1"><?php echo e($this->user->username); ?></h1>
-                    <p class="font-medium text-sm mine-text-secondary"><?php echo e($this->user->email); ?></p>
+                <div class="md:text-center md:flex-0 sm:flex-1 md:my-2 min-w-0">
+                    <h1 class="font-bold text-md mine-text-primary mb-1 truncate"><?php echo e($this->user->username); ?></h1>
+                    <p class="font-medium text-sm mine-text-secondary truncate"><?php echo e($this->user->email); ?></p>
                 </div>
             </div>
             <div class="mt-4 sm:mt-0 md:w-full md:px-4 md:mt-auto">
@@ -69,34 +69,34 @@
                 </div>
                 <div class="flex justify-between px-2">
                     <p class="text-sm font-medium mine-text-secondary">Firstname</p>
-                    <p class="text-sm font-medium mine-text-secondary">
+                    <p class="text-sm font-medium mine-text-secondary max-w-40 min-w-0 truncate">
                         <?php echo e($this->user->firstname ?? '—'); ?>
 
                     </p>
                 </div>
                 <div class="flex justify-between px-2">
                     <p class="text-sm font-medium mine-text-secondary">Lastname</p>
-                    <p class="text-sm font-medium mine-text-secondary">
+                    <p class="text-sm font-medium mine-text-secondary max-w-40 min-w-0 truncate">
                         <?php echo e($this->user->lastname ?? '—'); ?>
 
                     </p>
                 </div>
                 <div class="flex justify-between px-2">
                     <p class="text-sm font-medium mine-text-secondary">Birthday</p>
-                    <p class="text-sm font-medium mine-text-secondary">
+                    <p class="text-sm font-medium mine-text-secondary max-w-40 min-w-0 truncate">
                         <?php echo e($this->user->birthday?->format('Y-m-d') ?? '—'); ?>
 
                     </p>
                 </div>
                 <div class="flex justify-between px-2">
                     <p class="text-sm font-medium mine-text-secondary">Gender</p>
-                    <p class="text-sm font-medium mine-text-secondary"><?php echo e($this->user->gender ? ucfirst($this->user->gender->value) : '—'); ?>
+                    <p class="text-sm font-medium mine-text-secondary max-w-40 min-w-0 truncate"><?php echo e($this->user->gender ? ucfirst($this->user->gender->value) : '—'); ?>
 
                     </p>
                 </div>
                 <div class="flex justify-between px-2">
                     <p class="text-sm font-medium mine-text-secondary">Country</p>
-                    <p class="text-sm font-medium mine-text-secondary"><?php echo e($this->countries[$this->user->country] ?? '—'); ?>
+                    <p class="text-sm font-medium mine-text-secondary max-w-40 min-w-0 truncate"><?php echo e($this->countries[$this->user->country] ?? '—'); ?>
 
                     </p>
                 </div>
