@@ -39,6 +39,28 @@
 <?php endif; ?>
     <?php echo e($slot); ?>
 
+    <?php if (isset($component)) { $__componentOriginala526dd74a181c2c088234d66bd5d129a = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginala526dd74a181c2c088234d66bd5d129a = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.mine.footer.index','data' => []] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('mine.footer'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes([]); ?>
+<?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::processComponentKey($component); ?>
+
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginala526dd74a181c2c088234d66bd5d129a)): ?>
+<?php $attributes = $__attributesOriginala526dd74a181c2c088234d66bd5d129a; ?>
+<?php unset($__attributesOriginala526dd74a181c2c088234d66bd5d129a); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginala526dd74a181c2c088234d66bd5d129a)): ?>
+<?php $component = $__componentOriginala526dd74a181c2c088234d66bd5d129a; ?>
+<?php unset($__componentOriginala526dd74a181c2c088234d66bd5d129a); ?>
+<?php endif; ?>
 </body>
 
 </html>

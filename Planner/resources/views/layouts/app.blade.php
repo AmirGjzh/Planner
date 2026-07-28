@@ -15,6 +15,7 @@
 <body class="min-h-dvh flex flex-col mine-page-bg">
     <x-mine.header />
     {{ $slot }}
+    <x-mine.footer />
 </body>
 
 </html>

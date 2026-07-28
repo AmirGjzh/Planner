@@ -32,10 +32,11 @@ unset($__defined_vars, $__key, $__value); ?>
     role="separator"
     <?php echo e($attributes->merge([
         'class' => '
-            my-2
-            border-1.5
+            my-1
+            border-2
             border-t
             border-(--mine-separator-border)
+            opacity-20
         ',
     ])); ?>
 

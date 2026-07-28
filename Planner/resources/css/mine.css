@@ -60,7 +60,7 @@
     --mine-alert-info-title: #1D4ED8;
 
     /* Seperator + Scrollbar */
-    --mine-separator-border: #E3EBE7;
+    --mine-separator-border: #D2DFD8;
     --mine-scrollbar-thumb: #C5D1CB;
     --mine-scrollbar-thumb-hover: #A8B8B0;
 
@@ -394,7 +394,18 @@
     @apply focus-visible:ring-(--mine-input-ring-focus);
 }
 
+@utility mine-nav-link {
+    @apply text-sm font-medium;
+    @apply py-4 px-4 gap-2 flex justify-center items-center h-10 rounded-xl;
+    @apply transition-all duration-200;
+    @apply text-(--mine-nav-link-text);
+    @apply hover:bg-(--mine-nav-link-bg-hover);
+}
 
+@utility mine-nav-link-active {
+    @apply mine-nav-link;
+    @apply bg-(--mine-nav-link-bg-active) text-(--mine-nav-link-text-active);
+}
 
 
 

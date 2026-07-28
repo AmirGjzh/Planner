@@ -4,10 +4,11 @@
     role="separator"
     {{ $attributes->merge([
         'class' => '
-            my-2
-            border-1.5
+            my-1
+            border-2
             border-t
             border-(--mine-separator-border)
+            opacity-20
         ',
     ]) }}
 >
