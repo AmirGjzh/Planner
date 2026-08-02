@@ -16,9 +16,7 @@ skills-lock.json
 /.phpunit.cache
 /.vscode
 /.zed
-#/.ai
 /.agents
-#mine/
 /auth.json
 /node_modules
 /public/build
@@ -27,6 +25,7 @@ skills-lock.json
 /public/storage
 /storage/*.key
 /storage/pail
+/storage/framework
 /vendor
 _ide_helper.php
 _ide_helper_models.php

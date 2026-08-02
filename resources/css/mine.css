@@ -133,8 +133,11 @@
     --mine-pagination-item-bg-active: #EDF5F0;
     --mine-pagination-ring-focus: #DFF5E7;
 
-
-
+    /* Navlink */
+    --mine-nav-link-text: #565c67;
+    --mine-nav-link-text-active: #166534;
+    --mine-nav-link-bg-hover: #eef7f1;
+    --mine-nav-link-bg-active: #EDF5F0;
 
 
 
@@ -203,11 +206,7 @@
 
 
 
-    --mine-header-border: #e7f0ec;
-    --mine-nav-link-text: #565c67;
-    --mine-nav-link-text-active: #166534;
-    --mine-nav-link-bg-hover: #EDF5F0;
-    --mine-nav-link-bg-active: #EDF5F0;
+
 
     --mine-theme-switcher-color: #166534;
     --mine-theme-switcher-bg-hover: #EDF5F0;
