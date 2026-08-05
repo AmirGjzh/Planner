@@ -5,31 +5,41 @@ namespace App\Actions\Plan;
 use App\Enums\CreatePlanResult;
 use App\Models\Plan;
 use App\Models\User;
-use App\View\Components\DateRange;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
+use Psr\Log\LoggerInterface;
 
-class CreatePlanAction
+final class CreatePlanAction
 {
-    public function execute(User $user, string $name, ?string $description, DateRange $range, Request $request): CreatePlanResult
+    public function __construct(
+        private readonly LoggerInterface $logger,
+    ) {}
+
+    private const int MAX_ATTEMPTS = 5;
+
+    private const int DECAY_SECONDS = 60;
+
+    public function execute(User $user, string $name, ?string $description, array $range, Request $request): CreatePlanResult
     {
         abort_unless($user->can('create', Plan::class), 403);
 
-        $key = 'create-plan:'.$user->id.'|'.$request->ip();
+        $name = Str::ucfirst(Str::lower($name));
 
-        if (RateLimiter::tooManyAttempts($key, 5)) {
-            Log::warning('Plan creation rate limited.', [
+        $rate_limit_key = $this->rateLimitKey($user, $request);
+
+        if (RateLimiter::tooManyAttempts($rate_limit_key, self::MAX_ATTEMPTS)) {
+            $this->logger->warning('Plan creation rate limited.', [
                 'user_id' => $user->id,
-                'seconds_remaining' => RateLimiter::availableIn($key),
+                'available_in' => RateLimiter::availableIn($rate_limit_key),
             ]);
 
             return CreatePlanResult::RateLimited;
         }
 
         if ($user->plans()->where('name', $name)->exists()) {
-            RateLimiter::hit($key, 60);
-            Log::warning('Plan creation failed, already exists.', [
+            RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
+            $this->logger->warning('Plan creation failed, already exists.', [
                 'user_id' => $user->id,
                 'name' => $name,
             ]);
@@ -40,19 +50,24 @@ class CreatePlanAction
         $user->plans()->create([
             'name' => $name,
             'description' => $description,
-            'start_date' => $range->getStart(),
-            'finish_date' => $range->getEnd(),
+            'start_date' => $range['start'],
+            'finish_date' => $range['end'],
         ]);
 
-        RateLimiter::hit($key, 60);
+        RateLimiter::clear($rate_limit_key);
 
-        Log::info('Plan created.', [
+        $this->logger->info('Plan created.', [
             'user_id' => $user->id,
             'name' => $name,
-            'start_date' => $range->getStart(),
-            'finish_date' => $range->getEnd(),
+            'start_date' => $range['start'],
+            'finish_date' => $range['end'],
         ]);
 
         return CreatePlanResult::Created;
+    }
+
+    private function rateLimitKey(User $user, Request $request): string
+    {
+        return Str::transliterate('create-plan:'.$user->id.'|'.$request->ip());
     }
 }

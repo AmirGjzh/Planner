@@ -212,6 +212,10 @@
                     }
                     this.state = { start, end }
                 }
+
+                if (this.name && typeof $wire !== 'undefined' && this.state?.start && this.state?.end) {
+                    $wire.set(this.name, this.state, false)
+                }
             }
         },
 
@@ -413,16 +417,16 @@
                                 type="button"
                                 x-on:click="selectDay(cell)"
                                 :class="{
-                                    'bg-(--mine-datepicker-pill-bg) text-(--mine-datepicker-pill-text) hover:bg-(--mine-datepicker-pill-bg-hover) shadow-sm font-bold z-40': cell.isRangeStart || cell.isRangeEnd,
-                                    'hover:bg-(--mine-datepicker-day-bg-hover) mine-text-primary': !cell.isSelected && !cell.isInRange,
-                                    'text-(--mine-datepicker-day-dim-text)': !cell.isInMonth && !cell.isSelected && !cell.isInRange,
-                                    'bg-(--mine-datepicker-day-selected-bg) text-(--mine-datepicker-day-selected-text) hover:bg-(--mine-datepicker-day-selected-bg-hover) shadow-sm font-bold': cell.isSelected && !cell.isRangeStart && !cell.isRangeEnd
+                                    'bg-(--mine-datepicker-pill-bg) text-(--mine-datepicker-pill-text) hover:bg-(--mine-datepicker-pill-bg-hover) shadow-sm font-bold relative z-40': cell.isRangeStart || cell.isRangeEnd,
+                                    'hover:bg-(--mine-datepicker-day-bg-hover) mine-text-primary relative': !cell.isSelected && !cell.isInRange,
+                                    'text-(--mine-datepicker-day-dim-text) relative': !cell.isInMonth && !cell.isSelected && !cell.isInRange,
+                                    'bg-(--mine-datepicker-day-selected-bg) text-(--mine-datepicker-day-selected-text) hover:bg-(--mine-datepicker-day-selected-bg-hover) shadow-sm font-bold relative z-40': cell.isSelected && !cell.isRangeStart && !cell.isRangeEnd
                                 }"
                                 class="flex items-center justify-center h-11 w-11 hover:cursor-pointer mx-auto rounded-lg text-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--mine-datepicker-day-ring-focus)"
                             >
                                 <span
                                     :class="cell.isInRange && !cell.isRangeStart && !cell.isRangeEnd
-                                        ? 'flex items-center justify-center h-9 w-full bg-(--mine-datepicker-pill-between-bg) text-(--mine-datepicker-pill-between-text) ' + (cell.col === 0 ? 'rounded-s-lg' : cell.col === 6 ? 'rounded-e-lg' : 'rounded-none')
+                                        ? 'relative z-30 flex items-center justify-center h-9 w-full bg-(--mine-datepicker-pill-between-bg) text-(--mine-datepicker-pill-between-text) ' + (cell.col === 0 ? 'rounded-s-lg' : cell.col === 6 ? 'rounded-e-lg' : 'rounded-none')
                                         : ''"
                                 >
                                     <span

@@ -17,6 +17,9 @@
     --mine-text-link-hover: #128047;
     --mine-text-link-ring-focus: #C8EAD6;
 
+    --mine-text-secondary-accent: #334155;
+    --mine-text-secondary-accent-ring-focus: #E2E8F0;
+
     /* Input */
     --mine-input-bg: #FAFBFA;
     --mine-input-autofill-bg: #FAFBFA;
@@ -89,8 +92,8 @@
     --mine-datepicker-day-ring-focus: #DFF5E7;
 
     /* Dropdown */
-    --mine-dropdown-bg: #FAFBFA;
-    --mine-dropdown-border: #D2DFD8;
+    --mine-dropdown-bg: #FDFEFD;
+    --mine-dropdown-border: #E9EFEB;
     --mine-dropdown-item-bg-hover: #EAF3ED;
     --mine-dropdown-item-ring: #C8EAD6;
     --mine-dropdown-item-text-danger: #DC2626;
@@ -107,6 +110,9 @@
 
     --mine-badge-danger-bg: #f7e4e4;
     --mine-badge-danger-text: #B42318;
+
+    --mine-badge-secondary-bg: #EDEFF3;
+    --mine-badge-secondary-text: #334155;
 
     /* Button */
     --mine-btn-primary-bg: #1A9B5C;
@@ -147,8 +153,8 @@
 
 
 
-    --mine-btn-secondary-bg: #4F6380;
-    --mine-btn-secondary-bg-hover: #475569;
+    --mine-btn-secondary-bg: #6B7280;
+    --mine-btn-secondary-bg-hover: #4B5563;
     --mine-btn-secondary-text: #FFFFFF;
     --mine-btn-secondary-ring-focus: #E2E8F0;
 
@@ -156,8 +162,8 @@
 
 
 
-    --mine-avatar-secondary-bg: #F0F3F5;
-    --mine-avater-secondary-text: #4F6380;
+    --mine-avatar-secondary-bg: #F3F4F6;
+    --mine-avater-secondary-text: #4B5563;
 
 
 
@@ -170,7 +176,7 @@
     --mine-progress-gray-track: #E2E8F0;
     --mine-progress-danger-track: #FEE2E2;
     --mine-progress-fill: #1A9B5C;
-    --mine-progress-gray-fill: #4F6380;
+    --mine-progress-gray-fill: #6B7280;
     --mine-progress-danger-fill: #DC2626;
 
     /* valid colors */
@@ -228,6 +234,12 @@
     @apply text-(--mine-text-error);
 }
 
+@utility mine-text-secondary-accent {
+    @apply text-(--mine-text-secondary-accent);
+    @apply transition-all duration-200 ease-out;
+    @apply hover:text-(--mine-btn-secondary-bg-hover);
+}
+
 @utility mine-text-link {
     @apply text-(--mine-text-link);
     @apply transition-all duration-200 ease-out;
@@ -273,6 +285,19 @@
     @apply focus-visible:ring-(--mine-btn-ghost-ring-focus);
 }
 
+@utility mine-btn-secondary {
+    @apply bg-(--mine-btn-secondary-bg);
+    @apply text-(--mine-btn-secondary-text);
+    @apply transition-all duration-200 ease-out;
+    @apply hover:bg-(--mine-btn-secondary-bg-hover);
+    @apply hover:-translate-y-px;
+    @apply active:translate-y-0;
+    @apply active:scale-[.98];
+    @apply focus-visible:outline-none;
+    @apply focus-visible:ring-4;
+    @apply focus-visible:ring-(--mine-btn-secondary-ring-focus);
+}
+
 @utility mine-btn-outline-primary {
     @apply bg-transparent;
     @apply text-(--mine-btn-primary-bg);
@@ -303,19 +328,19 @@
     @apply focus-visible:ring-(--mine-btn-danger-ring-focus);
 }
 
-@utility btn-outline-secondary {
-    background: transparent;
-    color: var(--mine-btn-secondary-bg-hover);
-    border: 2px solid var(--mine-btn-secondary-bg);
-
-    &:hover {
-        background: var(--mine-btn-secondary-bg);
-        color: var(--mine-btn-secondary-text);
-    }
-
-    &:focus-visible {
-        box-shadow: 0 0 0 4px var(--mine-btn-secondary-ring-focus);
-    }
+@utility mine-btn-outline-secondary {
+    @apply bg-transparent;
+    @apply text-(--mine-btn-secondary-bg);
+    @apply border-2;
+    @apply border-(--mine-btn-secondary-bg);
+    @apply transition-all duration-200 ease-out;
+    @apply hover:bg-(--mine-btn-secondary-bg);
+    @apply hover:text-(--mine-btn-secondary-text);
+    @apply hover:border-transparent;
+    @apply active:scale-[.98];
+    @apply focus-visible:outline-none;
+    @apply focus-visible:ring-4;
+    @apply focus-visible:ring-(--mine-btn-secondary-ring-focus);
 }
 
 @utility mine-pagination-item {
@@ -375,6 +400,11 @@
 @utility mine-badge-danger {
     @apply bg-(--mine-badge-danger-bg);
     @apply text-(--mine-badge-danger-text);
+}
+
+@utility mine-badge-secondary {
+    @apply bg-(--mine-badge-secondary-bg);
+    @apply text-(--mine-badge-secondary-text);
 }
 
 @utility avatar-secondary {

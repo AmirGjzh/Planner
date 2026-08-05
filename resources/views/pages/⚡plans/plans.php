@@ -6,156 +6,220 @@ use App\Actions\Plan\EditPlanAction;
 use App\Enums\CreatePlanResult;
 use App\Enums\DeletePlanResult;
 use App\Enums\EditPlanResult;
+use App\Livewire\Concerns\HasUser;
 use App\Models\Plan;
-use App\Models\User;
-use App\View\Components\DateRange;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Locked;
+use Livewire\Attributes\Url;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 new class extends Component
 {
+    use HasUser, WithPagination;
+
+    public string $add_name = '';
+
+    public ?string $add_description = null;
+
+    public ?array $add_range = null;
+
+    public ?string $add_error = null;
+
+    public ?string $add_success = null;
+
+    public ?int $editing_id = null;
+
+    public string $edit_name = '';
+
+    public ?string $edit_description = null;
+
+    public ?array $edit_range = null;
+
+    public ?string $edit_error = null;
+
+    public ?string $edit_success = null;
+
+    public ?int $deleting_id = null;
+
+    public ?string $delete_error = null;
+
+    public ?array $range_filter = null;
+
+    #[Url]
     public string $search = '';
 
-    #[Locked]
-    public int $userId;
-
-    public string $plan_name = '';
-
-    public ?string $description = null;
-
-    public DateRange $range;
-
-    public ?int $editingPlanId = null;
-
-    public string $editName = '';
-
-    public ?string $editDescription = null;
-
-    public DateRange $editRange;
-
-    public function mount()
-    {
-        $this->range = new DateRange(start: now(), end: now()->addDays(7));
-        $this->editRange = new DateRange(start: now(), end: now()->addDays(7));
-        $this->userId = auth()->id() ?? abort(403);
-    }
-
-    #[Computed]
-    public function user(): User
-    {
-        return User::query()->findOrFail($this->userId);
-    }
+    #[Url]
+    public string $sort = 'latest';
 
     #[Computed]
     public function plans()
     {
         return Plan::query()
-            ->where('user_id', $this->userId)
-            ->withCount('tasks')
-            ->with('tasks')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->select(['id', 'name', 'description', 'start_date', 'finish_date', 'done', 'user_id', 'created_at'])
+            ->where('user_id', auth()->id())
+            ->when($this->search, fn ($q) => $q->where('name', 'like', '%'.$this->search.'%'))
+            ->when($this->range_filter['start'] ?? null, fn ($q) => $q->whereDate('finish_date', '>=', $this->range_filter['start']))
+            ->when($this->range_filter['end'] ?? null, fn ($q) => $q->whereDate('start_date', '<=', $this->range_filter['end']))
+            ->withCount([
+                'tasks',
+                'tasks as tasks_done_count' => fn ($q) => $q->where('done', true),
+            ])
+            ->when($this->sort === 'name', fn ($q) => $q->orderBy('name'))
+            ->when($this->sort === 'latest', fn ($q) => $q->latest())
+            ->paginate(6)->onEachSide(1);
     }
 
-    public function addPlan(CreatePlanAction $action)
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function addPlan(CreatePlanAction $action): void
     {
         $this->validate([
-            'plan_name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string', 'max:5000'],
-            'range.start' => 'required|date_format:Y-m-d',
-            'range.end' => 'required|date_format:Y-m-d|after:range.start',
+            'add_name' => $this->rules()['add_name'],
+            'add_description' => $this->rules()['add_description'],
+            'add_range' => $this->rules()['add_range'],
+            'add_range.start' => $this->rules()['add_range.start'],
+            'add_range.end' => $this->rules()['add_range.end'],
         ]);
+            
+        $name = Str::ucfirst(Str::lower($this->add_name));
 
-        $result = $action->execute(
-            $this->user,
-            $this->plan_name,
-            $this->description,
-            $this->range,
-            request(),
-        );
+        $result = $action->execute($this->user, $name, $this->add_description, $this->add_range, request());
 
-        if ($result === CreatePlanResult::RateLimited) {
-            $this->addError('plan_form', 'Too many attempts. Please try again later.');
+        $this->add_error = match ($result) {
+            CreatePlanResult::AlreadyExists => 'already_exists',
+            CreatePlanResult::RateLimited => 'rate_limited',
+            CreatePlanResult::Created => null,
+        };
 
+        if ($this->add_error) {
+            $this->add_success = null;
             return;
         }
 
-        if ($result === CreatePlanResult::AlreadyExists) {
-            $this->addError('plan_name', 'A plan with this name already exists.');
-
-            return;
-        }
-
-        $this->reset('plan_name', 'description');
-        $this->range = new DateRange(start: now(), end: now()->addDays(7));
+        $this->add_name = '';
+        $this->add_description = null;
+        $this->add_range = null;
+        $this->add_success = 'created';
         unset($this->plans);
     }
 
-    public function deletePlan(int $planId, DeletePlanAction $action): void
+    public function cancelAdd(): void
     {
-        $result = $action->execute($this->user, $planId);
-
-        if ($result === DeletePlanResult::HasTasks) {
-            $this->addError('plan_form', 'Cannot delete a plan that has tasks. Reassign or delete the tasks first.');
-
-            return;
-        }
-
-        unset($this->plans);
+        $this->add_error = null;
+        $this->add_success = null;
+        $this->add_name = '';
+        $this->add_description = null;
+        $this->add_range = null;
+        $this->resetValidation();
     }
 
-    public function startEditing(int $planId): void
-    {
-        $plan = $this->user->plans()->findOrFail($planId);
-
-        $this->editingPlanId = $planId;
-        $this->editName = $plan->name;
-        $this->editDescription = $plan->description;
-        $this->editRange = new DateRange(
-            start: $plan->start_date,
-            end: $plan->finish_date,
-        );
-    }
-
-    public function cancelEditing(): void
-    {
-        $this->reset('editingPlanId', 'editName', 'editDescription');
-        $this->editRange = new DateRange(start: now(), end: now()->addDays(7));
-    }
-
-    public function updatePlan(EditPlanAction $action): void
+    public function editPlan(EditPlanAction $action): void
     {
         $this->validate([
-            'editName' => ['required', 'string', 'max:255'],
-            'editDescription' => ['nullable', 'string', 'max:5000'],
-            'editRange.start' => 'required|date_format:Y-m-d',
-            'editRange.end' => 'required|date_format:Y-m-d|after:editRange.start',
+            'edit_name' => $this->rules()['edit_name'],
+            'edit_description' => $this->rules()['edit_description'],
+            'edit_range' => $this->rules()['edit_range'],
+            'edit_range.start' => $this->rules()['edit_range.start'],
+            'edit_range.end' => $this->rules()['edit_range.end'],
         ]);
 
-        $result = $action->execute(
-            $this->user,
-            $this->editingPlanId,
-            $this->editName,
-            $this->editDescription,
-            $this->editRange,
-            request(),
-        );
+        $name = Str::ucfirst(Str::lower($this->edit_name));
 
-        if ($result === EditPlanResult::RateLimited) {
-            $this->addError('edit_form', 'Too many attempts. Please try again later.');
+        $plan = $this->user->plans()->findOrFail($this->editing_id);
+        $result = $action->execute($this->user, $plan, $name, $this->edit_description, $this->edit_range, request());
 
-            return;
-        }
+        $this->edit_error = match ($result) {
+            EditPlanResult::AlreadyExists => 'already_exists',
+            EditPlanResult::RateLimited => 'rate_limited',
+            EditPlanResult::Updated => null,
+        };
 
-        if ($result === EditPlanResult::AlreadyExists) {
-            $this->addError('editName', 'A plan with this name already exists.');
+        if ($this->edit_error) {
+            $this->edit_success = null;
 
             return;
         }
 
-        $this->dispatch('close-modal', id: 'edit-plan-modal');
-        $this->cancelEditing();
+        $this->edit_name = '';
+        $this->edit_description = null;
+        $this->edit_range = null;
+        $this->editing_id = null;
+        $this->edit_success = 'updated';
         unset($this->plans);
+    }
+
+    public function cancelEdit(): void
+    {
+        $this->edit_error = null;
+        $this->edit_success = null;
+        $this->edit_name = '';
+        $this->edit_description = null;
+        $this->edit_range = null;
+        $this->editing_id = null;
+        $this->resetValidation();
+    }
+
+    public function deletePlan(DeletePlanAction $action): void
+    {
+        $plan = $this->user->plans()->findOrFail($this->deleting_id);
+
+        $result = $action->execute($this->user, $plan);
+
+        $this->delete_error = match ($result) {
+            DeletePlanResult::HasTasks => 'has_tasks',
+            DeletePlanResult::Deleted => null,
+        };
+
+        if ($result === DeletePlanResult::Deleted) {
+            $this->deleting_id = null;
+            unset($this->plans);
+            $this->dispatch('close-modal', id: 'delete-plan-confirmation');
+        }
+    }
+
+    public function cancelDelete(): void
+    {
+        $this->delete_error = null;
+        $this->resetValidation();
+    }
+
+    protected function rules(): array
+    {
+        return [
+            'add_name' => ['required', 'string', 'max:255'],
+            'add_description' => ['nullable', 'string', 'max:5000'],
+            'add_range' => ['required', 'array'],
+            'add_range.start' => ['required', 'date_format:Y-m-d'],
+            'add_range.end' => ['required', 'date_format:Y-m-d', 'after:add_range.start'],
+            'edit_name' => ['required', 'string', 'max:255'],
+            'edit_description' => ['nullable', 'string', 'max:5000'],
+            'edit_range' => ['required', 'array'],
+            'edit_range.start' => ['required', 'date_format:Y-m-d'],
+            'edit_range.end' => ['required', 'date_format:Y-m-d', 'after:edit_range.start'],
+        ];
+    }
+
+    protected function messages(): array
+    {
+        return [
+            'add_name.required' => 'Plan name is required.',
+            'add_name.max' => 'Plan name must not exceed 255 characters.',
+            'add_description.max' => 'Plan description must not exceed 5000 characters.',
+            'add_range.required' => 'Date range is required.',
+            'add_range.start.required' => 'Start date is required.',
+            'add_range.end.required' => 'End date is required.',
+            'add_range.end.after' => 'End date must be after the start date.',
+            'edit_name.required' => 'Plan name is required.',
+            'edit_name.max' => 'Plan name must not exceed 255 characters.',
+            'edit_description.max' => 'Plan description must not exceed 5000 characters.',
+            'edit_range.required' => 'Sate range is required.',
+            'edit_range.start.required' => 'Start date is required.',
+            'edit_range.end.required' => 'End date is required.',
+            'edit_range.end.after' => 'End date must be after the start date.',
+        ];
     }
 };

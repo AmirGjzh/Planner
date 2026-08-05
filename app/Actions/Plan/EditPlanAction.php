@@ -3,26 +3,35 @@
 namespace App\Actions\Plan;
 
 use App\Enums\EditPlanResult;
+use App\Models\Plan;
 use App\Models\User;
-use App\View\Components\DateRange;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
+use Psr\Log\LoggerInterface;
 
-class EditPlanAction
+final class EditPlanAction
 {
-    public function execute(User $user, int $planId, string $name, ?string $description, DateRange $range, Request $request): EditPlanResult
-    {
-        $plan = $user->plans()->findOrFail($planId);
+    public function __construct(
+        private readonly LoggerInterface $logger,
+    ) {}
 
+    private const int MAX_ATTEMPTS = 5;
+
+    private const int DECAY_SECONDS = 60;
+
+    public function execute(User $user, Plan $plan, string $name, ?string $description, array $range, Request $request): EditPlanResult
+    {
         abort_unless($user->can('update', $plan), 403);
 
-        $key = 'edit-plan:'.$user->id.'|'.$request->ip();
+        $name = Str::ucfirst(Str::lower($name));
 
-        if (RateLimiter::tooManyAttempts($key, 5)) {
-            Log::warning('Plan edit rate limited.', [
+        $rate_limit_key = $this->rateLimitKey($user, $request);
+
+        if (RateLimiter::tooManyAttempts($rate_limit_key, self::MAX_ATTEMPTS)) {
+            $this->logger->warning('Plan edit rate limited.', [
                 'user_id' => $user->id,
-                'seconds_remaining' => RateLimiter::availableIn($key),
+                'available_in' => RateLimiter::availableIn($rate_limit_key),
             ]);
 
             return EditPlanResult::RateLimited;
@@ -34,8 +43,8 @@ class EditPlanAction
             ->first();
 
         if ($existing) {
-            RateLimiter::hit($key, 60);
-            Log::warning('Plan edit failed, already exists.', [
+            RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
+            $this->logger->warning('Plan edit failed, already exists.', [
                 'user_id' => $user->id,
                 'plan_id' => $plan->id,
                 'name' => $name,
@@ -47,20 +56,25 @@ class EditPlanAction
         $plan->update([
             'name' => $name,
             'description' => $description,
-            'start_date' => $range->getStart(),
-            'finish_date' => $range->getEnd(),
+            'start_date' => $range['start'],
+            'finish_date' => $range['end'],
         ]);
 
-        RateLimiter::hit($key, 60);
+        RateLimiter::clear($rate_limit_key);
 
-        Log::info('Plan updated.', [
+        $this->logger->info('Plan updated.', [
             'user_id' => $user->id,
             'plan_id' => $plan->id,
             'name' => $name,
-            'start_date' => $range->getStart(),
-            'finish_date' => $range->getEnd(),
+            'start_date' => $range['start'],
+            'finish_date' => $range['end'],
         ]);
 
         return EditPlanResult::Updated;
+    }
+
+    private function rateLimitKey(User $user, Request $request): string
+    {
+        return Str::transliterate('edit-plan:'.$user->id.'|'.$request->ip());
     }
 }

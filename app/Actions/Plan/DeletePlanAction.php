@@ -3,25 +3,28 @@
 namespace App\Actions\Plan;
 
 use App\Enums\DeletePlanResult;
+use App\Models\Plan;
 use App\Models\User;
-use Illuminate\Support\Facades\Log;
+use Psr\Log\LoggerInterface;
 
-class DeletePlanAction
+final class DeletePlanAction
 {
-    public function execute(User $user, int $planId): DeletePlanResult
-    {
-        $plan = $user->plans()->findOrFail($planId);
+    public function __construct(
+        private readonly LoggerInterface $logger,
+    ) {}
 
+    public function execute(User $user, Plan $plan): DeletePlanResult
+    {
         abort_unless($user->can('delete', $plan), 403);
 
-        $tasksCount = $plan->tasks()->count();
+        $tasks_count = $plan->tasks()->count();
 
-        if ($tasksCount > 0) {
-            Log::warning('Plan deletion failed, has tasks assigned.', [
+        if ($tasks_count > 0) {
+            $this->logger->warning('Plan deletion failed, has tasks assigned.', [
                 'user_id' => $user->id,
                 'plan_id' => $plan->id,
                 'name' => $plan->name,
-                'tasks_count' => $tasksCount,
+                'tasks_count' => $tasks_count,
             ]);
 
             return DeletePlanResult::HasTasks;
@@ -29,7 +32,7 @@ class DeletePlanAction
 
         $plan->delete();
 
-        Log::info('Plan deleted.', [
+        $this->logger->info('Plan deleted.', [
             'user_id' => $user->id,
             'plan_id' => $plan->id,
             'name' => $plan->name,

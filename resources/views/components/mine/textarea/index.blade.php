@@ -44,8 +44,8 @@
                     mine-text-primary
                     placeholder:text-[var(--mine-input-placeholder)]
                     outline-none
-                    resize-y
                     min-h-[80px]
+                    resize-none
                 '
             ]) }}
         >{{ old($name) ?? $slot }}</textarea>

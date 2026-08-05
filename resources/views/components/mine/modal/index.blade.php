@@ -84,7 +84,7 @@ $positionClass = match ($position) {
     <template x-teleport="body">
         <div
             x-show="isOpen"
-            class="fixed inset-0 z-50 overflow-y-auto"
+            class="fixed inset-0 z-100 overflow-y-auto"
             role="dialog"
             aria-modal="true"
         >

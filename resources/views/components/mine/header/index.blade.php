@@ -1,6 +1,6 @@
 @php $routeName = request()->route()?->getName(); @endphp
 
-<div class=" flex h-16 m-2 mine-card justify-between items-center overflow-visible! sticky top-2 z-50">
+<div class=" flex h-16 m-2 mine-card justify-between items-center overflow-visible! sticky top-2 z-60">
     @auth
         <div class="hidden md:flex items-center">
             {{-- LOGO --}}
@@ -68,7 +68,7 @@
                         </div>
                     </x-mine.dropdown.item>
 
-                    <x-mine.dropdown.item>
+                    <x-mine.dropdown.item href="{{ route('plans') }}">
                         <div
                             class="w-full py-3 px-3 mine-text-secondary flex items-center justify-between hover:cursor-pointer">
                             <div class="flex gap-2">

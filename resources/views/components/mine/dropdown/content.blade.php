@@ -31,7 +31,7 @@ $position = $placements[$placement] ?? $placements['bottom-end'];
         'class' => '
             absolute
             z-50
-            min-w-full '.
+            min-w-full w-max '.
             $position.
             ' bg-(--mine-dropdown-bg)
             rounded-xl
