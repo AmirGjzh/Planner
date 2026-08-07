@@ -3,7 +3,6 @@
 use App\Actions\Plan\CreatePlanAction;
 use App\Enums\CreatePlanResult;
 use App\Models\User;
-use App\View\Components\DateRange;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
@@ -22,10 +21,29 @@ it('creates a plan successfully', function () {
     $user = User::factory()->create();
     RateLimiter::clear(createPlanRateLimitKey($user));
 
-    $result = app(CreatePlanAction::class)->execute($user, 'Work', null, new DateRange('2026-01-01', '2026-01-31'), createPlanRequest());
+    $result = app(CreatePlanAction::class)->execute($user, 'Work', null, ['start' => '2026-01-01', 'end' => '2026-01-31'], createPlanRequest());
 
     expect($result)->toBe(CreatePlanResult::Created);
     expect($user->plans()->where('name', 'Work')->exists())->toBeTrue();
+});
+
+it('creates a plan with description', function () {
+    $user = User::factory()->create();
+    RateLimiter::clear(createPlanRateLimitKey($user));
+
+    $result = app(CreatePlanAction::class)->execute($user, 'Work', 'A work plan', ['start' => '2026-01-01', 'end' => '2026-01-31'], createPlanRequest());
+
+    expect($result)->toBe(CreatePlanResult::Created);
+    expect($user->plans()->where('name', 'Work')->value('description'))->toBe('A work plan');
+});
+
+it('normalizes plan name casing', function () {
+    $user = User::factory()->create();
+    RateLimiter::clear(createPlanRateLimitKey($user));
+
+    app(CreatePlanAction::class)->execute($user, 'wOrK pLaN', null, ['start' => '2026-01-01', 'end' => '2026-01-31'], createPlanRequest());
+
+    expect($user->plans()->where('name', 'Work plan')->exists())->toBeTrue();
 });
 
 it('detects duplicate plan name for the same user', function () {
@@ -33,7 +51,7 @@ it('detects duplicate plan name for the same user', function () {
     $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
     RateLimiter::clear(createPlanRateLimitKey($user));
 
-    $result = app(CreatePlanAction::class)->execute($user, 'Work', null, new DateRange('2026-02-01', '2026-02-28'), createPlanRequest());
+    $result = app(CreatePlanAction::class)->execute($user, 'Work', null, ['start' => '2026-02-01', 'end' => '2026-02-28'], createPlanRequest());
 
     expect($result)->toBe(CreatePlanResult::AlreadyExists);
 });
@@ -44,7 +62,7 @@ it('allows different users to have the same plan name', function () {
     $user1->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
     RateLimiter::clear(createPlanRateLimitKey($user2));
 
-    $result = app(CreatePlanAction::class)->execute($user2, 'Work', null, new DateRange('2026-02-01', '2026-02-28'), createPlanRequest());
+    $result = app(CreatePlanAction::class)->execute($user2, 'Work', null, ['start' => '2026-02-01', 'end' => '2026-02-28'], createPlanRequest());
 
     expect($result)->toBe(CreatePlanResult::Created);
     expect($user2->plans()->where('name', 'Work')->exists())->toBeTrue();
@@ -52,31 +70,33 @@ it('allows different users to have the same plan name', function () {
 
 it('returns rate limited after repeated attempts', function () {
     $user = User::factory()->create();
+    $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
     RateLimiter::clear(createPlanRateLimitKey($user));
 
     foreach (range(1, 5) as $attempt) {
-        app(CreatePlanAction::class)->execute($user, 'Attempt '.$attempt, null, new DateRange('2026-01-01', '2026-01-31'), createPlanRequest());
+        app(CreatePlanAction::class)->execute($user, 'Work', null, ['start' => '2026-01-01', 'end' => '2026-01-31'], createPlanRequest());
     }
 
-    $result = app(CreatePlanAction::class)->execute($user, 'Blocked', null, new DateRange('2026-02-01', '2026-02-28'), createPlanRequest());
+    $result = app(CreatePlanAction::class)->execute($user, 'Blocked', null, ['start' => '2026-02-01', 'end' => '2026-02-28'], createPlanRequest());
 
     expect($result)->toBe(CreatePlanResult::RateLimited);
 });
 
 it('allows creation again after one minute', function () {
     $user = User::factory()->create();
+    $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
     RateLimiter::clear(createPlanRateLimitKey($user));
 
     foreach (range(1, 5) as $attempt) {
-        app(CreatePlanAction::class)->execute($user, 'Attempt '.$attempt, null, new DateRange('2026-01-01', '2026-01-31'), createPlanRequest());
+        app(CreatePlanAction::class)->execute($user, 'Work', null, ['start' => '2026-01-01', 'end' => '2026-01-31'], createPlanRequest());
     }
 
     $this->travel(61)->seconds();
 
-    $result = app(CreatePlanAction::class)->execute($user, 'Work', null, new DateRange('2026-03-01', '2026-03-31'), createPlanRequest());
+    $result = app(CreatePlanAction::class)->execute($user, 'Personal', null, ['start' => '2026-03-01', 'end' => '2026-03-31'], createPlanRequest());
 
     expect($result)->toBe(CreatePlanResult::Created);
-    expect($user->plans()->where('name', 'Work')->exists())->toBeTrue();
+    expect($user->plans()->where('name', 'Personal')->exists())->toBeTrue();
 });
 
 it('logs creation events', function () {
@@ -87,7 +107,7 @@ it('logs creation events', function () {
 
     $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
 
-    app(CreatePlanAction::class)->execute($user, 'Work', null, new DateRange('2026-02-01', '2026-02-28'), createPlanRequest());
+    app(CreatePlanAction::class)->execute($user, 'Work', null, ['start' => '2026-02-01', 'end' => '2026-02-28'], createPlanRequest());
 
     Log::shouldHaveReceived('warning')
         ->with('Plan creation failed, already exists.', Mockery::on(
@@ -95,17 +115,17 @@ it('logs creation events', function () {
         ));
 
     foreach (range(1, 5) as $attempt) {
-        app(CreatePlanAction::class)->execute($user, 'Attempt '.$attempt, null, new DateRange('2026-03-01', '2026-03-31'), createPlanRequest());
+        app(CreatePlanAction::class)->execute($user, 'Work', null, ['start' => '2026-03-01', 'end' => '2026-03-31'], createPlanRequest());
     }
 
     Log::shouldHaveReceived('warning')
         ->with('Plan creation rate limited.', Mockery::on(
-            fn (array $context) => isset($context['seconds_remaining'])
+            fn (array $context) => isset($context['available_in'])
         ));
 
     RateLimiter::clear(createPlanRateLimitKey($user));
 
-    app(CreatePlanAction::class)->execute($user, 'Personal', null, new DateRange('2026-04-01', '2026-04-30'), createPlanRequest());
+    app(CreatePlanAction::class)->execute($user, 'Personal', null, ['start' => '2026-04-01', 'end' => '2026-04-30'], createPlanRequest());
 
     Log::shouldHaveReceived('info')
         ->with('Plan created.', Mockery::on(

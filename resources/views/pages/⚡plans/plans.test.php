@@ -2,6 +2,7 @@
 
 use App\Enums\TaskPriority;
 use App\Models\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Livewire;
 
@@ -13,7 +14,7 @@ it('renders the plan page', function () {
         ->test('pages::plans')
         ->assertStatus(200)
         ->assertSee('Add new plan')
-        ->assertSee('Your Plans')
+        ->assertSee('My Plans')
         ->assertSee('Work');
 });
 
@@ -22,18 +23,33 @@ it('shows empty state when no plans exist', function () {
 
     Livewire::actingAs($user)
         ->test('pages::plans')
-        ->assertSee('No plans yet. Create one above.');
+        ->assertSee('No plans yet.');
+});
+
+it('shows active, overdue and completed status badges', function () {
+    $user = User::factory()->create();
+    $user->plans()->create(['name' => 'Active', 'start_date' => now()->subDay()->format('Y-m-d'), 'finish_date' => now()->addDays(5)->format('Y-m-d')]);
+    $user->plans()->create(['name' => 'Overdue', 'start_date' => '2026-01-01', 'finish_date' => now()->subDay()->format('Y-m-d')]);
+    $user->plans()->create(['name' => 'Completed', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31', 'done' => true]);
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->assertSee('Active')
+        ->assertSee('Overdue')
+        ->assertSee('Completed');
 });
 
 it('creates a new plan', function () {
     $user = User::factory()->create();
+    RateLimiter::clear('create-plan:'.$user->id.'|127.0.0.1');
 
     Livewire::actingAs($user)
         ->test('pages::plans')
-        ->set('plan_name', 'Work')
-        ->set('range', ['start' => '2026-01-01', 'end' => '2026-01-31'])
+        ->set('add_name', 'Work')
+        ->set('add_range', ['start' => '2026-01-01', 'end' => '2026-01-31'])
         ->call('addPlan')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->assertSet('add_success', 'created');
 
     expect($user->plans()->where('name', 'Work')->exists())->toBeTrue();
 });
@@ -41,13 +57,14 @@ it('creates a new plan', function () {
 it('shows error for duplicate plan name', function () {
     $user = User::factory()->create();
     $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+    RateLimiter::clear('create-plan:'.$user->id.'|127.0.0.1');
 
     Livewire::actingAs($user)
         ->test('pages::plans')
-        ->set('plan_name', 'Work')
-        ->set('range', ['start' => '2026-02-01', 'end' => '2026-02-28'])
+        ->set('add_name', 'Work')
+        ->set('add_range', ['start' => '2026-02-01', 'end' => '2026-02-28'])
         ->call('addPlan')
-        ->assertHasErrors('plan_name');
+        ->assertSet('add_error', 'already_exists');
 });
 
 it('validates plan name is required', function () {
@@ -55,10 +72,10 @@ it('validates plan name is required', function () {
 
     Livewire::actingAs($user)
         ->test('pages::plans')
-        ->set('plan_name', '')
-        ->set('range', ['start' => '2026-01-01', 'end' => '2026-01-31'])
+        ->set('add_name', '')
+        ->set('add_range', ['start' => '2026-01-01', 'end' => '2026-01-31'])
         ->call('addPlan')
-        ->assertHasErrors('plan_name');
+        ->assertHasErrors('add_name');
 });
 
 it('validates plan name max length', function () {
@@ -66,79 +83,70 @@ it('validates plan name max length', function () {
 
     Livewire::actingAs($user)
         ->test('pages::plans')
-        ->set('plan_name', str_repeat('a', 256))
-        ->set('range', ['start' => '2026-01-01', 'end' => '2026-01-31'])
+        ->set('add_name', str_repeat('a', 256))
+        ->set('add_range', ['start' => '2026-01-01', 'end' => '2026-01-31'])
         ->call('addPlan')
-        ->assertHasErrors('plan_name');
+        ->assertHasErrors('add_name');
+});
+
+it('validates date range is required', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('add_name', 'Work')
+        ->call('addPlan')
+        ->assertHasErrors('add_range');
+});
+
+it('validates end date is after start date', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('add_name', 'Work')
+        ->set('add_range', ['start' => '2026-02-28', 'end' => '2026-02-01'])
+        ->call('addPlan')
+        ->assertHasErrors('add_range.end');
 });
 
 it('returns rate limited on create after too many attempts', function () {
     $user = User::factory()->create();
+    $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
     RateLimiter::clear('create-plan:'.$user->id.'|127.0.0.1');
 
     foreach (range(1, 5) as $i) {
         Livewire::actingAs($user)
             ->test('pages::plans')
-            ->set('plan_name', 'Plan '.$i)
-            ->set('range', ['start' => '2026-01-01', 'end' => '2026-01-31'])
+            ->set('add_name', 'Work')
+            ->set('add_range', ['start' => '2026-01-01', 'end' => '2026-01-31'])
             ->call('addPlan')
-            ->assertHasNoErrors();
+            ->assertSet('add_error', 'already_exists');
     }
 
     Livewire::actingAs($user)
         ->test('pages::plans')
-        ->set('plan_name', 'Blocked')
-        ->set('range', ['start' => '2026-02-01', 'end' => '2026-02-28'])
+        ->set('add_name', 'Blocked')
+        ->set('add_range', ['start' => '2026-02-01', 'end' => '2026-02-28'])
         ->call('addPlan')
-        ->assertHasErrors('plan_form');
+        ->assertSet('add_error', 'rate_limited');
 });
 
 it('edits a plan', function () {
     $user = User::factory()->create();
     $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
-
-    Livewire::actingAs($user)
-        ->test('pages::plans')
-        ->call('startEditing', $plan->id)
-        ->assertSet('editingPlanId', $plan->id)
-        ->assertSet('editName', 'Work')
-        ->assertSet('editDescription', null);
-
     RateLimiter::clear('edit-plan:'.$user->id.'|127.0.0.1');
 
     Livewire::actingAs($user)
         ->test('pages::plans')
-        ->call('startEditing', $plan->id)
-        ->set('editName', 'Personal')
-        ->set('editRange', ['start' => '2026-03-01', 'end' => '2026-03-31'])
-        ->call('updatePlan')
-        ->assertHasNoErrors();
+        ->set('editing_id', $plan->id)
+        ->set('edit_name', 'Personal')
+        ->set('edit_range', ['start' => '2026-03-01', 'end' => '2026-03-31'])
+        ->call('editPlan')
+        ->assertHasNoErrors()
+        ->assertSet('edit_success', 'updated');
 
     expect($plan->fresh()->name)->toBe('Personal');
-});
-
-it('populates edit fields via startEditing', function () {
-    $user = User::factory()->create();
-    $plan = $user->plans()->create(['name' => 'Work', 'description' => 'My plan', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
-
-    Livewire::actingAs($user)
-        ->test('pages::plans')
-        ->call('startEditing', $plan->id)
-        ->assertSet('editingPlanId', $plan->id)
-        ->assertSet('editName', 'Work')
-        ->assertSet('editDescription', 'My plan');
-});
-
-it('resets edit fields via cancelEditing', function () {
-    $user = User::factory()->create();
-    $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
-
-    Livewire::actingAs($user)
-        ->test('pages::plans')
-        ->call('startEditing', $plan->id)
-        ->call('cancelEditing')
-        ->assertSet('editingPlanId', null)
-        ->assertSet('editName', '');
 });
 
 it('shows duplicate name error on edit', function () {
@@ -148,11 +156,11 @@ it('shows duplicate name error on edit', function () {
 
     Livewire::actingAs($user)
         ->test('pages::plans')
-        ->call('startEditing', $plan->id)
-        ->set('editName', 'Work')
-        ->set('editRange', ['start' => '2026-03-01', 'end' => '2026-03-31'])
-        ->call('updatePlan')
-        ->assertHasErrors('editName');
+        ->set('editing_id', $plan->id)
+        ->set('edit_name', 'Work')
+        ->set('edit_range', ['start' => '2026-03-01', 'end' => '2026-03-31'])
+        ->call('editPlan')
+        ->assertSet('edit_error', 'already_exists');
 });
 
 it('validates edit name is required', function () {
@@ -161,11 +169,11 @@ it('validates edit name is required', function () {
 
     Livewire::actingAs($user)
         ->test('pages::plans')
-        ->call('startEditing', $plan->id)
-        ->set('editName', '')
-        ->set('editRange', ['start' => '2026-03-01', 'end' => '2026-03-31'])
-        ->call('updatePlan')
-        ->assertHasErrors('editName');
+        ->set('editing_id', $plan->id)
+        ->set('edit_name', '')
+        ->set('edit_range', ['start' => '2026-03-01', 'end' => '2026-03-31'])
+        ->call('editPlan')
+        ->assertHasErrors('edit_name');
 });
 
 it('validates edit name max length', function () {
@@ -174,35 +182,36 @@ it('validates edit name max length', function () {
 
     Livewire::actingAs($user)
         ->test('pages::plans')
-        ->call('startEditing', $plan->id)
-        ->set('editName', str_repeat('a', 256))
-        ->set('editRange', ['start' => '2026-03-01', 'end' => '2026-03-31'])
-        ->call('updatePlan')
-        ->assertHasErrors('editName');
+        ->set('editing_id', $plan->id)
+        ->set('edit_name', str_repeat('a', 256))
+        ->set('edit_range', ['start' => '2026-03-01', 'end' => '2026-03-31'])
+        ->call('editPlan')
+        ->assertHasErrors('edit_name');
 });
 
 it('returns rate limited on edit after too many attempts', function () {
     $user = User::factory()->create();
     $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+    $user->plans()->create(['name' => 'Existing', 'start_date' => '2026-02-01', 'finish_date' => '2026-02-28']);
     RateLimiter::clear('edit-plan:'.$user->id.'|127.0.0.1');
 
     foreach (range(1, 5) as $i) {
         Livewire::actingAs($user)
             ->test('pages::plans')
-            ->call('startEditing', $plan->id)
-            ->set('editName', 'Edit '.$i)
-            ->set('editRange', ['start' => '2026-03-01', 'end' => '2026-03-31'])
-            ->call('updatePlan')
-            ->assertHasNoErrors();
+            ->set('editing_id', $plan->id)
+            ->set('edit_name', 'Existing')
+            ->set('edit_range', ['start' => '2026-01-01', 'end' => '2026-01-31'])
+            ->call('editPlan')
+            ->assertSet('edit_error', 'already_exists');
     }
 
     Livewire::actingAs($user)
         ->test('pages::plans')
-        ->call('startEditing', $plan->id)
-        ->set('editName', 'Blocked')
-        ->set('editRange', ['start' => '2026-04-01', 'end' => '2026-04-30'])
-        ->call('updatePlan')
-        ->assertHasErrors('edit_form');
+        ->set('editing_id', $plan->id)
+        ->set('edit_name', 'Blocked')
+        ->set('edit_range', ['start' => '2026-02-01', 'end' => '2026-02-28'])
+        ->call('editPlan')
+        ->assertSet('edit_error', 'rate_limited');
 });
 
 it('deletes a plan', function () {
@@ -211,108 +220,184 @@ it('deletes a plan', function () {
 
     Livewire::actingAs($user)
         ->test('pages::plans')
-        ->call('deletePlan', $plan->id)
-        ->assertHasNoErrors();
+        ->set('deleting_id', $plan->id)
+        ->call('deletePlan')
+        ->assertDispatched('close-modal', id: 'delete-plan-confirmation');
 
     expect($user->plans()->where('name', 'Work')->exists())->toBeFalse();
 });
 
 it('prevents deleting a plan that has tasks', function () {
     $user = User::factory()->create();
-    $category = $user->categories()->create(['name' => 'Work']);
     $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
     $user->tasks()->create([
         'title' => 'Test task',
         'task_date' => now(),
         'estimated_minutes' => 30,
-        'category_id' => $category->id,
         'plan_id' => $plan->id,
+        'category_id' => $user->categories()->create(['name' => 'General'])->id,
     ]);
 
     Livewire::actingAs($user)
         ->test('pages::plans')
-        ->call('deletePlan', $plan->id)
-        ->assertHasErrors('plan_form');
+        ->set('deleting_id', $plan->id)
+        ->call('deletePlan')
+        ->assertSet('delete_error', 'has_tasks');
 
     expect($user->plans()->where('name', 'Work')->exists())->toBeTrue();
 });
 
-it('shows all plans on the page', function () {
-    $user = User::factory()->create();
-    $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
-    $user->plans()->create(['name' => 'Personal', 'start_date' => '2026-02-01', 'finish_date' => '2026-02-28']);
-
-    Livewire::actingAs($user)
-        ->test('pages::plans')
-        ->assertSee('Work')
-        ->assertSee('Personal');
-});
-
-it('shows task count for each plan', function () {
-    $user = User::factory()->create();
-    $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
-
-    Livewire::actingAs($user)
-        ->test('pages::plans')
-        ->assertSee('No Tasks');
-});
-
-it('shows view tasks popover with task list', function () {
+it('completes a plan when all tasks are done', function () {
     $user = User::factory()->create();
     $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
     $category = $user->categories()->create(['name' => 'General']);
-    $user->tasks()->create(['title' => 'Task A', 'task_date' => '2026-01-15', 'estimated_minutes' => 30, 'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'plan_id' => $plan->id, 'category_id' => $category->id]);
-    $user->tasks()->create(['title' => 'Task B', 'task_date' => '2026-01-16', 'estimated_minutes' => 45, 'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'plan_id' => $plan->id, 'category_id' => $category->id]);
+    $user->tasks()->create(['title' => 'A', 'task_date' => '2026-01-15', 'estimated_minutes' => 30, 'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'plan_id' => $plan->id, 'category_id' => $category->id, 'done' => true]);
+    $user->tasks()->create(['title' => 'B', 'task_date' => '2026-01-16', 'estimated_minutes' => 45, 'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'plan_id' => $plan->id, 'category_id' => $category->id, 'done' => true]);
 
     Livewire::actingAs($user)
         ->test('pages::plans')
-        ->assertSee('View Tasks')
-        ->assertSee('Task A')
-        ->assertSee('Task B');
+        ->set('completing_id', $plan->id)
+        ->call('completePlan')
+        ->assertSet('complete_error', null)
+        ->assertDispatched('close-modal', id: 'complete-plan-confirmation');
+
+    expect($plan->fresh()->done)->toBeTrue();
 });
 
-it('shows progress for plan with mixed done tasks', function () {
+it('completes a plan with no tasks', function () {
+    $user = User::factory()->create();
+    $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('completing_id', $plan->id)
+        ->call('completePlan')
+        ->assertDispatched('close-modal', id: 'complete-plan-confirmation');
+
+    expect($plan->fresh()->done)->toBeTrue();
+});
+
+it('blocks completing a plan with undone tasks', function () {
     $user = User::factory()->create();
     $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
     $category = $user->categories()->create(['name' => 'General']);
-    $user->tasks()->create(['title' => 'Done A', 'task_date' => '2026-01-15', 'estimated_minutes' => 30, 'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'plan_id' => $plan->id, 'category_id' => $category->id, 'done' => true]);
-    $user->tasks()->create(['title' => 'Not done B', 'task_date' => '2026-01-16', 'estimated_minutes' => 45, 'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'plan_id' => $plan->id, 'category_id' => $category->id]);
+    $user->tasks()->create(['title' => 'A', 'task_date' => '2026-01-15', 'estimated_minutes' => 30, 'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'plan_id' => $plan->id, 'category_id' => $category->id, 'done' => true]);
+    $user->tasks()->create(['title' => 'B', 'task_date' => '2026-01-16', 'estimated_minutes' => 45, 'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'plan_id' => $plan->id, 'category_id' => $category->id]);
 
     Livewire::actingAs($user)
         ->test('pages::plans')
-        ->assertSee('1/2 (50%) Progress');
+        ->set('completing_id', $plan->id)
+        ->call('completePlan')
+        ->assertSet('complete_error', 'has_undone_tasks');
+
+    expect($plan->fresh()->done)->toBeFalse();
 });
 
-it('shows 100% progress when all tasks are done', function () {
+it('reopens a completed plan', function () {
     $user = User::factory()->create();
-    $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
-    $category = $user->categories()->create(['name' => 'General']);
-    $user->tasks()->create(['title' => 'Task A', 'task_date' => '2026-01-15', 'estimated_minutes' => 30, 'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'plan_id' => $plan->id, 'category_id' => $category->id, 'done' => true]);
-    $user->tasks()->create(['title' => 'Task B', 'task_date' => '2026-01-16', 'estimated_minutes' => 45, 'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'plan_id' => $plan->id, 'category_id' => $category->id, 'done' => true]);
+    $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31', 'done' => true]);
 
     Livewire::actingAs($user)
         ->test('pages::plans')
-        ->assertSee('2/2 (100%) Progress');
+        ->set('reopening_id', $plan->id)
+        ->call('reopenPlan')
+        ->assertDispatched('close-modal', id: 'reopen-plan-confirmation');
+
+    expect($plan->fresh()->done)->toBeFalse();
 });
 
-it('shows 0% progress when no tasks are done', function () {
+it('prevents completing a plan owned by another user', function () {
     $user = User::factory()->create();
-    $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
-    $category = $user->categories()->create(['name' => 'General']);
-    $user->tasks()->create(['title' => 'Task A', 'task_date' => '2026-01-15', 'estimated_minutes' => 30, 'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'plan_id' => $plan->id, 'category_id' => $category->id]);
-    $user->tasks()->create(['title' => 'Task B', 'task_date' => '2026-01-16', 'estimated_minutes' => 45, 'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'plan_id' => $plan->id, 'category_id' => $category->id]);
+    $other = User::factory()->create();
+    $plan = $other->plans()->create(['name' => 'Private', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+
+    $this->expectException(ModelNotFoundException::class);
 
     Livewire::actingAs($user)
         ->test('pages::plans')
-        ->assertSee('0/2 (0%) Progress');
+        ->set('completing_id', $plan->id)
+        ->call('completePlan');
 });
 
-it('shows empty state for plan with no tasks', function () {
+it('prevents reopening a plan owned by another user', function () {
     $user = User::factory()->create();
-    $user->plans()->create(['name' => 'Empty Plan', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+    $other = User::factory()->create();
+    $plan = $other->plans()->create(['name' => 'Private', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31', 'done' => true]);
+
+    $this->expectException(ModelNotFoundException::class);
 
     Livewire::actingAs($user)
         ->test('pages::plans')
-        ->assertSee('Empty Plan')
-        ->assertSee('No tasks assigned to this plan.');
+        ->set('reopening_id', $plan->id)
+        ->call('reopenPlan');
+});
+
+it('filters plans by active status', function () {
+    $user = User::factory()->create();
+    $user->plans()->create(['name' => 'Alpha', 'start_date' => '2026-01-01', 'finish_date' => now()->addDays(5)->format('Y-m-d')]);
+    $user->plans()->create(['name' => 'Bravo', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31', 'done' => true]);
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('status_filter', 'active')
+        ->assertSee('Alpha')
+        ->assertDontSee('Bravo');
+});
+
+it('filters plans by completed status', function () {
+    $user = User::factory()->create();
+    $user->plans()->create(['name' => 'Alpha', 'start_date' => '2026-01-01', 'finish_date' => now()->addDays(5)->format('Y-m-d')]);
+    $user->plans()->create(['name' => 'Bravo', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31', 'done' => true]);
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('status_filter', 'completed')
+        ->assertSee('Bravo')
+        ->assertDontSee('Alpha');
+});
+
+it('filters plans by overdue status', function () {
+    $user = User::factory()->create();
+    $user->plans()->create(['name' => 'Alpha', 'start_date' => '2026-01-01', 'finish_date' => now()->subDays(3)->format('Y-m-d')]);
+    $user->plans()->create(['name' => 'Bravo', 'start_date' => '2026-01-01', 'finish_date' => now()->addDays(5)->format('Y-m-d')]);
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('status_filter', 'overdue')
+        ->assertSee('Alpha')
+        ->assertDontSee('Bravo');
+});
+
+it('defaults the status filter to all and shows every plan', function () {
+    $user = User::factory()->create();
+    $user->plans()->create(['name' => 'Alpha', 'start_date' => '2026-01-01', 'finish_date' => now()->addDays(5)->format('Y-m-d')]);
+    $user->plans()->create(['name' => 'Bravo', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31', 'done' => true]);
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->assertSee('Alpha')
+        ->assertSee('Bravo');
+});
+
+it('applies the status filter from the URL query string', function () {
+    $user = User::factory()->create();
+    $user->plans()->create(['name' => 'Alpha', 'start_date' => '2026-01-01', 'finish_date' => now()->addDays(5)->format('Y-m-d')]);
+    $user->plans()->create(['name' => 'Bravo', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31', 'done' => true]);
+
+    Livewire::actingAs($user)
+        ->test('pages::plans', ['status_filter' => 'completed'])
+        ->assertSee('Bravo')
+        ->assertDontSee('Alpha');
+});
+
+it('renders the filter dropdown options', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->assertSee('Filter Plan')
+        ->assertSee('All')
+        ->assertSee('Active')
+        ->assertSee('Completed')
+        ->assertSee('Overdue');
 });

@@ -7,6 +7,14 @@
             <x-mine.input wire:model.live.debounce.200ms="search" placeholder="Search categories..."
                 leftIcon="magnifying-glass" />
         </div>
+        <x-mine.modal.trigger id="add-category-form">
+            <x-mine.button type="button" class="mine-btn-outline-primary pl-3! pr-3! sm:pr-4!">
+                <div class="flex justify-center items-center gap-2">
+                    <x-mine.icon name="plus" class="inline" variant="micro" />
+                    <p class="text-sm font-medium hidden sm:inline"><span class="hidden sm:inline md:hidden">New</span><span class="hidden md:inline">New Category</span></p>
+                </div>
+            </x-mine.button>
+        </x-mine.modal.trigger>
         <x-mine.dropdown>
             <x-mine.dropdown.trigger as="div">
                 <div class="w-full mine-btn-outline-primary flex items-center h-11 px-4 sm:pl-3! rounded-xl cursor-pointer select-none">
@@ -36,14 +44,6 @@
                 </x-mine.dropdown.item>
             </x-mine.dropdown.content>
         </x-mine.dropdown>
-        <x-mine.modal.trigger id="add-category-form">
-            <x-mine.button type="button" class="mine-btn-outline-primary pl-3! pr-3! sm:pr-4!">
-                <div class="flex justify-center items-center gap-2">
-                    <x-mine.icon name="plus" class="inline" variant="micro" />
-                    <p class="text-sm font-medium hidden sm:inline"><span class="hidden sm:inline md:hidden">New</span><span class="hidden md:inline">New Category</span></p>
-                </div>
-            </x-mine.button>
-        </x-mine.modal.trigger>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         @forelse ($this->categories as $category)

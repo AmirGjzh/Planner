@@ -3,11 +3,10 @@
 use App\Actions\Plan\EditPlanAction;
 use App\Enums\EditPlanResult;
 use App\Models\User;
-use App\View\Components\DateRange;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 function editPlanRequest(): Request
 {
@@ -24,7 +23,7 @@ it('updates a plan successfully', function () {
     $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
     RateLimiter::clear(editPlanRateLimitKey($user));
 
-    $result = app(EditPlanAction::class)->execute($user, $plan->id, 'Personal', 'Updated desc', new DateRange('2026-02-01', '2026-02-28'), editPlanRequest());
+    $result = app(EditPlanAction::class)->execute($user, $plan, 'Personal', 'Updated desc', ['start' => '2026-02-01', 'end' => '2026-02-28'], editPlanRequest());
 
     expect($result)->toBe(EditPlanResult::Updated);
     expect($plan->fresh()->name)->toBe('Personal');
@@ -39,7 +38,7 @@ it('detects duplicate plan name on edit', function () {
     $plan = $user->plans()->create(['name' => 'Personal', 'start_date' => '2026-02-01', 'finish_date' => '2026-02-28']);
     RateLimiter::clear(editPlanRateLimitKey($user));
 
-    $result = app(EditPlanAction::class)->execute($user, $plan->id, 'Work', null, new DateRange('2026-03-01', '2026-03-31'), editPlanRequest());
+    $result = app(EditPlanAction::class)->execute($user, $plan, 'Work', null, ['start' => '2026-03-01', 'end' => '2026-03-31'], editPlanRequest());
 
     expect($result)->toBe(EditPlanResult::AlreadyExists);
 });
@@ -49,7 +48,7 @@ it('allows keeping the same plan name', function () {
     $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
     RateLimiter::clear(editPlanRateLimitKey($user));
 
-    $result = app(EditPlanAction::class)->execute($user, $plan->id, 'Work', null, new DateRange('2026-01-01', '2026-01-31'), editPlanRequest());
+    $result = app(EditPlanAction::class)->execute($user, $plan, 'Work', null, ['start' => '2026-01-01', 'end' => '2026-01-31'], editPlanRequest());
 
     expect($result)->toBe(EditPlanResult::Updated);
 });
@@ -59,21 +58,22 @@ it('prevents editing a plan that belongs to another user', function () {
     $user2 = User::factory()->create();
     $plan = $user1->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
 
-    $this->expectException(ModelNotFoundException::class);
+    $this->expectException(HttpException::class);
 
-    app(EditPlanAction::class)->execute($user2, $plan->id, 'Personal', null, new DateRange('2026-02-01', '2026-02-28'), editPlanRequest());
+    app(EditPlanAction::class)->execute($user2, $plan, 'Personal', null, ['start' => '2026-02-01', 'end' => '2026-02-28'], editPlanRequest());
 });
 
 it('returns rate limited after repeated edit attempts', function () {
     $user = User::factory()->create();
     $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+    $user->plans()->create(['name' => 'Existing', 'start_date' => '2026-02-01', 'finish_date' => '2026-02-28']);
     RateLimiter::clear(editPlanRateLimitKey($user));
 
     foreach (range(1, 5) as $attempt) {
-        app(EditPlanAction::class)->execute($user, $plan->id, 'Attempt '.$attempt, null, new DateRange('2026-02-01', '2026-02-28'), editPlanRequest());
+        app(EditPlanAction::class)->execute($user, $plan, 'Existing', null, ['start' => '2026-02-01', 'end' => '2026-02-28'], editPlanRequest());
     }
 
-    $result = app(EditPlanAction::class)->execute($user, $plan->id, 'Blocked', null, new DateRange('2026-03-01', '2026-03-31'), editPlanRequest());
+    $result = app(EditPlanAction::class)->execute($user, $plan, 'Blocked', null, ['start' => '2026-03-01', 'end' => '2026-03-31'], editPlanRequest());
 
     expect($result)->toBe(EditPlanResult::RateLimited);
 });
@@ -81,15 +81,16 @@ it('returns rate limited after repeated edit attempts', function () {
 it('allows editing again after one minute', function () {
     $user = User::factory()->create();
     $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+    $user->plans()->create(['name' => 'Existing', 'start_date' => '2026-02-01', 'finish_date' => '2026-02-28']);
     RateLimiter::clear(editPlanRateLimitKey($user));
 
     foreach (range(1, 5) as $attempt) {
-        app(EditPlanAction::class)->execute($user, $plan->id, 'Attempt '.$attempt, null, new DateRange('2026-02-01', '2026-02-28'), editPlanRequest());
+        app(EditPlanAction::class)->execute($user, $plan, 'Existing', null, ['start' => '2026-02-01', 'end' => '2026-02-28'], editPlanRequest());
     }
 
     $this->travel(61)->seconds();
 
-    $result = app(EditPlanAction::class)->execute($user, $plan->id, 'Personal', null, new DateRange('2026-03-01', '2026-03-31'), editPlanRequest());
+    $result = app(EditPlanAction::class)->execute($user, $plan, 'Personal', null, ['start' => '2026-03-01', 'end' => '2026-03-31'], editPlanRequest());
 
     expect($result)->toBe(EditPlanResult::Updated);
     expect($plan->fresh()->name)->toBe('Personal');
@@ -100,11 +101,10 @@ it('logs edit events', function () {
 
     $user = User::factory()->create();
     $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+    $user->plans()->create(['name' => 'Personal', 'start_date' => '2026-02-01', 'finish_date' => '2026-02-28']);
     RateLimiter::clear(editPlanRateLimitKey($user));
 
-    $user->plans()->create(['name' => 'Personal', 'start_date' => '2026-02-01', 'finish_date' => '2026-02-28']);
-
-    app(EditPlanAction::class)->execute($user, $plan->id, 'Personal', null, new DateRange('2026-03-01', '2026-03-31'), editPlanRequest());
+    app(EditPlanAction::class)->execute($user, $plan, 'Personal', null, ['start' => '2026-03-01', 'end' => '2026-03-31'], editPlanRequest());
 
     Log::shouldHaveReceived('warning')
         ->with('Plan edit failed, already exists.', Mockery::on(
@@ -112,17 +112,17 @@ it('logs edit events', function () {
         ));
 
     foreach (range(1, 5) as $attempt) {
-        app(EditPlanAction::class)->execute($user, $plan->id, 'Attempt '.$attempt, null, new DateRange('2026-04-01', '2026-04-30'), editPlanRequest());
+        app(EditPlanAction::class)->execute($user, $plan, 'Personal', null, ['start' => '2026-04-01', 'end' => '2026-04-30'], editPlanRequest());
     }
 
     Log::shouldHaveReceived('warning')
         ->with('Plan edit rate limited.', Mockery::on(
-            fn (array $context) => isset($context['seconds_remaining'])
+            fn (array $context) => isset($context['available_in'])
         ));
 
     RateLimiter::clear(editPlanRateLimitKey($user));
 
-    app(EditPlanAction::class)->execute($user, $plan->id, 'Renamed', null, new DateRange('2026-05-01', '2026-05-31'), editPlanRequest());
+    app(EditPlanAction::class)->execute($user, $plan, 'Renamed', null, ['start' => '2026-05-01', 'end' => '2026-05-31'], editPlanRequest());
 
     Log::shouldHaveReceived('info')
         ->with('Plan updated.', Mockery::on(

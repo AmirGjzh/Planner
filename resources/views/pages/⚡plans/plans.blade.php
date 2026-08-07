@@ -2,59 +2,110 @@
     <div class="mb-6">
         <h1 class="font-bold text-md mine-text-primary">My Plans</h1>
     </div>
-    <div class="flex items-center justify-between gap-2 sm:gap-4 mb-6">
-        <div class="w-full">
-            <x-mine.input wire:model.live.debounce.200ms="search" placeholder="Search plans..."
-                leftIcon="magnifying-glass" />
+    <div class="flex flex-col md:flex-row gap-2 sm:gap-4 mb-6">
+        <div class="w-full flex items-center justify-between gap-2 sm:gap-4">
+            <div class="w-full">
+                <x-mine.input wire:model.live.debounce.200ms="search" placeholder="Search plans..."
+                    leftIcon="magnifying-glass" />
+            </div>
+            <x-mine.modal.trigger id="add-plan-form">
+                <x-mine.button type="button" class="mine-btn-outline-primary pl-3! pr-3! sm:pr-4!">
+                    <div class="flex justify-center items-center gap-2">
+                        <x-mine.icon name="plus" class="inline" variant="micro" />
+                        <p class="text-sm font-medium hidden sm:inline"><span
+                                class="hidden sm:inline md:hidden">New</span><span class="hidden md:inline">New Plan</span>
+                        </p>
+                    </div>
+                </x-mine.button>
+            </x-mine.modal.trigger>
+            <x-mine.dropdown group="plan-filter">
+                <x-mine.dropdown.trigger as="div">
+                    <div
+                        class="w-full mine-btn-outline-primary flex items-center h-11 px-4 sm:pl-3! rounded-xl cursor-pointer select-none">
+                        <x-mine.icon name="arrow-long-up" class="inline -mr-1 -ml-2.5 sm:ml-0" variant="micro" />
+                        <x-mine.icon name="arrow-long-down" class="inline -ml-1 -mr-2.5 sm:mr-0" variant="micro" />
+                        <p class="text-sm font-medium hidden sm:inline sm:pl-2"><span
+                                class="hidden sm:inline md:hidden">Sort</span><span class="hidden md:inline">Sort By</span>
+                        </p>
+                    </div>
+                </x-mine.dropdown.trigger>
+                <x-mine.dropdown.content class="mt-1!">
+                    <x-mine.dropdown.item>
+                        <div class="w-full py-2 px-4 flex items-center gap-2 hover:cursor-pointer"
+                            @click="$wire.set('sort', 'latest')">
+                            <p
+                                class="text-sm font-medium flex-1 {{ $sort === 'latest' ? 'mine-text-link' : 'mine-text-secondary' }}">
+                                Latest</p>
+                            @if($sort === 'latest')
+                                <x-mine.icon variant="micro" name="check" class="size-4 mine-text-link" />
+                            @endif
+                        </div>
+                    </x-mine.dropdown.item>
+                    <x-mine.dropdown.item>
+                        <div class="w-full py-2 px-4 flex items-center gap-2 hover:cursor-pointer"
+                            @click="$wire.set('sort', 'name')">
+                            <p
+                                class="text-sm font-medium flex-1 {{ $sort === 'name' ? 'mine-text-link' : 'mine-text-secondary' }}">
+                                Name</p>
+                            @if($sort === 'name')
+                                <x-mine.icon variant="micro" name="check" class="size-4 mine-text-link" />
+                            @endif
+                        </div>
+                    </x-mine.dropdown.item>
+                </x-mine.dropdown.content>
+            </x-mine.dropdown>
         </div>
-        <x-mine.dropdown>
-            <x-mine.dropdown.trigger as="div">
-                <div
-                    class="w-full mine-btn-outline-primary flex items-center h-11 px-4 sm:pl-3! rounded-xl cursor-pointer select-none">
-                    <x-mine.icon name="arrow-long-up" class="inline -mr-1 -ml-2.5 sm:ml-0" variant="micro" />
-                    <x-mine.icon name="arrow-long-down" class="inline -ml-1 -mr-2.5 sm:mr-0" variant="micro" />
-                    <p class="text-sm font-medium hidden sm:inline sm:pl-2"><span
-                            class="hidden sm:inline md:hidden">Sort</span><span class="hidden md:inline">Sort By</span>
-                    </p>
-                </div>
-            </x-mine.dropdown.trigger>
-            <x-mine.dropdown.content class="mt-1!">
-                <x-mine.dropdown.item>
-                    <div class="w-full py-2 px-4 flex items-center gap-2 hover:cursor-pointer"
-                        @click="$wire.set('sort', 'latest')">
-                        <p
-                            class="text-sm font-medium flex-1 {{ $sort === 'latest' ? 'mine-text-link' : 'mine-text-secondary' }}">
-                            Latest</p>
-                        @if($sort === 'latest')
-                            <x-mine.icon variant="micro" name="check" class="size-4 mine-text-link" />
-                        @endif
+        <div class="w-full md:w-auto flex justify-between gap-2">
+            <x-mine.dropdown group="plan-filter" class="w-full md:w-auto">
+                <x-mine.dropdown.trigger as="div" class="w-full md:w-auto">
+                    <div
+                        class="w-full md:w-auto mine-btn-outline-primary flex items-center justify-center gap-2 h-11 px-3 sm:pr-4! rounded-xl cursor-pointer select-none">
+                        <x-mine.icon name="funnel" class="" variant="micro" />
+                        <p class="text-sm font-medium">
+                            Filter Plan
+                        </p>
                     </div>
-                </x-mine.dropdown.item>
-                <x-mine.dropdown.item>
-                    <div class="w-full py-2 px-4 flex items-center gap-2 hover:cursor-pointer"
-                        @click="$wire.set('sort', 'name')">
-                        <p
-                            class="text-sm font-medium flex-1 {{ $sort === 'name' ? 'mine-text-link' : 'mine-text-secondary' }}">
-                            Name</p>
-                        @if($sort === 'name')
-                            <x-mine.icon variant="micro" name="check" class="size-4 mine-text-link" />
-                        @endif
+                </x-mine.dropdown.trigger>
+                <x-mine.dropdown.content class="mt-1!">
+                    @foreach ([
+                        'all' => 'All',
+                        'active' => 'Active',
+                        'completed' => 'Completed',
+                        'overdue' => 'Overdue',
+                    ] as $value => $label)
+                        <x-mine.dropdown.item>
+                            <div class="w-full py-2 px-4 flex items-center gap-2 hover:cursor-pointer"
+                                @click="$wire.set('status_filter', '{{ $value }}')">
+                                <p
+                                    class="text-sm font-medium flex-1 {{ $status_filter === $value ? 'mine-text-link' : 'mine-text-secondary' }}">
+                                    {{ $label }}</p>
+                                @if($status_filter === $value)
+                                    <x-mine.icon variant="micro" name="check" class="size-4 mine-text-link" />
+                                @endif
+                            </div>
+                        </x-mine.dropdown.item>
+                    @endforeach
+                </x-mine.dropdown.content>
+            </x-mine.dropdown>
+            <x-mine.dropdown group="plan-filter" class="md:hidden w-full">
+                <x-mine.dropdown.trigger as="div" class=" w-full">
+                    <div
+                        class="w-full mine-btn-outline-primary flex items-center justify-center gap-2 h-11 px-3 sm:pr-4! rounded-xl cursor-pointer select-none">
+                        <x-mine.icon name="calendar" class="" variant="micro" />
+                        <p class="text-sm font-medium">
+                            Date Range
+                        </p>
                     </div>
-                </x-mine.dropdown.item>
-            </x-mine.dropdown.content>
-        </x-mine.dropdown>
-        <x-mine.modal.trigger id="add-plan-form">
-            <x-mine.button type="button" class="mine-btn-outline-primary pl-3! pr-3! sm:pr-4!">
-                <div class="flex justify-center items-center gap-2">
-                    <x-mine.icon name="plus" class="inline" variant="micro" />
-                    <p class="text-sm font-medium hidden sm:inline"><span
-                            class="hidden sm:inline md:hidden">New</span><span class="hidden md:inline">New Plan</span>
-                    </p>
-                </div>
-            </x-mine.button>
-        </x-mine.modal.trigger>
+                </x-mine.dropdown.trigger>
+                <x-mine.dropdown.content class="mt-1!">
+                    <div class="flex justify-center w-80">
+                        <x-mine.calendar wire:model.live="range_filter" :card="false" />
+                    </div>
+                </x-mine.dropdown.content>
+            </x-mine.dropdown>
+        </div>
     </div>
-    <div class="md:flex md:gap-4">
+    <div class="md:flex md:gap-6">
         <div class="grid grid-cols-1 gap-4 flex-1">
             @forelse ($this->plans as $plan)
                 @if ($plan->done)
@@ -75,7 +126,7 @@
                                         </div>
                                     </div>
                                     <p class="text-sm font-medium mine-text-secondary min-w-0 line-clamp-2">
-                                        {{ $plan->description ?: 'No description.' }}</p>
+                                        {{ $plan->description ?: 'No description' }}</p>
                                 </div>
                             </div>
                             <div class="flex justify-end items-start h-full shrink-0">
@@ -169,7 +220,8 @@
                             <x-mine.separator />
                         </div>
                         <div class="flex gap-4 justify-between items-center">
-                            <x-mine.button type="button" class="mine-btn-outline-secondary">
+                            <x-mine.button type="button" class="mine-btn-outline-secondary"
+                                @click.stop="$wire.set('reopening_id', {{ $plan->id }}, false); $dispatch('open-modal', { id: 'reopen-plan-confirmation' })">
                                 <div class="flex justify-center items-center gap-1 text-sm font-medium">
                                     <x-mine.icon name="arrow-path" variant="micro" />
                                     <p>Reopen Plan</p>
@@ -184,7 +236,7 @@
                             <div class="flex min-w-0 flex-1">
                                 <div
                                     class="shrink-0 mine-badge-danger rounded-xl size-16 flex justify-center items-center mr-4">
-                                    <x-mine.icon name="calendar-days" class="size-8" />
+                                    <x-mine.icon name="bell-alert" class="size-8" />
                                 </div>
                                 <div class="flex flex-col justify-between gap-2 min-w-0">
                                     <div class="flex items-center gap-4 min-w-0">
@@ -194,7 +246,7 @@
                                         </div>
                                     </div>
                                     <p class="text-sm font-medium mine-text-secondary min-w-0 line-clamp-2">
-                                        {{ $plan->description ?: 'No description.' }}</p>
+                                        {{ $plan->description ?: 'No description' }}</p>
                                 </div>
                             </div>
                             <div class="flex justify-end items-start h-full">
@@ -304,7 +356,8 @@
                                     <p>Add Task</p>
                                 </div>
                             </x-mine.button>
-                            <x-mine.button type="button" class="mine-btn-danger">
+                            <x-mine.button type="button" class="mine-btn-danger"
+                                @click.stop="$wire.set('completing_id', {{ $plan->id }}, false); $dispatch('open-modal', { id: 'complete-plan-confirmation' })">
                                 <div class="flex justify-center items-center gap-1 text-sm font-medium">
                                     <x-mine.icon name="check" variant="micro" />
                                     <p class="hidden sm:block">Mark as Completed</p>
@@ -330,7 +383,7 @@
                                         </div>
                                     </div>
                                     <p class="text-sm font-medium mine-text-secondary min-w-0 line-clamp-2">
-                                        {{ $plan->description ?: 'No description.' }}</p>
+                                        {{ $plan->description ?: 'No description' }}</p>
                                 </div>
                             </div>
                             <div class="flex justify-end items-start h-full shrink-0">
@@ -440,7 +493,8 @@
                                     <p>Add Task</p>
                                 </div>
                             </x-mine.button>
-                            <x-mine.button type="button" class="mine-btn-primary">
+                            <x-mine.button type="button" class="mine-btn-primary"
+                                @click.stop="$wire.set('completing_id', {{ $plan->id }}, false); $dispatch('open-modal', { id: 'complete-plan-confirmation' })">
                                 <div class="flex justify-center items-center gap-1 text-sm font-medium">
                                     <x-mine.icon name="check" variant="micro" />
                                     <p class="hidden sm:block">Mark as Completed</p>
@@ -451,7 +505,7 @@
                     </div>
                 @endif
             @empty
-                @if($this->search)
+                @if($this->search or $this->range_filter or $this->status_filter !== 'all')
                     <div class="col-span-full text-center py-12">
                         <x-mine.icon name="magnifying-glass" class="size-12 mx-auto mb-3 mine-text-secondary" />
                         <p class="mine-text-secondary text-sm font-medium">No plans found.</p>
@@ -601,6 +655,61 @@
                         Cancel
                     </x-mine.button>
                     <x-mine.button wire:target="deletePlan" class="mine-btn-danger">Delete</x-mine.button>
+                </div>
+            </form>
+        </div>
+    </x-mine.modal>
+
+    <x-mine.modal id="complete-plan-confirmation" :close-by-clicking-away="false" :close-by-escaping="false" width="lg">
+        <div class="px-6 sm:px-8 py-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-lg font-semibold mine-text-primary">Complete plan</h2>
+                <button type="button" @click="close(); $wire.cancelComplete()" class="mine-btn-icon p-2 rounded-xl">
+                    <x-mine.icon name="x-mark" />
+                </button>
+            </div>
+
+            @if($complete_error === 'has_undone_tasks')
+                <div class="mb-4">
+                    <x-mine.alert variant="danger" title="Cannot complete plan.">This plan still has unfinished tasks.
+                        Complete or remove them first.</x-mine.alert>
+                </div>
+            @else
+                <div class="mb-4">
+                    <x-mine.alert variant="warning" title="Are you sure?">This will mark the plan as completed.</x-mine.alert>
+                </div>
+            @endif
+
+            <form class="flex flex-col gap-4" wire:submit="completePlan">
+                <div class="flex gap-4 justify-end mt-4">
+                    <x-mine.button type="button" @click="close(); $wire.cancelComplete()" class="mine-btn-ghost">
+                        Cancel
+                    </x-mine.button>
+                    <x-mine.button wire:target="completePlan" class="mine-btn-primary">Complete</x-mine.button>
+                </div>
+            </form>
+        </div>
+    </x-mine.modal>
+
+    <x-mine.modal id="reopen-plan-confirmation" :close-by-clicking-away="false" :close-by-escaping="false" width="lg">
+        <div class="px-6 sm:px-8 py-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-lg font-semibold mine-text-primary">Reopen plan</h2>
+                <button type="button" @click="close(); $wire.cancelReopen()" class="mine-btn-icon p-2 rounded-xl">
+                    <x-mine.icon name="x-mark" />
+                </button>
+            </div>
+
+            <div class="mb-4">
+                <x-mine.alert variant="warning" title="Are you sure?">This plan will be moved back to active.</x-mine.alert>
+            </div>
+
+            <form class="flex flex-col gap-4" wire:submit="reopenPlan">
+                <div class="flex gap-4 justify-end mt-4">
+                    <x-mine.button type="button" @click="close(); $wire.cancelReopen()" class="mine-btn-ghost">
+                        Cancel
+                    </x-mine.button>
+                    <x-mine.button wire:target="reopenPlan" class="mine-btn-primary">Reopen</x-mine.button>
                 </div>
             </form>
         </div>

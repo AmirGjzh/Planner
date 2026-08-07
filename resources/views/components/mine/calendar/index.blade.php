@@ -1,5 +1,6 @@
 @props([
     'mode' => 'range',
+    'card' => true,
 ])
 
 @php
@@ -185,9 +186,9 @@
         },
     }"
     data-slot="calendar"
-    {{ $attributes->class(['w-full']) }}
+    {{ $attributes->merge(['class' => 'w-full']) }}
 >
-    <div class="mine-card p-4">
+    <div @class(['p-4', 'mine-card' => $card])>
         <div class="flex items-center justify-between mb-2">
             <button
                 type="button"

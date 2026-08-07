@@ -1,8 +1,11 @@
 <?php
 
+use App\Actions\Plan\CompletePlanAction;
 use App\Actions\Plan\CreatePlanAction;
 use App\Actions\Plan\DeletePlanAction;
 use App\Actions\Plan\EditPlanAction;
+use App\Actions\Plan\ReopenPlanAction;
+use App\Enums\CompletePlanResult;
 use App\Enums\CreatePlanResult;
 use App\Enums\DeletePlanResult;
 use App\Enums\EditPlanResult;
@@ -44,6 +47,12 @@ new class extends Component
 
     public ?string $delete_error = null;
 
+    public ?int $completing_id = null;
+
+    public ?string $complete_error = null;
+
+    public ?int $reopening_id = null;
+
     public ?array $range_filter = null;
 
     #[Url]
@@ -51,6 +60,9 @@ new class extends Component
 
     #[Url]
     public string $sort = 'latest';
+
+    #[Url]
+    public string $status_filter = 'all';
 
     #[Computed]
     public function plans()
@@ -65,12 +77,20 @@ new class extends Component
                 'tasks',
                 'tasks as tasks_done_count' => fn ($q) => $q->where('done', true),
             ])
+            ->when($this->status_filter === 'active', fn ($q) => $q->where('done', false)->whereDate('finish_date', '>=', now()))
+            ->when($this->status_filter === 'completed', fn ($q) => $q->where('done', true))
+            ->when($this->status_filter === 'overdue', fn ($q) => $q->where('done', false)->whereDate('finish_date', '<', now()))
             ->when($this->sort === 'name', fn ($q) => $q->orderBy('name'))
             ->when($this->sort === 'latest', fn ($q) => $q->latest())
-            ->paginate(6)->onEachSide(1);
+            ->paginate(3)->onEachSide(1);
     }
 
     public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingStatusFilter(): void
     {
         $this->resetPage();
     }
@@ -184,6 +204,47 @@ new class extends Component
     public function cancelDelete(): void
     {
         $this->delete_error = null;
+        $this->resetValidation();
+    }
+
+    public function completePlan(CompletePlanAction $action): void
+    {
+        $plan = $this->user->plans()->findOrFail($this->completing_id);
+
+        $result = $action->execute($this->user, $plan);
+
+        $this->complete_error = match ($result) {
+            CompletePlanResult::HasUndoneTasks => 'has_undone_tasks',
+            CompletePlanResult::Completed => null,
+        };
+
+        if ($result === CompletePlanResult::Completed) {
+            $this->completing_id = null;
+            unset($this->plans);
+            $this->dispatch('close-modal', id: 'complete-plan-confirmation');
+        }
+    }
+
+    public function cancelComplete(): void
+    {
+        $this->complete_error = null;
+        $this->resetValidation();
+    }
+
+    public function reopenPlan(ReopenPlanAction $action): void
+    {
+        $plan = $this->user->plans()->findOrFail($this->reopening_id);
+
+        $action->execute($this->user, $plan);
+
+        $this->reopening_id = null;
+        unset($this->plans);
+        $this->dispatch('close-modal', id: 'reopen-plan-confirmation');
+    }
+
+    public function cancelReopen(): void
+    {
+        $this->reopening_id = null;
         $this->resetValidation();
     }
 
