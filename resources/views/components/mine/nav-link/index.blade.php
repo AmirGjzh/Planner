@@ -12,6 +12,7 @@ $active = $active || ($route && request()->routeIs($route));
     wire:navigate.hover
     href="{{ $href }}"
     class="{{ $active ? 'mine-nav-link-active' : 'mine-nav-link' }}"
+    {{ $active ? 'aria-current="page"' : '' }}
 >
     {{ $slot }}
 </a>

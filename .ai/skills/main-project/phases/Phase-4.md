@@ -89,15 +89,15 @@ The phase is complete when:
 
 **Implementation Files:**
 - `routes/web.php` — defines guest login route and authenticated dashboard route.
-- `resources/views/pages/auth/⚡login/login.php` — Livewire component with typed `$login_error` property (`null` | `'rate_limited'` | `'invalid'`), `$remember` bool for the remember-me toggle, validates email/password with custom `messages()`, uses `if`/`elseif` on `LoginResult` enum cases, calls `LoginUserAction`, redirects on success, resets password and sets error state on failure.
+- `resources/views/pages/auth/⚡login/login.php` — Livewire component with typed `$login_error` property (`null` | `'rate_limited'` | `'invalid'`), `$remember` bool for the remember-me toggle, validates email/password with custom `messages()`, resets `$login_error` to `null` before each submission, uses a `match` expression on `LoginResult` enum cases, calls `LoginUserAction`, redirects on success, resets password and sets error state on failure.
 - `resources/views/pages/auth/⚡login/login.blade.php` — login form using mine/* components (`mine.input`, `mine.button`, `mine.checkbox`, `mine.alert`, `mine.separator`), error alerts driven by `$login_error` state, remember-me checkbox, forgot password placeholder.
-- `app/Actions/Auth/LoginUserAction.php` — final action class; rate limiting via `RateLimiter` with configurable constants (`MAX_ATTEMPTS: 5`, `DECAY_SECONDS: 60`), `Auth::attempt()`, session regeneration, structured logging for all outcomes with `'available_in'` context key.
+- `app/Actions/Auth/LoginUserAction.php` — final action class; rate limiting via `RateLimiter` with configurable constants (`MAX_ATTEMPTS: 5`, `DECAY_SECONDS: 60`), normalizes email with `Str::lower(Str::trim())`, `Auth::attempt()`, session regeneration, structured logging for all outcomes with `'available_in'` context key.
 - `app/Enums/LoginResult.php` — backed string enum (`Fail`, `Success`, `RateLimited`).
 
 **Testing Files:**
-- `resources/views/pages/auth/⚡login/login.test.php` — 7 co-located Livewire tests: render, required field validation, email format validation, wrong credentials error state, successful authentication and redirect, rate limiting after 5 failures, retry after 60-second cooldown.
+- `resources/views/pages/auth/⚡login/login.test.php` — 9 co-located Livewire tests: render, required field validation, email format validation, wrong credentials error state, successful authentication and redirect, rate limiting after 5 failures, retry after 60-second cooldown, clearing a previous login error on a new submission, and blocking login for a soft-deleted account.
 - `tests/Feature/Auth/LoginAccessTest.php` — 4 access tests: guest visits login, authenticated user redirected from login, guest redirected from dashboard, authenticated user visits dashboard.
-- `tests/Feature/Actions/Auth/LoginUserActionTest.php` — 4 action tests: success, fail, rate limited, and logging for all outcomes.
+- `tests/Feature/Actions/Auth/LoginUserActionTest.php` — 8 action tests: success, fail, rate limited, email casing normalization, logging for all outcomes, trimming/lowercasing email, blocking soft-deleted users, and applying the rate limit to soft-deleted account attempts.
 
 **Security and Reliability Notes:**
 - Validation handled server-side by Livewire with custom messages.
@@ -110,7 +110,7 @@ The phase is complete when:
 - Blade output remains escaped; no raw user-controlled HTML is rendered.
 - All inputs use mine/* Blade components with consistent styling and built-in loading state.
 
-**Acceptance Result:** UC-01 is accepted. 20 passing tests (55 assertions). 7 Livewire UI tests, 4 action unit tests, 4 access tests, plus additional login flow coverage from peripheral access tests.
+**Acceptance Result:** UC-01 is accepted. 21 UC-01 tests (58 assertions): 9 Livewire UI tests, 8 action tests, 4 access tests. The only failing assertion is the dashboard render in `LoginAccessTest` (`allows authenticated users to visit dashboard`), which fails on the pre-existing broken `/dashboard` view (dead `ui.text` component from legacy UC-16 code), not on login behavior itself.
 
 ### UC-02 – Register
 
@@ -124,16 +124,16 @@ The phase is complete when:
 
 **Implementation Files:**
 - `routes/web.php` — defines the guest-only register route.
-- `resources/views/pages/auth/⚡register/register.php` — Livewire component with typed `$register_error` property (`null` | `'rate_limited'` | `'username_taken'` | `'email_taken'`), `$password_confirmation` property, validates username (regex `/^[a-zA-Z][a-zA-Z0-9_-]{2,29}$/`), email (`email:rfc`), and password (confirmed, min:8) with custom `messages()`, uses a `match` expression to handle all 4 `RegisterResult` enum cases, calls `RegisterUserAction`, resets password fields on failure, redirects to login on success.
+- `resources/views/pages/auth/⚡register/register.php` — Livewire component with typed `$register_error` property (`null` | `'rate_limited'` | `'username_taken'` | `'email_taken'`), `$password_confirmation` property, resets `$register_error` to `null` before each submission, validates username (regex `/^[a-zA-Z][a-zA-Z0-9_-]{2,29}$/`), email (`email:rfc`), and password (confirmed, min:8) with custom `messages()`, uses a `match` expression to handle all 4 `RegisterResult` enum cases, calls `RegisterUserAction`, resets password fields on failure, redirects to login on success.
 - `resources/views/pages/auth/⚡register/register.blade.php` — registration form UI, field errors, register-level error display driven by `$register_error` state, and login navigation link.
-- `app/Actions/Auth/RegisterUserAction.php` — final action class; rate limiting via `RateLimiter` with configurable constants (`MAX_ATTEMPTS: 5`, `DECAY_SECONDS: 60`), username/email uniqueness checks after the limiter gate, user creation via `User::create()`, race-condition duplicate handling via `QueryException` / `isIntegrityConstraintViolation()` (SQLSTATE '23' prefix), structured logging for all outcomes with `'available_in'` context key.
+- `app/Actions/Auth/RegisterUserAction.php` — final action class; rate limiting via `RateLimiter` with configurable constants (`MAX_ATTEMPTS: 5`, `DECAY_SECONDS: 60`), normalizes username and email with `Str::lower(Str::trim())`, username/email uniqueness checks after the limiter gate, user creation via `User::create()`, race-condition duplicate handling via `QueryException` / `isIntegrityConstraintViolation()` (SQLSTATE '23' prefix), structured logging for all outcomes with `'available_in'` context key.
 - `app/Enums/RegisterResult.php` — result enum returned by the register action (`Success`, `UsernameTaken`, `EmailTaken`, `RateLimited`).
 - `resources/views/pages/auth/⚡login/login.blade.php` — cross-navigation link from login to register.
 
 **Testing Files:**
-- `resources/views/pages/auth/⚡register/register.test.php` — co-located Livewire tests for rendering, validation, duplicate username or email errors, successful registration, guest state after registration, and rate limiting.
-- `tests/Feature/Auth/RegisterAccessTest.php` — route/middleware tests for guest and authenticated access.
-- `tests/Feature/Actions/Auth/RegisterUserActionTest.php` — action tests for success, duplicate results, rate limiting, password hashing, and logging.
+- `resources/views/pages/auth/⚡register/register.test.php` — co-located Livewire tests: rendering, required fields, username format (4-row dataset), email format, password confirmation, password length, username taken (incl. mixed-case), email taken, success + redirect, guest state after registration, rate limiting, retry after cooldown, and clearing a previous register error on a new submission.
+- `tests/Feature/Auth/RegisterAccessTest.php` — 2 access tests: guest visits register page, authenticated user redirected away from register.
+- `tests/Feature/Actions/Auth/RegisterUserActionTest.php` — 8 action tests: success, username taken, mixed-case username taken, email taken, rate limited, whitespace/case normalization, whitespace-padded duplicate username taken, and event logging.
 
 **Security and Reliability Notes:**
 - Registration validation is handled server-side by Livewire.
@@ -146,7 +146,7 @@ The phase is complete when:
 - Registration success, duplicate failures, and rate-limited attempts are logged in the action layer.
 - Blade output remains escaped; no raw user-controlled HTML is rendered.
 
-**Acceptance Result:** UC-02 is accepted. 22 passing tests. 12 co-located Livewire UI tests (including 4 username-format dataset variants), 5 action tests (success, username taken, email taken, rate limited, logging), 2 access tests, plus additional register flow coverage from peripheral access tests.
+**Acceptance Result:** UC-02 is accepted. 27 UC-02 tests: 17 co-located Livewire UI test variants (14 `it()` blocks including the 4-row username-format dataset), 8 action tests, 2 access tests.
 
 ### UC-03 – View and Edit Profile
 
@@ -159,17 +159,17 @@ The phase is complete when:
 
 **Implementation Files:**
 - `routes/web.php` — defines the authenticated profile route.
-- `resources/views/pages/⚡profile/profile.php` — Livewire page state, authenticated user lookup, profile validation, action call, result handling, form reset or cancel behavior, and country list data.
-- `resources/views/pages/⚡profile/profile.blade.php` — profile display UI, edit modal, form fields, field errors, profile-level rate-limit error display, and cancel or apply controls.
-- `app/Actions/Profile/UpdateProfileAction.php` — profile update business action; handles rate limiting, username uniqueness checks after the limiter gate, profile persistence, race-condition duplicate handling, and logging.
+- `resources/views/pages/⚡profile/profile.php` — Livewire page state, authenticated user lookup, profile validation, resets `$edit_error`/`$edit_success` to `null` before each submission, action call, result handling, form reset or cancel behavior, and country list data. On successful edit, dispatches a `profile-updated` browser event (username/email/firstname/lastname) so the global header can refresh the displayed username/initials.
+- `resources/views/pages/⚡profile/profile.blade.php` — profile display UI (personal-information rows rendered from a label→value map), edit modal, form fields, field errors, profile-level rate-limit error display, and cancel or apply controls.
+- `app/Actions/Profile/UpdateProfileAction.php` — profile update business action; handles rate limiting, normalizes username with `Str::lower(Str::trim())`, username uniqueness checks after the limiter gate, profile persistence, race-condition duplicate handling, and logging.
 - `app/Enums/UpdateProfileResult.php` — result enum returned by the profile update action (`Success`, `UsernameTaken`, `RateLimited`).
 - `app/Enums/UserGender.php` — enum used by profile validation and the `User.gender` cast.
 - `app/Models/User.php` — stores editable profile fields and casts `birthday` and `gender`.
 
 **Testing Files:**
-- `resources/views/pages/⚡profile/profile.test.php` — co-located Livewire tests for rendering, initial form state, validation, successful updates, nullable fields, username-taken errors, rate limiting, time-travel retry, and cancel behavior.
+- `resources/views/pages/⚡profile/profile.test.php` — co-located Livewire tests for rendering, initial form state, validation, successful updates, nullable fields, username-taken errors, clearing a previous edit error on a new submission, rate limiting, time-travel retry, and cancel behavior (plus UC-04 delete-account coverage on the same page).
 - `tests/Feature/Auth/ProfileAccessTest.php` — route/middleware tests for guest redirect and authenticated profile access.
-- `tests/Feature/Actions/Profile/UpdateProfileActionTest.php` — action tests for success, duplicate username result, keeping the current username, nullable cleanup, rate limiting, time-travel retry, and logging.
+- `tests/Feature/Actions/Profile/UpdateProfileActionTest.php` — action tests for success, duplicate username result, whitespace/case username normalization, keeping the current username, nullable cleanup, rate limiting, time-travel retry, and logging.
 
 **Security and Reliability Notes:**
 - Profile access is protected by the `auth` middleware.
@@ -181,7 +181,7 @@ The phase is complete when:
 - Profile update success, duplicate username failures, and rate-limited attempts are logged in the action layer.
 - Blade output remains escaped; no raw user-controlled HTML is rendered.
 
-**Acceptance Result:** UC-03 is accepted. Authenticated users can view and edit profile information, invalid input is rejected, duplicate usernames are handled cleanly, rate limiting is enforced, and the use case is covered by passing tests.
+**Acceptance Result:** UC-03 is accepted. 22 page test variants (19 `it()` blocks including the 4-row username-format dataset), 10 action tests, 2 access tests. The country list (via `#[Computed(cache: true, key: 'countries-list')]`) is served from cache; profile updates reset previous success/error state before each validation so stale alerts never persist. On success a `profile-updated` event refreshes the header's username/initials/email via an Alpine `x-on:profile-updated.window` binding on the account dropdown.
 
 ### UC-04 – Delete Account
 
@@ -193,13 +193,14 @@ The phase is complete when:
 - `GET /profile` → Livewire page `pages::profile`, auth-only route (existing UC-03 route).
 
 **Implementation Files:**
-- `resources/views/pages/⚡profile/profile.php` — Livewire page state; `deleteAccount()` method validates the password field, calls `DeleteAccountAction`, handles all three result states (`Success`, `WrongPassword`, `RateLimited`), and redirects to login on success; `cancelDelete()` resets form state.
-- `resources/views/pages/⚡profile/profile.blade.php` — profile display UI with a "Delete Account" button that opens a confirmation modal with a password field and submit or cancel controls (unchanged from UC-03).
+- `resources/views/pages/⚡profile/profile.php` — Livewire page state; `deleteAccount()` method clears any previous `delete_error` before validating the password field, calls `DeleteAccountAction`, handles all three result states (`Success`, `WrongPassword`, `RateLimited`), and redirects to login on success; `cancelDelete()` resets form state.
+- `resources/views/pages/⚡profile/profile.blade.php` — profile display UI with a "Delete Account" button that opens a confirmation modal with a password field and submit or cancel controls; the password field is autofocused on modal open and the submit button is disabled while the delete request is in flight.
 - `app/Actions/Auth/DeleteAccountAction.php` — account deletion business action; checks rate limiting (5 attempts per minute per user ID/IP), verifies the password against the user's hashed password, logs the user out, obfuscates email and username to free unique constraints, soft-deletes the user record, and logs the event.
 - `app/Enums/DeleteAccountResult.php` — result enum returned by the delete account action (`Success`, `WrongPassword`, `RateLimited`).
 
 **Testing Files:**
 - `tests/Feature/Actions/Auth/DeleteAccountActionTest.php` — action tests for successful deletion, email/username obfuscation, wrong password result, rate limiting, time-travel retry, and logging for all outcomes.
+- `resources/views/pages/⚡profile/profile.test.php` — co-located delete-flow tests for wrong-password errors, rate limiting, successful deletion with redirect, time-travel retry, cancel behavior, and clearing a previous delete error on a new submission.
 
 **Security and Reliability Notes:**
 - Account deletion is protected by the `auth` middleware via the profile route.
@@ -224,7 +225,7 @@ The phase is complete when:
 
 **Implementation Files:**
 - `routes/web.php` — defines the authenticated POST `/logout` route with a named route `logout`; executes `LogoutUserAction` and returns `response()->noContent()`.
-- `resources/views/layouts/app.blade.php` — user dropdown menu; the Log out item uses Alpine `fetch()` to POST to the logout route with the CSRF token, then calls `Livewire.navigate()` for an SPA transition to the login page.
+- `resources/views/components/mine/header/index.blade.php` — global header rebuilt as a single nav source: one `$navLinks` array drives the desktop `nav-link`s (with `aria-current="page"` on the active route) and the mobile navigation dropdown (every item is a working `wire:navigate.hover` link with an icon). Both the mobile navigation dropdown and the account dropdown are `x-mine.dropdown`s grouped under `header-action`, so only one can be open at a time; the account dropdown stays flush to the header's right edge via the original absolute-positioned overlay. The logo was removed (it never rendered) and the dead `hidden` markup was deleted. The user dropdown's Log out item uses Alpine `fetch()` to POST to the logout route with the CSRF token, then calls `Livewire.navigate()` for an SPA transition to the login page (falls back to `window.location` when Livewire is unavailable), guarded by a `busy` flag with response-status checking so a failed request can be retried. The mobile hamburger animates bars→X via plain-div Alpine `:style` transitions (flash-free default-hidden inline styles).
 - `app/Actions/Auth/LogoutUserAction.php` — logout business action; retrieves the authenticated user ID, calls `Auth::logout()`, invalidates the session, regenerates the CSRF token, and logs the event.
 
 **Testing Files:**

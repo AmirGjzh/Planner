@@ -4,16 +4,26 @@ namespace App\Actions\Task;
 
 use App\Enums\EditTaskResult;
 use App\Enums\TaskPriority;
+use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
+use Psr\Log\LoggerInterface;
 
-class EditTaskAction
+final class EditTaskAction
 {
+    public function __construct(
+        private readonly LoggerInterface $logger,
+    ) {}
+
+    private const int MAX_ATTEMPTS = 5;
+
+    private const int DECAY_SECONDS = 60;
+
     public function execute(
         User $user,
-        int $taskId,
+        Task $task,
         string $title,
         ?string $description,
         string $taskDate,
@@ -24,25 +34,23 @@ class EditTaskAction
         ?int $planId,
         Request $request,
     ): EditTaskResult {
-        $task = $user->tasks()->findOrFail($taskId);
-
         abort_unless($user->can('update', $task), 403);
 
-        $key = 'edit-task:'.$user->id.'|'.$request->ip();
+        $rate_limit_key = $this->rateLimitKey($user, $request);
 
-        if (RateLimiter::tooManyAttempts($key, 5)) {
-            Log::warning('Task edit rate limited.', [
+        if (RateLimiter::tooManyAttempts($rate_limit_key, self::MAX_ATTEMPTS)) {
+            $this->logger->warning('Task edit rate limited.', [
                 'user_id' => $user->id,
                 'task_id' => $task->id,
-                'seconds_remaining' => RateLimiter::availableIn($key),
+                'available_in' => RateLimiter::availableIn($rate_limit_key),
             ]);
 
             return EditTaskResult::RateLimited;
         }
 
         if (! $user->categories()->whereKey($categoryId)->exists()) {
-            RateLimiter::hit($key, 60);
-            Log::warning('Task edit failed, invalid category.', [
+            RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
+            $this->logger->warning('Task edit failed, invalid category.', [
                 'user_id' => $user->id,
                 'task_id' => $task->id,
                 'category_id' => $categoryId,
@@ -52,8 +60,8 @@ class EditTaskAction
         }
 
         if ($planId !== null && ! $user->plans()->whereKey($planId)->exists()) {
-            RateLimiter::hit($key, 60);
-            Log::warning('Task edit failed, invalid plan.', [
+            RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
+            $this->logger->warning('Task edit failed, invalid plan.', [
                 'user_id' => $user->id,
                 'task_id' => $task->id,
                 'plan_id' => $planId,
@@ -73,14 +81,19 @@ class EditTaskAction
             'plan_id' => $planId,
         ]);
 
-        RateLimiter::hit($key, 60);
+        RateLimiter::clear($rate_limit_key);
 
-        Log::info('Task updated.', [
+        $this->logger->info('Task updated.', [
             'user_id' => $user->id,
             'task_id' => $task->id,
             'title' => $title,
         ]);
 
         return EditTaskResult::Updated;
+    }
+
+    private function rateLimitKey(User $user, Request $request): string
+    {
+        return Str::transliterate('edit-task:'.$user->id.'|'.$request->ip());
     }
 }

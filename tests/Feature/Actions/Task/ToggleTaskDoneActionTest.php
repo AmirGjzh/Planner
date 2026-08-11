@@ -4,14 +4,14 @@ use App\Actions\Task\ToggleTaskDoneAction;
 use App\Enums\TaskPriority;
 use App\Enums\ToggleTaskDoneResult;
 use App\Models\User;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 function toggleTaskRequest(): Request
 {
-    return Request::create('/task-page', 'POST', server: ['REMOTE_ADDR' => '127.0.0.1']);
+    return Request::create('/tasks', 'POST', server: ['REMOTE_ADDR' => '127.0.0.1']);
 }
 
 function toggleTaskRateLimitKey(User $user): string
@@ -26,8 +26,9 @@ it('toggles a task from not done to done', function () {
         'title' => 'Test task', 'task_date' => '2026-06-01', 'estimated_minutes' => 30,
         'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
     ]);
+    RateLimiter::clear(toggleTaskRateLimitKey($user));
 
-    app(ToggleTaskDoneAction::class)->execute($user, $task->id, toggleTaskRequest());
+    app(ToggleTaskDoneAction::class)->execute($user, $task, toggleTaskRequest());
 
     expect($task->fresh()->done)->toBeTrue();
 });
@@ -39,10 +40,11 @@ it('toggles a task from done to not done', function () {
         'title' => 'Test task', 'task_date' => '2026-06-01', 'estimated_minutes' => 30,
         'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id, 'done' => true,
     ]);
+    RateLimiter::clear(toggleTaskRateLimitKey($user));
 
     expect($task->done)->toBeTrue();
 
-    app(ToggleTaskDoneAction::class)->execute($user, $task->id, toggleTaskRequest());
+    app(ToggleTaskDoneAction::class)->execute($user, $task, toggleTaskRequest());
 
     expect($task->fresh()->done)->toBeFalse();
 });
@@ -56,9 +58,9 @@ it('prevents toggling a task that belongs to another user', function () {
         'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
     ]);
 
-    $this->expectException(ModelNotFoundException::class);
+    $this->expectException(HttpException::class);
 
-    app(ToggleTaskDoneAction::class)->execute($user2, $task->id, toggleTaskRequest());
+    app(ToggleTaskDoneAction::class)->execute($user2, $task, toggleTaskRequest());
 });
 
 it('logs toggle events', function () {
@@ -70,8 +72,9 @@ it('logs toggle events', function () {
         'title' => 'Test task', 'task_date' => '2026-06-01', 'estimated_minutes' => 30,
         'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
     ]);
+    RateLimiter::clear(toggleTaskRateLimitKey($user));
 
-    app(ToggleTaskDoneAction::class)->execute($user, $task->id, toggleTaskRequest());
+    app(ToggleTaskDoneAction::class)->execute($user, $task, toggleTaskRequest());
 
     Log::shouldHaveReceived('info')
         ->with('Task toggled.', Mockery::on(
@@ -90,10 +93,10 @@ it('rate limits excessive toggles', function () {
     RateLimiter::clear(toggleTaskRateLimitKey($user));
 
     foreach (range(1, 20) as $attempt) {
-        app(ToggleTaskDoneAction::class)->execute($user, $task->id, toggleTaskRequest());
+        app(ToggleTaskDoneAction::class)->execute($user, $task, toggleTaskRequest());
     }
 
-    $result = app(ToggleTaskDoneAction::class)->execute($user, $task->id, toggleTaskRequest());
+    $result = app(ToggleTaskDoneAction::class)->execute($user, $task, toggleTaskRequest());
 
     expect($result)->toBe(ToggleTaskDoneResult::RateLimited);
 });
@@ -108,12 +111,12 @@ it('allows toggling again after rate limit resets', function () {
     RateLimiter::clear(toggleTaskRateLimitKey($user));
 
     foreach (range(1, 20) as $attempt) {
-        app(ToggleTaskDoneAction::class)->execute($user, $task->id, toggleTaskRequest());
+        app(ToggleTaskDoneAction::class)->execute($user, $task, toggleTaskRequest());
     }
 
     $this->travel(61)->seconds();
 
-    $result = app(ToggleTaskDoneAction::class)->execute($user, $task->id, toggleTaskRequest());
+    $result = app(ToggleTaskDoneAction::class)->execute($user, $task, toggleTaskRequest());
 
     expect($result)->toBe(ToggleTaskDoneResult::Toggled);
 });

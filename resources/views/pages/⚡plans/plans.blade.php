@@ -32,6 +32,28 @@
                 <x-mine.dropdown.content class="mt-1!">
                     <x-mine.dropdown.item>
                         <div class="w-full py-2 px-4 flex items-center gap-2 hover:cursor-pointer"
+                            @click="$wire.set('sort', 'state')">
+                            <p
+                                class="text-sm font-medium flex-1 {{ $sort === 'state' ? 'mine-text-link' : 'mine-text-secondary' }}">
+                                State</p>
+                            @if($sort === 'state')
+                                <x-mine.icon variant="micro" name="check" class="size-4 mine-text-link" />
+                            @endif
+                        </div>
+                    </x-mine.dropdown.item>
+                    <x-mine.dropdown.item>
+                        <div class="w-full py-2 px-4 flex items-center gap-2 hover:cursor-pointer"
+                            @click="$wire.set('sort', 'load')">
+                            <p
+                                class="text-sm font-medium flex-1 {{ $sort === 'load' ? 'mine-text-link' : 'mine-text-secondary' }}">
+                                Load</p>
+                            @if($sort === 'load')
+                                <x-mine.icon variant="micro" name="check" class="size-4 mine-text-link" />
+                            @endif
+                        </div>
+                    </x-mine.dropdown.item>
+                    <x-mine.dropdown.item>
+                        <div class="w-full py-2 px-4 flex items-center gap-2 hover:cursor-pointer"
                             @click="$wire.set('sort', 'latest')">
                             <p
                                 class="text-sm font-medium flex-1 {{ $sort === 'latest' ? 'mine-text-link' : 'mine-text-secondary' }}">
@@ -97,8 +119,8 @@
                         </p>
                     </div>
                 </x-mine.dropdown.trigger>
-                <x-mine.dropdown.content class="mt-1!">
-                    <div class="flex justify-center w-80">
+                <x-mine.dropdown.content class="mt-1! flex justify-center">
+                    <div class="flex justify-center items-center w-80">
                         <x-mine.calendar wire:model.live="range_filter" :card="false" />
                     </div>
                 </x-mine.dropdown.content>
@@ -110,8 +132,8 @@
             @forelse ($this->plans as $plan)
                 @if ($plan->done)
                     <div wire:key="plan-{{ $plan->id }}"
-                        class="mine-card-interactive flex flex-col px-4 sm:px-6 md:px-8 py-4 sm:pb-5 md:pb-6 sm:pt-6 md:pt-8">
-                        <div class="flex justify-between items-center gap-4 mb-6 min-w-0">
+                        class="self-start mine-card-interactive flex flex-col px-4 sm:px-6 md:px-8 py-4 sm:pb-5 md:pb-6 sm:pt-6 md:pt-8">
+                        <div class="flex justify-between gap-4 mb-6 min-w-0">
                             <div class="flex min-w-0 flex-1">
                                 <div
                                     class="shrink-0 mine-badge-secondary rounded-xl size-16 flex justify-center items-center mr-4">
@@ -119,13 +141,13 @@
                                 </div>
                                 <div class="flex flex-col justify-between gap-2 min-w-0">
                                     <div class="flex items-center gap-4 min-w-0">
-                                        <h1 class="text-md font-bold mine-text-primary truncate min-w-0">{{ $plan->name }}</h1>
+                                        <h1 class="text-md font-bold mine-text-primary truncate min-w-0 line-through">{{ $plan->name }}</h1>
                                         <div
                                             class="mine-badge-secondary rounded-lg h-7 flex justify-center items-center px-2 shrink-0">
                                             <p class="text-[14px] font-medium">Completed</p>
                                         </div>
                                     </div>
-                                    <p class="text-sm font-medium mine-text-secondary min-w-0 line-clamp-2">
+                                    <p class="text-sm font-medium mine-text-secondary min-w-0 line-clamp-2 line-through">
                                         {{ $plan->description ?: 'No description' }}</p>
                                 </div>
                             </div>
@@ -231,8 +253,8 @@
                     </div>
                 @elseif ($plan->finish_date->isPast())
                     <div wire:key="plan-{{ $plan->id }}"
-                        class="mine-card-interactive flex flex-col px-4 sm:px-6 md:px-8 py-4 sm:pb-5 md:pb-6 sm:pt-6 md:pt-8">
-                        <div class="flex justify-between items-center gap-4 mb-6 min-w-0">
+                        class="self-start mine-card-interactive flex flex-col px-4 sm:px-6 md:px-8 py-4 sm:pb-5 md:pb-6 sm:pt-6 md:pt-8">
+                        <div class="flex justify-between gap-4 mb-6 min-w-0">
                             <div class="flex min-w-0 flex-1">
                                 <div
                                     class="shrink-0 mine-badge-danger rounded-xl size-16 flex justify-center items-center mr-4">
@@ -368,8 +390,8 @@
                     </div>
                 @else
                     <div wire:key="plan-{{ $plan->id }}"
-                        class="mine-card-interactive flex flex-col px-4 sm:px-6 md:px-8 py-4 sm:pb-5 md:pb-6 sm:pt-6 md:pt-8">
-                        <div class="flex justify-between items-center gap-10 mb-6 min-w-0">
+                        class="self-start mine-card-interactive flex flex-col px-4 sm:px-6 md:px-8 py-4 sm:pb-5 md:pb-6 sm:pt-6 md:pt-8">
+                        <div class="flex justify-between gap-10 mb-6 min-w-0">
                             <div class="flex min-w-0 flex-1">
                                 <div
                                     class="shrink-0 mine-badge-primary rounded-xl size-16 flex justify-center items-center mr-4">
@@ -505,14 +527,14 @@
                     </div>
                 @endif
             @empty
-                @if($this->search or $this->range_filter or $this->status_filter !== 'all')
+                @if($this->hasActiveFilters)
                     <div class="col-span-full text-center py-12">
                         <x-mine.icon name="magnifying-glass" class="size-12 mx-auto mb-3 mine-text-secondary" />
                         <p class="mine-text-secondary text-sm font-medium">No plans found.</p>
                     </div>
                 @else
                     <div class="col-span-full text-center py-12">
-                        <x-mine.icon name="folder-open" class="size-12 mx-auto mb-3 mine-text-secondary" />
+                        <x-mine.icon name="light-bulb" class="size-12 mx-auto mb-3 mine-text-secondary" />
                         <p class="mine-text-secondary text-sm font-medium">No plans yet.</p>
                     </div>
                 @endif

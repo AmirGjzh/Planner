@@ -1,6 +1,8 @@
 @props([
     'triggerMode' => 'click',
     'group' => null,
+    'multiple' => false,
+    'model' => null,
 ])
 
 <div
@@ -8,10 +10,36 @@
         open: false,
         triggerMode: @js($triggerMode),
         group: @js($group),
+        multiple: @js($multiple),
+        model: @js($model),
+        selected: [],
         hoverTimeout: null,
         init() {
             if (this.group) {
                 window.addEventListener('close-dropdowns-'+this.group, () => this.close())
+            }
+            if (this.multiple && this.model && typeof $wire !== 'undefined') {
+                this.selected = $wire.get(this.model) || []
+                $wire.$watch(this.model, (value) => {
+                    this.selected = value || []
+                })
+            }
+        },
+        isSelected(value) {
+            return this.selected.includes(String(value))
+        },
+        toggleSelect(value) {
+            if (!this.multiple) return
+            if (value === null || value === undefined) return
+            value = String(value)
+            const index = this.selected.indexOf(value)
+            if (index === -1) {
+                this.selected.push(value)
+            } else {
+                this.selected.splice(index, 1)
+            }
+            if (this.model && typeof $wire !== 'undefined') {
+                $wire.set(this.model, [...this.selected])
             }
         },
         show() {

@@ -4,14 +4,14 @@ use App\Actions\Task\EditTaskAction;
 use App\Enums\EditTaskResult;
 use App\Enums\TaskPriority;
 use App\Models\User;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 function editTaskRequest(): Request
 {
-    return Request::create('/task-page', 'POST', server: ['REMOTE_ADDR' => '127.0.0.1']);
+    return Request::create('/tasks', 'POST', server: ['REMOTE_ADDR' => '127.0.0.1']);
 }
 
 function editTaskRateLimitKey(User $user): string
@@ -29,7 +29,7 @@ it('updates a task successfully', function () {
     RateLimiter::clear(editTaskRateLimitKey($user));
 
     $result = app(EditTaskAction::class)->execute(
-        $user, $task->id, 'Updated', 'New desc', '2026-06-15', 60, TaskPriority::High, 2, $category->id, null, editTaskRequest(),
+        $user, $task, 'Updated', 'New desc', '2026-06-15', 60, TaskPriority::High, 2, $category->id, null, editTaskRequest(),
     );
 
     expect($result)->toBe(EditTaskResult::Updated);
@@ -52,7 +52,7 @@ it('updates a task with a plan assigned', function () {
     RateLimiter::clear(editTaskRateLimitKey($user));
 
     $result = app(EditTaskAction::class)->execute(
-        $user, $task->id, 'Original', null, '2026-06-01', 30, TaskPriority::Medium, 0, $category->id, $plan->id, editTaskRequest(),
+        $user, $task, 'Original', null, '2026-06-01', 30, TaskPriority::Medium, 0, $category->id, $plan->id, editTaskRequest(),
     );
 
     expect($result)->toBe(EditTaskResult::Updated);
@@ -68,14 +68,14 @@ it('prevents editing a task that belongs to another user', function () {
         'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
     ]);
 
-    $this->expectException(ModelNotFoundException::class);
+    $this->expectException(HttpException::class);
 
     app(EditTaskAction::class)->execute(
-        $user2, $task->id, 'Hacked', null, '2026-06-01', 30, TaskPriority::Medium, 0, $category->id, null, editTaskRequest(),
+        $user2, $task, 'Hacked', null, '2026-06-01', 30, TaskPriority::Medium, 0, $category->id, null, editTaskRequest(),
     );
 });
 
-it('returns rate limited after repeated edit attempts', function () {
+it('returns rate limited after repeated failures', function () {
     $user = User::factory()->create();
     $category = $user->categories()->create(['name' => 'Work']);
     $task = $user->tasks()->create([
@@ -86,12 +86,12 @@ it('returns rate limited after repeated edit attempts', function () {
 
     foreach (range(1, 5) as $attempt) {
         app(EditTaskAction::class)->execute(
-            $user, $task->id, 'Attempt '.$attempt, null, '2026-06-01', 30, TaskPriority::Medium, 0, $category->id, null, editTaskRequest(),
+            $user, $task, 'Attempt '.$attempt, null, '2026-06-01', 30, TaskPriority::Medium, 0, 999, null, editTaskRequest(),
         );
     }
 
     $result = app(EditTaskAction::class)->execute(
-        $user, $task->id, 'Blocked', null, '2026-06-01', 30, TaskPriority::Medium, 0, $category->id, null, editTaskRequest(),
+        $user, $task, 'Blocked', null, '2026-06-01', 30, TaskPriority::Medium, 0, 999, null, editTaskRequest(),
     );
 
     expect($result)->toBe(EditTaskResult::RateLimited);
@@ -108,18 +108,40 @@ it('allows editing again after one minute', function () {
 
     foreach (range(1, 5) as $attempt) {
         app(EditTaskAction::class)->execute(
-            $user, $task->id, 'Attempt '.$attempt, null, '2026-06-01', 30, TaskPriority::Medium, 0, $category->id, null, editTaskRequest(),
+            $user, $task, 'Attempt '.$attempt, null, '2026-06-01', 30, TaskPriority::Medium, 0, 999, null, editTaskRequest(),
         );
     }
 
     $this->travel(61)->seconds();
 
     $result = app(EditTaskAction::class)->execute(
-        $user, $task->id, 'After cooldown', null, '2026-06-01', 30, TaskPriority::Medium, 0, $category->id, null, editTaskRequest(),
+        $user, $task, 'After cooldown', null, '2026-06-01', 30, TaskPriority::Medium, 0, $category->id, null, editTaskRequest(),
     );
 
     expect($result)->toBe(EditTaskResult::Updated);
     expect($task->fresh()->title)->toBe('After cooldown');
+});
+
+it('allows editing again after a successful edit clears the limiter', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $task = $user->tasks()->create([
+        'title' => 'Original', 'task_date' => '2026-06-01', 'estimated_minutes' => 30,
+        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
+    ]);
+    RateLimiter::clear(editTaskRateLimitKey($user));
+
+    foreach (range(1, 5) as $attempt) {
+        app(EditTaskAction::class)->execute(
+            $user, $task, 'Attempt '.$attempt, null, '2026-06-01', 30, TaskPriority::Medium, 0, $category->id, null, editTaskRequest(),
+        );
+    }
+
+    $result = app(EditTaskAction::class)->execute(
+        $user, $task, 'After clears', null, '2026-06-01', 30, TaskPriority::Medium, 0, $category->id, null, editTaskRequest(),
+    );
+
+    expect($result)->toBe(EditTaskResult::Updated);
 });
 
 it('returns invalid category on edit', function () {
@@ -132,7 +154,7 @@ it('returns invalid category on edit', function () {
     RateLimiter::clear(editTaskRateLimitKey($user));
 
     $result = app(EditTaskAction::class)->execute(
-        $user, $task->id, 'Test', null, '2026-06-01', 30, TaskPriority::Medium, 0, 999, null, editTaskRequest(),
+        $user, $task, 'Test', null, '2026-06-01', 30, TaskPriority::Medium, 0, 999, null, editTaskRequest(),
     );
 
     expect($result)->toBe(EditTaskResult::InvalidCategory);
@@ -148,7 +170,7 @@ it('returns invalid plan on edit', function () {
     RateLimiter::clear(editTaskRateLimitKey($user));
 
     $result = app(EditTaskAction::class)->execute(
-        $user, $task->id, 'Test', null, '2026-06-01', 30, TaskPriority::Medium, 0, $category->id, 999, editTaskRequest(),
+        $user, $task, 'Test', null, '2026-06-01', 30, TaskPriority::Medium, 0, $category->id, 999, editTaskRequest(),
     );
 
     expect($result)->toBe(EditTaskResult::InvalidPlan);
@@ -166,7 +188,7 @@ it('logs edit events', function () {
     RateLimiter::clear(editTaskRateLimitKey($user));
 
     app(EditTaskAction::class)->execute(
-        $user, $task->id, 'Test', null, '2026-06-01', 30, TaskPriority::Medium, 0, 999, null, editTaskRequest(),
+        $user, $task, 'Test', null, '2026-06-01', 30, TaskPriority::Medium, 0, 999, null, editTaskRequest(),
     );
 
     Log::shouldHaveReceived('warning')
@@ -176,19 +198,19 @@ it('logs edit events', function () {
 
     foreach (range(1, 5) as $attempt) {
         app(EditTaskAction::class)->execute(
-            $user, $task->id, 'Attempt '.$attempt, null, '2026-06-01', 30, TaskPriority::Medium, 0, $category->id, null, editTaskRequest(),
+            $user, $task, 'Attempt '.$attempt, null, '2026-06-01', 30, TaskPriority::Medium, 0, 999, null, editTaskRequest(),
         );
     }
 
     Log::shouldHaveReceived('warning')
         ->with('Task edit rate limited.', Mockery::on(
-            fn (array $context) => isset($context['seconds_remaining'])
+            fn (array $context) => isset($context['available_in'])
         ));
 
     RateLimiter::clear(editTaskRateLimitKey($user));
 
     app(EditTaskAction::class)->execute(
-        $user, $task->id, 'Renamed', null, '2026-06-01', 30, TaskPriority::Medium, 0, $category->id, null, editTaskRequest(),
+        $user, $task, 'Renamed', null, '2026-06-01', 30, TaskPriority::Medium, 0, $category->id, null, editTaskRequest(),
     );
 
     Log::shouldHaveReceived('info')

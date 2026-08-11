@@ -4,8 +4,8 @@ use App\Actions\Task\DeleteTaskAction;
 use App\Enums\DeleteTaskResult;
 use App\Enums\TaskPriority;
 use App\Models\User;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 it('deletes a task successfully', function () {
     $user = User::factory()->create();
@@ -15,7 +15,7 @@ it('deletes a task successfully', function () {
         'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
     ]);
 
-    $result = app(DeleteTaskAction::class)->execute($user, $task->id);
+    $result = app(DeleteTaskAction::class)->execute($user, $task);
 
     expect($result)->toBe(DeleteTaskResult::Deleted);
     expect($user->tasks()->where('title', 'Test task')->exists())->toBeFalse();
@@ -30,9 +30,9 @@ it('prevents deleting a task that belongs to another user', function () {
         'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
     ]);
 
-    $this->expectException(ModelNotFoundException::class);
+    $this->expectException(HttpException::class);
 
-    app(DeleteTaskAction::class)->execute($user2, $task->id);
+    app(DeleteTaskAction::class)->execute($user2, $task);
 });
 
 it('logs deletion events', function () {
@@ -45,7 +45,7 @@ it('logs deletion events', function () {
         'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
     ]);
 
-    app(DeleteTaskAction::class)->execute($user, $task->id);
+    app(DeleteTaskAction::class)->execute($user, $task);
 
     Log::shouldHaveReceived('info')
         ->with('Task deleted.', Mockery::on(

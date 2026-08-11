@@ -6,12 +6,21 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Livewire;
 
+function planWideRange(): array
+{
+    return [
+        'start' => now()->subYears(2)->format('Y-m-d'),
+        'end' => now()->addYears(2)->format('Y-m-d'),
+    ];
+}
+
 it('renders the plan page', function () {
     $user = User::factory()->create();
     $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
 
     Livewire::actingAs($user)
         ->test('pages::plans')
+        ->set('range_filter', planWideRange())
         ->assertStatus(200)
         ->assertSee('Add new plan')
         ->assertSee('My Plans')
@@ -351,6 +360,7 @@ it('filters plans by completed status', function () {
 
     Livewire::actingAs($user)
         ->test('pages::plans')
+        ->set('range_filter', planWideRange())
         ->set('status_filter', 'completed')
         ->assertSee('Bravo')
         ->assertDontSee('Alpha');
@@ -375,6 +385,7 @@ it('defaults the status filter to all and shows every plan', function () {
 
     Livewire::actingAs($user)
         ->test('pages::plans')
+        ->set('range_filter', planWideRange())
         ->assertSee('Alpha')
         ->assertSee('Bravo');
 });
@@ -386,6 +397,7 @@ it('applies the status filter from the URL query string', function () {
 
     Livewire::actingAs($user)
         ->test('pages::plans', ['status_filter' => 'completed'])
+        ->set('range_filter', planWideRange())
         ->assertSee('Bravo')
         ->assertDontSee('Alpha');
 });

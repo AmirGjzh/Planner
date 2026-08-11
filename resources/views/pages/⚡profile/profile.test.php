@@ -120,7 +120,13 @@ it('updates all editable profile fields', function () {
         ->set('country', 'DE')
         ->set('birthday', '1998-05-20')
         ->call('editProfile')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->assertDispatched('profile-updated',
+            username: 'new_user',
+            email: $user->email,
+            firstname: 'New',
+            lastname: 'Name',
+        );
 
     $user->refresh();
 
@@ -171,6 +177,29 @@ it('shows username taken error', function () {
         ->set('username', 'taken_user')
         ->call('editProfile')
         ->assertSet('edit_error', 'username_taken');
+
+    expect($user->refresh()->username)->toBe('amir_user');
+});
+
+it('clears a previous profile edit error on a new submission', function () {
+    profileUser([
+        'username' => 'taken_user',
+    ]);
+
+    $user = profileUser([
+        'username' => 'amir_user',
+    ]);
+
+    Livewire::actingAs($user)
+        ->test('pages::profile')
+        ->set('username', 'taken_user')
+        ->call('editProfile')
+        ->assertSet('edit_error', 'username_taken')
+        ->set('username', '')
+        ->call('editProfile')
+        ->assertSet('edit_error', null)
+        ->assertSet('edit_success', null)
+        ->assertHasErrors(['username' => ['required']]);
 
     expect($user->refresh()->username)->toBe('amir_user');
 });
@@ -306,6 +335,20 @@ it('allows deletion again after rate limit expires', function () {
         ->set('password', 'password')
         ->call('deleteAccount')
         ->assertRedirect(route('login'));
+});
+
+it('clears a previous wrong-password error on a new delete attempt', function () {
+    $user = profileUser();
+
+    Livewire::actingAs($user)
+        ->test('pages::profile')
+        ->set('password', 'wrong_password')
+        ->call('deleteAccount')
+        ->assertSet('delete_error', 'wrong_password')
+        ->set('password', '')
+        ->call('deleteAccount')
+        ->assertHasErrors(['password' => 'required'])
+        ->assertSet('delete_error', null);
 });
 
 it('cancels delete and resets form state', function () {

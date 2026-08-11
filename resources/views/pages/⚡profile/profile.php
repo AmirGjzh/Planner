@@ -51,6 +51,9 @@ new class extends Component
 
     public function editProfile(UpdateProfileAction $action): void
     {
+        $this->edit_error = null;
+        $this->edit_success = null;
+
         $data = $this->validate();
         $result = $action->execute(
             $this->user,
@@ -75,6 +78,13 @@ new class extends Component
         $this->edit_success = 'updated';
         $this->fillForm();
         $this->resetValidation();
+
+        $this->dispatch('profile-updated',
+            username: $this->username,
+            email: $this->user->email,
+            firstname: $this->firstname ?? '',
+            lastname: $this->lastname ?? '',
+        );
     }
 
     public function cancelEdit(): void
@@ -87,6 +97,8 @@ new class extends Component
 
     public function deleteAccount(DeleteAccountAction $deleteAccountAction): void
     {
+        $this->delete_error = null;
+
         $data = $this->validate([
             'password' => ['required'],
         ]);

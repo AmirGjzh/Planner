@@ -100,3 +100,39 @@ it('allows login again after one minute', function () {
         ->assertRedirect(route('dashboard'));
     $this->assertAuthenticatedAs($user);
 });
+
+it('clears a previous login error on a new submission', function () {
+    User::factory()->create([
+        'email' => 'amir@example.com',
+        'password' => 'password',
+    ]);
+    Livewire::test('pages::auth.login')
+        ->set('email', 'amir@example.com')
+        ->set('password', 'wrong-password')
+        ->call('login')
+        ->assertSet('login_error', 'invalid')
+        ->set('email', '')
+        ->set('password', '')
+        ->call('login')
+        ->assertSet('login_error', null)
+        ->assertHasErrors([
+            'email' => ['required'],
+            'password' => ['required'],
+        ]);
+    $this->assertGuest();
+});
+
+it('blocks login for a soft-deleted account', function () {
+    $user = User::factory()->create([
+        'email' => 'amir@example.com',
+        'password' => 'password',
+    ]);
+    $user->delete();
+
+    Livewire::test('pages::auth.login')
+        ->set('email', 'amir@example.com')
+        ->set('password', 'password')
+        ->call('login')
+        ->assertSet('login_error', 'invalid');
+    $this->assertGuest();
+});

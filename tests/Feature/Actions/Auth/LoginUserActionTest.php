@@ -72,3 +72,42 @@ it('logs failed, limited, and successful login events', function () {
     Log::shouldHaveReceived('info')
         ->with('User logged in.', Mockery::on(fn (array $context) => isset($context['user_id'])));
 });
+
+it('trims surrounding whitespace and lowercases the email before authenticating', function () {
+    User::factory()->create([
+        'email' => 'amir@example.com',
+        'password' => 'password',
+    ]);
+    $result = app(LoginUserAction::class)
+        ->execute('  AmIr@Example.com  ', 'password', true, loginRequest());
+    expect($result)->toBe(LoginResult::Success);
+    $this->assertAuthenticated();
+});
+
+it('blocks login for a soft-deleted user', function () {
+    $user = User::factory()->create([
+        'email' => 'amir@example.com',
+        'password' => 'password',
+    ]);
+    $user->delete();
+
+    $result = app(LoginUserAction::class)
+        ->execute('amir@example.com', 'password', true, loginRequest());
+    expect($result)->toBe(LoginResult::Fail);
+    $this->assertGuest();
+});
+
+it('rate limits attempts on a soft-deleted account too', function () {
+    $user = User::factory()->create([
+        'email' => 'amir@example.com',
+        'password' => 'password',
+    ]);
+    $user->delete();
+
+    foreach (range(1, 5) as $ignored) {
+        app(LoginUserAction::class)->execute('amir@example.com', 'password', true, loginRequest());
+    }
+    $result = app(LoginUserAction::class)
+        ->execute('amir@example.com', 'password', true, loginRequest());
+    expect($result)->toBe(LoginResult::RateLimited);
+});

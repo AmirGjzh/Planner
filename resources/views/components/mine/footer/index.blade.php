@@ -14,7 +14,7 @@
             <h2 class="text-sm font-semibold mine-text-primary uppercase tracking-wider">Quick Links</h2>
             <div class="flex flex-col gap-2">
                 <a href="{{ route('dashboard') }}" class="mine-text-secondary text-sm hover:text-(--mine-text-link) transition-colors duration-150">Dashboard</a>
-                <a href="{{ route('task-page') }}" class="mine-text-secondary text-sm hover:text-(--mine-text-link) transition-colors duration-150">Tasks</a>
+                <a href="{{ route('tasks') }}" class="mine-text-secondary text-sm hover:text-(--mine-text-link) transition-colors duration-150">Tasks</a>
                 <a href="{{ route('plans') }}" class="mine-text-secondary text-sm hover:text-(--mine-text-link) transition-colors duration-150">Plans</a>
                 <a href="{{ route('categories') }}" class="mine-text-secondary text-sm hover:text-(--mine-text-link) transition-colors duration-150">Categories</a>
                 <a href="{{ route('report-page') }}" class="mine-text-secondary text-sm hover:text-(--mine-text-link) transition-colors duration-150">Reports</a>

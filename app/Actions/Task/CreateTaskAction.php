@@ -7,11 +7,20 @@ use App\Enums\TaskPriority;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
+use Psr\Log\LoggerInterface;
 
-class CreateTaskAction
+final class CreateTaskAction
 {
+    public function __construct(
+        private readonly LoggerInterface $logger,
+    ) {}
+
+    private const int MAX_ATTEMPTS = 5;
+
+    private const int DECAY_SECONDS = 60;
+
     public function execute(
         User $user,
         string $title,
@@ -26,20 +35,20 @@ class CreateTaskAction
     ): CreateTaskResult {
         abort_unless($user->can('create', Task::class), 403);
 
-        $key = 'create-task:'.$user->id.'|'.$request->ip();
+        $rate_limit_key = $this->rateLimitKey($user, $request);
 
-        if (RateLimiter::tooManyAttempts($key, 5)) {
-            Log::warning('Task creation rate limited.', [
+        if (RateLimiter::tooManyAttempts($rate_limit_key, self::MAX_ATTEMPTS)) {
+            $this->logger->warning('Task creation rate limited.', [
                 'user_id' => $user->id,
-                'seconds_remaining' => RateLimiter::availableIn($key),
+                'available_in' => RateLimiter::availableIn($rate_limit_key),
             ]);
 
             return CreateTaskResult::RateLimited;
         }
 
         if (! $user->categories()->whereKey($categoryId)->exists()) {
-            RateLimiter::hit($key, 60);
-            Log::warning('Task creation failed, invalid category.', [
+            RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
+            $this->logger->warning('Task creation failed, invalid category.', [
                 'user_id' => $user->id,
                 'category_id' => $categoryId,
             ]);
@@ -48,8 +57,8 @@ class CreateTaskAction
         }
 
         if ($planId !== null && ! $user->plans()->whereKey($planId)->exists()) {
-            RateLimiter::hit($key, 60);
-            Log::warning('Task creation failed, invalid plan.', [
+            RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
+            $this->logger->warning('Task creation failed, invalid plan.', [
                 'user_id' => $user->id,
                 'plan_id' => $planId,
             ]);
@@ -68,9 +77,9 @@ class CreateTaskAction
             'plan_id' => $planId,
         ]);
 
-        RateLimiter::hit($key, 60);
+        RateLimiter::clear($rate_limit_key);
 
-        Log::info('Task created.', [
+        $this->logger->info('Task created.', [
             'user_id' => $user->id,
             'title' => $title,
             'task_date' => $taskDate,
@@ -78,5 +87,10 @@ class CreateTaskAction
         ]);
 
         return CreateTaskResult::Created;
+    }
+
+    private function rateLimitKey(User $user, Request $request): string
+    {
+        return Str::transliterate('create-task:'.$user->id.'|'.$request->ip());
     }
 }

@@ -3,20 +3,23 @@
 namespace App\Actions\Task;
 
 use App\Enums\DeleteTaskResult;
+use App\Models\Task;
 use App\Models\User;
-use Illuminate\Support\Facades\Log;
+use Psr\Log\LoggerInterface;
 
-class DeleteTaskAction
+final class DeleteTaskAction
 {
-    public function execute(User $user, int $taskId): DeleteTaskResult
-    {
-        $task = $user->tasks()->findOrFail($taskId);
+    public function __construct(
+        private readonly LoggerInterface $logger,
+    ) {}
 
+    public function execute(User $user, Task $task): DeleteTaskResult
+    {
         abort_unless($user->can('delete', $task), 403);
 
         $task->delete();
 
-        Log::info('Task deleted.', [
+        $this->logger->info('Task deleted.', [
             'user_id' => $user->id,
             'task_id' => $task->id,
             'title' => $task->title,

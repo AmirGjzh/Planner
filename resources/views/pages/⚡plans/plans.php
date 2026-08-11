@@ -59,10 +59,18 @@ new class extends Component
     public string $search = '';
 
     #[Url]
-    public string $sort = 'latest';
+    public string $sort = 'state';
 
     #[Url]
     public string $status_filter = 'all';
+
+    public function mount(): void
+    {
+        $this->range_filter = [
+            'start' => now()->startOfMonth()->format('Y-m-d'),
+            'end' => now()->endOfMonth()->format('Y-m-d'),
+        ];
+    }
 
     #[Computed]
     public function plans()
@@ -77,12 +85,30 @@ new class extends Component
                 'tasks',
                 'tasks as tasks_done_count' => fn ($q) => $q->where('done', true),
             ])
+            ->withSum('tasks', 'estimated_minutes')
             ->when($this->status_filter === 'active', fn ($q) => $q->where('done', false)->whereDate('finish_date', '>=', now()))
             ->when($this->status_filter === 'completed', fn ($q) => $q->where('done', true))
             ->when($this->status_filter === 'overdue', fn ($q) => $q->where('done', false)->whereDate('finish_date', '<', now()))
             ->when($this->sort === 'name', fn ($q) => $q->orderBy('name'))
             ->when($this->sort === 'latest', fn ($q) => $q->latest())
+            ->when($this->sort === 'load', fn ($q) => $q->orderByDesc('tasks_sum_estimated_minutes'))
+            ->when($this->sort === 'state', fn ($q) => $q->orderByRaw("CASE WHEN done = 0 AND finish_date >= ? THEN 0 WHEN done = 0 THEN 1 ELSE 2 END", [now()->toDateString()]))
             ->paginate(3)->onEachSide(1);
+    }
+
+    #[Computed]
+    public function hasActiveFilters(): bool
+    {
+        if ($this->search !== '' || $this->status_filter !== 'all') {
+            return true;
+        }
+
+        $monthStart = now()->startOfMonth()->format('Y-m-d');
+        $monthEnd = now()->endOfMonth()->format('Y-m-d');
+
+        return ($this->range_filter['start'] ?? null) !== null
+            && (($this->range_filter['start'] ?? null) !== $monthStart
+                || ($this->range_filter['end'] ?? null) !== $monthEnd);
     }
 
     public function updatingSearch(): void

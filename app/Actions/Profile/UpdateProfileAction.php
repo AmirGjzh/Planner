@@ -32,7 +32,7 @@ final class UpdateProfileAction
     ): UpdateProfileResult {
         abort_unless($user->is(auth()->user()), 403);
 
-        $username = Str::lower($username);
+        $username = Str::lower(Str::trim($username));
 
         $rate_limit_key = $this->rateLimitKey($user, $request);
 

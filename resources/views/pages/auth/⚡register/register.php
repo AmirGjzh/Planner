@@ -19,6 +19,8 @@ new #[Layout('layouts::auth')] class extends Component
 
     public function register(RegisterUserAction $register_user_action)
     {
+        $this->register_error = null;
+
         $credentials = $this->validate();
         $result = $register_user_action->execute(
             $credentials['username'],

@@ -25,7 +25,7 @@ final class LoginUserAction
         bool $remember,
         Request $request,
     ): LoginResult {
-        $email = Str::lower($email);
+        $email = Str::lower(Str::trim($email));
 
         $rate_limit_key = $this->rateLimitKey($email, $request);
         if (RateLimiter::tooManyAttempts($rate_limit_key, self::MAX_ATTEMPTS)) {

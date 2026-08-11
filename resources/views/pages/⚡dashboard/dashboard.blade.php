@@ -49,7 +49,7 @@
             </x-ui.text>
         @endforelse
 
-        <x-ui.link variant="soft" href="{{ route('task-page') }}" wire:navigate
+        <x-ui.link variant="soft" href="{{ route('tasks') }}" wire:navigate
             class="text-slate-600 font-medium text-sm mt-2">
             View All Tasks &rarr;
         </x-ui.link>

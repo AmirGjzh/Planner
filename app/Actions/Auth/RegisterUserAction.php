@@ -27,8 +27,8 @@ final class RegisterUserAction
         Request $request,
     ): RegisterResult {
         $rate_limit_key = $this->rateLimitKey($request);
-        $username = Str::lower($username);
-        $email = Str::lower($email);
+        $username = Str::lower(Str::trim($username));
+        $email = Str::lower(Str::trim($email));
         if (RateLimiter::tooManyAttempts($rate_limit_key, self::MAX_ATTEMPTS)) {
             $this->logger->warning('Register rate limited.', [
                 'email' => $email,

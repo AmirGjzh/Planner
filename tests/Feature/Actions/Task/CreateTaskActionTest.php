@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\RateLimiter;
 
 function createTaskRequest(): Request
 {
-    return Request::create('/task-page', 'POST', server: ['REMOTE_ADDR' => '127.0.0.1']);
+    return Request::create('/tasks', 'POST', server: ['REMOTE_ADDR' => '127.0.0.1']);
 }
 
 function createTaskRateLimitKey(User $user): string
@@ -45,19 +45,18 @@ it('creates a task with all optional fields', function () {
     expect($user->tasks()->where('title', 'Full task')->exists())->toBeTrue();
 });
 
-it('returns rate limited after repeated attempts', function () {
+it('returns rate limited after repeated failures', function () {
     $user = User::factory()->create();
-    $category = $user->categories()->create(['name' => 'Work']);
     RateLimiter::clear(createTaskRateLimitKey($user));
 
     foreach (range(1, 5) as $attempt) {
         app(CreateTaskAction::class)->execute(
-            $user, 'Attempt '.$attempt, null, '2026-06-01', 30, TaskPriority::Medium, 0, $category->id, null, createTaskRequest(),
+            $user, 'Attempt '.$attempt, null, '2026-06-01', 30, TaskPriority::Medium, 0, 999, null, createTaskRequest(),
         );
     }
 
     $result = app(CreateTaskAction::class)->execute(
-        $user, 'Blocked', null, '2026-06-01', 30, TaskPriority::Medium, 0, $category->id, null, createTaskRequest(),
+        $user, 'Blocked', null, '2026-06-01', 30, TaskPriority::Medium, 0, 999, null, createTaskRequest(),
     );
 
     expect($result)->toBe(CreateTaskResult::RateLimited);
@@ -65,6 +64,25 @@ it('returns rate limited after repeated attempts', function () {
 
 it('allows creation again after one minute', function () {
     $user = User::factory()->create();
+    RateLimiter::clear(createTaskRateLimitKey($user));
+
+    foreach (range(1, 5) as $attempt) {
+        app(CreateTaskAction::class)->execute(
+            $user, 'Attempt '.$attempt, null, '2026-06-01', 30, TaskPriority::Medium, 0, 999, null, createTaskRequest(),
+        );
+    }
+
+    $this->travel(61)->seconds();
+
+    $result = app(CreateTaskAction::class)->execute(
+        $user, 'After cooldown', null, '2026-06-01', 30, TaskPriority::Medium, 0, 999, null, createTaskRequest(),
+    );
+
+    expect($result)->toBe(CreateTaskResult::InvalidCategory);
+});
+
+it('allows creation again after a successful creation clears the limiter', function () {
+    $user = User::factory()->create();
     $category = $user->categories()->create(['name' => 'Work']);
     RateLimiter::clear(createTaskRateLimitKey($user));
 
@@ -74,14 +92,11 @@ it('allows creation again after one minute', function () {
         );
     }
 
-    $this->travel(61)->seconds();
-
     $result = app(CreateTaskAction::class)->execute(
-        $user, 'After cooldown', null, '2026-06-01', 30, TaskPriority::Medium, 0, $category->id, null, createTaskRequest(),
+        $user, 'After clears', null, '2026-06-01', 30, TaskPriority::Medium, 0, $category->id, null, createTaskRequest(),
     );
 
     expect($result)->toBe(CreateTaskResult::Created);
-    expect($user->tasks()->where('title', 'After cooldown')->exists())->toBeTrue();
 });
 
 it('returns invalid category when category does not exist', function () {
@@ -152,13 +167,13 @@ it('logs creation events', function () {
 
     foreach (range(1, 5) as $attempt) {
         app(CreateTaskAction::class)->execute(
-            $user, 'Attempt '.$attempt, null, '2026-06-01', 30, TaskPriority::Medium, 0, $category->id, null, createTaskRequest(),
+            $user, 'Attempt '.$attempt, null, '2026-06-01', 30, TaskPriority::Medium, 0, 999, null, createTaskRequest(),
         );
     }
 
     Log::shouldHaveReceived('warning')
         ->with('Task creation rate limited.', Mockery::on(
-            fn (array $context) => isset($context['seconds_remaining'])
+            fn (array $context) => isset($context['available_in'])
         ));
 
     RateLimiter::clear(createTaskRateLimitKey($user));

@@ -9,7 +9,7 @@ Route::middleware(['auth'])->group(function () {
     Route::livewire('/profile', 'pages::profile')->name('profile');
     Route::livewire('/categories', 'pages::categories')->name('categories');
     Route::livewire('/plans', 'pages::plans')->name('plans');
-    Route::livewire('/task-page', 'pages::task-page')->name('task-page');
+    Route::livewire('/tasks', 'pages::tasks')->name('tasks');
     Route::livewire('/reports', 'pages::report-page')->name('report-page');
     Route::post('/logout', function (LogoutUserAction $logoutUserAction, Request $request) {
         $logoutUserAction->execute($request);

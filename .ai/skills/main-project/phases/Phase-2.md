@@ -83,14 +83,14 @@ A Use Case represents a complete scenario of interaction between a user and the 
 
 Actor: User (guest who is not logged in)
 
-Description: The user logs into the system and views today's tasks.
+Description: The user logs into the system and reaches the authenticated dashboard.
 
 Main Flow:
 1. The user opens the website.
 2. If not logged in, the user is redirected to the Login page, or clicks the Login button on the homepage.
-3. The user enters email or username and password.
+3. The user enters their email and password.
 4. The system validates the credentials:
-   - If successful: the user is logged in and redirected to the Today's Tasks page.
+   - If successful: the user is logged in and redirected to the Dashboard.
    - If unsuccessful: an error message is shown and the user can try again.
 
 #### UC-02 – Register
@@ -102,7 +102,7 @@ Description: A new user creates an account to manage personal tasks.
 Main Flow:
 1. The user clicks Register on the homepage.
 2. The registration form is displayed.
-3. The user enters required information (email or username, password, password confirmation).
+3. The user enters required information (username, email, password, password confirmation).
 4. The system validates the data:
    - Email format
    - Unique username and email
@@ -121,7 +121,7 @@ Description: The user views and edits profile information.
 Main Flow:
 1. The logged-in user clicks Profile from the navigation bar.
 2. The system displays current profile information.
-3. The user may edit fields such as: first name, last name, date of birth, country, gender.
+3. The user may edit fields such as: username, first name, last name, date of birth, country, gender.
 4. The user clicks Save.
 5. The system validates and stores the updated information and shows a success message.
 

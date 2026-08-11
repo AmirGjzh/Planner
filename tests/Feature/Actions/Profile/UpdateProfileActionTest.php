@@ -78,6 +78,40 @@ it('returns username taken for mixed-case username matching existing lowercase',
         ->and($user->refresh()->username)->toBe('amir_user');
 });
 
+it('trims surrounding whitespace and lowercases the username before updating', function () {
+    $user = User::factory()->create([
+        'username' => 'old_user',
+    ]);
+    $this->actingAs($user);
+    RateLimiter::clear(profileRateLimitKey($user));
+
+    $result = app(UpdateProfileAction::class)->execute($user, '  New_User  ', null, null, null, null, null, profileRequest());
+
+    expect($result)->toBe(UpdateProfileResult::Success);
+
+    $this->assertDatabaseHas('users', [
+        'id' => $user->id,
+        'username' => 'new_user',
+    ]);
+});
+
+it('returns username taken for a whitespace-padded mixed-case username matching an existing lowercase one', function () {
+    User::factory()->create([
+        'username' => 'taken_user',
+    ]);
+
+    $user = User::factory()->create([
+        'username' => 'amir_user',
+    ]);
+    $this->actingAs($user);
+    RateLimiter::clear(profileRateLimitKey($user));
+
+    $result = app(UpdateProfileAction::class)->execute($user, '  Taken_User  ', null, null, null, null, null, profileRequest());
+
+    expect($result)->toBe(UpdateProfileResult::UsernameTaken)
+        ->and($user->refresh()->username)->toBe('amir_user');
+});
+
 it('allows keeping the current username', function () {
     $user = User::factory()->create([
         'username' => 'amir_user',

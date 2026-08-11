@@ -17,3 +17,7 @@
 [data-slot="control"][type="password"]::-ms-clear {
     display: none;
 }
+
+[x-cloak] {
+    display: none !important;
+}

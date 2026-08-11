@@ -1,0 +1,433 @@
+<?php
+
+use App\Actions\Task\CreateTaskAction;
+use App\Actions\Task\DeleteTaskAction;
+use App\Actions\Task\EditTaskAction;
+use App\Actions\Task\ToggleTaskDoneAction;
+use App\Enums\CreateTaskResult;
+use App\Enums\DeleteTaskResult;
+use App\Enums\EditTaskResult;
+use App\Enums\TaskPriority;
+use App\Enums\ToggleTaskDoneResult;
+use App\Livewire\Concerns\HasUser;
+use App\Models\Category;
+use App\Models\Plan;
+use App\Models\Task;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Url;
+use Livewire\Component;
+use Livewire\WithPagination;
+
+new class extends Component
+{
+    use HasUser, WithPagination;
+
+    public string $add_title = '';
+
+    public ?string $add_description = null;
+
+    public string $add_date = '';
+
+    public int $add_estimated_minutes = 0;
+
+    public int $add_alarm_days = 0;
+
+    public string $add_priority = 'medium';
+
+    public ?int $add_category_id = null;
+
+    public ?int $add_plan_id = null;
+
+    public ?string $add_error = null;
+
+    public ?string $add_success = null;
+
+    public ?int $editing_id = null;
+
+    public string $edit_title = '';
+
+    public ?string $edit_description = null;
+
+    public string $edit_date = '';
+
+    public int $edit_estimated_minutes = 0;
+
+    public int $edit_alarm_days = 0;
+
+    public string $edit_priority = 'medium';
+
+    public ?int $edit_category_id = null;
+
+    public ?int $edit_plan_id = null;
+
+    public ?string $edit_error = null;
+
+    public ?string $edit_success = null;
+
+    public ?int $deleting_id = null;
+
+    public ?string $delete_error = null;
+
+    public ?int $completing_id = null;
+
+    public ?string $complete_error = null;
+
+    public ?int $reopening_id = null;
+
+    public ?string $reopen_error = null;
+
+    public ?array $range_filter = null;
+
+    #[Url]
+    public string $search = '';
+
+    #[Url]
+    public string $sort = 'state';
+
+    #[Url]
+    public string $status_filter = 'all';
+
+    public function mount(): void
+    {
+        $this->add_date = now()->format('Y-m-d');
+
+        $this->range_filter = [
+            'start' => now()->today()->format('Y-m-d'),
+            'end' => now()->today()->format('Y-m-d'),
+        ];
+    }
+
+    #[Computed]
+    public function tasks()
+    {
+        return Task::query()
+            ->select(['id', 'title', 'description', 'task_date', 'estimated_minutes', 'priority', 'done', 'day_before_alarm', 'plan_id', 'category_id', 'user_id', 'created_at'])
+            ->with('category:id,name', 'plan:id,name')
+            ->where('user_id', auth()->id())
+            ->when($this->search, fn ($q) => $q->where('title', 'like', '%'.$this->search.'%'))
+            ->when($this->range_filter['start'] ?? null, fn ($q) => $q->whereDate('task_date', '>=', $this->range_filter['start']))
+            ->when($this->range_filter['end'] ?? null, fn ($q) => $q->whereDate('task_date', '<=', $this->range_filter['end']))
+            ->when($this->status_filter === 'active', fn ($q) => $q->where('done', false)->whereDate('task_date', '>=', now()))
+            ->when($this->status_filter === 'completed', fn ($q) => $q->where('done', true))
+            ->when($this->status_filter === 'overdue', fn ($q) => $q->where('done', false)->whereDate('task_date', '<', now()))
+            ->when($this->sort === 'date', fn ($q) => $q->orderBy('task_date'))
+            ->when($this->sort === 'priority', fn ($q) => $q->orderByRaw("CASE priority WHEN 'high' THEN 0 WHEN 'medium' THEN 1 WHEN 'low' THEN 2 ELSE 3 END"))
+            ->when($this->sort === 'estimated', fn ($q) => $q->orderByDesc('estimated_minutes'))
+            ->when($this->sort === 'load', fn ($q) => $q->orderByDesc('estimated_minutes'))
+            ->when($this->sort === 'state', fn ($q) => $q->orderByRaw("CASE WHEN done = 0 AND task_date >= ? THEN 0 WHEN done = 0 THEN 1 ELSE 2 END", [now()->toDateString()]))
+            ->when($this->sort === 'latest', fn ($q) => $q->latest())
+            ->paginate(6)->onEachSide(1);
+    }
+
+    #[Computed]
+    public function workload(): ?array
+    {
+        if (($this->range_filter['start'] ?? null) === null || ($this->range_filter['start'] ?? null) !== ($this->range_filter['end'] ?? null)) {
+            return null;
+        }
+
+        $total = Task::query()
+            ->where('user_id', auth()->id())
+            ->whereDate('task_date', $this->range_filter['start'])
+            ->sum('estimated_minutes');
+
+        if ($total === 0) {
+            return null;
+        }
+
+        return [
+            'total_minutes' => $total,
+            'hours' => intdiv($total, 60),
+            'minutes' => $total % 60,
+            'label' => match (true) {
+                $total < 180 => 'Light',
+                $total < 360 => 'Medium',
+                default => 'Heavy',
+            },
+        ];
+    }
+
+    #[Computed]
+    public function categories()
+    {
+        return Category::query()
+            ->select(['id', 'name'])
+            ->where('user_id', auth()->id())
+            ->orderBy('name')
+            ->get();
+    }
+
+    #[Computed]
+    public function plans()
+    {
+        return Plan::query()
+            ->select(['id', 'name'])
+            ->where('user_id', auth()->id())
+            ->orderBy('name')
+            ->get();
+    }
+
+    #[Computed]
+    public function hasActiveFilters(): bool
+    {
+        if ($this->search !== '' || $this->status_filter !== 'all') {
+            return true;
+        }
+
+        $today = now()->today()->format('Y-m-d');
+
+        return ($this->range_filter['start'] ?? null) !== null
+            && (($this->range_filter['start'] ?? null) !== $today
+                || ($this->range_filter['end'] ?? null) !== $today);
+    }
+
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingStatusFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function addTask(CreateTaskAction $action): void
+    {
+        $this->validate([
+            'add_title' => $this->rules()['add_title'],
+            'add_description' => $this->rules()['add_description'],
+            'add_date' => $this->rules()['add_date'],
+            'add_estimated_minutes' => $this->rules()['add_estimated_minutes'],
+            'add_alarm_days' => $this->rules()['add_alarm_days'],
+            'add_priority' => $this->rules()['add_priority'],
+            'add_category_id' => $this->rules()['add_category_id'],
+            'add_plan_id' => $this->rules()['add_plan_id'],
+        ]);
+
+        $result = $action->execute(
+            $this->user,
+            $this->add_title,
+            $this->add_description,
+            $this->add_date,
+            $this->add_estimated_minutes,
+            TaskPriority::from($this->add_priority),
+            $this->add_alarm_days,
+            $this->add_category_id,
+            $this->add_plan_id,
+            request(),
+        );
+
+        $this->add_error = match ($result) {
+            CreateTaskResult::RateLimited => 'rate_limited',
+            CreateTaskResult::InvalidCategory => 'invalid_category',
+            CreateTaskResult::InvalidPlan => 'invalid_plan',
+            CreateTaskResult::Created => null,
+        };
+
+        if ($this->add_error) {
+            $this->add_success = null;
+
+            return;
+        }
+
+        $this->add_title = '';
+        $this->add_description = null;
+        $this->add_date = now()->format('Y-m-d');
+        $this->add_estimated_minutes = 0;
+        $this->add_alarm_days = 0;
+        $this->add_priority = 'medium';
+        $this->add_category_id = null;
+        $this->add_plan_id = null;
+        $this->add_success = 'created';
+        unset($this->tasks);
+    }
+
+    public function cancelAdd(): void
+    {
+        $this->add_error = null;
+        $this->add_success = null;
+        $this->add_title = '';
+        $this->add_description = null;
+        $this->add_date = now()->format('Y-m-d');
+        $this->add_estimated_minutes = 0;
+        $this->add_alarm_days = 0;
+        $this->add_priority = 'medium';
+        $this->add_category_id = null;
+        $this->add_plan_id = null;
+        $this->resetValidation();
+    }
+
+    public function editTask(EditTaskAction $action): void
+    {
+        $this->validate([
+            'edit_title' => $this->rules()['edit_title'],
+            'edit_description' => $this->rules()['edit_description'],
+            'edit_date' => $this->rules()['edit_date'],
+            'edit_estimated_minutes' => $this->rules()['edit_estimated_minutes'],
+            'edit_alarm_days' => $this->rules()['edit_alarm_days'],
+            'edit_priority' => $this->rules()['edit_priority'],
+            'edit_category_id' => $this->rules()['edit_category_id'],
+            'edit_plan_id' => $this->rules()['edit_plan_id'],
+        ]);
+
+        $task = $this->user->tasks()->findOrFail($this->editing_id);
+
+        $result = $action->execute(
+            $this->user,
+            $task,
+            $this->edit_title,
+            $this->edit_description,
+            $this->edit_date,
+            $this->edit_estimated_minutes,
+            TaskPriority::from($this->edit_priority),
+            $this->edit_alarm_days,
+            $this->edit_category_id,
+            $this->edit_plan_id,
+            request(),
+        );
+
+        $this->edit_error = match ($result) {
+            EditTaskResult::RateLimited => 'rate_limited',
+            EditTaskResult::InvalidCategory => 'invalid_category',
+            EditTaskResult::InvalidPlan => 'invalid_plan',
+            EditTaskResult::Updated => null,
+        };
+
+        if ($this->edit_error) {
+            $this->edit_success = null;
+
+            return;
+        }
+
+        $this->edit_title = '';
+        $this->edit_description = null;
+        $this->edit_date = now()->format('Y-m-d');
+        $this->edit_estimated_minutes = 0;
+        $this->edit_alarm_days = 0;
+        $this->edit_priority = 'medium';
+        $this->edit_category_id = null;
+        $this->edit_plan_id = null;
+        $this->editing_id = null;
+        $this->edit_success = 'updated';
+        unset($this->tasks);
+    }
+
+    public function cancelEdit(): void
+    {
+        $this->edit_error = null;
+        $this->edit_success = null;
+        $this->editing_id = null;
+        $this->resetValidation();
+    }
+
+    public function deleteTask(DeleteTaskAction $action): void
+    {
+        $task = $this->user->tasks()->findOrFail($this->deleting_id);
+
+        $result = $action->execute($this->user, $task);
+
+        $this->delete_error = match ($result) {
+            DeleteTaskResult::Deleted => null,
+        };
+
+        if ($result === DeleteTaskResult::Deleted) {
+            $this->deleting_id = null;
+            unset($this->tasks);
+            $this->dispatch('close-modal', id: 'delete-task-confirmation');
+        }
+    }
+
+    public function cancelDelete(): void
+    {
+        $this->delete_error = null;
+        $this->resetValidation();
+    }
+
+    public function completeTask(ToggleTaskDoneAction $action): void
+    {
+        $task = $this->user->tasks()->findOrFail($this->completing_id);
+
+        $result = $action->execute($this->user, $task, request());
+
+        $this->complete_error = match ($result) {
+            ToggleTaskDoneResult::RateLimited => 'rate_limited',
+            ToggleTaskDoneResult::Toggled => null,
+        };
+
+        if ($this->complete_error) {
+            return;
+        }
+
+        $this->completing_id = null;
+        unset($this->tasks);
+        unset($this->workload);
+        $this->dispatch('close-modal', id: 'complete-task-confirmation');
+    }
+
+    public function cancelComplete(): void
+    {
+        $this->complete_error = null;
+        $this->completing_id = null;
+        $this->resetValidation();
+    }
+
+    public function reopenTask(ToggleTaskDoneAction $action): void
+    {
+        $task = $this->user->tasks()->findOrFail($this->reopening_id);
+
+        $result = $action->execute($this->user, $task, request());
+
+        $this->reopen_error = match ($result) {
+            ToggleTaskDoneResult::RateLimited => 'rate_limited',
+            ToggleTaskDoneResult::Toggled => null,
+        };
+
+        if ($this->reopen_error) {
+            return;
+        }
+
+        $this->reopening_id = null;
+        unset($this->tasks);
+        unset($this->workload);
+        $this->dispatch('close-modal', id: 'reopen-task-confirmation');
+    }
+
+    public function cancelReopen(): void
+    {
+        $this->reopen_error = null;
+        $this->reopening_id = null;
+        $this->resetValidation();
+    }
+
+    protected function rules(): array
+    {
+        return [
+            'add_title' => ['required', 'string', 'max:255'],
+            'add_description' => ['nullable', 'string', 'max:5000'],
+            'add_date' => ['required', 'date_format:Y-m-d'],
+            'add_estimated_minutes' => ['required', 'integer', 'min:1', 'max:1440'],
+            'add_alarm_days' => ['required', 'integer', 'min:0', 'max:365'],
+            'add_priority' => ['required', 'string', 'in:low,medium,high'],
+            'add_category_id' => ['required', 'integer'],
+            'add_plan_id' => ['nullable', 'integer'],
+            'edit_title' => ['required', 'string', 'max:255'],
+            'edit_description' => ['nullable', 'string', 'max:5000'],
+            'edit_date' => ['required', 'date_format:Y-m-d'],
+            'edit_estimated_minutes' => ['required', 'integer', 'min:1', 'max:1440'],
+            'edit_alarm_days' => ['required', 'integer', 'min:0', 'max:365'],
+            'edit_priority' => ['required', 'string', 'in:low,medium,high'],
+            'edit_category_id' => ['required', 'integer'],
+            'edit_plan_id' => ['nullable', 'integer'],
+        ];
+    }
+
+    protected function messages(): array
+    {
+        return [
+            'add_title.required' => 'Task title is required.',
+            'add_title.max' => 'Task title must not exceed 255 characters.',
+            'add_description.max' => 'Task description must not exceed 5000 characters.',
+            'add_date.required' => 'Task date is required.',
+        ];
+    }
+};

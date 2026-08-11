@@ -17,6 +17,8 @@ new #[Layout('layouts::auth')] class extends Component
 
     public function login(LoginUserAction $login_user_action)
     {
+        $this->login_error = null;
+
         $credentials = $this->validate();
         $result = $login_user_action->execute(
             $credentials['email'],
@@ -24,18 +26,18 @@ new #[Layout('layouts::auth')] class extends Component
             $this->remember,
             request()
         );
-        if ($result === LoginResult::Success) {
-            $this->login_error = null;
 
+        $this->login_error = match ($result) {
+            LoginResult::RateLimited => 'rate_limited',
+            LoginResult::Fail => 'invalid',
+            LoginResult::Success => null,
+        };
+
+        if ($result === LoginResult::Success) {
             return $this->redirectRoute('dashboard', navigate: true);
         }
-        if ($result === LoginResult::RateLimited) {
-            $this->login_error = 'rate_limited';
 
-            return;
-        }
         $this->reset(['password']);
-        $this->login_error = 'invalid';
     }
 
     protected function rules(): array

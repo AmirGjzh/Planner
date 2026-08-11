@@ -85,6 +85,31 @@ it('returns rate limited after repeated failed attempts', function () {
     expect($result)->toBe(RegisterResult::RateLimited);
 });
 
+it('trims surrounding whitespace and lowercases username and email before creating', function () {
+    $result = app(RegisterUserAction::class)
+        ->execute('  Amir_User  ', '  Amir@Example.com  ', 'password123', registerRequest());
+
+    expect($result)->toBe(RegisterResult::Success);
+
+    $user = User::where('email', 'amir@example.com')->first();
+
+    expect($user)->not->toBeNull()
+        ->and($user->username)->toBe('amir_user')
+        ->and($user->email)->toBe('amir@example.com');
+});
+
+it('returns username taken for a whitespace-padded mixed-case username matching an existing lowercase one', function () {
+    User::factory()->create([
+        'username' => 'amir_user',
+        'email' => 'old@example.com',
+    ]);
+
+    $result = app(RegisterUserAction::class)
+        ->execute('  Amir_User  ', 'amir@example.com', 'password123', registerRequest());
+
+    expect($result)->toBe(RegisterResult::UsernameTaken);
+});
+
 it('logs failed, limited, and successful register events', function () {
     Log::spy();
 
