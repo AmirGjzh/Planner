@@ -90,9 +90,10 @@ new class extends Component
             ->when($this->status_filter === 'completed', fn ($q) => $q->where('done', true))
             ->when($this->status_filter === 'overdue', fn ($q) => $q->where('done', false)->whereDate('finish_date', '<', now()))
             ->when($this->sort === 'name', fn ($q) => $q->orderBy('name'))
+            ->when($this->sort === 'deadline', fn ($q) => $q->orderBy('finish_date')->orderBy('id'))
             ->when($this->sort === 'latest', fn ($q) => $q->latest())
             ->when($this->sort === 'load', fn ($q) => $q->orderByDesc('tasks_sum_estimated_minutes'))
-            ->when($this->sort === 'state', fn ($q) => $q->orderByRaw("CASE WHEN done = 0 AND finish_date >= ? THEN 0 WHEN done = 0 THEN 1 ELSE 2 END", [now()->toDateString()]))
+            ->when($this->sort === 'state', fn ($q) => $q->orderByRaw('CASE WHEN done = 0 AND finish_date >= ? THEN 0 WHEN done = 0 THEN 1 ELSE 2 END', [now()->toDateString()]))
             ->paginate(3)->onEachSide(1);
     }
 
@@ -121,6 +122,11 @@ new class extends Component
         $this->resetPage();
     }
 
+    public function updatingRangeFilter(): void
+    {
+        $this->resetPage();
+    }
+
     public function addPlan(CreatePlanAction $action): void
     {
         $this->validate([
@@ -130,7 +136,7 @@ new class extends Component
             'add_range.start' => $this->rules()['add_range.start'],
             'add_range.end' => $this->rules()['add_range.end'],
         ]);
-            
+
         $name = Str::ucfirst(Str::lower($this->add_name));
 
         $result = $action->execute($this->user, $name, $this->add_description, $this->add_range, request());
@@ -143,6 +149,7 @@ new class extends Component
 
         if ($this->add_error) {
             $this->add_success = null;
+
             return;
         }
 

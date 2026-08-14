@@ -30,9 +30,9 @@
         init() {
             @if($name)
                 if (typeof $wire !== 'undefined') {
-                    this.state = $wire.get(@js($name))
+                    this.state = this.normalize($wire.get(@js($name)))
                     $wire.$watch(@js($name), (value) => {
-                        this.state = value
+                        this.state = this.normalize(value)
                         this.syncLabel()
                     })
                 }
@@ -50,6 +50,10 @@
                         .filter(el => el.offsetParent !== null).length
                 })
             })
+        },
+
+        normalize(value) {
+            return value === null || value === undefined || value === '' ? value : String(value)
         },
 
         syncLabel() {

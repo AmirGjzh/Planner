@@ -125,6 +125,11 @@
     --mine-btn-danger-text: #ffffff;
     --mine-btn-danger-ring-focus: #FAD5D5;
 
+    --mine-btn-secondary-bg: #6B7280;
+    --mine-btn-secondary-bg-hover: #4B5563;
+    --mine-btn-secondary-text: #FFFFFF;
+    --mine-btn-secondary-ring-focus: #E2E8F0;
+
     --mine-btn-ghost-bg: #F5F8F6;
     --mine-btn-ghost-bg-hover: #EAF3ED;
     --mine-btn-ghost-text: #5E6D67;
@@ -145,77 +150,13 @@
     --mine-nav-link-bg-hover: #eef7f1;
     --mine-nav-link-bg-active: #EDF5F0;
 
-
-
-
-
-
-
-
-
-    --mine-btn-secondary-bg: #6B7280;
-    --mine-btn-secondary-bg-hover: #4B5563;
-    --mine-btn-secondary-text: #FFFFFF;
-    --mine-btn-secondary-ring-focus: #E2E8F0;
-
-
-
-
-
-    --mine-avatar-secondary-bg: #F3F4F6;
-    --mine-avater-secondary-text: #4B5563;
-
-
-
-
-
-
-
-
+    /* Progress */
     --mine-progress-track: #DAE6E0;
     --mine-progress-gray-track: #E2E8F0;
     --mine-progress-danger-track: #FEE2E2;
     --mine-progress-fill: #1A9B5C;
     --mine-progress-gray-fill: #6B7280;
     --mine-progress-danger-fill: #DC2626;
-
-    /* valid colors */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    --mine-theme-switcher-color: #166534;
-    --mine-theme-switcher-bg-hover: #EDF5F0;
 }
 
 @utility mine-page-bg {

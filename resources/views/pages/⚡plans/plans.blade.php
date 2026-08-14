@@ -2,6 +2,7 @@
     <div class="mb-6">
         <h1 class="font-bold text-md mine-text-primary">My Plans</h1>
     </div>
+    @island(name: 'plans-content', always: true)
     <div class="flex flex-col md:flex-row gap-2 sm:gap-4 mb-6">
         <div class="w-full flex items-center justify-between gap-2 sm:gap-4">
             <div class="w-full">
@@ -30,50 +31,25 @@
                     </div>
                 </x-mine.dropdown.trigger>
                 <x-mine.dropdown.content class="mt-1!">
-                    <x-mine.dropdown.item>
-                        <div class="w-full py-2 px-4 flex items-center gap-2 hover:cursor-pointer"
-                            @click="$wire.set('sort', 'state')">
-                            <p
-                                class="text-sm font-medium flex-1 {{ $sort === 'state' ? 'mine-text-link' : 'mine-text-secondary' }}">
-                                State</p>
-                            @if($sort === 'state')
-                                <x-mine.icon variant="micro" name="check" class="size-4 mine-text-link" />
-                            @endif
-                        </div>
-                    </x-mine.dropdown.item>
-                    <x-mine.dropdown.item>
-                        <div class="w-full py-2 px-4 flex items-center gap-2 hover:cursor-pointer"
-                            @click="$wire.set('sort', 'load')">
-                            <p
-                                class="text-sm font-medium flex-1 {{ $sort === 'load' ? 'mine-text-link' : 'mine-text-secondary' }}">
-                                Load</p>
-                            @if($sort === 'load')
-                                <x-mine.icon variant="micro" name="check" class="size-4 mine-text-link" />
-                            @endif
-                        </div>
-                    </x-mine.dropdown.item>
-                    <x-mine.dropdown.item>
-                        <div class="w-full py-2 px-4 flex items-center gap-2 hover:cursor-pointer"
-                            @click="$wire.set('sort', 'latest')">
-                            <p
-                                class="text-sm font-medium flex-1 {{ $sort === 'latest' ? 'mine-text-link' : 'mine-text-secondary' }}">
-                                Latest</p>
-                            @if($sort === 'latest')
-                                <x-mine.icon variant="micro" name="check" class="size-4 mine-text-link" />
-                            @endif
-                        </div>
-                    </x-mine.dropdown.item>
-                    <x-mine.dropdown.item>
-                        <div class="w-full py-2 px-4 flex items-center gap-2 hover:cursor-pointer"
-                            @click="$wire.set('sort', 'name')">
-                            <p
-                                class="text-sm font-medium flex-1 {{ $sort === 'name' ? 'mine-text-link' : 'mine-text-secondary' }}">
-                                Name</p>
-                            @if($sort === 'name')
-                                <x-mine.icon variant="micro" name="check" class="size-4 mine-text-link" />
-                            @endif
-                        </div>
-                    </x-mine.dropdown.item>
+                    @foreach ([
+                        'state' => 'State',
+                        'deadline' => 'Deadline',
+                        'load' => 'Load',
+                        'latest' => 'Latest',
+                        'name' => 'Name',
+                    ] as $value => $label)
+                        <x-mine.dropdown.item>
+                            <div class="w-full py-2 px-4 flex items-center gap-2 hover:cursor-pointer"
+                                @click="$wire.$island('plans-content').$set('sort', '{{ $value }}')">
+                                <p
+                                    class="text-sm font-medium  {{ $sort === $value ? 'mine-text-link' : 'mine-text-secondary' }}">
+                                    {{ $label }}</p>
+                                @if($sort === $value)
+                                    <x-mine.icon variant="micro" name="check" class="size-4 mine-text-link" />
+                                @endif
+                            </div>
+                        </x-mine.dropdown.item>
+                    @endforeach
                 </x-mine.dropdown.content>
             </x-mine.dropdown>
         </div>
@@ -88,7 +64,7 @@
                         </p>
                     </div>
                 </x-mine.dropdown.trigger>
-                <x-mine.dropdown.content class="mt-1!">
+                <x-mine.dropdown.content class="mt-1!" placement="bottom-start">
                     @foreach ([
                         'all' => 'All',
                         'active' => 'Active',
@@ -97,9 +73,9 @@
                     ] as $value => $label)
                         <x-mine.dropdown.item>
                             <div class="w-full py-2 px-4 flex items-center gap-2 hover:cursor-pointer"
-                                @click="$wire.set('status_filter', '{{ $value }}')">
+                                @click="$wire.$island('plans-content').$set('status_filter', '{{ $value }}')">
                                 <p
-                                    class="text-sm font-medium flex-1 {{ $status_filter === $value ? 'mine-text-link' : 'mine-text-secondary' }}">
+                                    class="text-sm font-medium  {{ $status_filter === $value ? 'mine-text-link' : 'mine-text-secondary' }}">
                                     {{ $label }}</p>
                                 @if($status_filter === $value)
                                     <x-mine.icon variant="micro" name="check" class="size-4 mine-text-link" />
@@ -128,417 +104,249 @@
         </div>
     </div>
     <div class="md:flex md:gap-6">
-        <div class="grid grid-cols-1 gap-4 flex-1">
-            @forelse ($this->plans as $plan)
-                @if ($plan->done)
-                    <div wire:key="plan-{{ $plan->id }}"
-                        class="self-start mine-card-interactive flex flex-col px-4 sm:px-6 md:px-8 py-4 sm:pb-5 md:pb-6 sm:pt-6 md:pt-8">
-                        <div class="flex justify-between gap-4 mb-6 min-w-0">
-                            <div class="flex min-w-0 flex-1">
-                                <div
-                                    class="shrink-0 mine-badge-secondary rounded-xl size-16 flex justify-center items-center mr-4">
-                                    <x-mine.icon name="trophy" class="size-8" />
+        <div class="relative flex-1">
+            <div wire:loading.delay.short class="absolute inset-0 z-10">
+                <div class="flex h-full w-full items-center justify-center">
+                    <svg class="size-8 animate-spin mine-text-secondary" xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 24 24" role="status" aria-label="Loading">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                </div>
+            </div>
+            <div wire:loading.delay.short.class="opacity-40" class="transition-opacity">
+                <div class="grid grid-cols-1 gap-4">
+                    @forelse ($this->plans as $plan)
+                        @php
+                            $pct = $plan->tasks_count > 0 ? (int) round($plan->tasks_done_count / $plan->tasks_count * 100) : 0;
+
+                            $config = match (true) {
+                                $plan->done => [
+                                    'icon' => 'trophy',
+                                    'header_class' => 'mine-badge-secondary',
+                                    'title_class' => 'line-through',
+                                    'status_label' => 'Completed',
+                                    'percent_color' => 'mine-text-secondary-accent',
+                                    'span_color' => 'mine-text-secondary-accent',
+                                    'progress_variant' => 'gray',
+                                    'progress_total' => $plan->tasks_count ?: 1,
+                                    'progress_value' => $plan->tasks_count ? $plan->tasks_done_count : 1,
+                                    'pct' => $plan->tasks_count > 0 ? $pct : 100,
+                                    'check_badge' => 'mine-badge-secondary',
+                                    'xmark_badge' => 'mine-badge-secondary',
+                                    'days' => null,
+                                    'action' => 'reopen',
+                                ],
+                                $plan->finish_date->isPast() => [
+                                    'icon' => 'bell-alert',
+                                    'header_class' => 'mine-badge-danger',
+                                    'title_class' => '',
+                                    'status_label' => 'Overdue',
+                                    'percent_color' => 'mine-text-error',
+                                    'span_color' => 'mine-text-error',
+                                    'progress_variant' => 'danger',
+                                    'progress_total' => '100',
+                                    'progress_value' => $pct,
+                                    'pct' => $pct,
+                                    'check_badge' => 'mine-badge-secondary',
+                                    'xmark_badge' => 'mine-badge-danger',
+                                    'days' => [
+                                        'value' => (int) -now()->diffInDays($plan->finish_date),
+                                        'label' => 'days overdue',
+                                        'width' => 'sm:min-w-40',
+                                        'badge' => 'mine-badge-danger',
+                                    ],
+                                    'action' => 'complete',
+                                    'add_class' => 'mine-btn-outline-danger',
+                                    'complete_class' => 'mine-btn-danger',
+                                ],
+                                default => [
+                                    'icon' => 'rocket-launch',
+                                    'header_class' => 'mine-badge-primary',
+                                    'title_class' => '',
+                                    'status_label' => 'Active',
+                                    'percent_color' => 'mine-text-link',
+                                    'span_color' => 'mine-text-link',
+                                    'progress_variant' => 'primary',
+                                    'progress_total' => '100',
+                                    'progress_value' => $pct,
+                                    'pct' => $pct,
+                                    'check_badge' => 'mine-badge-primary',
+                                    'xmark_badge' => 'mine-badge-secondary',
+                                    'days' => [
+                                        'value' => max(0, (int) now()->diffInDays($plan->finish_date)),
+                                        'label' => 'days left',
+                                        'width' => 'sm:min-w-35',
+                                        'badge' => 'mine-badge-primary',
+                                    ],
+                                    'action' => 'complete',
+                                    'add_class' => 'mine-btn-outline-primary',
+                                    'complete_class' => 'mine-btn-primary',
+                                ],
+                            };
+                        @endphp
+
+                        <div wire:key="plan-{{ $plan->id }}"
+                            class="self-start mine-card-interactive flex flex-col px-4 sm:px-6 md:px-8 py-4 sm:pb-5 md:pb-6 sm:pt-6 md:pt-8">
+                            <div class="flex justify-between gap-4 mb-6 min-w-0">
+                                <div class="flex min-w-0 flex-1">
+                                    <div class="shrink-0 {{ $config['header_class'] }} rounded-xl size-16 flex justify-center items-center mr-4">
+                                        <x-mine.icon :name="$config['icon']" class="size-8" />
+                                    </div>
+                                    <div class="flex flex-col justify-between gap-2 min-w-0">
+                                        <div class="flex items-center gap-4 min-w-0">
+                                            <h1 class="text-md font-bold mine-text-primary truncate min-w-0 {{ $config['title_class'] }}">{{ $plan->name }}</h1>
+                                            <div class="{{ $config['header_class'] }} rounded-lg h-7 flex justify-center items-center px-2 shrink-0">
+                                                <p class="text-[14px] font-medium">{{ $config['status_label'] }}</p>
+                                            </div>
+                                        </div>
+                                        <p class="text-sm font-medium mine-text-secondary min-w-0 line-clamp-2 {{ $config['title_class'] }}">
+                                            {{ $plan->description ?: 'No description' }}</p>
+                                    </div>
                                 </div>
-                                <div class="flex flex-col justify-between gap-2 min-w-0">
-                                    <div class="flex items-center gap-4 min-w-0">
-                                        <h1 class="text-md font-bold mine-text-primary truncate min-w-0 line-through">{{ $plan->name }}</h1>
-                                        <div
-                                            class="mine-badge-secondary rounded-lg h-7 flex justify-center items-center px-2 shrink-0">
-                                            <p class="text-[14px] font-medium">Completed</p>
+                                <div class="flex justify-end items-start h-full shrink-0">
+                                    <x-mine.dropdown group="plan-actions">
+                                        <x-mine.dropdown.trigger>
+                                            <div class="mine-btn-icon p-2 rounded-xl">
+                                                <x-mine.icon name="ellipsis-horizontal" class="size-5" />
+                                            </div>
+                                        </x-mine.dropdown.trigger>
+                                        <x-mine.dropdown.content>
+                                            <x-mine.dropdown.item href="{{ route('tasks', ['plan_filter' => [$plan->id]]) }}">
+                                                <div class="w-full py-2 px-4 flex items-center gap-2 mine-text-link">
+                                                    <x-mine.icon name="chevron-left" class="size-4" variant="micro" />
+                                                    <p class="text-sm font-medium">View Tasks</p>
+                                                </div>
+                                            </x-mine.dropdown.item>
+                                            <x-mine.dropdown.divider class="-mx-1" />
+                                            <x-mine.dropdown.item>
+                                                <div class="w-full py-2 px-4 flex items-center gap-2 mine-text-link hover:cursor-pointer"
+                                                    @click.stop="$wire.set('editing_id', {{ $plan->id }}, false);
+                                                            $wire.set('edit_name', @js($plan->name), false);
+                                                            $wire.set('edit_description', @js($plan->description), false);
+                                                            $wire.set('edit_range', @js(['start' => $plan->start_date?->format('Y-m-d'), 'end' => $plan->finish_date?->format('Y-m-d')]), false);
+                                                            $dispatch('open-modal', { id: 'edit-plan-form' })">
+                                                    <x-mine.icon name="pencil" class="size-4" variant="solid" />
+                                                    <p class="text-sm font-medium">Edit</p>
+                                                </div>
+                                            </x-mine.dropdown.item>
+                                            <x-mine.dropdown.item destructive>
+                                                <div class="w-full py-2 px-4 flex items-center gap-2 mine-text-error hover:cursor-pointer"
+                                                    @click.stop="$wire.set('deleting_id', {{ $plan->id }}, false);
+                                                            $dispatch('open-modal', { id: 'delete-plan-confirmation' })">
+                                                    <x-mine.icon name="trash" class="size-4" variant="solid" />
+                                                    <p class="text-sm font-medium">Delete</p>
+                                                </div>
+                                            </x-mine.dropdown.item>
+                                        </x-mine.dropdown.content>
+                                    </x-mine.dropdown>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center gap-3">
+                                <div class="flex items-center min-w-0">
+                                    <div class="{{ $config['header_class'] }} rounded-lg size-8 flex justify-center items-center mr-3 shrink-0">
+                                        <x-mine.icon name="calendar" variant="micro" />
+                                    </div>
+                                    <p class="text-sm font-medium mine-text-secondary">{{ $plan->start_date->format('Y-m-d') }}</p>
+                                    <div class="mine-text-secondary flex justify-center items-center mx-2">
+                                        <x-mine.icon name="arrow-long-right" variant="mini" />
+                                    </div>
+                                    <p class="text-sm font-medium mine-text-secondary">{{ $plan->finish_date->format('Y-m-d') }}</p>
+                                </div>
+                                @if($config['days'])
+                                    <div class="flex justify-end items-center">
+                                        <div class="{{ $config['days']['badge'] }} rounded-lg h-8 flex justify-center items-center pr-1.5 pl-2 sm:pr-2 sm:pl-1.5 {{ $config['days']['width'] }}">
+                                            <p class="sm:hidden text-[14px] font-medium mr-2">
+                                                {{ $config['days']['value'] }}</p>
+                                            <x-mine.icon name="clock" variant="micro" class="sm:hidden " />
+                                            <x-mine.icon name="clock" variant="micro" class="hidden sm:inline " />
+                                            <p class="hidden sm:inline text-[14px] font-medium ml-2">
+                                                {{ $config['days']['value'] }} <span class="hidden sm:inline">{{ $config['days']['label'] }}</span></p>
                                         </div>
                                     </div>
-                                    <p class="text-sm font-medium mine-text-secondary min-w-0 line-clamp-2 line-through">
-                                        {{ $plan->description ?: 'No description' }}</p>
-                                </div>
+                                @endif
                             </div>
-                            <div class="flex justify-end items-start h-full shrink-0">
-                                <x-mine.dropdown group="plan-actions">
-                                    <x-mine.dropdown.trigger>
-                                        <div class="mine-btn-icon p-2 rounded-xl">
-                                            <x-mine.icon name="ellipsis-horizontal" class="size-5" />
-                                        </div>
-                                    </x-mine.dropdown.trigger>
-                                    <x-mine.dropdown.content>
-                                        <x-mine.dropdown.item>
-                                            <div
-                                                class="w-full py-2 px-4 flex items-center gap-2 mine-text-link hover:cursor-pointer">
-                                                <x-mine.icon name="chevron-left" class="size-4" variant="micro" />
-                                                <p class="text-sm font-medium">View Tasks</p>
-                                            </div>
-                                        </x-mine.dropdown.item>
-                                        <x-mine.dropdown.divider class="-mx-1" />
-                                        <x-mine.dropdown.item>
-                                            <div class="w-full py-2 px-4 flex items-center gap-2 mine-text-link hover:cursor-pointer"
-                                                @click.stop="$wire.set('editing_id', {{ $plan->id }}, false);
-                                                        $wire.set('edit_name', @js($plan->name), false);
-                                                        $wire.set('edit_description', @js($plan->description), false);
-                                                        $wire.set('edit_range', @js(['start' => $plan->start_date?->format('Y-m-d'), 'end' => $plan->finish_date?->format('Y-m-d')]), false);
-                                                        $dispatch('open-modal', { id: 'edit-plan-form' })">
-                                                <x-mine.icon name="pencil" class="size-4" variant="solid" />
-                                                <p class="text-sm font-medium">Edit</p>
-                                            </div>
-                                        </x-mine.dropdown.item>
-                                        <x-mine.dropdown.item destructive>
-                                            <div class="w-full py-2 px-4 flex items-center gap-2 mine-text-error hover:cursor-pointer"
-                                                @click.stop="$wire.set('deleting_id', {{ $plan->id }}, false);
-                                                        $dispatch('open-modal', { id: 'delete-plan-confirmation' })">
-                                                <x-mine.icon name="trash" class="size-4" variant="solid" />
-                                                <p class="text-sm font-medium">Delete</p>
-                                            </div>
-                                        </x-mine.dropdown.item>
-                                    </x-mine.dropdown.content>
-                                </x-mine.dropdown>
+                            <div class="pt-4 pb-3 opacity-50">
+                                <x-mine.separator />
                             </div>
-                        </div>
-                        <div class="flex justify-between items-center gap-3">
-                            <div class="flex items-center min-w-0">
-                                <div
-                                    class="mine-badge-secondary rounded-lg size-8 flex justify-center items-center mr-3 shrink-0">
-                                    <x-mine.icon name="calendar" variant="micro" />
-                                </div>
-                                <p class="text-sm font-medium mine-text-secondary">{{ $plan->start_date->format('Y-m-d') }}</p>
-                                <div class="mine-text-secondary flex justify-center items-center mx-2">
-                                    <x-mine.icon name="arrow-long-right" variant="mini" />
-                                </div>
-                                <p class="text-sm font-medium mine-text-secondary">{{ $plan->finish_date->format('Y-m-d') }}</p>
-                            </div>
-                        </div>
-                        <div class="pt-4 pb-3 opacity-50">
-                            <x-mine.separator />
-                        </div>
-                        <div class="flex justify-between items-center gap-6">
-                            <div class="flex flex-col justify-between flex-2">
-                                <h2 class="text-sm font-medium mine-text-primary mb-2">Progress</h2>
-                                <div class="flex items-center justify-between mb-2">
-                                    <h2 class="text-xl font-medium mine-text-secondary-accent">
-                                        {{ $plan->tasks_count > 0 ? (int) round($plan->tasks_done_count / $plan->tasks_count * 100) : 100 }}%
-                                    </h2>
-                                    <p class="sm:hidden text-[14px] font-medium mine-text-secondary">
-                                        <span
-                                            class="mine-text-secondary-accent text-md font-bold">{{ $plan->tasks_done_count }}</span>
-                                        of <span class="mine-text-primary text-md font-bold">{{ $plan->tasks_count }}</span>
-                                        completed
-                                    </p>
-                                </div>
-                                <x-mine.progress total="{{ $plan->tasks_count ?: 1 }}"
-                                    progress="{{ $plan->tasks_count ? $plan->tasks_done_count : 1 }}" variant="gray"
-                                    class="h-3" />
-                            </div>
-                            <div class="hidden sm:flex flex-col items-end flex-1 gap-2">
-                                <div
-                                    class="mine-badge-secondary rounded-lg h-8 flex justify-center items-center pr-2 pl-1.5 min-w-35">
-                                    <x-mine.icon name="check" variant="micro" />
-                                    <p class="text-[14px] font-medium ml-2">{{ $plan->tasks_done_count }} completed</p>
-                                </div>
-                                <div
-                                    class="mine-badge-secondary rounded-lg h-8 flex justify-center items-center pr-2 pl-1.5 min-w-35">
-                                    <x-mine.icon name="x-mark" variant="micro" />
-                                    <p class="text-[14px] font-medium ml-2">{{ $plan->tasks_count - $plan->tasks_done_count }}
-                                        remaining</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="py-4 opacity-50">
-                            <x-mine.separator />
-                        </div>
-                        <div class="flex gap-4 justify-between items-center">
-                            <x-mine.button type="button" class="mine-btn-outline-secondary"
-                                @click.stop="$wire.set('reopening_id', {{ $plan->id }}, false); $dispatch('open-modal', { id: 'reopen-plan-confirmation' })">
-                                <div class="flex justify-center items-center gap-1 text-sm font-medium">
-                                    <x-mine.icon name="arrow-path" variant="micro" />
-                                    <p>Reopen Plan</p>
-                                </div>
-                            </x-mine.button>
-                        </div>
-                    </div>
-                @elseif ($plan->finish_date->isPast())
-                    <div wire:key="plan-{{ $plan->id }}"
-                        class="self-start mine-card-interactive flex flex-col px-4 sm:px-6 md:px-8 py-4 sm:pb-5 md:pb-6 sm:pt-6 md:pt-8">
-                        <div class="flex justify-between gap-4 mb-6 min-w-0">
-                            <div class="flex min-w-0 flex-1">
-                                <div
-                                    class="shrink-0 mine-badge-danger rounded-xl size-16 flex justify-center items-center mr-4">
-                                    <x-mine.icon name="bell-alert" class="size-8" />
-                                </div>
-                                <div class="flex flex-col justify-between gap-2 min-w-0">
-                                    <div class="flex items-center gap-4 min-w-0">
-                                        <h1 class="text-md font-bold mine-text-primary min-w-0 truncate">{{ $plan->name }}</h1>
-                                        <div class="mine-badge-danger rounded-lg h-7 flex justify-center items-center px-2">
-                                            <p class="text-[14px] font-medium">Overdue</p>
-                                        </div>
+                            <div class="flex justify-between items-center gap-6">
+                                <div class="flex flex-col justify-between flex-2">
+                                    <h2 class="text-sm font-medium mine-text-primary mb-2">Progress</h2>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h2 class="text-xl font-medium {{ $config['percent_color'] }}">
+                                            {{ $config['pct'] }}%
+                                        </h2>
+                                        <p class="sm:hidden text-[14px] font-medium mine-text-secondary">
+                                            <span class="{{ $config['span_color'] }} text-md font-bold">{{ $plan->tasks_done_count }}</span> of
+                                            <span class="mine-text-primary text-md font-bold">{{ $plan->tasks_count }}</span>
+                                            completed
+                                        </p>
                                     </div>
-                                    <p class="text-sm font-medium mine-text-secondary min-w-0 line-clamp-2">
-                                        {{ $plan->description ?: 'No description' }}</p>
+                                    <x-mine.progress total="{{ $config['progress_total'] }}"
+                                        progress="{{ $config['progress_value'] }}"
+                                        variant="{{ $config['progress_variant'] ?? 'primary' }}"
+                                        class="h-3" />
                                 </div>
-                            </div>
-                            <div class="flex justify-end items-start h-full">
-                                <x-mine.dropdown group="plan-actions">
-                                    <x-mine.dropdown.trigger>
-                                        <div class="mine-btn-icon p-2 rounded-xl">
-                                            <x-mine.icon name="ellipsis-horizontal" class="size-5" />
-                                        </div>
-                                    </x-mine.dropdown.trigger>
-                                    <x-mine.dropdown.content>
-                                        <x-mine.dropdown.item>
-                                            <div
-                                                class="w-full py-2 px-4 flex items-center gap-2 mine-text-link hover:cursor-pointer">
-                                                <x-mine.icon name="chevron-left" class="size-4" variant="micro" />
-                                                <p class="text-sm font-medium">View Tasks</p>
-                                            </div>
-                                        </x-mine.dropdown.item>
-                                        <x-mine.dropdown.divider class="-mx-1" />
-                                        <x-mine.dropdown.item>
-                                            <div class="w-full py-2 px-4 flex items-center gap-2 mine-text-link hover:cursor-pointer"
-                                                @click.stop="$wire.set('editing_id', {{ $plan->id }}, false);
-                                                        $wire.set('edit_name', @js($plan->name), false);
-                                                        $wire.set('edit_description', @js($plan->description), false);
-                                                        $wire.set('edit_range', @js(['start' => $plan->start_date?->format('Y-m-d'), 'end' => $plan->finish_date?->format('Y-m-d')]), false);
-                                                        $dispatch('open-modal', { id: 'edit-plan-form' })">
-                                                <x-mine.icon name="pencil" class="size-4" variant="solid" />
-                                                <p class="text-sm font-medium">Edit</p>
-                                            </div>
-                                        </x-mine.dropdown.item>
-                                        <x-mine.dropdown.item destructive>
-                                            <div class="w-full py-2 px-4 flex items-center gap-2 mine-text-error hover:cursor-pointer"
-                                                @click.stop="$wire.set('deleting_id', {{ $plan->id }}, false);
-                                                        $dispatch('open-modal', { id: 'delete-plan-confirmation' })">
-                                                <x-mine.icon name="trash" class="size-4" variant="solid" />
-                                                <p class="text-sm font-medium">Delete</p>
-                                            </div>
-                                        </x-mine.dropdown.item>
-                                    </x-mine.dropdown.content>
-                                </x-mine.dropdown>
-                            </div>
-                        </div>
-                        <div class="flex justify-between items-center gap-3">
-                            <div class="flex items-center">
-                                <div class="mine-badge-danger rounded-lg size-8 flex justify-center items-center mr-3">
-                                    <x-mine.icon name="calendar" variant="micro" />
-                                </div>
-                                <p class="text-sm font-medium mine-text-secondary">{{ $plan->start_date->format('Y-m-d') }}</p>
-                                <div class="mine-text-secondary flex justify-center items-center mx-2">
-                                    <x-mine.icon name="arrow-long-right" variant="mini" />
-                                </div>
-                                <p class="text-sm font-medium mine-text-secondary">{{ $plan->finish_date->format('Y-m-d') }}</p>
-                            </div>
-                            <div class="flex justify-end items-center">
-                                <div
-                                    class="mine-badge-danger rounded-lg h-8 flex justify-center items-center pr-1.5 pl-2 sm:pr-2 sm:pl-1.5 sm:min-w-40">
-                                    <p class="sm:hidden text-[14px] font-medium mr-2">
-                                        {{ (int) -now()->diffInDays($plan->finish_date) }}</p>
-                                    <x-mine.icon name="clock" variant="micro" class="sm:hidden " />
-                                    <x-mine.icon name="clock" variant="micro" class="hidden sm:inline " />
-                                    <p class="hidden sm:inline text-[14px] font-medium ml-2">
-                                        {{ (int) -now()->diffInDays($plan->finish_date) }} <span class="hidden sm:inline">days
-                                            overdue</span></p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="pt-4 pb-3 opacity-50">
-                            <x-mine.separator />
-                        </div>
-                        <div class="flex justify-between items-center gap-6">
-                            <div class="flex flex-col justify-between flex-2">
-                                <h2 class="text-sm font-medium mine-text-primary mb-2">Progress</h2>
-                                <div class="flex items-center justify-between mb-2">
-                                    <h2 class="text-xl font-medium mine-text-error">
-                                        {{ ($plan->tasks_count > 0) ? (int) round($plan->tasks_done_count / $plan->tasks_count * 100) : 0 }}%
-                                    </h2>
-                                    <p class="sm:hidden text-[14px] font-medium mine-text-secondary">
-                                        <span class="mine-text-error text-md font-bold">{{ $plan->tasks_done_count }}</span> of
-                                        <span class="mine-text-primary text-md font-bold">{{ $plan->tasks_count }}</span>
-                                        completed
-                                    </p>
-                                </div>
-                                <x-mine.progress total="100"
-                                    progress="{{ ($plan->tasks_count > 0) ? (int) round($plan->tasks_done_count / $plan->tasks_count * 100) : 0 }}"
-                                    variant="danger" class="h-3" />
-                            </div>
-                            <div class="hidden sm:flex flex-col items-end flex-1 gap-2">
-                                <div
-                                    class="mine-badge-secondary rounded-lg h-8 flex justify-center items-center pr-2 pl-1.5 min-w-35">
-                                    <x-mine.icon name="check" variant="micro" />
-                                    <p class="text-[14px] font-medium ml-2">{{ $plan->tasks_done_count }} completed</p>
-                                </div>
-                                <div
-                                    class="mine-badge-danger rounded-lg h-8 flex justify-center items-center pr-2 pl-1.5 min-w-35">
-                                    <x-mine.icon name="x-mark" variant="micro" />
-                                    <p class="text-[14px] font-medium ml-2">{{ $plan->tasks_count - $plan->tasks_done_count }}
-                                        remaining</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="py-4 opacity-50">
-                            <x-mine.separator />
-                        </div>
-                        <div class="flex gap-4 justify-between items-center">
-                            <x-mine.button type="button" class="mine-btn-outline-danger">
-                                <div class="flex justify-center items-center gap-1 text-sm font-md">
-                                    <x-mine.icon name="plus" variant="micro" />
-                                    <p>Add Task</p>
-                                </div>
-                            </x-mine.button>
-                            <x-mine.button type="button" class="mine-btn-danger"
-                                @click.stop="$wire.set('completing_id', {{ $plan->id }}, false); $dispatch('open-modal', { id: 'complete-plan-confirmation' })">
-                                <div class="flex justify-center items-center gap-1 text-sm font-medium">
-                                    <x-mine.icon name="check" variant="micro" />
-                                    <p class="hidden sm:block">Mark as Completed</p>
-                                    <p class="sm:hidden">Complete</p>
-                                </div>
-                            </x-mine.button>
-                        </div>
-                    </div>
-                @else
-                    <div wire:key="plan-{{ $plan->id }}"
-                        class="self-start mine-card-interactive flex flex-col px-4 sm:px-6 md:px-8 py-4 sm:pb-5 md:pb-6 sm:pt-6 md:pt-8">
-                        <div class="flex justify-between gap-10 mb-6 min-w-0">
-                            <div class="flex min-w-0 flex-1">
-                                <div
-                                    class="shrink-0 mine-badge-primary rounded-xl size-16 flex justify-center items-center mr-4">
-                                    <x-mine.icon name="rocket-launch" class="size-8" />
-                                </div>
-                                <div class="flex flex-col justify-between gap-2 pb-1 min-w-0">
-                                    <div class="flex items-center gap-4 min-w-0">
-                                        <h1 class="text-md font-bold mine-text-primary truncate min-w-0">{{ $plan->name }}</h1>
-                                        <div class="mine-badge-primary rounded-lg h-7 flex justify-center items-center px-2">
-                                            <p class="text-[14px] font-medium">Active</p>
-                                        </div>
+                                <div class="hidden sm:flex flex-col items-end flex-1 gap-2">
+                                    <div class="{{ $config['check_badge'] }} rounded-lg h-8 flex justify-center items-center pr-2 pl-1.5 min-w-35">
+                                        <x-mine.icon name="check" variant="micro" />
+                                        <p class="text-[14px] font-medium ml-2">{{ $plan->tasks_done_count }} completed</p>
                                     </div>
-                                    <p class="text-sm font-medium mine-text-secondary min-w-0 line-clamp-2">
-                                        {{ $plan->description ?: 'No description' }}</p>
+                                    <div class="{{ $config['xmark_badge'] }} rounded-lg h-8 flex justify-center items-center pr-2 pl-1.5 min-w-35">
+                                        <x-mine.icon name="x-mark" variant="micro" />
+                                        <p class="text-[14px] font-medium ml-2">{{ $plan->tasks_count - $plan->tasks_done_count }}
+                                            remaining</p>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="flex justify-end items-start h-full shrink-0">
-                                <x-mine.dropdown group="plan-actions">
-                                    <x-mine.dropdown.trigger>
-                                        <div class="mine-btn-icon p-2 rounded-xl">
-                                            <x-mine.icon name="ellipsis-horizontal" class="size-5" />
+                            <div class="py-4 opacity-50">
+                                <x-mine.separator />
+                            </div>
+                            <div class="flex gap-4 justify-between items-center">
+                                @if($config['action'] === 'reopen')
+                                    <x-mine.button type="button" class="mine-btn-outline-secondary"
+                                        @click.stop="$wire.set('reopening_id', {{ $plan->id }}, false); $dispatch('open-modal', { id: 'reopen-plan-confirmation' })">
+                                        <div class="flex justify-center items-center gap-1 text-sm font-medium">
+                                            <x-mine.icon name="arrow-path" variant="micro" />
+                                            <p>Reopen Plan</p>
                                         </div>
-                                    </x-mine.dropdown.trigger>
-                                    <x-mine.dropdown.content>
-                                        <x-mine.dropdown.item>
-                                            <div
-                                                class="w-full py-2 px-4 flex items-center gap-2 mine-text-link hover:cursor-pointer">
-                                                <x-mine.icon name="chevron-left" class="size-4" variant="micro" />
-                                                <p class="text-sm font-medium">View Tasks</p>
+                                    </x-mine.button>
+                                @else
+                                    <a href="{{ route('tasks', ['plan_filter' => [$plan->id], 'add_plan' => $plan->id]) }}" wire:navigate.hover class="w-full">
+                                        <x-mine.button type="button" class="{{ $config['add_class'] }}">
+                                            <div class="flex justify-center items-center gap-1 text-sm font-md">
+                                                <x-mine.icon name="plus" variant="micro" />
+                                                <p>Add Task</p>
                                             </div>
-                                        </x-mine.dropdown.item>
-                                        <x-mine.dropdown.divider class="-mx-1" />
-                                        <x-mine.dropdown.item>
-                                            <div class="w-full py-2 px-4 flex items-center gap-2 mine-text-link hover:cursor-pointer"
-                                                @click.stop="$wire.set('editing_id', {{ $plan->id }}, false);
-                                                        $wire.set('edit_name', @js($plan->name), false);
-                                                        $wire.set('edit_description', @js($plan->description), false);
-                                                        $wire.set('edit_range', @js(['start' => $plan->start_date?->format('Y-m-d'), 'end' => $plan->finish_date?->format('Y-m-d')]), false);
-                                                        $dispatch('open-modal', { id: 'edit-plan-form' })">
-                                                <x-mine.icon name="pencil" class="size-4" variant="solid" />
-                                                <p class="text-sm font-medium">Edit</p>
-                                            </div>
-                                        </x-mine.dropdown.item>
-                                        <x-mine.dropdown.item destructive>
-                                            <div class="w-full py-2 px-4 flex items-center gap-2 mine-text-error hover:cursor-pointer"
-                                                @click.stop="$wire.set('deleting_id', {{ $plan->id }}, false);
-                                                        $dispatch('open-modal', { id: 'delete-plan-confirmation' })">
-                                                <x-mine.icon name="trash" class="size-4" variant="solid" />
-                                                <p class="text-sm font-medium">Delete</p>
-                                            </div>
-                                        </x-mine.dropdown.item>
-                                    </x-mine.dropdown.content>
-                                </x-mine.dropdown>
+                                        </x-mine.button>
+                                    </a>
+                                    <x-mine.button type="button" class="{{ $config['complete_class'] }}"
+                                        @click.stop="$wire.set('completing_id', {{ $plan->id }}, false); $dispatch('open-modal', { id: 'complete-plan-confirmation' })">
+                                        <div class="flex justify-center items-center gap-1 text-sm font-medium">
+                                            <x-mine.icon name="check" variant="micro" />
+                                            <p class="hidden sm:block">Mark as Completed</p>
+                                            <p class="sm:hidden">Complete</p>
+                                        </div>
+                                    </x-mine.button>
+                                @endif
                             </div>
                         </div>
-                        <div class="flex justify-between items-center gap-3">
-                            <div class="flex items-center">
-                                <div class="mine-badge-primary rounded-lg size-8 flex justify-center items-center mr-3">
-                                    <x-mine.icon name="calendar" variant="micro" />
-                                </div>
-                                <p class="text-sm font-medium mine-text-secondary">{{ $plan->start_date->format('Y-m-d') }}</p>
-                                <div class="mine-text-secondary flex justify-center items-center mx-2">
-                                    <x-mine.icon name="arrow-long-right" variant="mini" />
-                                </div>
-                                <p class="text-sm font-medium mine-text-secondary">{{ $plan->finish_date->format('Y-m-d') }}</p>
+                    @empty
+                        @if($this->hasActiveFilters)
+                            <div class="col-span-full text-center py-12">
+                                <x-mine.icon name="magnifying-glass" class="size-12 mx-auto mb-3 mine-text-secondary" />
+                                <p class="mine-text-secondary text-sm font-medium">No plans found.</p>
                             </div>
-                            <div class="flex justify-end items-center">
-                                <div
-                                    class="mine-badge-primary rounded-lg h-8 flex justify-center items-center pr-1.5 pl-2 sm:pr-2 sm:pl-1.5 sm:min-w-35">
-                                    <p class="sm:hidden text-[14px] font-medium mr-2">
-                                        {{ max(0, (int) now()->diffInDays($plan->finish_date)) }}</p>
-                                    <x-mine.icon name="clock" variant="micro" class="sm:hidden " />
-                                    <x-mine.icon name="clock" variant="micro" class="hidden sm:inline " />
-                                    <p class="hidden sm:inline text-[14px] font-medium ml-2">
-                                        {{ max(0, (int) now()->diffInDays($plan->finish_date)) }} <span
-                                            class="hidden sm:inline">days left</span></p>
-                                </div>
+                        @else
+                            <div class="col-span-full text-center py-12">
+                                <x-mine.icon name="rocket-launch" class="size-12 mx-auto mb-3 mine-text-secondary" />
+                                <p class="mine-text-secondary text-sm font-medium">No plans yet.</p>
                             </div>
-                        </div>
-                        <div class="pt-4 pb-3 opacity-50">
-                            <x-mine.separator />
-                        </div>
-                        <div class="flex justify-between items-center gap-6">
-                            <div class="flex flex-col justify-between flex-2">
-                                <h2 class="text-sm font-medium mine-text-primary mb-2">Progress</h2>
-                                <div class="flex items-center justify-between mb-2">
-                                    <h2 class="text-xl font-medium mine-text-link">
-                                        {{ ($plan->tasks_count > 0) ? (int) round($plan->tasks_done_count / $plan->tasks_count * 100) : 0 }}%
-                                    </h2>
-                                    <p class="sm:hidden text-[14px] font-medium mine-text-secondary">
-                                        <span class="mine-text-link text-md font-bold">{{ $plan->tasks_done_count }}</span> of
-                                        <span class="mine-text-primary text-md font-bold">{{ $plan->tasks_count }}</span>
-                                        completed
-                                    </p>
-                                </div>
-                                <x-mine.progress total="100"
-                                    progress="{{ ($plan->tasks_count > 0) ? (int) round($plan->tasks_done_count / $plan->tasks_count * 100) : 0 }}"
-                                    class="h-3" />
-                            </div>
-                            <div class="hidden sm:flex flex-col items-end flex-1 gap-2">
-                                <div
-                                    class="mine-badge-primary rounded-lg h-8 flex justify-center items-center pr-2 pl-1.5 min-w-35">
-                                    <x-mine.icon name="check" variant="micro" />
-                                    <p class="text-[14px] font-medium ml-2">{{ $plan->tasks_done_count }} completed</p>
-                                </div>
-                                <div
-                                    class="mine-badge-secondary rounded-lg h-8 flex justify-center items-center pr-2 pl-1.5 min-w-35">
-                                    <x-mine.icon name="x-mark" variant="micro" />
-                                    <p class="text-[14px] font-medium ml-2">{{ $plan->tasks_count - $plan->tasks_done_count }}
-                                        remaining</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="py-4 opacity-50">
-                            <x-mine.separator />
-                        </div>
-                        <div class="flex gap-4 justify-between items-center">
-                            <x-mine.button type="button" class="mine-btn-outline-primary">
-                                <div class="flex justify-center items-center gap-1 text-sm font-md">
-                                    <x-mine.icon name="plus" variant="micro" />
-                                    <p>Add Task</p>
-                                </div>
-                            </x-mine.button>
-                            <x-mine.button type="button" class="mine-btn-primary"
-                                @click.stop="$wire.set('completing_id', {{ $plan->id }}, false); $dispatch('open-modal', { id: 'complete-plan-confirmation' })">
-                                <div class="flex justify-center items-center gap-1 text-sm font-medium">
-                                    <x-mine.icon name="check" variant="micro" />
-                                    <p class="hidden sm:block">Mark as Completed</p>
-                                    <p class="sm:hidden">Complete</p>
-                                </div>
-                            </x-mine.button>
-                        </div>
-                    </div>
-                @endif
-            @empty
-                @if($this->hasActiveFilters)
-                    <div class="col-span-full text-center py-12">
-                        <x-mine.icon name="magnifying-glass" class="size-12 mx-auto mb-3 mine-text-secondary" />
-                        <p class="mine-text-secondary text-sm font-medium">No plans found.</p>
-                    </div>
-                @else
-                    <div class="col-span-full text-center py-12">
-                        <x-mine.icon name="light-bulb" class="size-12 mx-auto mb-3 mine-text-secondary" />
-                        <p class="mine-text-secondary text-sm font-medium">No plans yet.</p>
-                    </div>
-                @endif
-            @endforelse
+                        @endif
+                    @endforelse
+                </div>
+            </div>
         </div>
         <div class="hidden md:flex justify-center w-80">
             <x-mine.calendar wire:model.live="range_filter" />
@@ -547,6 +355,7 @@
     <div class="mt-6 w-full">
         {{ $this->plans->links(data: ['scrollTo' => false]) }}
     </div>
+    @endisland
 
     <x-mine.modal id="add-plan-form" :close-by-clicking-away="false" :close-by-escaping="false" width="lg">
         <div class="px-6 sm:px-8 py-6">

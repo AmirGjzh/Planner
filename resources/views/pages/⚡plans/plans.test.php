@@ -413,3 +413,62 @@ it('renders the filter dropdown options', function () {
         ->assertSee('Completed')
         ->assertSee('Overdue');
 });
+
+it('sorts plans by deadline', function () {
+    $user = User::factory()->create();
+    $user->plans()->create(['name' => 'Later', 'start_date' => now()->format('Y-m-d'), 'finish_date' => now()->addDays(30)->format('Y-m-d')]);
+    $user->plans()->create(['name' => 'Sooner', 'start_date' => now()->format('Y-m-d'), 'finish_date' => now()->addDays(2)->format('Y-m-d')]);
+
+    $component = Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('range_filter', planWideRange())
+        ->set('sort', 'deadline');
+
+    $html = $component->html();
+    expect(strpos($html, 'Sooner'))->toBeLessThan(strpos($html, 'Later'));
+});
+
+it('defaults to state sort', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->assertSet('sort', 'state');
+});
+
+it('renders the loading spinner over the plan grid', function () {
+    $user = User::factory()->create();
+    $user->plans()->create(['name' => 'Work', 'start_date' => now()->format('Y-m-d'), 'finish_date' => now()->addDays(5)->format('Y-m-d')]);
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->assertSee('wire:loading.delay.short', false)
+        ->assertSee('animate-spin', false)
+        ->assertSee('aria-label="Loading"', false);
+});
+
+it('wraps the plan content in the plans-content island', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->assertSee('plans-content', false);
+});
+
+it('links view tasks with the plan filter preselected', function () {
+    $user = User::factory()->create();
+    $plan = $user->plans()->create(['name' => 'Roadmap', 'start_date' => now()->format('Y-m-d'), 'finish_date' => now()->addDays(5)->format('Y-m-d')]);
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->assertSee(route('tasks', ['plan_filter' => [$plan->id]]));
+});
+
+it('links add task with the plan preselected too', function () {
+    $user = User::factory()->create();
+    $plan = $user->plans()->create(['name' => 'Roadmap', 'start_date' => now()->format('Y-m-d'), 'finish_date' => now()->addDays(5)->format('Y-m-d')]);
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->assertSee(route('tasks', ['plan_filter' => [$plan->id], 'add_plan' => $plan->id]));
+});

@@ -2,6 +2,7 @@
     <div class="mb-6">
         <h1 class="font-bold text-md mine-text-primary">My Categories</h1>
     </div>
+    @island(name: 'category-content', always: true)
     <div class="flex items-center justify-between gap-2 sm:gap-4 mb-6">
         <div class="w-full">
             <x-mine.input wire:model.live.debounce.200ms="search" placeholder="Search categories..."
@@ -24,98 +25,113 @@
                 </div>
             </x-mine.dropdown.trigger>
             <x-mine.dropdown.content class="mt-1!">
-                <x-mine.dropdown.item>
-                    <div class="w-full py-2 px-4 flex items-center gap-2 hover:cursor-pointer"
-                        @click="$wire.set('sort', 'latest')">
-                        <p class="text-sm font-medium flex-1 {{ $sort === 'latest' ? 'mine-text-link' : 'mine-text-secondary' }}">Latest</p>
-                        @if($sort === 'latest')
-                            <x-mine.icon variant="micro" name="check" class="size-4 mine-text-link" />
-                        @endif
-                    </div>
-                </x-mine.dropdown.item>
-                <x-mine.dropdown.item>
-                    <div class="w-full py-2 px-4 flex items-center gap-2 hover:cursor-pointer"
-                        @click="$wire.set('sort', 'name')">
-                        <p class="text-sm font-medium flex-1 {{ $sort === 'name' ? 'mine-text-link' : 'mine-text-secondary' }}">Name</p>
-                        @if($sort === 'name')
-                            <x-mine.icon variant="micro" name="check" class="size-4 mine-text-link" />
-                        @endif
-                    </div>
-                </x-mine.dropdown.item>
+                @foreach ([
+                    'latest' => 'Date Created',
+                    'name' => 'Name',
+                    'tasks' => 'Tasks',
+                ] as $value => $label)
+                    <x-mine.dropdown.item>
+                        <div class="w-full py-2 px-4 flex items-center gap-2 hover:cursor-pointer"
+                            @click="$wire.$island('category-content').$set('sort', '{{ $value }}')">
+                            <p class="text-sm font-medium {{ $sort === $value ? 'mine-text-link' : 'mine-text-secondary' }}">{{ $label }}</p>
+                            @if($sort === $value)
+                                <x-mine.icon variant="micro" name="check" class="size-4 mine-text-link" />
+                            @endif
+                        </div>
+                    </x-mine.dropdown.item>
+                @endforeach
             </x-mine.dropdown.content>
         </x-mine.dropdown>
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        @forelse ($this->categories as $category)
-            <div wire:key="category-{{ $category->id }}" class="mine-card-interactive border-l-8
-                        border-l-(--mine-category-border-left-green)
-                        hover:border-l-(--mine-category-border-left-green-hover)
-                        w-full flex flex-col justify-between gap-5 px-4 py-4
-                        ">
-                <div class="flex justify-between items-start">
-                    <div class="flex gap-3 min-w-0">
-                        <div class="rounded-xl size-14 shrink-0 mine-badge-primary flex justify-center items-center">
-                            <x-mine.icon name="folder" class="size-7" />
-                        </div>
-                        <div class="flex flex-col justify-between py-0.5 min-w-0">
-                            <h2 class="mine-text-primary font-medium text-[15px] truncate">{{ $category->name }}</h2>
-                            <p class="mine-text-secondary text-[13px] font-medium">{{ $category->tasks_count ?: 'No' }} {{ Str::plural('Task', $category->tasks_count) }}</p>
-                        </div>
-                    </div>
-                    <x-mine.dropdown group="category-actions">
-                        <x-mine.dropdown.trigger>
-                            <div class="mine-btn-icon p-2 rounded-xl">
-                                <x-mine.icon name="ellipsis-horizontal" class="size-5" />
-                            </div>
-                        </x-mine.dropdown.trigger>
-                        <x-mine.dropdown.content>
-                            <x-mine.dropdown.item>
-                                <div class="w-full py-2 px-4 flex items-center gap-2 mine-text-link hover:cursor-pointer"
-                                    @click.stop="$wire.set('editing_id', {{ $category->id }}, false);
-                                        $wire.set('edit_name', @js($category->name), false);
-                                        $dispatch('open-modal', { id: 'edit-category-form' })">
-                                    <x-mine.icon name="pencil" class="size-4" variant="solid" />
-                                    <p class="text-sm font-medium">Edit</p>
-                                </div>
-                            </x-mine.dropdown.item>
-                            <x-mine.dropdown.item destructive>
-                                <div class="w-full py-2 px-4 flex items-center gap-2 mine-text-error hover:cursor-pointer"
-                                    @click.stop="$wire.set('deleting_id', {{ $category->id }}, false);
-                                        $dispatch('open-modal', { id: 'delete-category-confirmation' })">
-                                    <x-mine.icon name="trash" class="size-4" variant="solid" />
-                                    <p class="text-sm font-medium">Delete</p>
-                                </div>
-                            </x-mine.dropdown.item>
-                        </x-mine.dropdown.content>
-                    </x-mine.dropdown>
-
-                </div>
-                <div class="flex justify-center items-center">
-                    <x-mine.button type="button" wire:target="" class="mine-btn-outline-primary h-10!">
-                        <div class="flex items-center gap-2">
-                            <p class="text-sm font-medium">View Tasks</p>
-                            <x-mine.icon name="arrow-long-right" variant="micro" class="size-4 mt-1" />
-                        </div>
-                    </x-mine.button>
-                </div>
+    <div class="relative">
+        <div wire:loading.delay.short class="absolute inset-0 z-10">
+            <div class="flex h-full w-full items-center justify-center">
+                <svg class="size-8 animate-spin mine-text-secondary" xmlns="http://www.w3.org/2000/svg"
+                    fill="none" viewBox="0 0 24 24" role="status" aria-label="Loading">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                    <path class="opacity-75" fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
             </div>
-        @empty
-            @if($this->search)
-                <div class="col-span-full text-center py-12">
-                    <x-mine.icon name="magnifying-glass" class="size-12 mx-auto mb-3 mine-text-secondary" />
-                    <p class="mine-text-secondary text-sm font-medium">No categories found.</p>
+        </div>
+        <div wire:loading.delay.short.class="opacity-40" class="transition-opacity">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                @forelse ($this->categories as $category)
+                <div wire:key="category-{{ $category->id }}" class="mine-card-interactive
+                            border-l-8
+                            border-l-(--mine-category-border-left-green)
+                            hover:border-l-(--mine-category-border-left-green-hover)
+                            w-full flex flex-col justify-between gap-5 px-4 py-4
+                            ">
+                    <div class="flex justify-between items-start">
+                        <div class="flex gap-3 min-w-0">
+                            <div class="rounded-xl size-14 shrink-0 mine-badge-primary flex justify-center items-center">
+                                <x-mine.icon name="folder" class="size-7" />
+                            </div>
+                            <div class="flex flex-col justify-between py-0.5 min-w-0">
+                                <h2 class="mine-text-primary font-medium text-[15px] truncate">{{ $category->name }}</h2>
+                                <p class="mine-text-secondary text-[13px] font-medium">{{ $category->tasks_count ?: 'No' }} {{ Str::plural('Task', $category->tasks_count) }}</p>
+                            </div>
+                        </div>
+                        <x-mine.dropdown group="category-actions">
+                            <x-mine.dropdown.trigger>
+                                <div class="mine-btn-icon p-2 rounded-xl">
+                                    <x-mine.icon name="ellipsis-horizontal" class="size-5" />
+                                </div>
+                            </x-mine.dropdown.trigger>
+                            <x-mine.dropdown.content>
+                                <x-mine.dropdown.item>
+                                    <div class="w-full py-2 px-4 flex items-center gap-2 mine-text-link hover:cursor-pointer"
+                                        @click.stop="$wire.set('editing_id', {{ $category->id }}, false);
+                                            $wire.set('edit_name', @js($category->name), false);
+                                            $dispatch('open-modal', { id: 'edit-category-form' })">
+                                        <x-mine.icon name="pencil" class="size-4" variant="solid" />
+                                        <p class="text-sm font-medium">Edit</p>
+                                    </div>
+                                </x-mine.dropdown.item>
+                                <x-mine.dropdown.item destructive>
+                                    <div class="w-full py-2 px-4 flex items-center gap-2 mine-text-error hover:cursor-pointer"
+                                        @click.stop="$wire.set('deleting_id', {{ $category->id }}, false);
+                                            $dispatch('open-modal', { id: 'delete-category-confirmation' })">
+                                        <x-mine.icon name="trash" class="size-4" variant="solid" />
+                                        <p class="text-sm font-medium">Delete</p>
+                                    </div>
+                                </x-mine.dropdown.item>
+                            </x-mine.dropdown.content>
+                        </x-mine.dropdown>
+
+                    </div>
+                    <div class="flex justify-center items-center">
+                        <a href="{{ route('tasks', ['category_filter' => [$category->id]]) }}" wire:navigate.hover class="block w-full">
+                            <x-mine.button type="button" class="mine-btn-outline-primary h-10!">
+                                <div class="flex items-center gap-2">
+                                    <p class="text-sm font-medium">View Tasks</p>
+                                    <x-mine.icon name="arrow-long-right" variant="micro" class="size-4 mt-1" />
+                                </div>
+                            </x-mine.button>
+                        </a>
+                    </div>
                 </div>
-            @else
-                <div class="col-span-full text-center py-12">
-                    <x-mine.icon name="folder-open" class="size-12 mx-auto mb-3 mine-text-secondary" />
-                    <p class="mine-text-secondary text-sm font-medium">No categories yet.</p>
-                </div>
-            @endif
-        @endforelse
+                @empty
+                    @if($this->search)
+                        <div class="col-span-full text-center py-12">
+                            <x-mine.icon name="magnifying-glass" class="size-12 mx-auto mb-3 mine-text-secondary" />
+                            <p class="mine-text-secondary text-sm font-medium">No categories found.</p>
+                        </div>
+                    @else
+                        <div class="col-span-full text-center py-12">
+                            <x-mine.icon name="folder-open" class="size-12 mx-auto mb-3 mine-text-secondary" />
+                            <p class="mine-text-secondary text-sm font-medium">No categories yet.</p>
+                        </div>
+                    @endif
+                @endforelse
+            </div>
+        </div>
     </div>
     <div class="mt-6 w-full">
         {{ $this->categories->links(data: ['scrollTo' => false]) }}
     </div>
+    @endisland
 
     <x-mine.modal id="add-category-form" :close-by-clicking-away="false" :close-by-escaping="false" width="lg">
         <div class="px-6 sm:px-8 py-6">

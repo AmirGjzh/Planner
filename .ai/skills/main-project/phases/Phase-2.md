@@ -177,6 +177,8 @@ Actor: Logged-in user
 1. Deletion is prevented if the category still has tasks assigned (restrict on delete).
 2. User must reassign or delete all tasks in the category before it can be deleted.
 
+**Filter & Sort (page-level):** The category list supports live text search and sorting by date created (default), name, or task count (folded in from UC-15).
+
 ### 3.3 Plan Management
 
 #### UC-07 – Manage Plans
@@ -190,41 +192,61 @@ Main Flow:
 2. To create a plan, the user fills in the name, optional description, start date, and end date, then submits.
 3. To edit a plan, the user modifies the name, description, or date range and saves.
 4. To delete a plan, the user clicks Delete. Deletion is blocked if the plan still has tasks assigned (restrict on delete).
+5. To complete or reopen a plan, the user uses the per-card actions. Completing is blocked while the plan still has undone tasks.
+
+**Plan Progress & Tracking (folded in from UC-14):**
+1. The system shows each plan with its task count and a progress bar (completed tasks / total tasks × 100).
+2. The user can view all tasks assigned to a plan (popover / View Tasks deep-link).
+3. When tasks are added or marked done, the progress is recalculated and updated.
+
+**Filter & Sort (page-level):** The plan list supports live text search, sorting by state (default) / deadline / load / latest / name, a status filter (All / Active / Completed / Overdue), and a date-range calendar filter (folded in from UC-15).
 
 ### 3.4 Task Management
 
-#### UC-08 – Manage Tasks
+#### UC-08 – Manage Tasks (merged: CRUD + Toggle Done + Overdue + Calendar View + Filter & Sort)
 
 Actor: Logged-in user
 
-Description: The user creates, edits, or deletes tasks for a specific day.
+Description: The user creates, edits, or deletes tasks for a specific day, toggles task done/not-done, sees overdue tasks, filters tasks by a custom date range, and filters/sorts the task list.
 
-Main Flow:
+**Create Task:**
 1. The user is on the task page for a specific day.
-2. To create a task, the user fills in the title, category, estimated duration, priority, optional plan, and submits.
-3. To edit a task, the user modifies any field and saves.
-4. To delete a task, the user clicks Delete and confirms. The task is permanently removed.
-5. The system recalculates the daily workload after any create, edit, or delete operation.
+2. The user fills in the title, category, estimated duration, priority, optional description, optional plan, task date, and alarm days, then submits.
+3. The system creates the task and recalculates the daily workload.
 
-### 3.5 Task Status
+**Edit Task:**
+1. The user modifies any field and saves.
+2. The system updates the task and recalculates the daily workload if the date or estimated minutes changed.
 
-#### UC-09 – Mark Task as Done / Not Done
+**Delete Task:**
+1. The user clicks Delete and confirms.
+2. The task is permanently removed and the daily workload is recalculated.
 
-Actor: Logged-in user
+**Toggle Done:**
+1. Each task has a checkbox or Done button.
+2. The user toggles the status.
+3. The system updates the task status immediately without a page reload.
+4. System background logic: if a task status is not updated by the end of the day, the system considers it Not Done. This affects reports and overdue task detection.
 
-Description: The user marks a task as completed or not completed.
+**Overdue:**
+1. The user filters by the Overdue status.
+2. The system filters tasks where task_date < today and status = Not Done.
+3. The list is displayed; the user may mark them as done or delete them.
+4. Future versions may allow rescheduling.
 
-Main Flow:
-1. The user views tasks for a specific day.
-2. Each task has a checkbox or Done button.
-3. The user toggles the status.
-4. The system updates the task status.
+**Calendar View (Date Range Filter):**
+1. The user selects a date range via a range datepicker.
+2. The system filters tasks within the selected range.
+3. Full daily, weekly, and monthly calendar views with workload colors are deferred to a later layer.
 
-System background logic: If a task status is not updated by the end of the day, the system considers it Not Done. This affects reports and overdue task detection.
+**Filter & Sort:**
+1. The user filters tasks by category, plan, status (Done / Not Done / Overdue), priority, or date range.
+2. The user sorts tasks by date, priority, estimated time, or state.
+3. Multiple filters and sorts can be combined; clearing filters restores the full list.
 
-### 3.6 Workload
+### 3.5 Workload (Deferred — dashboard page)
 
-#### UC-10 – Daily Workload
+#### UC-09 – Daily Workload
 
 Actor: User (passive — calculated automatically)
 
@@ -234,49 +256,11 @@ Main Flow:
 1. When tasks are created, edited, or deleted, the system recalculates the total estimated minutes for that day.
 2. The total is displayed as hours and minutes.
 
-### 3.7 Views
+Status: **Deferred.** The full dashboard workload view is not yet built. (Single-day workload alerts currently live on the task page as part of UC-08.)
 
-#### UC-13 – Calendar View (Daily, Weekly, Monthly)
+### 3.6 Notifications (Deferred — dashboard page)
 
-Actor: User
-
-Description: The user sees tasks displayed in different time-based views.
-
-**Daily View:**
-1. The user selects a date or clicks a day in the calendar.
-2. The system shows tasks for that day (filtered by user).
-3. The total workload and status color or message are displayed.
-4. The user may create, edit, delete, or mark tasks as Done or Not Done.
-
-**Weekly View:**
-1. The user switches the UI to Week View.
-2. The user selects a week (or navigates previous or next).
-3. The system displays tasks for the week in a table or grid.
-4. Each day shows its workload color indicator.
-
-**Monthly View:**
-1. The user opens Calendar View.
-2. The system displays the current or selected month.
-3. Each day shows its workload color.
-4. The user can click a day to view or add tasks.
-
-### 3.8 Overdue and Notifications
-
-#### UC-11 – Overdue Tasks
-
-Actor: User
-
-Description: The user sees tasks that are past their scheduled date and still not completed.
-
-Main Flow:
-1. The user opens the Overdue Tasks section.
-2. The system filters tasks where task_date < today and status = Not Done.
-3. The list is displayed.
-4. The user may mark them as done or delete them.
-
-Future versions may allow rescheduling.
-
-#### UC-16 – Upcoming Tasks
+#### UC-10 – Upcoming Tasks
 
 Actor: User
 
@@ -289,31 +273,11 @@ Main Flow:
 
 Future versions may send these notifications via email.
 
-### 3.9 Filtering and Sorting
+Status: **Deferred.** The dashboard page is not yet built.
 
-#### UC-15 – Filter and Sort Tasks
+### 3.7 Reports (Deferred — report page)
 
-Actor: User
-
-Description: The user filters and sorts tasks to find specific items.
-
-**Filter by:**
-- Category
-- Plan
-- Date or date range
-- Status (Done / Not Done)
-- Priority
-
-**Sort by:**
-- Date
-- Priority
-- Estimated time
-
-The system updates the list accordingly. Multiple filters can be combined. Clearing filters restores the full list.
-
-### 3.10 Reports
-
-#### UC-12 – Performance Reports
+#### UC-11 – Performance Reports
 
 Actor: User
 
@@ -329,19 +293,7 @@ Main Flow:
    - Completion rate
 4. The results are shown using numbers, simple charts, or tables.
 
-### 3.11 Plan Tracking
-
-#### UC-14 – Plan Progress & Tracking
-
-Actor: Logged-in user
-
-Description: The user views a plan's tasks, sees its completion progress, and tracks progress as tasks are marked done.
-
-Main Flow:
-1. The user navigates to the Plans page.
-2. The system shows plans with their task count and progress percentage (completed tasks / total tasks × 100).
-3. The user can view all tasks assigned to a plan.
-4. When a task in a plan is marked as done or not done, the plan progress is recalculated and updated.
+Status: **Deferred.** The report page is not yet built.
 
 ## 4. Conceptual Domain Model
 

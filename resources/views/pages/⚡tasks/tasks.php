@@ -28,11 +28,11 @@ new class extends Component
 
     public string $add_date = '';
 
-    public int $add_estimated_minutes = 0;
+    public ?int $add_estimated_minutes = null;
 
-    public int $add_alarm_days = 0;
+    public ?int $add_alarm_days = null;
 
-    public string $add_priority = 'medium';
+    public ?string $add_priority = null;
 
     public ?int $add_category_id = null;
 
@@ -87,6 +87,15 @@ new class extends Component
     #[Url]
     public string $status_filter = 'all';
 
+    #[Url]
+    public array $category_filter = [];
+
+    #[Url]
+    public array $plan_filter = [];
+
+    #[Url(as: 'add_plan', history: false)]
+    public ?int $addPlan = null;
+
     public function mount(): void
     {
         $this->add_date = now()->format('Y-m-d');
@@ -95,56 +104,47 @@ new class extends Component
             'start' => now()->today()->format('Y-m-d'),
             'end' => now()->today()->format('Y-m-d'),
         ];
+
+        if (request()->filled('category_filter') || request()->filled('plan_filter')) {
+            $this->range_filter = null;
+        }
+
+        if ($this->addPlan !== null) {
+            $plan = Plan::query()->where('user_id', auth()->id())->find($this->addPlan);
+
+            if ($plan) {
+                $this->dispatch('open-modal', id: 'add-task-form');
+                $this->add_plan_id = $plan->id;
+            }
+
+            $this->addPlan = null;
+        }
     }
 
     #[Computed]
     public function tasks()
     {
+        $userId = auth()->id();
+        $today = now();
+
         return Task::query()
             ->select(['id', 'title', 'description', 'task_date', 'estimated_minutes', 'priority', 'done', 'day_before_alarm', 'plan_id', 'category_id', 'user_id', 'created_at'])
             ->with('category:id,name', 'plan:id,name')
-            ->where('user_id', auth()->id())
+            ->where('user_id', $userId)
             ->when($this->search, fn ($q) => $q->where('title', 'like', '%'.$this->search.'%'))
             ->when($this->range_filter['start'] ?? null, fn ($q) => $q->whereDate('task_date', '>=', $this->range_filter['start']))
             ->when($this->range_filter['end'] ?? null, fn ($q) => $q->whereDate('task_date', '<=', $this->range_filter['end']))
-            ->when($this->status_filter === 'active', fn ($q) => $q->where('done', false)->whereDate('task_date', '>=', now()))
+            ->when($this->status_filter === 'active', fn ($q) => $q->where('done', false)->whereDate('task_date', '>=', $today))
             ->when($this->status_filter === 'completed', fn ($q) => $q->where('done', true))
-            ->when($this->status_filter === 'overdue', fn ($q) => $q->where('done', false)->whereDate('task_date', '<', now()))
+            ->when($this->status_filter === 'overdue', fn ($q) => $q->where('done', false)->whereDate('task_date', '<', $today))
+            ->when($this->category_filter, fn ($q) => $q->whereIn('category_id', $this->category_filter))
+            ->when($this->plan_filter, fn ($q) => $q->whereIn('plan_id', $this->plan_filter))
             ->when($this->sort === 'date', fn ($q) => $q->orderBy('task_date'))
             ->when($this->sort === 'priority', fn ($q) => $q->orderByRaw("CASE priority WHEN 'high' THEN 0 WHEN 'medium' THEN 1 WHEN 'low' THEN 2 ELSE 3 END"))
-            ->when($this->sort === 'estimated', fn ($q) => $q->orderByDesc('estimated_minutes'))
-            ->when($this->sort === 'load', fn ($q) => $q->orderByDesc('estimated_minutes'))
-            ->when($this->sort === 'state', fn ($q) => $q->orderByRaw("CASE WHEN done = 0 AND task_date >= ? THEN 0 WHEN done = 0 THEN 1 ELSE 2 END", [now()->toDateString()]))
+            ->when(in_array($this->sort, ['estimated', 'load'], true), fn ($q) => $q->orderByDesc('estimated_minutes'))
+            ->when($this->sort === 'state', fn ($q) => $q->orderByRaw('CASE WHEN done = 0 AND task_date >= ? THEN 0 WHEN done = 0 THEN 1 ELSE 2 END', [$today->toDateString()]))
             ->when($this->sort === 'latest', fn ($q) => $q->latest())
             ->paginate(6)->onEachSide(1);
-    }
-
-    #[Computed]
-    public function workload(): ?array
-    {
-        if (($this->range_filter['start'] ?? null) === null || ($this->range_filter['start'] ?? null) !== ($this->range_filter['end'] ?? null)) {
-            return null;
-        }
-
-        $total = Task::query()
-            ->where('user_id', auth()->id())
-            ->whereDate('task_date', $this->range_filter['start'])
-            ->sum('estimated_minutes');
-
-        if ($total === 0) {
-            return null;
-        }
-
-        return [
-            'total_minutes' => $total,
-            'hours' => intdiv($total, 60),
-            'minutes' => $total % 60,
-            'label' => match (true) {
-                $total < 180 => 'Light',
-                $total < 360 => 'Medium',
-                default => 'Heavy',
-            },
-        ];
     }
 
     #[Computed]
@@ -170,7 +170,7 @@ new class extends Component
     #[Computed]
     public function hasActiveFilters(): bool
     {
-        if ($this->search !== '' || $this->status_filter !== 'all') {
+        if ($this->search !== '' || $this->status_filter !== 'all' || $this->category_filter !== [] || $this->plan_filter !== []) {
             return true;
         }
 
@@ -187,6 +187,26 @@ new class extends Component
     }
 
     public function updatingStatusFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingCategoryFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingPlanFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingRangeFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingSort(): void
     {
         $this->resetPage();
     }
@@ -233,9 +253,9 @@ new class extends Component
         $this->add_title = '';
         $this->add_description = null;
         $this->add_date = now()->format('Y-m-d');
-        $this->add_estimated_minutes = 0;
-        $this->add_alarm_days = 0;
-        $this->add_priority = 'medium';
+        $this->add_estimated_minutes = null;
+        $this->add_alarm_days = null;
+        $this->add_priority = null;
         $this->add_category_id = null;
         $this->add_plan_id = null;
         $this->add_success = 'created';
@@ -249,9 +269,9 @@ new class extends Component
         $this->add_title = '';
         $this->add_description = null;
         $this->add_date = now()->format('Y-m-d');
-        $this->add_estimated_minutes = 0;
-        $this->add_alarm_days = 0;
-        $this->add_priority = 'medium';
+        $this->add_estimated_minutes = null;
+        $this->add_alarm_days = null;
+        $this->add_priority = null;
         $this->add_category_id = null;
         $this->add_plan_id = null;
         $this->resetValidation();
@@ -360,7 +380,6 @@ new class extends Component
 
         $this->completing_id = null;
         unset($this->tasks);
-        unset($this->workload);
         $this->dispatch('close-modal', id: 'complete-task-confirmation');
     }
 
@@ -388,7 +407,6 @@ new class extends Component
 
         $this->reopening_id = null;
         unset($this->tasks);
-        unset($this->workload);
         $this->dispatch('close-modal', id: 'reopen-task-confirmation');
     }
 

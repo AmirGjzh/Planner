@@ -78,6 +78,7 @@ it('creates a new task', function () {
         ->set('add_title', 'Test task')
         ->set('add_date', taskDate())
         ->set('add_estimated_minutes', 30)
+        ->set('add_alarm_days', 0)
         ->set('add_priority', 'medium')
         ->set('add_category_id', $category->id)
         ->set('add_plan_id', null)
@@ -99,6 +100,7 @@ it('creates a task with a plan assigned', function () {
         ->set('add_title', 'Planned task')
         ->set('add_date', taskDate())
         ->set('add_estimated_minutes', 60)
+        ->set('add_alarm_days', 0)
         ->set('add_priority', 'high')
         ->set('add_category_id', $category->id)
         ->set('add_plan_id', $plan->id)
@@ -116,6 +118,7 @@ it('validates task title is required', function () {
         ->set('add_title', '')
         ->set('add_date', taskDate())
         ->set('add_estimated_minutes', 30)
+        ->set('add_alarm_days', 0)
         ->set('add_priority', 'medium')
         ->set('add_category_id', 1)
         ->call('addTask')
@@ -130,6 +133,7 @@ it('validates task title max length', function () {
         ->set('add_title', str_repeat('a', 256))
         ->set('add_date', taskDate())
         ->set('add_estimated_minutes', 30)
+        ->set('add_alarm_days', 0)
         ->set('add_priority', 'medium')
         ->set('add_category_id', 1)
         ->call('addTask')
@@ -144,6 +148,7 @@ it('validates task date format', function () {
         ->set('add_title', 'Test')
         ->set('add_date', 'invalid-date')
         ->set('add_estimated_minutes', 30)
+        ->set('add_alarm_days', 0)
         ->set('add_priority', 'medium')
         ->set('add_category_id', 1)
         ->call('addTask')
@@ -158,6 +163,7 @@ it('validates estimated minutes is required', function () {
         ->set('add_title', 'Test')
         ->set('add_date', taskDate())
         ->set('add_estimated_minutes', 0)
+        ->set('add_alarm_days', 0)
         ->set('add_priority', 'medium')
         ->set('add_category_id', 1)
         ->call('addTask')
@@ -172,6 +178,7 @@ it('validates estimated minutes max', function () {
         ->set('add_title', 'Test')
         ->set('add_date', taskDate())
         ->set('add_estimated_minutes', 1441)
+        ->set('add_alarm_days', 0)
         ->set('add_priority', 'medium')
         ->set('add_category_id', 1)
         ->call('addTask')
@@ -216,6 +223,7 @@ it('validates priority is valid', function () {
         ->set('add_title', 'Test')
         ->set('add_date', taskDate())
         ->set('add_estimated_minutes', 30)
+        ->set('add_alarm_days', 0)
         ->set('add_priority', 'urgent')
         ->set('add_category_id', 1)
         ->call('addTask')
@@ -230,6 +238,7 @@ it('validates category is required', function () {
         ->set('add_title', 'Test')
         ->set('add_date', taskDate())
         ->set('add_estimated_minutes', 30)
+        ->set('add_alarm_days', 0)
         ->set('add_priority', 'medium')
         ->set('add_category_id', null)
         ->call('addTask')
@@ -246,6 +255,7 @@ it('returns rate limited on create after too many attempts', function () {
             ->set('add_title', 'Attempt '.$i)
             ->set('add_date', taskDate())
             ->set('add_estimated_minutes', 30)
+            ->set('add_alarm_days', 0)
             ->set('add_priority', 'medium')
             ->set('add_category_id', 999)
             ->call('addTask')
@@ -257,6 +267,7 @@ it('returns rate limited on create after too many attempts', function () {
         ->set('add_title', 'Blocked')
         ->set('add_date', taskDate())
         ->set('add_estimated_minutes', 30)
+        ->set('add_alarm_days', 0)
         ->set('add_priority', 'medium')
         ->set('add_category_id', 999)
         ->call('addTask')
@@ -272,6 +283,7 @@ it('shows invalid category error on create', function () {
         ->set('add_title', 'Test')
         ->set('add_date', taskDate())
         ->set('add_estimated_minutes', 30)
+        ->set('add_alarm_days', 0)
         ->set('add_priority', 'medium')
         ->set('add_category_id', 999)
         ->call('addTask')
@@ -288,6 +300,7 @@ it('shows invalid plan error on create', function () {
         ->set('add_title', 'Test')
         ->set('add_date', taskDate())
         ->set('add_estimated_minutes', 30)
+        ->set('add_alarm_days', 0)
         ->set('add_priority', 'medium')
         ->set('add_category_id', $category->id)
         ->set('add_plan_id', 999)
@@ -634,137 +647,31 @@ it('filters with end date only', function () {
         ->assertDontSee('After end');
 });
 
-it('returns null workload when no tasks exist that day', function () {
-    $user = User::factory()->create();
-
-    $component = Livewire::actingAs($user)->test('pages::tasks');
-
-    expect($component->instance()->workload)->toBeNull();
-});
-
-it('returns Light workload under 180 minutes', function () {
-    $user = User::factory()->create();
-    makeTask($user, 'Light task', ['estimated_minutes' => 30]);
-
-    $component = Livewire::actingAs($user)->test('pages::tasks');
-
-    expect($component->instance()->workload['label'])->toBe('Light');
-    expect($component->instance()->workload['total_minutes'])->toBe(30);
-});
-
-it('returns Medium workload at 180 minute boundary', function () {
-    $user = User::factory()->create();
-    makeTask($user, 'Medium task', ['estimated_minutes' => 180]);
-
-    $component = Livewire::actingAs($user)->test('pages::tasks');
-
-    expect($component->instance()->workload['label'])->toBe('Medium');
-});
-
-it('returns Heavy workload at 360 minute boundary', function () {
-    $user = User::factory()->create();
-    makeTask($user, 'Heavy task', ['estimated_minutes' => 360]);
-
-    $component = Livewire::actingAs($user)->test('pages::tasks');
-
-    expect($component->instance()->workload['label'])->toBe('Heavy');
-});
-
-it('sums workload across multiple tasks', function () {
-    $user = User::factory()->create();
-    makeTask($user, 'A', ['estimated_minutes' => 100]);
-    makeTask($user, 'B', ['estimated_minutes' => 80]);
-
-    $component = Livewire::actingAs($user)->test('pages::tasks');
-
-    expect($component->instance()->workload['total_minutes'])->toBe(180);
-});
-
-it('workload respects the date filter', function () {
-    $user = User::factory()->create();
-    makeTask($user, 'Today task', ['estimated_minutes' => 30]);
-    makeTask($user, 'Other day task', ['estimated_minutes' => 600, 'task_date' => taskDate('+2 days')]);
-
-    $component = Livewire::actingAs($user)
-        ->test('pages::tasks')
-        ->set('range_filter', ['start' => taskDate('+2 days'), 'end' => taskDate('+2 days')]);
-
-    expect($component->instance()->workload['total_minutes'])->toBe(600);
-});
-
-it('renders workload on the page', function () {
-    $user = User::factory()->create();
-    makeTask($user, 'Task', ['estimated_minutes' => 30]);
-
-    Livewire::actingAs($user)
-        ->test('pages::tasks')
-        ->assertSee('Light Day');
-});
-
-it('renders a rest day alert when the selected day has no tasks', function () {
-    $user = User::factory()->create();
-
-    Livewire::actingAs($user)
-        ->test('pages::tasks')
-        ->assertSee('Rest Day');
-});
-
-it('workload updates after creating a task', function () {
-    $user = User::factory()->create();
-    $category = $user->categories()->create(['name' => 'Work']);
-    RateLimiter::clear('create-task:'.$user->id.'|127.0.0.1');
-
-    $component = Livewire::actingAs($user)
-        ->test('pages::tasks')
-        ->assertSee('Rest Day');
-
-    $component
-        ->set('add_title', 'New task')
-        ->set('add_date', taskDate())
-        ->set('add_estimated_minutes', 30)
-        ->set('add_priority', 'medium')
-        ->set('add_category_id', $category->id)
-        ->call('addTask');
-
-    expect($component->instance()->workload['total_minutes'])->toBe(30);
-});
-
-it('workload updates after deleting a task', function () {
-    $user = User::factory()->create();
-    $category = $user->categories()->create(['name' => 'Work']);
-    $task = $user->tasks()->create([
-        'title' => 'Test task', 'task_date' => taskDate(), 'estimated_minutes' => 30,
-        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
-    ]);
-
-    $component = Livewire::actingAs($user)->test('pages::tasks');
-
-    expect($component->instance()->workload['total_minutes'])->toBe(30);
-
-    $component
-        ->set('deleting_id', $task->id)
-        ->call('deleteTask');
-
-    expect($component->instance()->workload)->toBeNull();
-});
-
-it('hides the workload alert for a multi-day range', function () {
-    $user = User::factory()->create();
-    makeTask($user, 'Task', ['estimated_minutes' => 30]);
-
-    Livewire::actingAs($user)
-        ->test('pages::tasks')
-        ->set('range_filter', ['start' => taskDate('-1 days'), 'end' => taskDate('+1 days')])
-        ->assertDontSee('Light Day')
-        ->assertDontSee('Rest Day');
-});
-
 it('defaults the sort to state', function () {
     $user = User::factory()->create();
 
     Livewire::actingAs($user)
         ->test('pages::tasks')
         ->assertSet('sort', 'state');
+});
+
+it('renders the loading spinner over the task grid', function () {
+    $user = User::factory()->create();
+    makeTask($user, 'Task');
+
+    Livewire::actingAs($user)
+        ->test('pages::tasks')
+        ->assertSee('wire:loading.delay.short', false)
+        ->assertSee('animate-spin', false)
+        ->assertSee('aria-label="Loading"', false);
+});
+
+it('wraps search, filters and grid in the tasks-content island', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::tasks')
+        ->assertSee('tasks-content', false);
 });
 
 it('sorts by state putting active, overdue then completed first', function () {
@@ -928,13 +835,12 @@ it('renders the sort dropdown options', function () {
 
     Livewire::actingAs($user)
         ->test('pages::tasks')
-        ->assertSee('Sort By')
+        ->assertSee('Sort')
         ->assertSee('State')
         ->assertSee('Load')
         ->assertSee('Latest')
         ->assertSee('Date')
-        ->assertSee('Priority')
-        ->assertSee('Workload');
+        ->assertSee('Priority');
 });
 
 it('renders the filter dropdown options', function () {
@@ -947,4 +853,192 @@ it('renders the filter dropdown options', function () {
         ->assertSee('Active')
         ->assertSee('Completed')
         ->assertSee('Overdue');
+});
+
+it('renders category and plan filter dropdowns with their options', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $plan = $user->plans()->create(['name' => 'Sprint', 'start_date' => '2026-01-01', 'finish_date' => '2026-12-31']);
+
+    Livewire::actingAs($user)
+        ->test('pages::tasks')
+        ->assertSee('Category')
+        ->assertSee('Plan')
+        ->assertSee('Sprint');
+});
+
+it('shows tasks from all categories when no category is selected', function () {
+    $user = User::factory()->create();
+    $personal = $user->categories()->create(['name' => 'Personal']);
+    $work = $user->categories()->create(['name' => 'Work']);
+    makeTask($user, 'Personal task', ['category_id' => $personal->id]);
+    makeTask($user, 'Work task', ['category_id' => $work->id]);
+
+    Livewire::actingAs($user)
+        ->test('pages::tasks')
+        ->assertSee('Personal task')
+        ->assertSee('Work task');
+});
+
+it('filters tasks by a single category', function () {
+    $user = User::factory()->create();
+    $personal = $user->categories()->create(['name' => 'Personal']);
+    $work = $user->categories()->create(['name' => 'Work']);
+    makeTask($user, 'Personal task', ['category_id' => $personal->id]);
+    makeTask($user, 'Work task', ['category_id' => $work->id]);
+
+    Livewire::actingAs($user)
+        ->test('pages::tasks')
+        ->set('category_filter', [$work->id])
+        ->assertSee('Work task')
+        ->assertDontSee('Personal task');
+});
+
+it('filters tasks by multiple categories at once', function () {
+    $user = User::factory()->create();
+    $personal = $user->categories()->create(['name' => 'Personal']);
+    $work = $user->categories()->create(['name' => 'Work']);
+    $study = $user->categories()->create(['name' => 'Study']);
+    makeTask($user, 'Personal task', ['category_id' => $personal->id]);
+    makeTask($user, 'Work task', ['category_id' => $work->id]);
+    makeTask($user, 'Study task', ['category_id' => $study->id]);
+
+    Livewire::actingAs($user)
+        ->test('pages::tasks')
+        ->set('category_filter', [$work->id, $personal->id])
+        ->assertSee('Work task')
+        ->assertSee('Personal task')
+        ->assertDontSee('Study task');
+});
+
+it('shows tasks from all plans when no plan is selected', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $planA = $user->plans()->create(['name' => 'Plan A', 'start_date' => '2026-01-01', 'finish_date' => '2026-12-31']);
+    $planB = $user->plans()->create(['name' => 'Plan B', 'start_date' => '2026-01-01', 'finish_date' => '2026-12-31']);
+    makeTask($user, 'Plan A task', ['category_id' => $category->id, 'plan_id' => $planA->id]);
+    makeTask($user, 'Plan B task', ['category_id' => $category->id, 'plan_id' => $planB->id]);
+
+    Livewire::actingAs($user)
+        ->test('pages::tasks')
+        ->assertSee('Plan A task')
+        ->assertSee('Plan B task');
+});
+
+it('filters tasks by a single plan', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $planA = $user->plans()->create(['name' => 'Plan A', 'start_date' => '2026-01-01', 'finish_date' => '2026-12-31']);
+    $planB = $user->plans()->create(['name' => 'Plan B', 'start_date' => '2026-01-01', 'finish_date' => '2026-12-31']);
+    makeTask($user, 'Plan A task', ['category_id' => $category->id, 'plan_id' => $planA->id]);
+    makeTask($user, 'Plan B task', ['category_id' => $category->id, 'plan_id' => $planB->id]);
+
+    Livewire::actingAs($user)
+        ->test('pages::tasks')
+        ->set('plan_filter', [$planA->id])
+        ->assertSee('Plan A task')
+        ->assertDontSee('Plan B task');
+});
+
+it('filters tasks by multiple plans at once', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $planA = $user->plans()->create(['name' => 'Plan A', 'start_date' => '2026-01-01', 'finish_date' => '2026-12-31']);
+    $planB = $user->plans()->create(['name' => 'Plan B', 'start_date' => '2026-01-01', 'finish_date' => '2026-12-31']);
+    $planC = $user->plans()->create(['name' => 'Plan C', 'start_date' => '2026-01-01', 'finish_date' => '2026-12-31']);
+    makeTask($user, 'Plan A task', ['category_id' => $category->id, 'plan_id' => $planA->id]);
+    makeTask($user, 'Plan B task', ['category_id' => $category->id, 'plan_id' => $planB->id]);
+    makeTask($user, 'Plan C task', ['category_id' => $category->id, 'plan_id' => $planC->id]);
+
+    Livewire::actingAs($user)
+        ->test('pages::tasks')
+        ->set('plan_filter', [$planA->id, $planB->id])
+        ->assertSee('Plan A task')
+        ->assertSee('Plan B task')
+        ->assertDontSee('Plan C task');
+});
+
+it('combines category and plan filters', function () {
+    $user = User::factory()->create();
+    $personal = $user->categories()->create(['name' => 'Personal']);
+    $work = $user->categories()->create(['name' => 'Work']);
+    $planA = $user->plans()->create(['name' => 'Plan A', 'start_date' => '2026-01-01', 'finish_date' => '2026-12-31']);
+    $planB = $user->plans()->create(['name' => 'Plan B', 'start_date' => '2026-01-01', 'finish_date' => '2026-12-31']);
+    makeTask($user, 'Matching task', ['category_id' => $work->id, 'plan_id' => $planA->id]);
+    makeTask($user, 'Wrong plan task', ['category_id' => $work->id, 'plan_id' => $planB->id]);
+    makeTask($user, 'Wrong category task', ['category_id' => $personal->id, 'plan_id' => $planA->id]);
+
+    Livewire::actingAs($user)
+        ->test('pages::tasks')
+        ->set('category_filter', [$work->id])
+        ->set('plan_filter', [$planA->id])
+        ->assertSee('Matching task')
+        ->assertDontSee('Wrong plan task')
+        ->assertDontSee('Wrong category task');
+});
+
+it('shows no results message when category filter matches nothing', function () {
+    $user = User::factory()->create();
+    makeTask($user, 'Work task');
+
+    Livewire::actingAs($user)
+        ->test('pages::tasks')
+        ->set('category_filter', [999])
+        ->assertSee('No tasks found.')
+        ->assertDontSee('Work task');
+});
+
+it('hydrates the category filter from the categories query string', function () {
+    $user = User::factory()->create();
+    $work = $user->categories()->create(['name' => 'Work']);
+    $personal = $user->categories()->create(['name' => 'Personal']);
+    makeTask($user, 'Work task', ['category_id' => $work->id]);
+    makeTask($user, 'Personal task', ['category_id' => $personal->id]);
+    makeTask($user, 'Old work task', ['category_id' => $work->id, 'task_date' => taskDate('-10 days'), 'title' => 'Old Work Task']);
+
+    $this->actingAs($user)
+        ->get(route('tasks', ['category_filter' => [$work->id]]))
+        ->assertOk()
+        ->assertSee('Work task')
+        ->assertDontSee('Personal task')
+        ->assertSee('Old Work Task');
+});
+
+it('hydrates the plan filter from the plans query string', function () {
+    $user = User::factory()->create();
+    $alpha = $user->plans()->create(['name' => 'Alpha', 'start_date' => now()->format('Y-m-d'), 'finish_date' => now()->addDays(5)->format('Y-m-d')]);
+    $beta = $user->plans()->create(['name' => 'Beta', 'start_date' => now()->format('Y-m-d'), 'finish_date' => now()->addDays(5)->format('Y-m-d')]);
+    makeTask($user, 'Alpha task', ['plan_id' => $alpha->id]);
+    makeTask($user, 'Beta task', ['plan_id' => $beta->id]);
+    makeTask($user, 'Old alpha task', ['plan_id' => $alpha->id, 'task_date' => taskDate('-10 days'), 'title' => 'Old Alpha Task']);
+
+    $this->actingAs($user)
+        ->get(route('tasks', ['plan_filter' => [$alpha->id]]))
+        ->assertOk()
+        ->assertSee('Alpha task')
+        ->assertDontSee('Beta task')
+        ->assertSee('Old Alpha Task');
+});
+
+it('preselects the plan and opens the add modal via the add_plan query param', function () {
+    $user = User::factory()->create();
+    $plan = $user->plans()->create(['name' => 'Sprint', 'start_date' => now()->format('Y-m-d'), 'finish_date' => now()->addDays(5)->format('Y-m-d')]);
+
+    Livewire::withQueryParams(['add_plan' => $plan->id])
+        ->actingAs($user)
+        ->test('pages::tasks')
+        ->assertSet('add_plan_id', $plan->id)
+        ->assertDispatched('open-modal', id: 'add-task-form');
+});
+
+it('ignores an add_plan param for a plan owned by another user', function () {
+    $user = User::factory()->create();
+    $other = User::factory()->create();
+    $plan = $other->plans()->create(['name' => 'Private', 'start_date' => now()->format('Y-m-d'), 'finish_date' => now()->addDays(5)->format('Y-m-d')]);
+
+    Livewire::withQueryParams(['add_plan' => $plan->id])
+        ->actingAs($user)
+        ->test('pages::tasks')
+        ->assertSet('add_plan_id', null)
+        ->assertNotDispatched('open-modal', id: 'add-task-form');
 });

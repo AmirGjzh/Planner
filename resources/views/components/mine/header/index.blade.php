@@ -166,7 +166,7 @@
                                         })
                                         .catch(() => busy = false);
                                 ">
-                            <div class="w-full py-3 px-4 mine-text-error flex items-center gap-3 hover:cursor-pointer">
+                            <div class="w-full py-3 px-3 mine-text-error flex items-center gap-3 hover:cursor-pointer">
                                 <x-mine.icon name="arrow-right-start-on-rectangle" class="size-5" variant="micro" />
                                 <p class="text-sm font-medium">Logout</p>
                             </div>
@@ -176,10 +176,10 @@
             </div>
         @else
             <div class="w-full h-full pointer-events-none flex items-center justify-end gap-2 pr-4 md:pr-6">
-                <a wire:navigate href="{{ route('login') }}" class="pointer-events-auto">
+                <a wire:navigate.hover href="{{ route('login') }}" class="pointer-events-auto">
                     <x-mine.button class="mine-btn-primary sm:mine-btn-ghost" height="h-10 text-sm">Sign in</x-mine.button>
                 </a>
-                <a wire:navigate href="{{ route('register') }}" class="hidden sm:flex pointer-events-auto">
+                <a wire:navigate.hover href="{{ route('register') }}" class="hidden sm:flex pointer-events-auto">
                     <x-mine.button class="mine-btn-primary" height="h-10 text-sm">Sign up</x-mine.button>
                 </a>
             </div>

@@ -242,3 +242,31 @@ it('cancel edit resets form state', function () {
         ->assertSet('edit_error', null)
         ->assertSet('edit_success', null);
 });
+
+it('renders the loading spinner over the category grid', function () {
+    $user = User::factory()->create();
+    $user->categories()->create(['name' => 'Work']);
+
+    Livewire::actingAs($user)
+        ->test('pages::categories')
+        ->assertSee('wire:loading.delay.short', false)
+        ->assertSee('animate-spin', false)
+        ->assertSee('aria-label="Loading"', false);
+});
+
+it('wraps search, filter and grid in the category-content island', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::categories')
+        ->assertSee('category-content', false);
+});
+
+it('links view tasks with the category filter preselected', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+
+    Livewire::actingAs($user)
+        ->test('pages::categories')
+        ->assertSee(route('tasks', ['category_filter' => [$category->id]]));
+});

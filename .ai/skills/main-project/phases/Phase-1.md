@@ -40,7 +40,7 @@ As a user, I want to create, edit, and delete plans so that I can group related 
 
 ### Task Management
 
-#### Manage Tasks
+#### Manage Tasks (UC-08)
 
 As a user, I want to create, edit, and delete tasks so that I can schedule my work and keep it up to date. Creating a task requires a title, category, estimated duration, and priority. Editing allows modifying all fields. Deletion removes the task permanently.
 
@@ -48,13 +48,15 @@ As a user, I want to create, edit, and delete tasks so that I can schedule my wo
 
 #### Mark Task as Done / Not Done
 
-As a user, I want to mark tasks as completed or revert them to not done so I can track my progress.
+As a user, I want to mark tasks as completed or revert them to not done so I can track my progress. **Part of UC-08.**
 
 ### Workload and Indicators
 
 #### Daily Workload
 
 As a user, I want the system to calculate the total estimated time of tasks for each day and show workload alerts so I know how much work I have assigned. In this version, thresholds are global and fixed. In future versions, they may become configurable.
+
+**[Deferred — dashboard page, not yet built.]** Single-day workload alerts already exist on the Tasks page (UC-08); the full daily/weekly/monthly dashboard workload views are deferred to UC-09.
 
 ### Views
 
@@ -66,37 +68,37 @@ As a user, I want to see tasks filtered by a date range so that I can view my sc
 
 #### Filter and Sort Tasks
 
-As a user, I want to filter tasks by category, plan, date range, status, or priority, and sort them by date, priority, or estimated time so that I can quickly find specific tasks.
+As a user, I want to filter tasks by category, plan, date range, status, or priority, and sort them by date, priority, or estimated time so that I can quickly find specific items. **Per-page search/sort/filter is implemented on the Categories (UC-06), Plans (UC-07), and Tasks (UC-08) pages.**
 
 ### Overdue and Notifications
 
 #### Overdue Tasks
 
-As a user, I want the system to identify tasks whose due date has passed and are still not marked as done so that I can plan to catch up.
+As a user, I want the system to identify tasks whose due date has passed and are still not marked as done so that I can plan to catch up. **Implemented as an Overdue status filter on the Tasks page (UC-08).**
 
 #### Upcoming Tasks
 
-As a user, I want to see tasks that are approaching within a defined window (today + X days) so that I can prepare for what's coming.
+As a user, I want to see tasks that are approaching within a defined window (today + X days) so that I can prepare for what's coming. **[Deferred — dashboard page, not yet built (UC-10).]**
 
 ### Reports
 
 #### Performance Reports
 
-As a user, I want to select a time range and see total tasks created, completed, completion rate, and overdue count so that I can analyze my performance.
+As a user, I want to select a time range and see total tasks created, completed, completion rate, and overdue count so that I can analyze my performance. **[Deferred — report page, not yet built (UC-11).]**
 
 ### Plan Tracking
 
 #### View Plan Tasks
 
-As a user, I want to view a specific plan and see all tasks assigned to it so that I can track progress on that project.
+As a user, I want to view a specific plan and see all tasks assigned to it so that I can track progress on that project. **Implemented as part of Plan Management (UC-07).**
 
 #### Plan Progress
 
-As a user, I want to see the progress of a plan based on how many of its tasks are completed so that I can track how close I am to finishing a project.
+As a user, I want to see the progress of a plan based on how many of its tasks are completed so that I can track how close I am to finishing a project. **Implemented as part of Plan Management (UC-07).**
 
 #### Plan Progress Tracking
 
-As a user, I want to see real-time plan progress updates as I mark tasks done so that I always know the current status.
+As a user, I want to see real-time plan progress updates as I mark tasks done so that I always know the current status. **Layer 1 implemented (recomputed per visit) in UC-07; live cross-page reactivity deferred.**
 
 
 
@@ -247,6 +249,8 @@ As a user, I want to see real-time plan progress updates as I mark tasks done so
 
 ### Daily Workload
 
+**[Deferred — dashboard page not yet built (UC-09).]** Single-day workload alerts already satisfy this on the Tasks page (UC-08).
+
 **Given** the user is viewing a day,
 **When** tasks exist for that day,
 **Then** the total estimated minutes is summed and displayed.
@@ -261,6 +265,8 @@ As a user, I want to see real-time plan progress updates as I mark tasks done so
 
 
 ### Performance Reports
+
+**[Deferred — report page not yet built (UC-11).]**
 
 **Given** the user selects a date range,
 **When** they request a report,
@@ -306,6 +312,8 @@ As a user, I want to see real-time plan progress updates as I mark tasks done so
 
 ### Upcoming Tasks
 
+**[Deferred — dashboard page not yet built (UC-10).]**
+
 **Given** the user has tasks within the notification window (today + X days),
 **When** they open the dashboard,
 **Then** upcoming tasks are displayed in a list.
@@ -322,20 +330,20 @@ As a user, I want to see real-time plan progress updates as I mark tasks done so
 - Set estimated duration per task
 - Mark task as done / not done
 - Daily view with task list
-- Weekly view
-- Monthly calendar view
-- Daily workload calculation with alerts
-- Overdue tasks list
-- Upcoming tasks list (based on day_before_alarm)
+- Weekly view __(deferred — current range filter satisfies a reduced Layer 1)__
+- Monthly calendar view __(deferred — date-range filter only)__
+- Daily workload calculation with alerts __(implemented per-day on Tasks page; dashboard-level aggregation deferred)__
+- Overdue tasks list __(implemented as an Overdue status filter on the Tasks page)__
+- Upcoming tasks list (based on day_before_alarm) __(deferred — dashboard not built)__
 - Plan CRUD
 - Assign / remove task from plan
-- Plan progress tracking
+- Plan progress tracking __(Layer 1 done; live cross-page reactivity deferred)__
 
 ### Should Have (High Priority — Next)
 
-- Filter tasks by category, plan, status, priority, date range
-- Sort tasks by date, priority, estimated time
-- Performance reports over a date range
+- Filter tasks by category, plan, status, priority, date range __(done per page)__
+- Sort tasks by date, priority, estimated time __(done per page)__
+- Performance reports over a date range __(deferred — report page not built)__
 
 ### Could Have (Nice to Have)
 

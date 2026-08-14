@@ -51,6 +51,7 @@ new class extends Component
             ->when($this->search, fn ($q) => $q->where('name', 'like', '%'.$this->search.'%'))
             ->withCount('tasks')
             ->when($this->sort === 'name', fn ($q) => $q->orderBy('name'))
+            ->when($this->sort === 'tasks', fn ($q) => $q->orderByDesc('tasks_count'))
             ->when($this->sort === 'latest', fn ($q) => $q->latest())
             ->paginate(6)->onEachSide(1);
     }
