@@ -214,7 +214,7 @@ Model (data access via Eloquent)
 **Rules:**
 - **Livewire components** should be thin — handle UI state, validation, and delegate to Services or Actions. No raw Eloquent queries in components.
 - **Services** own business logic for a domain area (e.g., Task, Category, Plan, Workload). Can group related operations.
-- **Actions** are single-purpose classes for operations with side effects (e.g., deleting a plan also recalculates workload). Use when an operation does more than one thing.
+- **Actions** are single-purpose classes for operations with side effects (e.g., deleting a plan checks for assigned tasks before deletion). Use when an operation does more than one thing.
 - **Models** handle data access only — no business logic beyond scopes and accessors.
 
 ### Pattern Decisions
@@ -222,7 +222,7 @@ Model (data access via Eloquent)
 | Pattern | Decision | When to Apply |
 |---------|----------|---------------|
 | **Service Layer** | Use | Group related business logic. One service per domain area (e.g., `TaskService`, `WorkloadService`). |
-| **Action Classes** | Use | Extract any operation that triggers side effects (e.g., recalculating workload after deleting a task). |
+| **Action Classes** | Use | Extract any operation that triggers side effects (e.g., deleting a category checks for assigned tasks first). |
 | **Backed Enums** | Use | Already in place for fixed value sets. Extend as new value sets appear. |
 | **Repository** | Defer | Start with Eloquent scopes. Only extract repositories if query logic becomes unmanageable. |
 | **Form Request** | Defer | Livewire components handle validation natively via `rules()` and `$this->validate()`. |
@@ -240,17 +240,21 @@ Model (data access via Eloquent)
 
 ### Service Boundaries (Planned)
 
-These service areas are defined as a map of responsibilities. They will be fleshed out during implementation.
+Every use case maps to one module/service area. These areas are defined as a map of responsibilities and will be fleshed out during implementation.
 
-| Domain Area | Responsibilities |
-|-------------|-----------------|
-| **Task** | Task CRUD, toggle done, workload recalculation trigger |
-| **Category** | Category CRUD, delete protection check |
-| **Plan** | Plan CRUD, progress calculation |
-| **Workload** | Daily total calculation |
-| **Overdue** | Query tasks past their date and not done |
-| **Upcoming** | Query tasks within their notification window |
-| **Report** | Aggregate performance data over a date range |
+| UC | Use Case | Module / Service | Responsibilities |
+|----|----------|------------------|------------------|
+| 01 | Login | Authentication (`LoginUserAction`) | Verify credentials, start session, rate-limit attempts |
+| 02 | Register | Authentication (`RegisterUserAction`) | Create account, enforce unique username/email |
+| 03 | View and Edit Profile | Profile (`UpdateProfileAction`) | Read/update profile fields, rate-limit updates |
+| 04 | Delete Account | Account (`DeleteAccountAction`) | Verify password, obfuscate credentials, soft-delete |
+| 05 | Logout | Authentication (`LogoutUserAction`) | Invalidate session, regenerate CSRF token |
+| 06 | Manage Categories | Category Management (Create/Edit/DeleteCategoryAction) | Category CRUD, delete protection check |
+| 07 | Manage Plans | Plan Management (Create/Edit/Delete/Complete/ReopenPlanAction) | Plan CRUD, progress calculation, delete protection check |
+| 08 | Manage Tasks | Task Management (Create/Edit/Delete/ToggleTaskDoneAction) | Task CRUD, toggle done, filter/sort, date range |
+| 09 | Daily Workload | Workload (`WorkloadService`) | Daily total calculation, workload level + message |
+| 10 | Upcoming Tasks | Upcoming (`UpcomingService`) | Query tasks within their notification window |
+| 11 | Reports | Reporting (`ReportService`) | Aggregate performance data over a date range |
 
 ### When to Create an Action vs. a Service Method
 
@@ -281,6 +285,22 @@ Create a custom exception class when a business rule is violated and the user ne
 | `CategoryHasTasksException` | Attempting to delete a category that still has tasks |
 
 Add more as new rules emerge during implementation.
+
+### Errors per Use Case
+
+| UC | Use Case | Expected Validation / Domain Errors |
+|----|----------|-------------------------------------|
+| 01 | Login | Invalid credentials, rate-limited |
+| 02 | Register | Username taken, email taken, rate-limited |
+| 03 | View and Edit Profile | Username taken, rate-limited |
+| 04 | Delete Account | Wrong password, rate-limited |
+| 05 | Logout | None (idempotent — guests are redirected) |
+| 06 | Manage Categories | Duplicate name, empty/max-length name, rate-limited, category has tasks |
+| 07 | Manage Plans | Duplicate name, invalid date range, rate-limited, plan has tasks |
+| 08 | Manage Tasks | Missing/invalid fields, invalid category, invalid plan, rate-limited |
+| 09 | Daily Workload | None (computed, read-only) |
+| 10 | Upcoming Tasks | None (computed, read-only) |
+| 11 | Reports | None (computed, read-only) |
 
 ### Handling Strategy
 

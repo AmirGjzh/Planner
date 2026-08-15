@@ -455,6 +455,14 @@ it('wraps the plan content in the plans-content island', function () {
         ->assertSee('plans-content', false);
 });
 
+it('scopes the date-range calendar to the plans-content island', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->assertSee("island: 'plans-content'", false);
+});
+
 it('links view tasks with the plan filter preselected', function () {
     $user = User::factory()->create();
     $plan = $user->plans()->create(['name' => 'Roadmap', 'start_date' => now()->format('Y-m-d'), 'finish_date' => now()->addDays(5)->format('Y-m-d')]);

@@ -674,6 +674,14 @@ it('wraps search, filters and grid in the tasks-content island', function () {
         ->assertSee('tasks-content', false);
 });
 
+it('scopes category, plan and date-range filters to the tasks-content island', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::tasks')
+        ->assertSee("island: 'tasks-content'", false);
+});
+
 it('sorts by state putting active, overdue then completed first', function () {
     $user = User::factory()->create();
     makeTask($user, 'Completed task', ['done' => true]);
@@ -723,7 +731,7 @@ it('sorts by priority high first', function () {
         ->assertSeeInOrder(['High task', 'Medium task', 'Low task']);
 });
 
-it('sorts by workload descending', function () {
+it('sorts by estimated time descending', function () {
     $user = User::factory()->create();
     makeTask($user, 'Small task', ['estimated_minutes' => 30]);
     makeTask($user, 'Big task', ['estimated_minutes' => 300]);

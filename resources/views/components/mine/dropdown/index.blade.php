@@ -3,6 +3,7 @@
     'group' => null,
     'multiple' => false,
     'model' => null,
+    'island' => null,
 ])
 
 <div
@@ -12,6 +13,7 @@
         group: @js($group),
         multiple: @js($multiple),
         model: @js($model),
+        island: @js($island),
         selected: [],
         hoverTimeout: null,
         init() {
@@ -39,7 +41,11 @@
                 this.selected.splice(index, 1)
             }
             if (this.model && typeof $wire !== 'undefined') {
-                $wire.set(this.model, [...this.selected])
+                if (this.island) {
+                    $wire.$island(this.island).$set(this.model, [...this.selected])
+                } else {
+                    $wire.set(this.model, [...this.selected])
+                }
             }
         },
         show() {

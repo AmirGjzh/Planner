@@ -9,8 +9,8 @@ A task management system designed to make planning easier. It enables users to c
 ### Regular User
 
 - Create and manage their own tasks
-- View daily, weekly, and monthly plans
-- Receive workload alerts
+- View tasks for a single day or a custom date range
+- Receive workload alerts on the dashboard
 - Access personal performance reports
 
 ### Admin
@@ -21,17 +21,41 @@ A task management system designed to make planning easier. It enables users to c
 In the MVP, the primary focus is on the Regular User role.
 The Admin role is mainly limited to soft deletion and data management.
 
-## 0.3 – MVP Scope
+## 0.3 – MVP Scope (11 Use Cases)
 
-In the first version, the system must include at least the following features:
+The MVP is organized into exactly 11 use cases (UC-01 … UC-11). Each part below maps 1:1 to a UC spec in Phase-2.
 
-### Task and Category Management
+### UC-01 – Login
+
+- Sign in with email and password
+- Invalid credentials produce a clear error message
+
+### UC-02 – Register
+
+- Create an account with a username, email, and password
+- Duplicate usernames and emails are rejected
+
+### UC-03 – View and Edit Profile
+
+- View profile information (name, date of birth, country, gender)
+- Edit and save profile fields
+
+### UC-04 – Delete Account
+
+- Delete the account with password confirmation
+- User accounts are soft-deleted with obfuscated credentials
+
+### UC-05 – Logout
+
+- End the session securely from the navigation bar
+
+### UC-06 – Manage Categories
 
 - Create categories and assign each task to a category
-- Add tasks for a specific day (date only, no starting time)
-- Specify estimated duration for each task
+- Rename or delete categories
+- Deleting a category with tasks is blocked (restrict on delete)
 
-### Plan Management
+### UC-07 – Manage Plans
 
 - Create plans to group related tasks under a common goal or project
 - Assign a name and optional description to each plan
@@ -40,48 +64,31 @@ In the first version, the system must include at least the following features:
 - Track plan progress based on completed vs. total tasks
 - Edit or delete plans (deleting a plan is blocked if it still has tasks — restrict on delete)
 
-### Daily Workload Calculation
+### UC-08 – Manage Tasks
+
+- Add tasks for a specific day (date only, no starting time)
+- Specify estimated duration for each task
+- Mark tasks as done / not done directly from the task list
+- If not marked as completed, tasks are automatically considered incomplete at the end of the day
+- View completed and incomplete tasks from previous days
+- View tasks for a single day or a custom date range
+- Filter tasks by category, plan, date range, status, or priority
+- Sort tasks by date, priority, or estimated time
+
+### UC-09 – Daily Workload
 
 - Calculate the total estimated time of tasks per day
 - Display the day's status using color indicators based on workload
 - Display appropriate warnings when the daily workload exceeds defined thresholds
 
-### Task Views
-
-- Daily view
-- Weekly view
-- Monthly calendar view
-
-### Filtering and Sorting
-
-- Filter tasks by category, plan, date range, status, or priority
-- Sort tasks by date, priority, or estimated time
-
-### Recurring and Multi-Day Tasks
-
-- Ability to define tasks for multiple days (recurring or multiple dates)
-
-### Task Status Management
-
-- Mark tasks as completed
-- If not marked as completed, tasks are automatically considered incomplete at the end of the day
-- View completed and incomplete tasks from previous days
-
-### Performance Reporting
-
-- Generate performance reports for a selected time range (e.g., weekly or monthly)
-
-### Overdue Tasks
-
-- Display overdue tasks (past their scheduled date and not marked as done)
-
-### Notifications
+### UC-10 – Upcoming Tasks
 
 - Display upcoming tasks on the main dashboard (or in a separate list)
 - Future enhancement: email notifications and other notification methods
 
-### Soft Delete
+### UC-11 – Reports
 
-- User accounts are soft-deleted with obfuscated credentials
-- Plans and categories are hard-deleted
-- Plans with tasks cannot be deleted; categories with tasks cannot be deleted
+- Generate performance reports for a selected time range (e.g., weekly or monthly)
+- Show total tasks created, completed, completion rate, and overdue count
+
+> **Cross-cutting:** Categories and plans are hard-deleted; soft deletion applies only to user accounts (UC-04). Plans and categories with tasks cannot be deleted (restrict on delete).

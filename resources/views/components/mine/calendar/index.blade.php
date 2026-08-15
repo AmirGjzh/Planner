@@ -1,6 +1,7 @@
 @props([
     'mode' => 'range',
     'card' => true,
+    'island' => null,
 ])
 
 @php
@@ -11,6 +12,7 @@
     x-data="{
         mode: @js($mode),
         name: @js($name),
+        island: @js($island),
         state: null,
         month: 0,
         year: 0,
@@ -145,12 +147,20 @@
             }
         },
 
+        commit() {
+            if (this.name && typeof $wire !== 'undefined') {
+                if (this.island) {
+                    $wire.$island(this.island).$set(this.name, this.state, true)
+                } else {
+                    $wire.set(this.name, this.state, true)
+                }
+            }
+        },
+
         selectDay(cell) {
             if (this.mode === 'single') {
                 this.state = this.state === cell.iso ? null : cell.iso
-                if (this.name && typeof $wire !== 'undefined') {
-                    $wire.set(this.name, this.state, true)
-                }
+                this.commit()
             } else if (this.mode === 'range') {
                 if (!this.state?.start || (this.state.start && this.state.end)) {
                     this.state = { start: cell.iso, end: null }
@@ -165,17 +175,15 @@
                 }
 
                 // Only notify after both start and end are selected
-                if (this.name && typeof $wire !== 'undefined' && this.state?.start && this.state?.end) {
-                    $wire.set(this.name, this.state, true)
+                if (this.state?.start && this.state?.end) {
+                    this.commit()
                 }
             }
         },
 
         reset() {
             this.state = null
-            if (this.name && typeof $wire !== 'undefined') {
-                $wire.set(this.name, null, true)
-            }
+            this.commit()
         },
 
         get hasState() {

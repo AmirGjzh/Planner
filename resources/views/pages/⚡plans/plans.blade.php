@@ -97,7 +97,7 @@
                 </x-mine.dropdown.trigger>
                 <x-mine.dropdown.content class="mt-1! flex justify-center">
                     <div class="flex justify-center items-center w-80">
-                        <x-mine.calendar wire:model.live="range_filter" :card="false" />
+                        <x-mine.calendar wire:model.live="range_filter" island="plans-content" :card="false" />
                     </div>
                 </x-mine.dropdown.content>
             </x-mine.dropdown>
@@ -349,7 +349,7 @@
             </div>
         </div>
         <div class="hidden md:flex justify-center w-80">
-            <x-mine.calendar wire:model.live="range_filter" />
+            <x-mine.calendar wire:model.live="range_filter" island="plans-content" />
         </div>
     </div>
     <div class="mt-6 w-full">

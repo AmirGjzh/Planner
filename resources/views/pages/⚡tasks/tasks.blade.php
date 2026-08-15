@@ -121,7 +121,7 @@
                     @endforeach
                 </x-mine.dropdown.content>
             </x-mine.dropdown>
-            <x-mine.dropdown group="task-filter" multiple model="category_filter" class="w-full">
+            <x-mine.dropdown group="task-filter" multiple model="category_filter" island="tasks-content" class="w-full">
                 <x-mine.dropdown.trigger as="div" class="w-full">
                     <div
                         class="w-full mine-btn-outline-primary flex items-center justify-center gap-2 h-11 px-3 sm:pr-4! rounded-xl cursor-pointer select-none">
@@ -146,7 +146,7 @@
                     @endforeach
                 </x-mine.dropdown.content>
             </x-mine.dropdown>
-            <x-mine.dropdown group="task-filter" multiple model="plan_filter" class="w-full">
+            <x-mine.dropdown group="task-filter" multiple model="plan_filter" island="tasks-content" class="w-full">
                 <x-mine.dropdown.trigger as="div" class="w-full">
                     <div
                         class="w-full mine-btn-outline-primary flex items-center justify-center gap-2 h-11 px-3 sm:pr-4! rounded-xl cursor-pointer select-none">
@@ -183,7 +183,7 @@
                 </x-mine.dropdown.trigger>
                 <x-mine.dropdown.content class="mt-1! flex justify-center">
                     <div class="flex justify-center w-80">
-                        <x-mine.calendar wire:model.live="range_filter" :card="false" />
+                        <x-mine.calendar wire:model.live="range_filter" island="tasks-content" :card="false" />
                     </div>
                 </x-mine.dropdown.content>
             </x-mine.dropdown>
@@ -359,7 +359,7 @@
             </div>
         </div>
         <div class="hidden md:flex justify-center w-80">
-            <x-mine.calendar wire:model.live="range_filter" />
+            <x-mine.calendar wire:model.live="range_filter" island="tasks-content" />
         </div>
     </div>
     <div class="mt-6 w-full">

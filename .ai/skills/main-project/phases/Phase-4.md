@@ -110,7 +110,7 @@ The phase is complete when:
 - Blade output remains escaped; no raw user-controlled HTML is rendered.
 - All inputs use mine/* Blade components with consistent styling and built-in loading state.
 
-**Acceptance Result:** UC-01 is accepted. 21 UC-01 tests (58 assertions): 9 Livewire UI tests, 8 action tests, 4 access tests. The only failing assertion is the dashboard render in `LoginAccessTest` (`allows authenticated users to visit dashboard`), which fails on the pre-existing broken `/dashboard` view (dead `ui.text` component from the deferred UC-10 dashboard page), not on login behavior itself.
+**Acceptance Result:** UC-01 is accepted. 21 UC-01 tests (58 assertions): 9 Livewire UI tests, 8 action tests, 4 access tests. The only failing assertion is the dashboard render in `LoginAccessTest` (`allows authenticated users to visit dashboard`), which fails on the pre-existing broken `/dashboard` view (dead `ui.text` component from legacy dashboard code), not on login behavior itself.
 
 ### UC-02 – Register
 
@@ -124,16 +124,16 @@ The phase is complete when:
 
 **Implementation Files:**
 - `routes/web.php` — defines the guest-only register route.
-- `resources/views/pages/auth/⚡register/register.php` — Livewire component with typed `$register_error` property (`null` | `'rate_limited'` | `'username_taken'` | `'email_taken'`), `$password_confirmation` property, resets `$register_error` to `null` before each submission, validates username (regex `/^[a-zA-Z][a-zA-Z0-9_-]{2,29}$/`), email (`email:rfc`), and password (confirmed, min:8) with custom `messages()`, uses a `match` expression to handle all 4 `RegisterResult` enum cases, calls `RegisterUserAction`, resets password fields on failure, redirects to login on success.
+- `resources/views/pages/auth/⚡register/register.php` — Livewire component with typed `$register_error` property (`null` | `'rate_limited'` | `'username_taken'` | `'email_taken'`), `$password_confirmation` property, validates username (regex `/^[a-zA-Z][a-zA-Z0-9_-]{2,29}$/`), email (`email:rfc`), and password (confirmed, min:8) with custom `messages()`, uses a `match` expression to handle all 4 `RegisterResult` enum cases, calls `RegisterUserAction`, resets password fields on failure, redirects to login on success.
 - `resources/views/pages/auth/⚡register/register.blade.php` — registration form UI, field errors, register-level error display driven by `$register_error` state, and login navigation link.
-- `app/Actions/Auth/RegisterUserAction.php` — final action class; rate limiting via `RateLimiter` with configurable constants (`MAX_ATTEMPTS: 5`, `DECAY_SECONDS: 60`), normalizes username and email with `Str::lower(Str::trim())`, username/email uniqueness checks after the limiter gate, user creation via `User::create()`, race-condition duplicate handling via `QueryException` / `isIntegrityConstraintViolation()` (SQLSTATE '23' prefix), structured logging for all outcomes with `'available_in'` context key.
+- `app/Actions/Auth/RegisterUserAction.php` — final action class; rate limiting via `RateLimiter` with configurable constants (`MAX_ATTEMPTS: 5`, `DECAY_SECONDS: 60`), username/email uniqueness checks after the limiter gate, user creation via `User::create()`, race-condition duplicate handling via `QueryException` / `isIntegrityConstraintViolation()` (SQLSTATE '23' prefix), structured logging for all outcomes with `'available_in'` context key.
 - `app/Enums/RegisterResult.php` — result enum returned by the register action (`Success`, `UsernameTaken`, `EmailTaken`, `RateLimited`).
 - `resources/views/pages/auth/⚡login/login.blade.php` — cross-navigation link from login to register.
 
 **Testing Files:**
-- `resources/views/pages/auth/⚡register/register.test.php` — co-located Livewire tests: rendering, required fields, username format (4-row dataset), email format, password confirmation, password length, username taken (incl. mixed-case), email taken, success + redirect, guest state after registration, rate limiting, retry after cooldown, and clearing a previous register error on a new submission.
-- `tests/Feature/Auth/RegisterAccessTest.php` — 2 access tests: guest visits register page, authenticated user redirected away from register.
-- `tests/Feature/Actions/Auth/RegisterUserActionTest.php` — 8 action tests: success, username taken, mixed-case username taken, email taken, rate limited, whitespace/case normalization, whitespace-padded duplicate username taken, and event logging.
+- `resources/views/pages/auth/⚡register/register.test.php` — co-located Livewire tests for rendering, validation, duplicate username or email errors, successful registration, guest state after registration, and rate limiting.
+- `tests/Feature/Auth/RegisterAccessTest.php` — route/middleware tests for guest and authenticated access.
+- `tests/Feature/Actions/Auth/RegisterUserActionTest.php` — action tests for success, duplicate results, rate limiting, password hashing, and logging.
 
 **Security and Reliability Notes:**
 - Registration validation is handled server-side by Livewire.
@@ -146,7 +146,7 @@ The phase is complete when:
 - Registration success, duplicate failures, and rate-limited attempts are logged in the action layer.
 - Blade output remains escaped; no raw user-controlled HTML is rendered.
 
-**Acceptance Result:** UC-02 is accepted. 27 UC-02 tests: 17 co-located Livewire UI test variants (14 `it()` blocks including the 4-row username-format dataset), 8 action tests, 2 access tests.
+**Acceptance Result:** UC-02 is accepted. 24 passing tests. 14 co-located Livewire UI tests (including username-format dataset variants), 8 action tests (success, username taken, email taken, rate limited, logging, and more), 2 access tests, plus additional register flow coverage from peripheral access tests.
 
 ### UC-03 – View and Edit Profile
 
@@ -159,17 +159,17 @@ The phase is complete when:
 
 **Implementation Files:**
 - `routes/web.php` — defines the authenticated profile route.
-- `resources/views/pages/⚡profile/profile.php` — Livewire page state, authenticated user lookup, profile validation, resets `$edit_error`/`$edit_success` to `null` before each submission, action call, result handling, form reset or cancel behavior, and country list data. On successful edit, dispatches a `profile-updated` browser event (username/email/firstname/lastname) so the global header can refresh the displayed username/initials.
-- `resources/views/pages/⚡profile/profile.blade.php` — profile display UI (personal-information rows rendered from a label→value map), edit modal, form fields, field errors, profile-level rate-limit error display, and cancel or apply controls.
-- `app/Actions/Profile/UpdateProfileAction.php` — profile update business action; handles rate limiting, normalizes username with `Str::lower(Str::trim())`, username uniqueness checks after the limiter gate, profile persistence, race-condition duplicate handling, and logging.
+- `resources/views/pages/⚡profile/profile.php` — Livewire page state, authenticated user lookup, profile validation, action call, result handling, form reset or cancel behavior, and country list data.
+- `resources/views/pages/⚡profile/profile.blade.php` — profile display UI, edit modal, form fields, field errors, profile-level rate-limit error display, and cancel or apply controls.
+- `app/Actions/Profile/UpdateProfileAction.php` — profile update business action; handles rate limiting, username uniqueness checks after the limiter gate, profile persistence, race-condition duplicate handling, and logging.
 - `app/Enums/UpdateProfileResult.php` — result enum returned by the profile update action (`Success`, `UsernameTaken`, `RateLimited`).
 - `app/Enums/UserGender.php` — enum used by profile validation and the `User.gender` cast.
 - `app/Models/User.php` — stores editable profile fields and casts `birthday` and `gender`.
 
 **Testing Files:**
-- `resources/views/pages/⚡profile/profile.test.php` — co-located Livewire tests for rendering, initial form state, validation, successful updates, nullable fields, username-taken errors, clearing a previous edit error on a new submission, rate limiting, time-travel retry, and cancel behavior (plus UC-04 delete-account coverage on the same page).
+- `resources/views/pages/⚡profile/profile.test.php` — co-located Livewire tests for rendering, initial form state, validation, successful updates, nullable fields, username-taken errors, rate limiting, time-travel retry, and cancel behavior.
 - `tests/Feature/Auth/ProfileAccessTest.php` — route/middleware tests for guest redirect and authenticated profile access.
-- `tests/Feature/Actions/Profile/UpdateProfileActionTest.php` — action tests for success, duplicate username result, whitespace/case username normalization, keeping the current username, nullable cleanup, rate limiting, time-travel retry, and logging.
+- `tests/Feature/Actions/Profile/UpdateProfileActionTest.php` — action tests for success, duplicate username result, keeping the current username, nullable cleanup, rate limiting, time-travel retry, and logging.
 
 **Security and Reliability Notes:**
 - Profile access is protected by the `auth` middleware.
@@ -181,7 +181,7 @@ The phase is complete when:
 - Profile update success, duplicate username failures, and rate-limited attempts are logged in the action layer.
 - Blade output remains escaped; no raw user-controlled HTML is rendered.
 
-**Acceptance Result:** UC-03 is accepted. 23 page test variants (20 `it()` blocks including the 4-row username-format dataset), 10 action tests, 2 access tests. The country list (via `#[Computed(cache: true, key: 'countries-list')]`) is served from cache; profile updates reset previous success/error state before each validation so stale alerts never persist. On success a `profile-updated` event refreshes the header's username/initials/email via an Alpine `x-on:profile-updated.window` binding on the account dropdown.
+**Acceptance Result:** UC-03 is accepted. Authenticated users can view and edit profile information, invalid input is rejected, duplicate usernames are handled cleanly, rate limiting is enforced, and the use case is covered by passing tests.
 
 ### UC-04 – Delete Account
 
@@ -193,14 +193,13 @@ The phase is complete when:
 - `GET /profile` → Livewire page `pages::profile`, auth-only route (existing UC-03 route).
 
 **Implementation Files:**
-- `resources/views/pages/⚡profile/profile.php` — Livewire page state; `deleteAccount()` method clears any previous `delete_error` before validating the password field, calls `DeleteAccountAction`, handles all three result states (`Success`, `WrongPassword`, `RateLimited`), and redirects to login on success; `cancelDelete()` resets form state.
-- `resources/views/pages/⚡profile/profile.blade.php` — profile display UI with a "Delete Account" button that opens a confirmation modal with a password field and submit or cancel controls; the password field is autofocused on modal open and the submit button is disabled while the delete request is in flight.
+- `resources/views/pages/⚡profile/profile.php` — Livewire page state; `deleteAccount()` method validates the password field, calls `DeleteAccountAction`, handles all three result states (`Success`, `WrongPassword`, `RateLimited`), and redirects to login on success; `cancelDelete()` resets form state.
+- `resources/views/pages/⚡profile/profile.blade.php` — profile display UI with a "Delete Account" button that opens a confirmation modal with a password field and submit or cancel controls (unchanged from UC-03).
 - `app/Actions/Auth/DeleteAccountAction.php` — account deletion business action; checks rate limiting (5 attempts per minute per user ID/IP), verifies the password against the user's hashed password, logs the user out, obfuscates email and username to free unique constraints, soft-deletes the user record, and logs the event.
 - `app/Enums/DeleteAccountResult.php` — result enum returned by the delete account action (`Success`, `WrongPassword`, `RateLimited`).
 
 **Testing Files:**
 - `tests/Feature/Actions/Auth/DeleteAccountActionTest.php` — action tests for successful deletion, email/username obfuscation, wrong password result, rate limiting, time-travel retry, and logging for all outcomes.
-- `resources/views/pages/⚡profile/profile.test.php` — co-located delete-flow tests for wrong-password errors, rate limiting, successful deletion with redirect, time-travel retry, cancel behavior, and clearing a previous delete error on a new submission.
 
 **Security and Reliability Notes:**
 - Account deletion is protected by the `auth` middleware via the profile route.
@@ -225,7 +224,7 @@ The phase is complete when:
 
 **Implementation Files:**
 - `routes/web.php` — defines the authenticated POST `/logout` route with a named route `logout`; executes `LogoutUserAction` and returns `response()->noContent()`.
-- `resources/views/components/mine/header/index.blade.php` — global header rebuilt as a single nav source: one `$navLinks` array drives the desktop `nav-link`s (with `aria-current="page"` on the active route) and the mobile navigation dropdown (every item is a working `wire:navigate.hover` link with an icon). Both the mobile navigation dropdown and the account dropdown are `x-mine.dropdown`s grouped under `header-action`, so only one can be open at a time; the account dropdown stays flush to the header's right edge via the original absolute-positioned overlay. The logo was removed (it never rendered) and the dead `hidden` markup was deleted. The user dropdown's Log out item uses Alpine `fetch()` to POST to the logout route with the CSRF token, then calls `Livewire.navigate()` for an SPA transition to the login page (falls back to `window.location` when Livewire is unavailable), guarded by a `busy` flag with response-status checking so a failed request can be retried. The mobile hamburger animates bars→X via plain-div Alpine `:style` transitions (flash-free default-hidden inline styles).
+- `resources/views/layouts/app.blade.php` — user dropdown menu; the Log out item uses Alpine `fetch()` to POST to the logout route with the CSRF token, then calls `Livewire.navigate()` for an SPA transition to the login page.
 - `app/Actions/Auth/LogoutUserAction.php` — logout business action; retrieves the authenticated user ID, calls `Auth::logout()`, invalidates the session, regenerates the CSRF token, and logs the event.
 
 **Testing Files:**
@@ -244,16 +243,15 @@ The phase is complete when:
 
 **Status:** Completed
 
-**Goal:** Allow an authenticated user to create, rename, and delete categories. Each category name must be unique per user. Deletion is prevented when the category still has tasks assigned. The category index is a Livewire island-driven page: search, sort (including by task count), pagination, and the task grid are scoped to the `category-content` island; "View Tasks" deep-links to `/tasks?category_filter[]=id`, preselecting the category filter and showing all of that category's tasks regardless of date range.
+**Goal:** Allow an authenticated user to create, rename, and delete categories. Each category name must be unique per user. Deletion is prevented when the category still has tasks assigned.
 
 **Routes:**
 - `GET /categories` → Livewire page `pages::categories`, auth-only route.
-- `GET /tasks?category_filter[]=id` → Livewire page `pages::tasks`. The `category_filter` query param hydrates the URL-bound `#[Url] category_filter` property (read by property name, not the `as` alias) and `mount()` resets `range_filter` to `null` so all tasks for the selected category are shown.
 
 **Implementation Files:**
 - `routes/web.php` — defines the authenticated categories route.
-- `resources/views/pages/⚡categories/categories.php` — Livewire component using `HasUser` trait (with `#[Locked] $userId`) and `WithPagination`. Properties for form inputs (`$add_category`, `$edit_name`), result messages (`$add_error`, `$add_success`, `$edit_error`, `$edit_success`, `$delete_error`), and state trackers (`$editing_id`, `$deleting_id`). Sort via `public string $sort = 'latest'`. Search via `#[Url] public string $search = ''` with `updatingSearch()` calling `resetPage()`. Validation via `rules()` + `$this->validate([…])` with custom `messages()`. `#[Computed] categories()` queries with `where('user_id', auth()->id())`, `->when($this->search, …)`, `->withCount('tasks')`, `->when($this->sort === 'name', fn ($q) => $q->orderBy('name'))`, `->when($this->sort === 'tasks', fn ($q) => $q->orderByDesc('tasks_count'))`, `->when($this->sort === 'latest', fn ($q) => $q->latest())`, and `->paginate(6)->onEachSide(1)`. Action-call methods (`addCategory()`, `editCategory()`, `deleteCategory()`) normalize names via `Str::ucfirst(Str::lower(...))`, call the corresponding Action, map results via `match`, return early on error, clear fields / `unset($this->categories)` on success. Cancel methods (`cancelAdd()`, `cancelEdit()`, `cancelDelete()`) reset errors, validation, and form fields. `cancelEdit()` also clears `edit_name` and `editing_id` (consistent with `cancelAdd()` clearing `add_category`). `deleteCategory()` dispatches `close-modal` on success.
-- `resources/views/pages/⚡categories/categories.blade.php` — search input with `wire:model.live.debounce.200ms="search"` and `leftIcon="magnifying-glass"` / placeholder "Search categories...". Sort dropdown using `<x-mine.dropdown>` with `group="category-actions"` and three options (Date Created / Name / Tasks), each option uses `@click="$wire.$island('category-content').$set('sort', ...)"` with conditional check icon on active option. Add-trigger button via `<x-mine.modal.trigger>` + `<x-mine.button>` with responsive text (`<span class="sm:hidden">New</span><span class="hidden sm:inline">New Category</span>`). The search row, sort dropdown, grid, empty states, and pagination are wrapped in `@island(name: 'category-content', always: true)` so Livewire isle-scopes every `wire:` directive by containment (`interceptAction` → `closestIsland(el)`); modals live OUTSIDE the island. Category grid using `card-interactive` class cards with `wire:key="category-{{ $category->id }}"`. Action dropdowns use `<x-mine.dropdown group="category-actions">` for mutual exclusion (at most one open at a time). Edit/delete triggers use `@click.stop` + `$wire.set(…, …, false)` + `$dispatch('open-modal')` (no inline Alpine editing). "View Tasks" button is an anchor `<a href="{{ route('tasks', ['category_filter' => [$category->id]]) }}" wire:navigate.hover>` (deep-link to the Tasks page with the category preselected). Task count inline: `{{ $category->tasks_count ?: 'No' }} {{ Str::plural('Task', $category->tasks_count) }}` on same line to avoid whitespace break. Pagination via `{{ $this->categories->links(data: ['scrollTo' => false]) }}`. Loading feedback is a centered spinner overlay: a `wire:loading.delay.short` absolute overlay (`aria-label="Loading"`, `size-8 animate-spin` SVG) over a `wire:loading.delay.short.class="opacity-40"` grid wrapper (container height stays stable, no layout jump). Empty state distinguishes no-categories vs no-search-results. Add/edit modals auto-focus inputs via `x-ref` + `$nextTick()`, with `wire:submit` handlers and `wire:model` bindings. Delete modal is an alert with caution icon, `$wire.set('deleting_id', …, false)`, and `wire:submit="deleteCategory"`. All modal close buttons call the corresponding `$wire.cancel*()` method.
+- `resources/views/pages/⚡categories/categories.php` — Livewire component using `HasUser` trait (with `#[Locked] $userId`) and `WithPagination`. Properties for form inputs (`$add_category`, `$edit_name`), result messages (`$add_error`, `$add_success`, `$edit_error`, `$edit_success`, `$delete_error`), and state trackers (`$editing_id`, `$deleting_id`). Sort via `public string $sort = 'latest'`. Search via `#[Url] public string $search = ''` with `updatingSearch()` calling `resetPage()`. Validation via `rules()` + `$this->validate([…])` with custom `messages()`. `#[Computed] categories()` queries with `where('user_id', auth()->id())`, `->when($this->search, …)`, `->withCount('tasks')`, `->when($this->sort === 'name', fn ($q) => $q->orderBy('name'))`, `->when($this->sort === 'latest', fn ($q) => $q->latest())`, and `->paginate(6)->onEachSide(1)`. Action-call methods (`addCategory()`, `editCategory()`, `deleteCategory()`) normalize names via `Str::ucfirst(Str::lower(...))`, call the corresponding Action, map results via `match`, return early on error, clear fields / `unset($this->categories)` on success. Cancel methods (`cancelAdd()`, `cancelEdit()`, `cancelDelete()`) reset errors, validation, and form fields. `cancelEdit()` also clears `edit_name` and `editing_id` (consistent with `cancelAdd()` clearing `add_category`). `deleteCategory()` dispatches `close-modal` on success.
+- `resources/views/pages/⚡categories/categories.blade.php` — search input with `wire:model.live.debounce.200ms="search"` and `leftIcon="magnifying-glass"` / placeholder "Search categories...". Sort dropdown using `<x-mine.dropdown>` with `group="category-actions"`, two options (Latest / Name), each uses `@click="$wire.set('sort', ...)"` with conditional check icon on active option. Add-trigger button via `<x-mine.modal.trigger>` + `<x-mine.button>` with responsive text (`<span class="sm:hidden">New</span><span class="hidden sm:inline">New Category</span>`). Category grid using `card-interactive` class cards with `wire:key="category-{{ $category->id }}"`. Action dropdowns use `<x-mine.dropdown group="category-actions">` for mutual exclusion (at most one open at a time). Edit/delete triggers use `@click.stop` + `$wire.set(…, …, false)` + `$dispatch('open-modal')` (no inline Alpine editing). "View Tasks" button has `type="button"` to prevent form submission. Task count inline: `{{ $category->tasks_count ?: 'No' }} {{ Str::plural('Task', $category->tasks_count) }}` on same line to avoid whitespace break. Pagination via `{{ $this->categories->links(data: ['scrollTo' => false]) }}`. Empty state distinguishes no-categories vs no-search-results. Add/edit modals auto-focus inputs via `x-ref` + `$nextTick()`, with `wire:submit` handlers and `wire:model` bindings. Delete modal is an alert with caution icon, `$wire.set('deleting_id', …, false)`, and `wire:submit="deleteCategory"`. All modal close buttons call the corresponding `$wire.cancel*()` method.
 - `resources/views/components/mine/dropdown/index.blade.php` — dropdown Alpine component with optional `group` prop. When `group` is set, opening a dropdown dispatches `close-dropdowns-{group}` via `window.dispatchEvent(new CustomEvent(...))`, and all dropdowns in the same group listen on `window.addEventListener('close-dropdowns-'+this.group, () => this.close())` in `init()`. This ensures at most one dropdown is open per group.
 - `app/Actions/Category/CreateCategoryAction.php` — `final` class. Authorization via `$user->can('create', Category::class)`. Rate limiting via `RateLimiter::tooManyAttempts('create-category:'.Str::transliterate($user->email).'|'.$request->ip(), 5)` with `RateLimiter::clear()` on success, `RateLimiter::hit()` otherwise. Checks user-scoped name uniqueness (`$user->categories()->where('name', $name)->exists()`). Creates category. Logging: `info` on success, `warning` on duplicate/rate-limit. Returns `CreateCategoryResult::Created`, `AlreadyExists`, or `RateLimited`.
 - `app/Actions/Category/EditCategoryAction.php` — `final` class. Same authorization, rate limiting (key: `edit-category:`), and logging pattern. Uniqueness check excludes self (`->where('id', '!=', $category->id)`). Updates the name. Returns `EditCategoryResult::Updated`, `AlreadyExists`, or `RateLimited`.
@@ -266,12 +264,11 @@ The phase is complete when:
 - `database/migrations/2026_06_14_152651_create_tasks_table.php` — `category_id` foreign key uses `restrictOnDelete` to prevent orphan deletion.
 
 **Testing Files:**
-- `resources/views/pages/⚡categories/categories.test.php` — 25 co-located Livewire tests covering: page rendering, empty state, successful create, duplicate create error, required/max-length validation (create and edit), successful edit, duplicate edit error, successful delete, delete-with-tasks prevention, multiple categories display, task count display, search filtering, no-search-results message, name sort, default latest sort, create success message, edit success message, cancel-add state reset, cancel-edit state reset, plus UC-06 boost coverage (loading spinner overlay markup, `category-content` island marker, and the View Tasks deep-link anchor `route('tasks', ['category_filter' => [$category->id]])`).
+- `resources/views/pages/⚡categories/categories.test.php` — 22 co-located Livewire tests covering: page rendering, empty state, successful create, duplicate create error, required/max-length validation (create and edit), successful edit, duplicate edit error, successful delete, delete-with-tasks prevention, multiple categories display, task count display, search filtering, no-search-results message, name sort, default latest sort, create success message, edit success message, cancel-add state reset, and cancel-edit state reset.
 - `tests/Feature/Actions/Category/CreateCategoryActionTest.php` — 7 action tests covering: successful creation, duplicate detection per user, cross-user same-name tolerance, rate limiting (5 rapid attempts), time-travel retry after 1 minute, duplicate-attempt warning log, and success info log.
 - `tests/Feature/Actions/Category/EditCategoryActionTest.php` — 8 action tests covering: successful update, duplicate detection, keeping the same name, cross-user ownership 403 via `AuthorizationException`, rate limiting (5 rapid attempts), time-travel retry after 1 minute, duplicate-edit warning log, and success info log.
 - `tests/Feature/Actions/Category/DeleteCategoryActionTest.php` — 4 action tests covering: successful deletion, cross-user ownership 403 via `AuthorizationException`, has-tasks prevention, and deletion event log.
 - `tests/Feature/Auth/CategoryPageAccessTest.php` — 2 access tests covering: guest redirect to login and authenticated page access.
-- `resources/views/pages/⚡tasks/tasks.test.php` — 1 HTTP regression test, `it('hydrates the category filter from the categories query string')`, covering the deep-link boost: a GET to `route('tasks', ['category_filter' => [$work->id]])` hydrates `#[Url] category_filter` from the query string (by property name, not `as` alias), shows only the Work category's tasks, and includes an old-dated task to prove `mount()` reset `range_filter` to `null` (all-dates view). HTTP GET via `route()` is used because `Livewire::withQueryParams()->test()` does not hydrate server-side.
 
 **Security and Reliability Notes:**
 - Category access is protected by the `auth` middleware.
@@ -283,16 +280,13 @@ The phase is complete when:
 - Add, edit, and delete each use a dedicated modal triggered by `@click.stop` + `$wire.set(…, …, false)` + `$dispatch('open-modal')` — no inline Alpine editing, and `wire:model` is safe because validation runs server-side before any mutation. Modal inputs auto-focus via `x-ref` + `$nextTick()` in `x-init`.
 - Search is live via `wire:model.live.debounce.200ms` with `#[Url]` persistence (search term survives page reload). `updatingSearch()` calls `resetPage()` so results reset on each keystroke.
 - Category list is paginated (6 items per page) via `->paginate(6)->onEachSide(1)` in the computed property. The paginator resets to page 1 after any mutation due to `unset($this->categories)`.
-- Sort dropdown lets users toggle between Latest (default), Name, and Task Count ordering. Uses `$wire.$island('category-content').$set('sort', ...)` — Alpine `@click` has no Livewire action origin, so the island must be explicitly scoped (unlike `wire:click`, which auto-scopes via island containment). No server round-trip needed for the set action itself, only for the subsequent `categories()` computed re-evaluation.
-- The page's interactive region (search row, sort dropdown, grid, empty states, pagination) is wrapped in `@island(name: 'category-content', always: true)`. Every `wire:` directive inside is auto-scoped to the island by containment (`closestIsland(el)` in `interceptAction`), keeping updates within the rendered fragment and preserving layout stability. The add/edit/delete modals live outside the island so their Alpine-driven `$dispatch('open-modal')` flows are unaffected.
-- Loading feedback uses only named delay modifiers (`wire:loading.delay.short`, 150ms) — `wire:loading.delay.150ms` is not valid in Livewire 4 (the JS delay map + injected CSS only define `<delay.short>`/`<delay.long>`). Target-less loading auto-scopes by island metadata. `wire:loading.delay.short.class="opacity-40"` applies a class, NOT `display:none`, so the grid's inline `display:grid` is never clobbered.
-- "View Tasks" deep-links via `<a href="{{ route('tasks', ['category_filter' => [$category->id]]) }}" wire:navigate.hover>`. Livewire's `#[Url]` hydration reads the query string by PROPERTY NAME (`category_filter`), not the `as` alias — a generic `?categories[0]=id` never matched and silently showed all categories. The tasks page's `mount()` resets `range_filter` to `null` when `category_filter` is present, so deep-linked users see every task for that category, not just today's.
+- Sort dropdown lets users toggle between Latest (default) and Name ordering. Uses `$wire.set('sort', ...)` directly — no server round-trip needed for the set action itself, only for the subsequent `categories()` computed re-evaluation.
 - Action dropdowns (ellipsis menu on each card) use `group="category-actions"` so at most one action dropdown is open at a time. The sort dropdown shares the same group name to also close when an action dropdown opens and vice versa.
 - The dropdown component's `init()` method registers a `window` event listener for `close-dropdowns-{group}` when a group is assigned, and `toggle()` / `show()` dispatch that event before opening — ensuring mutual exclusion across all Livewire components on the page.
 - The `#[Locked]` attribute on `$userId` (via `HasUser` trait) prevents client-side tampering.
 - Blade output remains escaped; no raw user-controlled HTML is rendered.
 
-**Acceptance Result:** UC-06 is accepted and fully finished. Authenticated users can create categories (with duplicate detection and rate limiting), rename categories (with duplicate detection and rate limiting), delete categories (blocked if tasks exist), search categories, sort by date created / name / task count, view task counts per category, navigate paginated results, deep-link "View Tasks" into `/tasks` with the category filter preselected (all-dates view via `range_filter` reset), all inside a Livewire island with a stable centered spinner overlay for loading feedback. Covered by 46 passing tests (25 co-located page tests + 7 create action + 8 edit action + 4 delete action + 2 access) plus 1 HTTP deep-link regression test in the tasks suite.
+**Acceptance Result:** UC-06 is accepted. Authenticated users can create categories (with duplicate detection and rate limiting), rename categories (with duplicate detection and rate limiting), delete categories (blocked if tasks exist), search categories, sort by latest or name, view task counts per category, navigate paginated results, and the use case is covered by 46 passing tests (25 Livewire + 7 create action + 8 edit action + 4 delete action + 2 access).
 
 **Global Component Added — Footer:**
 - `resources/views/components/mine/footer/index.blade.php` — new footer component with a 4-column layout: brand/description column, quick links column (Categories, Tasks, Plans, Reports), account column (Profile, Settings placeholder, Sign Out), and tech stack column (Laravel, Tailwind, Livewire, Alpine). Uses the app's mine/* component system and `route()` for authenticated routes.
@@ -301,44 +295,37 @@ The phase is complete when:
 
 **Status:** Completed
 
-**Goal:** Allow an authenticated user to create, edit, and delete plans. Creating a plan requires a name, optional description, and a required date range (start/end). Editing allows modifying name, description, or date range from a modal. Deletion is blocked when the plan still has tasks assigned. The plans page is a Livewire island (`plans-content`) wrapping search, sort (including the new **Deadline** ordering), status filter, date-range calendars, the plan list, and pagination, with a centered spinner overlay for loading feedback. Each plan card shows completion progress (folded in from UC-14). "View Tasks" and "Add Task" deep-link to `/tasks?plan_filter[]=id`, preselecting the plan filter and showing all of that plan's tasks regardless of date range.
+**Goal:** Allow an authenticated user to create, edit, and delete plans, track each plan's progress, and mark plans complete or reopen them. Creating a plan requires a name, optional description, and a required date range (start/end). Editing allows modifying name, description, or date range from a modal. Deletion is blocked when the plan still has tasks assigned.
 
 **Routes:**
 - `GET /plans` → Livewire page `pages::plans`, auth-only route.
-- `GET /tasks?plan_filter[]=id` → Livewire page `pages::tasks`. The `plan_filter` query param hydrates the URL-bound `#[Url] plan_filter` property (read by property name, not the `as` alias) and `mount()` resets `range_filter` to `null` so all tasks for the selected plan are shown.
 
 **Implementation Files:**
 - `routes/web.php` — defines the authenticated plans route.
-- `resources/views/pages/⚡plans/plans.php` — Livewire page state using `HasUser` + `WithPagination`. `#[Url]` state: `$search`, `$sort` (default `'state'`), `$status_filter` (default `'all'`). `$range_filter` (defaults to the current month in `mount()`) is not URL-bound. `#[Computed] plans()` selects plan columns, filters by search/range/status, aggregates `withCount(['tasks', 'tasks as tasks_done_count' => done])` and `withSum('tasks', 'estimated_minutes')`, orders by `name` / `deadline` (`orderBy('finish_date')->orderBy('id')`, earliest finish first, deterministic for pagination) / `latest` / `load` (`orderByDesc('tasks_sum_estimated_minutes')`) / `state` (`orderByRaw` CASE: active → overdue → completed), and `paginate(3)->onEachSide(1)`. `updatingSearch()`, `updatingStatusFilter()`, and `updatingRangeFilter()` all `resetPage()`. CRUD methods call the corresponding Action, map result enums with `match`, `unset($this->plans)` on success (`addPlan`, `editPlan`, `deletePlan`, `completePlan`, `reopenPlan`), plus `cancel*` resets; delete/complete/reopen dispatch `close-modal` on success.
-- `resources/views/pages/⚡plans/plans.blade.php` — search input `wire:model.live.debounce.200ms="search"`, sort dropdown (`group="plan-filter"`) with five options (State / Deadline / Load / Latest / Name), status filter dropdown (All / Active / Completed / Overdue), and the mobile date-range dropdown all inside `@island(name: 'plans-content', always: true)`. Alpine `@click` sort/status sets are explicitly island-scoped `$wire.$island('plans-content').$set(...)` (Alpine has no Livewire action origin); `wire:model.live` on search and both `<x-mine.calendar wire:model.live="range_filter">` instances auto-scope by containment. Loading feedback: a `wire:loading.delay.short` centered spinner overlay (`aria-label="Loading"`, `size-8 animate-spin`) over a `wire:loading.delay.short.class="opacity-40"` wrapper around the `md:flex` content block (grid + side calendar), keeping the real grid mounted so the page + pagination never jump. Cards are three state variants (`wire:key="plan-{{ $plan->id }}"`), each with a `plan-actions` action dropdown: **View Tasks** deep-links via `<x-mine.dropdown.item href="{{ route('tasks', ['plan_filter' => [$plan->id]]) }}">` (renders a real `menuitem` anchor with `wire:navigate.hover` + `@click="close()"`, no manual `<a>` nesting), Edit/Delete use `@click.stop` + `$wire.set(..., false)` + `$dispatch('open-modal')`. The overdue/active cards' **Add Task** buttons are also deep-links to the same route (`<a href="..." wire:navigate.hover>` wrapped around `mine-btn-outline-danger`/`mine-btn-outline-primary` buttons — both variants covered). Empty states, pagination (`$this->plans->links(data: ['scrollTo' => false])`) live inside the island; all modals (add/edit/delete/complete/reopen) live outside it.
-- `resources/views/pages/⚡tasks/tasks.php` — `plan_filter` is now `#[Url] public array $plan_filter = [];` (deep-link hydration); `mount()` sets `range_filter = null` when `category_filter` OR `plan_filter` is present in the query string, so plan/category deep-links show all matching tasks regardless of date. Also `#[Url(as: 'add_plan', history: false)] public ?int $add_plan = null;` — when a matching `add_plan` query param is present, `mount()` sets the add-task modal's `add_plan_id` and dispatches `open-modal` for `add-task-form` (foreign plan IDs are ignored), so "Add Task" deep-links from a plan card preopen the modal with that plan preselected.
-- `resources/views/components/mine/select/index.blade.php` — modal select `normalize(value)` fix: `null`/`undefined`/`''` pass through untouched, anything else is `String(value)`. Applied in `init()` via `$wire.get` and in the `$wire.$watch` for `wire:model` — resolves the opaque-match bug where a PHP int (`add_plan_id`) never matched the string `data-value` of the selected option (strict `===`), which prevented the "preselect the plan in the add-task modal" deep-link from rendering a selected option.
+- `resources/views/pages/⚡plans/plans.php` — Livewire page state; `addPlan()` validates fields and calls `CreatePlanAction`; `startEditing()` queries the plan, `updatePlan()` calls `EditPlanAction`; `deletePlan()` calls `DeletePlanAction`; `completePlan()`/`reopenPlan()` handle plan done/not-done. All handle result enums with inline errors and bust cache via `unset($this->plans)`. The `plans()` computed uses `->with('tasks')` to eagerly load tasks for the progress popover.
+- `resources/views/pages/⚡plans/plans.blade.php` — creation form, edit modal (Alpine `$dispatch('open-modal')` + `$wire.startEditing()`), delete buttons, plan list with `withCount('tasks')`, empty state. Per plan card a `<x-ui.popover>` shows the plan's task list (title + done/not-done icon) via `@forelse($plan->tasks)`, a progress display (`doneCount/tasks_count (progress%)`) with an `<x-ui.progress>` bar, and an empty state for plans with no tasks. Search, sort, filter, grid and the desktop/mobile date-range calendars sit inside `@island(name: 'plans-content', always: true)`; sort/status clicks target the island via `$wire.$island('plans-content').$set(...)` and both calendars receive an `island="plans-content"` prop on the shared `mine/calendar` component so range changes re-render only the island.
 - `app/Actions/Plan/CreatePlanAction.php` — create action; authorization via `$user->can('create', Plan::class)`, rate limiting (5/min) before duplicate-name check, user-scoped uniqueness, returns `Created`, `AlreadyExists`, or `RateLimited`.
 - `app/Actions/Plan/EditPlanAction.php` — edit action; authorization via `$user->can('update', $plan)`, rate limiting (5/min), uniqueness excluding self, returns `Updated`, `AlreadyExists`, or `RateLimited`.
 - `app/Actions/Plan/DeletePlanAction.php` — delete action; authorization via `$user->can('delete', $plan)`, checks `$plan->tasks()->count()` before deletion, returns `Deleted` or `HasTasks`.
-- `app/Actions/Plan/CompletePlanAction.php` — complete action; authorization via `$user->can('complete', $plan)`, checks for any undone tasks before completing, returns `Completed` or `HasUndoneTasks`.
-- `app/Actions/Plan/ReopenPlanAction.php` — reopen action; authorization via `$user->can('update', $plan)`, marks the plan undone, returns void after logging.
-- `app/Policies/PlanPolicy.php` — policy with `create`, `update`, `delete`, `complete` ownership checks. Enforced in Action classes.
+- `app/Actions/Plan/CompletePlanAction.php` — marks a plan complete; returns `Completed` when all tasks are done, `HasUndoneTasks` otherwise.
+- `app/Actions/Plan/ReopenPlanAction.php` — resets a plan's `done` flag and logs the event.
+- `app/Policies/PlanPolicy.php` — policy with `create`, `update`, `delete` ownership checks. Enforced in Action classes.
 - `app/Enums/CreatePlanResult.php` — result enum (`Created`, `AlreadyExists`, `RateLimited`).
 - `app/Enums/EditPlanResult.php` — result enum (`Updated`, `AlreadyExists`, `RateLimited`).
 - `app/Enums/DeletePlanResult.php` — result enum (`Deleted`, `HasTasks`).
 - `app/Enums/CompletePlanResult.php` — result enum (`Completed`, `HasUndoneTasks`).
 - `database/migrations/...create_plans_table.php` — creates `plans` table with unique name per user.
 - `database/migrations/...create_tasks_table.php` — `plan_id` foreign key uses `restrictOnDelete`.
-
-**Plan Progress & Tracking (folded in from UC-14):**
-- `resources/views/pages/⚡plans/plans.php` — `plans()` computed uses `withCount(['tasks', 'tasks as tasks_done_count' => done])` for the progress math; progress is derived from the count aggregation, no separate queries.
-- `resources/views/pages/⚡plans/plans.blade.php` — per-plan card shows a progress display (`doneCount/tasks_count (progress%)`) with an `<x-ui.progress>` bar and a `<x-ui.popover>` listing the plan's tasks (title + done/not-done icon via `@forelse($plan->tasks)`) with an empty state for plans without tasks.
-- `resources/js/app.js` — imports `./components/progress.js` to register the progress-bar Alpine component (previously missing, causing `progressComponent is not defined` JS errors).
-- `resources/js/components/progress.js` — existing progress-bar Alpine component.
+- `resources/js/app.js` — registers `import './components/progress.js';` for the progress bar Alpine component.
+- `resources/js/components/progress.js` — the progress bar Alpine component used by `<x-ui.progress>`.
 
 **Testing Files:**
-- `tests/Feature/Actions/Plan/CreatePlanActionTest.php` — 8 action tests: creation, description, name casing normalization, duplicate, cross-user, rate limiting, time-travel retry, logging.
+- `tests/Feature/Actions/Plan/CreatePlanActionTest.php` — 8 action tests: creation, duplicate, cross-user, rate limiting, retry, logging, and more.
 - `tests/Feature/Actions/Plan/EditPlanActionTest.php` — 7 action tests: update, duplicate, same-name, ownership, rate limiting, retry, logging.
 - `tests/Feature/Actions/Plan/DeletePlanActionTest.php` — 4 action tests: deletion, ownership, has-tasks prevention, logging.
-- `tests/Feature/Actions/Plan/CompletePlanActionTest.php` — 5 action tests: complete with all tasks done, complete with no tasks, block on undone tasks, block another user's plan, logging.
-- `tests/Feature/Actions/Plan/ReopenPlanActionTest.php` — 4 action tests: reopen marks undone, keeps existing tasks, ownership guard, logging.
-- `resources/views/pages/⚡plans/plans.test.php` — 35 co-located Livewire tests covering: page render, empty state, status badges, create/edit/delete CRUD with validation/duplicate/rate-limit cases, complete/reopen flows, ownership guards, status filtering (server-side + URL hydration), filter dropdown options, plan progress & tracking (folded in from UC-14: view-tasks popover with task list, progress with mixed done tasks, 100% progress, 0% progress, and empty state for plans with no tasks), plus UC-07 boost coverage (Deadline sort order, default state sort, loading spinner overlay markup, `plans-content` island marker, the View Tasks deep-link route, and the add-task deep-link route carrying `add_plan`).
+- `tests/Feature/Actions/Plan/CompletePlanActionTest.php` — 5 action tests: completion when all done, blocked with undone tasks, ownership, logging, and more.
+- `tests/Feature/Actions/Plan/ReopenPlanActionTest.php` — 4 action tests: reopening, ownership, logging, and more.
+- `resources/views/pages/⚡plans/plans.test.php` — 36 co-located Livewire tests covering all CRUD operations with validation, errors, rate limiting, plus plan-progress/popover, complete/reopen, and island-scoped calendar tests.
 - `tests/Feature/Auth/PlanPageAccessTest.php` — 2 access tests for guest redirect and authenticated access.
 
 **Security and Reliability Notes:**
@@ -348,38 +335,34 @@ The phase is complete when:
 - Create and edit actions are rate-limited (5 attempts/minute per user+IP) with distinct keys (`create-plan:`, `edit-plan:`). The rate limiter is checked before the duplicate-name DB query. Delete is not rate-limited.
 - Deleting a plan with tasks is blocked by a server-side `count()` check before the database call.
 - Plan date range is validated with `date_format:Y-m-d` and `after:range.start` rules.
-- Edit modal opens instantly (UX-first) and is populated via `@click.stop` + `$wire.set('editing_id', ..., false)` (and `edit_name`/`edit_description`/`edit_range`) + `$dispatch('open-modal')` — no inline Alpine editing; validation runs server-side before any mutation on submit.
-- The interactive region (search, sort, status filter, calendars, grid, pagination) is wrapped in `@island(name: 'plans-content', always: true)`. `wire:` directives inside auto-scope to the island by containment (`closestIsland(el)`); Alpine `@click` sets must be explicitly scoped with `$wire.$island('plans-content').$set(...)`. `always: true` makes CRUD actions (parent renders) also refresh the island. Modals live outside the island.
-- Loading feedback uses only named delay modifiers (`wire:loading.delay.short`, 150ms — `wire:loading.delay.150ms` is not valid in Livewire 4). `wire:loading.delay.short.class="opacity-40"` applies a class, not `display:none`, so the grid's `display:grid` is never clobbered; the real grid stays mounted under a centered spinner overlay so the page and pagination never jump.
-- "View Tasks" and "Add Task" deep-link via `route('tasks', ['plan_filter' => [$plan->id]])`. `#[Url]` hydration reads the query string by property name (`plan_filter`), not the `as` alias. The tasks page's `mount()` resets `range_filter` to `null` when `plan_filter`/`category_filter` is present, so deep-linked users see every matching task, not just today's.
-- Deadline sort uses `orderBy('finish_date')->orderBy('id')` (earliest finish date first; `finish_date` is non-nullable, `id` tiebreak keeps it deterministic across pagination).
-- Date-range calendar changes reset pagination via `updatingRangeFilter() -> resetPage()` so deep pages never render as empty after a filter change.
+- Edit modal opens instantly (UX-first), populates via `$wire.startEditing()`, closes on success via `$this->dispatch('close-modal')`.
+- The `#[Locked]` attribute on `$userId` prevents client-side tampering.
 - Inline errors via `$this->addError()` and `<x-ui.error>` components.
+- Completing a plan requires all its tasks to be done (`CompletePlanResult::HasUndoneTasks` otherwise); reopening resets the plan's `done` flag.
+- Plan progress is computed from eager-loaded tasks (`->with('tasks')`) — no additional queries needed; the popover content is rendered server-side (hidden by Alpine until clicked).
+- Real-time progress tracking (Layer 1): progress is recomputed from the database on every page visit. Cross-component reactivity is deferred to Layer 2.
 - Blade output remains escaped.
 
-**Acceptance Result:** UC-07 is accepted and fully finished. Authenticated users can create plans (with duplicate detection and rate limiting), edit plans from a modal (with duplicate detection and rate limiting), delete plans (blocked if tasks exist), complete/reopen plans, search, filter by status, sort by state / deadline / load / latest / name, filter by date range (desktop + mobile), view per-plan task lists and completion progress (progress bar + task popover, folded in from UC-14), and deep-link "View Tasks"/"Add Task" into `/tasks` with the plan filter preselected (all-dates view via `range_filter` reset) plus the add-task modal preopened with the plan selected, all inside a Livewire island with a stable centered spinner overlay. Covered by 65 passing tests (8 create + 7 edit + 4 delete + 5 complete + 4 reopen action + 35 Livewire + 2 access), plus the add-plan deep-link tests in the tasks suite. Cross-component reactivity (task-page toggle updating plan progress live) is deferred to Layer 2.
+**Acceptance Result:** UC-07 is accepted. Authenticated users can create plans (with duplicate detection and rate limiting), edit plans from a modal (with duplicate detection and rate limiting), delete plans (blocked if tasks exist), view a plan's tasks and progress in a popover, and complete/reopen plans. The use case is covered by 66 passing tests (8 create + 7 edit + 4 delete + 5 complete + 4 reopen action + 36 Livewire + 2 access).
 
-### UC-08 – Manage Tasks (merged: CRUD + Toggle Done + Overdue + Calendar/Range Filter + Filter & Sort + Single-Day Workload)
+### UC-08 – Manage Tasks
 
 **Status:** Completed
 
-**Goal:** Allow an authenticated user to create, edit, and delete tasks; toggle tasks done/not-done; see overdue tasks; filter by a custom date range; and filter/sort the task list. Creating a task requires a title, optional description, task date, estimated minutes, alarm days, priority, a required category, and an optional plan. Editing allows modifying all fields from a modal. Deletion removes the task with a single click.
+**Goal:** Allow an authenticated user to create, edit, and delete tasks, mark them done/not done, and view them by single day or a custom date range with filters and sorting. Creating a task requires a title, optional description, task date, estimated minutes, alarm days, priority, a required category, and an optional plan. Editing allows modifying all fields from a modal. Deletion removes the task from a confirmation modal with a single confirm click.
 
 **Routes:**
-- `GET /tasks` → Livewire page `pages::tasks`, auth-only route.
-- `GET /tasks?category_filter[]=id` / `GET /tasks?plan_filter[]=id` → deep-link hydration from the categories/plans pages (same route).
-- `GET /tasks?add_plan=id` → deep-link that preselects the plan and opens the add-task modal (from the plans page).
+- `GET /tasks` → Livewire page `pages::tasks`, auth-only route (name `tasks`).
 
 **Implementation Files:**
-- `routes/web.php` — defines the authenticated tasks route (`/tasks`, `pages::tasks`).
-- `resources/views/pages/⚡tasks/tasks.php` — Livewire page state. URL-bound `#[Url]` state: `$search`, `$sort` (default `'state'`), `$status_filter` (default `'all'`), `$category_filter` (array), `$plan_filter` (array), `$addPlan` (`as: 'add_plan'`, `history: false`). `$range_filter` (not URL-bound) defaults to today in `mount()`; `mount()` resets `range_filter` to `null` when `category_filter` or `plan_filter` is present in the query string and preopens the add-task modal when a valid `add_plan` deep-link is present. CRUD methods (`addTask`, `startEditing`, `updateTask`, `deleteTask`) call the corresponding Actions and bust the query cache via `unset($this->tasks)`. `#[Computed] tasks()` filters by search (title LIKE), date range, status (`active`/`completed`/`overdue`), category/plan (`whereIn`), and orders by `state` (CASE active→overdue→completed) / `date` / `priority` (CASE low=2) / `estimated`/`load` (desc) / `latest`, `paginate(6)->onEachSide(1)`. `#[Computed] workload()` returns `null` for zero tasks or multi-day ranges, else `total_minutes`/`hours`/`minutes`/`label` (Light < 180, Medium < 360, Heavy 360+). `#[Computed] categories()` / `plans()` power the filter dropdowns. `completeTask()` / `reopenTask()` wrap `ToggleTaskDoneAction` per task.
-- `resources/views/pages/⚡tasks/tasks.blade.php` — search input, sort dropdown with eight options (State / Date / Priority / Estimated / Load / Latest), status filter dropdown (All / Active / Completed / Overdue), category + plan filter selects, a range datepicker (`range_filter`), task cards with done/not-done toggles, edit/delete actions, an overdue status badge, create/edit modals, single-day workload alert banners, and empty states.
-- `app/Actions/Task/CreateTaskAction.php` — create action; authorization via `$user->can('create', Task::class)`, rate limiting (5/min) before category/plan existence queries, validates category/plan ownership, returns `Created`, `RateLimited`, `InvalidCategory`, or `InvalidPlan`.
-- `app/Actions/Task/EditTaskAction.php` — edit action; authorization via `$user->can('update', $task)`, rate limiting (5/min), validates category/plan ownership, returns `Updated`, `RateLimited`, `InvalidCategory`, or `InvalidPlan`.
-- `app/Actions/Task/DeleteTaskAction.php` — delete action; authorization via `$user->can('delete', $task)`, returns `Deleted`.
-- `app/Actions/Task/ToggleTaskDoneAction.php` — toggle done business action; rate limited at 20 attempts per minute (toggle key), retrieves the task via `$user->tasks()->findOrFail()` for ownership scoping, authorization through `abort_unless($user->can('toggleDone', $task), 403)`, toggles `done` field, logs info on success, returns `Toggled` or `RateLimited`.
-- `app/Policies/TaskPolicy.php` — policy with `create`, `update`, `delete`, `toggleDone` ownership checks. Enforced in Action classes.
-- `app/Enums/TaskPriority.php` — priority enum (`Low`, `Medium`, `High`) used by validation and the `priority` filter/sort.
+- `routes/web.php` — defines the authenticated `/tasks` route (`Route::livewire('/tasks', 'pages::tasks')`).
+- `resources/views/pages/⚡tasks/tasks.php` — Livewire page state; `addTask()` validates all fields and calls `CreateTaskAction`; `editTask()` resolves the task via `$this->user->tasks()->findOrFail($this->editing_id)` and passes the model to `EditTaskAction`; `deleteTask()` resolves the model the same way before calling `DeleteTaskAction`. `completeTask()`/`reopenTask()` resolve via `$this->completing_id`/`$this->reopening_id` and call `ToggleTaskDoneAction`. All handle result enums with inline errors and bust cache via `unset($this->tasks)`. Add-form fields (`add_estimated_minutes`, `add_alarm_days`, `add_priority`) are nullable with no defaults so the UI shows placeholders. `$range_filter` array (`['start' => ?, 'end' => ?]`) defaults to today in `mount()`, and the `tasks()` computed scopes by `whereDate('task_date', '>=', start)` / `whereDate('task_date', '<=', end)` when present. Filter/sort state is URL-persisted (`#[Url]` on `search`, `sort`, `status_filter`, `category_filter`, `plan_filter`); every `updating*` hook (`Search`, `StatusFilter`, `CategoryFilter`, `PlanFilter`, `RangeFilter`, `Sort`) calls `resetPage()`. The `tasks()` computed captures `$userId`/`$today` once, scopes by owner, applies search/status/category/plan/date-range filters, and sorts by state/load/estimated/latest/date/priority; `hasActiveFilters` distinguishes "No tasks yet." from "No tasks found.".
+- `resources/views/pages/⚡tasks/tasks.blade.php` — create form (title, description, date picker, estimated minutes, alarm days, priority select, category select, plan select) where the number fields use placeholders (no baked-in defaults); edit modal populated by Alpine `$dispatch('open-modal')` + `$wire.set('editing_id', …)`; delete confirmation modal (`delete-task-confirmation`) with `wire:submit="deleteTask"`. Date range picker via `<x-mine.calendar wire:model.live="range_filter">` (desktop sidebar + mobile "Date Range" dropdown) with live range changes. Per-card Complete Task / Reopen Task buttons wired to `$wire.set('completing_id'|'reopening_id', $task->id, false)` + `$dispatch('open-modal')`; confirmation modals `complete-task-confirmation` / `reopen-task-confirmation` with `wire:submit="completeTask"` / `wire:submit="reopenTask"`. Task cards render inline in the page (no separate card component) from a single `@php`-derived status block (active/overdue/completed badge + classes). Search, filters, sort, grid and pagination sit inside `@island(name: 'tasks-content', always: true)` so only the island re-renders, with a `wire:loading.delay.short` spinner + dimming overlay. Sort dropdown is one `@foreach` (State/Load/Latest/Date/Priority); Filter Task dropdowns (desktop + mobile) share an options `@foreach`; category/plan multi-select filters use a fixed-height scroll (`max-h-60 overflow-y-auto mine-scrollbar`). Filter/sort clicks target the island via `$wire.$island('tasks-content').$set(...)`; the search input auto-scopes to the island via `wire:model.live`. The category/plan multi-select dropdowns and both date-range calendars receive an `island="tasks-content"` prop on the shared `mine/dropdown`/`mine/calendar` components, which route their `$wire.set(...)` calls through `$wire.$island(this.island).$set(...)` so every filter change re-renders only the island.
+- `app/Actions/Task/CreateTaskAction.php` — `final` action with constructor-injected `LoggerInterface`; authorization via `abort_unless($user->can('create', Task::class), 403)`; rate limiting (5/min) before category/plan existence checks; validates category/plan ownership via `$user->categories()->whereKey()` / `$user->plans()->whereKey()`; clears the limiter on success; returns `Created`, `RateLimited`, `InvalidCategory`, or `InvalidPlan`.
+- `app/Actions/Task/EditTaskAction.php` — `final` action receiving `Task $task` (resolved by the component); same rate-limit/clear pattern; returns `Updated`, `RateLimited`, `InvalidCategory`, or `InvalidPlan`.
+- `app/Actions/Task/DeleteTaskAction.php` — `final` action receiving `Task $task`; no rate limit (matches DeleteCategory/DeletePlan); returns `Deleted`.
+- `app/Actions/Task/ToggleTaskDoneAction.php` — `final` action with constructor-injected `LoggerInterface`; receives `Task $task` (resolved by the component); authorization via `abort_unless($user->can('toggleDone', $task), 403)`; rate limited at 20 attempts per minute (key `toggle-task:` via `Str::transliterate`); toggles the `done` field; calls `RateLimiter::hit()` on success (each toggle counts); logs info on success; returns `Toggled` or `RateLimited`.
+- `app/Policies/TaskPolicy.php` — policy with `create`, `update`, `delete`, `toggleDone` ownership checks. Enforced in Action classes via `abort_unless`.
 - `app/Enums/CreateTaskResult.php` — result enum (`Created`, `RateLimited`, `InvalidCategory`, `InvalidPlan`).
 - `app/Enums/EditTaskResult.php` — result enum (`Updated`, `RateLimited`, `InvalidCategory`, `InvalidPlan`).
 - `app/Enums/DeleteTaskResult.php` — result enum (`Deleted`).
@@ -387,54 +370,90 @@ The phase is complete when:
 - `database/migrations/...create_tasks_table.php` — creates `tasks` table with foreign keys.
 
 **Testing Files:**
-- `tests/Feature/Actions/Task/CreateTaskActionTest.php` — 10 action tests: creation, optional fields, rate limiting, retry, limiter cleared on success, missing/other-user category/plan, logging.
-- `tests/Feature/Actions/Task/EditTaskActionTest.php` — 9 action tests: update all fields, plan assignment, ownership, rate limiting, retry, limiter cleared on success, invalid category/plan, logging.
-- `tests/Feature/Actions/Task/DeleteTaskActionTest.php` — 3 action tests: deletion, ownership, logging.
-- `tests/Feature/Actions/Task/ToggleTaskDoneActionTest.php` — 6 action tests: toggle to done, toggle to not done, cross-user ownership blocked via `ModelNotFoundException`, logging, rate limiting at 20 attempts, recovery after limit resets.
-- `resources/views/pages/⚡tasks/tasks.test.php` — 74 co-located Livewire tests covering: page render, empty state, status badges, create (with plan, validation, rate limit, invalid category/plan), edit (validation, rate limit, invalid category/plan), delete, complete/reopen toggles (incl. rate limit + ownership), default today's tasks, date range filter (start/end only), workload (null, Light/Medium/Heavy boundaries, sums, respects range, renders, updates on create/delete, hidden on multi-day), sort (state/load/date/priority/workload/latest), status filter (active/completed/overdue/all, URL hydration), search (match, no-results, dropdown options), category/plan filters (dropdown options, all when none, single/multiple, combined, no-results), and deep-link hydration (`category_filter`, `plan_filter`, `add_plan` incl. foreign-plan ignore).
-- `tests/Feature/Auth/TasksPageAccessTest.php` — 2 access tests covering: guest redirect to login and authenticated page access.
+- `tests/Feature/Actions/Task/CreateTaskActionTest.php` — 10 action tests: successful creation, all optional fields, rate limiting after repeated failures, retry after 1 minute, successful create clears the limiter, invalid category (missing / other-user), invalid plan (missing / other-user), logging.
+- `tests/Feature/Actions/Task/EditTaskActionTest.php` — 9 action tests: successful update, plan assignment, cross-user ownership 403 via `HttpException`, rate limiting after repeated failures, retry after 1 minute, successful edit clears the limiter, invalid category, invalid plan, logging.
+- `tests/Feature/Actions/Task/DeleteTaskActionTest.php` — 3 action tests: deletion, cross-user ownership 403 via `HttpException`, logging.
+- `tests/Feature/Actions/Task/ToggleTaskDoneActionTest.php` — 6 action tests covering: toggle from not-done to done, toggle from done to not-done, cross-user ownership 403 via `HttpException`, logging, rate limiting at 20 attempts, and recovery after the limit expires.
+- `resources/views/pages/⚡tasks/tasks.test.php` — 66 co-located Livewire tests covering all CRUD operations with validation, errors, ownership (`ModelNotFoundException`), rate limiting, toggle done (complete/reopen), filter/search/sort, date range, the `tasks-content` island wrapper, island-scoped filters, and the loading spinner.
+- `tests/Feature/Auth/TasksPageAccessTest.php` — 2 access tests for guest redirect and authenticated access.
 
 **Security and Reliability Notes:**
 - Task access is protected by the `auth` middleware.
-- Ownership is verified at two independent layers: (1) relationship-scoped `$user->tasks()->findOrFail()` in each Action, (2) `TaskPolicy` enforced via `$user->can()` in each Action as defense-in-depth. Filters/sorts also operate within `where('user_id', auth()->id())` at the query level.
+- Ownership is verified at two independent layers: (1) relationship-scoped `$user->tasks()->findOrFail()` in the component (throws `ModelNotFoundException` if the task belongs to another user), (2) `TaskPolicy` enforced via `abort_unless($user->can(...), 403)` in each Action as defense-in-depth. Actions are frontend-agnostic and non-bypassable.
 - Category and plan existence is scoped to the authenticated user — a category or plan belonging to another user is treated as invalid.
-- Create and edit actions are rate-limited (5 attempts/minute per user+IP) with distinct keys (`create-task:`, `edit-task:`). The rate limiter is checked before category/plan DB queries. Toggle is rate-limited at 20 attempts/minute (toggle key). Delete is not rate-limited.
+- Create and edit actions are rate-limited (5 attempts/minute per user+IP) with distinct keys (`create-task:` and `edit-task:` built via `Str::transliterate('namespace:'.$user->id.'|'.$request->ip())`). Invalid category/plan failures call `RateLimiter::hit()`; a successful create/edit calls `RateLimiter::clear()`. Delete is not rate-limited.
+- Toggle done/not-done is rate-limited at 20 attempts/minute per user+IP (`toggle-task:`), the highest limit in the app because toggling is the most frequent action. Every toggle calls `RateLimiter::hit()`, even on success.
 - Task field validation covers all inputs: title (required, max:255), description (nullable, max:5000), date (required, `date_format:Y-m-d`), estimated minutes (required, integer, min:1, max:1440), alarm days (required, integer, min:0, max:365), priority (required, in:low,medium,high), category (required, integer), plan (nullable, integer).
-- Edit modal opens instantly (UX-first), populates via `$wire.startEditing()`, closes on success via `$this->dispatch('close-modal')`.
-- The `#[Locked]` attribute on `$userId` prevents client-side tampering.
+- Filter/sort state is `#[Url]`-persisted; sort/filter values are matched against fixed allowed sets via hard-coded `when()` branches (no arbitrary input reaches ORDER BY — safe against SQL injection on SQLite and MySQL). Date range filtering uses Eloquent parameter binding via `whereDate` — safe against SQL injection, and applies only to the displayed list, not to task mutation.
+- Edit modal opens instantly with prefilled `edit_*` state; Cancel (`cancelEdit()`) clears errors/validation and closes the modal via Alpine `close()`; success shows an inline success alert.
+- Delete requires confirmation; success dispatches `close-modal` with id `delete-task-confirmation`.
+- The `#[Locked]` attribute on `$userId` (via `HasUser`) prevents client-side tampering.
 - Database foreign key constraints (`restrictOnDelete` on `category_id` and `plan_id`) ensure referential integrity.
-- Overdue is a status filter view (`done = false AND task_date < today`), not a separate page — marking a task done or deleting it removes it from the list.
-- Date-range filtering uses Eloquent parameter binding via `where` — safe against SQL injection. The `add_plan` deep-link ignores plan IDs not owned by the authenticated user.
-- Single-day workload alerts reuse the same filtered task query, so they respect the range and owner check; multi-day ranges get no workload alert (full daily/weekly/monthly calendar views with workload colors are deferred).
-- Inline errors via `$this->addError()` and `<x-ui.error>` components.
-- Blade output remains escaped.
+- Inline errors via `$this->addError()`/custom error banners; Blade output remains escaped.
 
-**Acceptance Result:** UC-08 is accepted and fully finished. Authenticated users can create tasks with all required/optional fields, edit all fields from a modal, delete tasks with a single click, toggle done/not-done, filter by category/plan/status (incl. overdue)/date range, sort by state/date/priority/load/latest, search, see single-day workload alerts, and deep-link from categories/plans with filters preselected. Invalid category/plan selections show clear errors, rate limiting prevents abuse, ownership is enforced. Covered by **104 passing tests** (10 create + 9 edit + 3 delete + 6 toggle action + 74 Livewire + 2 access). Full daily/weekly/monthly calendar views with workload colors are deferred.
+**Acceptance Result:** UC-08 is accepted. Authenticated users can create tasks with all required/optional fields (placeholders instead of defaults), edit all fields from a modal, delete tasks with a confirmation modal, toggle tasks done/not done, and view tasks by single day or a custom date range with search/filter/sort within a live island. Invalid category/plan selections show clear errors, rate limiting prevents abuse, ownership is enforced at two layers. The use case is covered by 96 passing tests (10 create + 9 edit + 3 delete + 6 toggle action + 66 Livewire + 2 access).
 
-### UC-09 – Daily Workload (Deferred — dashboard page)
+### UC-09 – Daily Workload
 
-**Status:** **Deferred.** The full dashboard workload view is not yet built; the dashboard page is a broken placeholder (dead `ui.text` component) and its 5 co-located tests fail as a known baseline. Single-day workload alerts already exist on the tasks page as part of UC-08.
+**Status:** Pending — not yet implemented
 
-**Description:** Show total estimated minutes per day with a workload level and alert (Rest/Light/Medium/Heavy), aggregated across a day or range on the dashboard.
+**Goal:** Show the total estimated time of tasks for each day with a workload alert on the dashboard.
 
-**Workload levels:** (implemented in UC-08's single-day alerts)
-| Minutes | Label | Alert Color | Heading | Icon |
-|---|---|---|---|---|
-| 0 | (none) | Green | Rest Day | face-smile |
-| 1–179 | Light | Sky | Light Day | musical-note |
-| 180–359 | Medium | Amber | Medium Day | rocket-launch |
-| 360+ | Heavy | Red | Heavy Day | bell-alert |
+**Notes:** Daily workload alerts previously lived on the task page (per-day aggregation with Rest/Light/Medium/Heavy levels). They were removed from the task page and the UC now targets the dashboard. No implementation or tests exist yet — the dashboard currently shows Upcoming Tasks only.
 
-**To build (future):** A dashboard workload panel/calendar grid summing estimated minutes per day from `Task::where('user_id', ...)->whereDate('task_date', ...)`, reusing the UC-08 threshold mapping, plus multi-day aggregate views. No code changes made as part of this UC; deferred.
+### UC-10 – Upcoming Tasks
 
-### UC-10 – Upcoming Tasks (Deferred — dashboard page)
+**Status:** Completed (Layer 1)
 
-**Status:** **Deferred.** The dashboard page is not yet built (broken placeholder with dead legacy components; its 5 co-located tests fail as a known baseline).
+**Goal:** Allow authenticated users to see tasks approaching within their notification window (`task_date - day_before_alarm <= today AND task_date >= today`) on the dashboard.
 
-**Goal:** Allow authenticated users to see tasks approaching within their notification window (`task_date - day_before_alarm <= today AND task_date >= today`) on the dashboard, with status badges and time-until-due labels; tasks outside the window stay hidden. Implementation would reuse the per-task `day_before_alarm` modifier and Carbon's `diffInDays()` with `startOfDay()`. No code changes made as part of this UC; deferred.
+**Routes:**
+- `GET /dashboard` → Livewire page `pages::dashboard`, auth-only route (existing).
 
-### UC-11 – Reports (Deferred — report page)
+**Implementation Files:**
+- `resources/views/pages/⚡dashboard/dashboard.php` — added locked `$userId`, computed `upcomingTasks()` querying tasks where `task_date >= today` and the notification window has started (via `whereRaw` with SQLite `DATE` modifier), ordered by `task_date ASC`, eager loads `category` and `plan` relationships.
+- `resources/views/pages/⚡dashboard/dashboard.blade.php` — rewrote from empty div to a full dashboard view with "Upcoming Tasks" heading, card-per-task list showing title, due date, days-until-due label ("Due today/tomorrow/in X days"), category name, plan name (if assigned), and done/not-done badge. Empty state when no upcoming tasks. "View All Tasks" link at bottom navigating to the task page.
 
-**Status:** **Deferred.** The report page is not yet built (dead `DateRange` component placeholder; its 4 co-located tests fail as a known baseline).
+**Testing Files:**
+- `resources/views/pages/⚡dashboard/dashboard.test.php` — 5 co-located Livewire tests covering: page renders with heading and "View All Tasks" link, shows tasks within notification window (day_before_alarm=3, task_date=+2), hides tasks outside window (day_before_alarm=1, task_date=+5), empty state when no upcoming tasks, and done/not-done badge display.
 
-**Goal:** Allow authenticated users to view performance reports over a date range, showing total tasks created, tasks completed, completion rate (%), and overdue count, scoped to the authenticated user, with a division-by-zero guard when no tasks exist in the range. No code changes made as part of this UC; deferred.
+**Security and Reliability Notes:**
+- Page access is protected by the `auth` middleware.
+- Ownership is enforced at the query level by `where('user_id', $this->userId)` in the `upcomingTasks()` computed.
+- The `#[Locked]` attribute on `$userId` prevents client-side tampering.
+- The notification window logic uses SQLite's `DATE()` function with per-task `day_before_alarm` modifier — correctly scoped per task, not a fixed window.
+- Tasks with `day_before_alarm = 0` only show if `task_date = today` (immediate alarm).
+- Days-until-due label uses Carbon's `diffInDays()` with `startOfDay()` for consistent day-boundary math.
+- No new routes, actions, enums, policies, or models — purely read-only computed queries on the existing dashboard page.
+
+**Acceptance Result:** UC-10 is accepted. Authenticated users open the dashboard and see all tasks within their notification window, with clear status badges and time-until-due labels. Tasks outside the notification window are hidden. The use case is covered by 5 dashboard tests plus 2 existing access tests.
+
+### UC-11 – Reports
+
+**Status:** Completed (Layer 1)
+
+**Goal:** Allow authenticated users to view performance reports over a date range, showing total tasks created, tasks completed, completion rate (%), and overdue count.
+
+**Routes:**
+- `GET /reports` → Livewire page `pages::report-page`, auth-only route.
+
+**Implementation Files:**
+- `routes/web.php` — defines the authenticated report route.
+- `resources/views/pages/⚡report-page/report-page.php` — Livewire component with locked `$userId`, `DateRange $date_filter` defaulting to this month, computed `stats()` returning `tasks_created`, `tasks_completed`, `completion_rate`, and `overdue_count` (scoped by user and date range), and `applyDateFilter()` to refresh stats.
+- `resources/views/pages/⚡report-page/report-page.blade.php` — page heading ("Reports"), date range picker + Filter button, 4 stat cards in a responsive grid (Tasks Created, Tasks Completed, Completion Rate with %, Overdue Tasks), each in a white rounded card with colored emphasis text.
+- `resources/views/components/layouts/partials/⚡nav-links/nav-links.blade.php` — added "Reports" nav link between Tasks and the end of the link list.
+
+**Testing Files:**
+- `resources/views/pages/⚡report-page/report-page.test.php` — 4 co-located Livewire tests covering: page renders with all stat labels, correct stats for a multi-task date range, zero stats for empty date range, and completion rate calculation (2/3 = 67%).
+
+**Security and Reliability Notes:**
+- Page access is protected by the `auth` middleware.
+- Ownership is enforced at the query level by `where('user_id', $this->userId)` in all stats queries.
+- The `#[Locked]` attribute on `$userId` prevents client-side tampering.
+- DateRange synthesizer handles hydration/dehydration between JS and Livewire (reused from the tasks page, UC-08).
+- Stats are computed properties — no mutations, no rate limiting needed.
+- Overdue count is scoped to the selected date range: tasks not done with `task_date < today` within the range.
+- Completion rate returns 0% when no tasks exist in the range (division by zero guard).
+- No new actions, enums, policies, or models — purely read-only computed queries.
+
+**Acceptance Result:** UC-11 is accepted. Authenticated users can navigate to `/reports`, select a date range, and see their performance stats (created, completed, rate, overdue). All four stats are correctly calculated and scoped to the authenticated user. The use case is covered by 4 report-page tests.

@@ -25,7 +25,7 @@ Role in the system:
 Represents an individual piece of work assigned to a specific day on the calendar.
 
 Role in the system:
-- Appears in daily, weekly, and monthly views
+- Appears in single-day and date-range views
 - Contributes to daily workload calculations
 - Used in performance reports, overdue tasks, and upcoming tasks
 - Optionally belongs to a plan for project-level grouping
@@ -73,13 +73,15 @@ A Plan can contain multiple Tasks. Each Task belongs to zero or one Plan (option
 
 Note: Category and Plan have no direct relationship. They are independent organizational dimensions. Category classifies tasks by type or subject, while Plan groups tasks under a project or goal.
 
-## 3. Use Cases
+## 3. Use Cases & Modules
 
 A Use Case represents a complete scenario of interaction between a user and the system. Below they are written in a structured, step-by-step manner, ordered by dependency (topological order).
 
-### 3.1 Authentication and Profile
+Each use case is implemented by a dedicated module (listed under "Module"). Modules communicate through service classes; a View / Presentation layer renders them via Laravel Blade + Livewire. Overdue detection is provided by the Task Management module (status + filter) and counted by the Reporting module.
 
-#### UC-01 – Login
+### 3.1 UC-01 – Login
+
+**Module:** Authentication Module — user registration, login, logout, password management, and session handling. Depends on the User model and Laravel's built-in Auth system. Used by all other modules (the user must be authenticated).
 
 Actor: User (guest who is not logged in)
 
@@ -93,7 +95,9 @@ Main Flow:
    - If successful: the user is logged in and redirected to the Dashboard.
    - If unsuccessful: an error message is shown and the user can try again.
 
-#### UC-02 – Register
+### 3.2 UC-02 – Register
+
+**Module:** Authentication Module.
 
 Actor: New user (guest)
 
@@ -102,7 +106,7 @@ Description: A new user creates an account to manage personal tasks.
 Main Flow:
 1. The user clicks Register on the homepage.
 2. The registration form is displayed.
-3. The user enters required information (username, email, password, password confirmation).
+3. The user enters required information (email or username, password, password confirmation).
 4. The system validates the data:
    - Email format
    - Unique username and email
@@ -112,7 +116,9 @@ Main Flow:
    - A success or welcome message is shown
    - The user is redirected to the Login page
 
-#### UC-03 – View and Edit Profile
+### 3.3 UC-03 – View and Edit Profile
+
+**Module:** Profile Module — read and update profile information. Depends on the User model.
 
 Actor: Logged-in user
 
@@ -121,11 +127,13 @@ Description: The user views and edits profile information.
 Main Flow:
 1. The logged-in user clicks Profile from the navigation bar.
 2. The system displays current profile information.
-3. The user may edit fields such as: username, first name, last name, date of birth, country, gender.
+3. The user may edit fields such as: first name, last name, date of birth, country, gender.
 4. The user clicks Save.
 5. The system validates and stores the updated information and shows a success message.
 
-#### UC-04 – Delete Account
+### 3.4 UC-04 – Delete Account
+
+**Module:** Account Module — verifies the password, obfuscates credentials, and soft-deletes the account. Depends on the User model.
 
 Actor: Logged-in user
 
@@ -142,7 +150,9 @@ Main Flow:
    - Related data is soft-deleted or hard-deleted as configured
 7. The user is logged out and sees a message: "Your account has been deleted."
 
-#### UC-05 – Logout
+### 3.5 UC-05 – Logout
+
+**Module:** Authentication Module.
 
 Actor: Logged-in user
 
@@ -154,9 +164,9 @@ Main Flow:
 3. The user is redirected to the homepage or login page.
 4. The navigation bar again shows Login and Register options.
 
-### 3.2 Category Management
+### 3.6 UC-06 – Manage Categories
 
-#### UC-06 – Manage Categories
+**Module:** Category Management Module — create, read, update, delete categories, and enforce restrict-on-delete when a category has tasks. Depends on the User and Task models. Interacts with Task Management (tasks reference categories).
 
 Actor: Logged-in user
 
@@ -177,90 +187,55 @@ Actor: Logged-in user
 1. Deletion is prevented if the category still has tasks assigned (restrict on delete).
 2. User must reassign or delete all tasks in the category before it can be deleted.
 
-**Filter & Sort (page-level):** The category list supports live text search and sorting by date created (default), name, or task count (folded in from UC-15).
+### 3.7 UC-07 – Manage Plans
 
-### 3.3 Plan Management
-
-#### UC-07 – Manage Plans
+**Module:** Plan Management Module — create, read, update, delete plans, calculate plan progress (% completed), and prevent deletion when a plan has tasks. Depends on the User and Task models. Interacts with Task Management (tasks reference plans).
 
 Actor: Logged-in user
 
-Description: The user creates, edits, or deletes plans to group related tasks.
+Description: The user creates, edits, or deletes plans to group related tasks, and tracks each plan's progress.
 
 Main Flow:
 1. The user navigates to the Plans page.
 2. To create a plan, the user fills in the name, optional description, start date, and end date, then submits.
 3. To edit a plan, the user modifies the name, description, or date range and saves.
 4. To delete a plan, the user clicks Delete. Deletion is blocked if the plan still has tasks assigned (restrict on delete).
-5. To complete or reopen a plan, the user uses the per-card actions. Completing is blocked while the plan still has undone tasks.
+5. Each plan shows its task count and progress percentage (completed tasks / total tasks × 100).
+6. The user can view all tasks assigned to a plan.
+7. When a task in a plan is marked as done or not done, the plan progress is recalculated and updated.
 
-**Plan Progress & Tracking (folded in from UC-14):**
-1. The system shows each plan with its task count and a progress bar (completed tasks / total tasks × 100).
-2. The user can view all tasks assigned to a plan (popover / View Tasks deep-link).
-3. When tasks are added or marked done, the progress is recalculated and updated.
+### 3.8 UC-08 – Manage Tasks
 
-**Filter & Sort (page-level):** The plan list supports live text search, sorting by state (default) / deadline / load / latest / name, a status filter (All / Active / Completed / Overdue), and a date-range calendar filter (folded in from UC-15).
-
-### 3.4 Task Management
-
-#### UC-08 – Manage Tasks (merged: CRUD + Toggle Done + Overdue + Calendar View + Filter & Sort)
+**Module:** Task Management Module — create, read, update, delete tasks, toggle task status (Done / Not Done), filter and sort tasks, and assign or remove a task from a plan. Depends on the User, Category, and Plan models. Interacts with Category Management, Plan Management, and the Workload Module. Also provides overdue detection (task_date < today and not done).
 
 Actor: Logged-in user
 
-Description: The user creates, edits, or deletes tasks for a specific day, toggles task done/not-done, sees overdue tasks, filters tasks by a custom date range, and filters/sorts the task list.
+Description: The user creates, edits, or deletes tasks for a specific day, marks tasks done/not done, and views tasks by single day or a custom date range with filters and sorting.
 
-**Create Task:**
-1. The user is on the task page for a specific day.
-2. The user fills in the title, category, estimated duration, priority, optional description, optional plan, task date, and alarm days, then submits.
-3. The system creates the task and recalculates the daily workload.
+Main Flow:
+1. The user is on the task page.
+2. To create a task, the user fills in the title, category, estimated duration, priority, optional plan, selects a day, and submits.
+3. To edit a task, the user modifies any field and saves.
+4. To delete a task, the user clicks Delete and confirms. The task is permanently removed.
+5. To toggle status, the user clicks Complete / Reopen on a task; the done field updates immediately.
+6. The user can view a single day or a custom date range, and filter by category, plan, status, or priority.
+7. The user can sort the list by date, priority, or estimated time.
 
-**Edit Task:**
-1. The user modifies any field and saves.
-2. The system updates the task and recalculates the daily workload if the date or estimated minutes changed.
+### 3.9 UC-09 – Daily Workload
 
-**Delete Task:**
-1. The user clicks Delete and confirms.
-2. The task is permanently removed and the daily workload is recalculated.
-
-**Toggle Done:**
-1. Each task has a checkbox or Done button.
-2. The user toggles the status.
-3. The system updates the task status immediately without a page reload.
-4. System background logic: if a task status is not updated by the end of the day, the system considers it Not Done. This affects reports and overdue task detection.
-
-**Overdue:**
-1. The user filters by the Overdue status.
-2. The system filters tasks where task_date < today and status = Not Done.
-3. The list is displayed; the user may mark them as done or delete them.
-4. Future versions may allow rescheduling.
-
-**Calendar View (Date Range Filter):**
-1. The user selects a date range via a range datepicker.
-2. The system filters tasks within the selected range.
-3. Full daily, weekly, and monthly calendar views with workload colors are deferred to a later layer.
-
-**Filter & Sort:**
-1. The user filters tasks by category, plan, status (Done / Not Done / Overdue), priority, or date range.
-2. The user sorts tasks by date, priority, estimated time, or state.
-3. Multiple filters and sorts can be combined; clearing filters restores the full list.
-
-### 3.5 Workload (Deferred — dashboard page)
-
-#### UC-09 – Daily Workload
+**Module:** Workload Module — calculate total estimated minutes per day for a user, map the total to a workload level and message, and recalculate when tasks are created, updated, or deleted. Depends on the Task model. Interacts with Task Management (triggered by task changes) and the View layer (provides workload data).
 
 Actor: User (passive — calculated automatically)
 
-Description: The system calculates and displays the total estimated time of tasks for each day.
+Description: The system calculates and displays the total estimated time of tasks for each day on the dashboard.
 
 Main Flow:
 1. When tasks are created, edited, or deleted, the system recalculates the total estimated minutes for that day.
-2. The total is displayed as hours and minutes.
+2. The total is displayed as hours and minutes with a workload alert based on thresholds.
 
-Status: **Deferred.** The full dashboard workload view is not yet built. (Single-day workload alerts currently live on the task page as part of UC-08.)
+### 3.10 UC-10 – Upcoming Tasks
 
-### 3.6 Notifications (Deferred — dashboard page)
-
-#### UC-10 – Upcoming Tasks
+**Module:** Upcoming Tasks Module — detect tasks within the notification window (today to today + day_before_alarm) and provide the upcoming list. Depends on the Task model. Interacts with Task Management (date/task changes affect upcoming).
 
 Actor: User
 
@@ -273,11 +248,9 @@ Main Flow:
 
 Future versions may send these notifications via email.
 
-Status: **Deferred.** The dashboard page is not yet built.
+### 3.11 UC-11 – Reports
 
-### 3.7 Reports (Deferred — report page)
-
-#### UC-11 – Performance Reports
+**Module:** Reporting Module — generate performance reports for a given date range, calculating total tasks, completed tasks, completion rate, and overdue count. Depends on the Task model. Interacts with the View layer (display results in tables or charts).
 
 Actor: User
 
@@ -292,8 +265,6 @@ Main Flow:
    - Incomplete or overdue tasks
    - Completion rate
 4. The results are shown using numbers, simple charts, or tables.
-
-Status: **Deferred.** The report page is not yet built.
 
 ## 4. Conceptual Domain Model
 
@@ -353,61 +324,3 @@ Conceptual fields:
 - Owner User (reference to User)
 - Creation date
 - Last update date
-
-## 5. Module Boundaries
-
-The system is decomposed into the following modules. Each module has a clear responsibility and communicates with others through well-defined service classes.
-
-### 5.1 Authentication Module
-
-**Responsibility:** User registration, login, logout, password management, session handling.
-**Depends on:** User model, Laravel's built-in Auth system.
-**Used by:** All other modules (user must be authenticated).
-
-### 5.2 Category Management Module
-
-**Responsibility:** Create, read, update, delete categories. Enforce restrict-on-delete when category has tasks.
-**Depends on:** User, Task models.
-**Interacts with:** Task Management (tasks reference categories).
-
-### 5.3 Plan Management Module
-
-**Responsibility:** Create, read, update, delete plans. Calculate plan progress (% completed). Prevent deletion when plan has tasks.
-**Depends on:** User, Task models.
-**Interacts with:** Task Management (tasks reference plans).
-
-### 5.4 Task Management Module
-
-**Responsibility:** Create, read, update, delete tasks. Toggle task status (Done / Not Done). Filtering and sorting tasks. Assign or remove task from plan.
-**Depends on:** User, Category, Plan models.
-**Interacts with:** Category Management, Plan Management, Daily Workload Module.
-
-### 5.5 Daily Workload Module
-
-**Responsibility:** Calculate total estimated minutes per day for a user. Map total time to workload level and message. Recalculate when tasks are created, updated, or deleted.
-**Depends on:** Task model.
-**Interacts with:** Task Management (triggered by task changes), View Layer (provides workload data).
-
-### 5.6 Overdue Tasks Module
-
-**Responsibility:** Detect tasks where task_date < today and done = false. Provide overdue list scoped to the authenticated user.
-**Depends on:** Task model.
-**Interacts with:** Task Management (status changes remove tasks from overdue).
-
-### 5.7 Upcoming Tasks Module
-
-**Responsibility:** Detect tasks within the notification window (today to today + day_before_alarm). Provide upcoming list.
-**Depends on:** Task model.
-**Interacts with:** Task Management (date/task changes affect upcoming).
-
-### 5.8 Reporting Module
-
-**Responsibility:** Generate performance reports for a given date range. Calculate: total tasks, completed tasks, completion rate, overdue count.
-**Depends on:** Task model.
-**Interacts with:** View Layer (display results in tables or charts).
-
-### 5.9 View / Presentation Layer
-
-**Responsibility:** Render UI using Laravel Blade and Livewire components. Handle user interactions via Livewire method calls. Compose data from service classes for display.
-**Depends on:** All modules (orchestrates data for views).
-**Technology:** Laravel Blade layouts + Livewire full-page / nested components.
