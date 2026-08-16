@@ -252,9 +252,11 @@ Every use case maps to one module/service area. These areas are defined as a map
 | 06 | Manage Categories | Category Management (Create/Edit/DeleteCategoryAction) | Category CRUD, delete protection check |
 | 07 | Manage Plans | Plan Management (Create/Edit/Delete/Complete/ReopenPlanAction) | Plan CRUD, progress calculation, delete protection check |
 | 08 | Manage Tasks | Task Management (Create/Edit/Delete/ToggleTaskDoneAction) | Task CRUD, toggle done, filter/sort, date range |
-| 09 | Daily Workload | Workload (`WorkloadService`) | Daily total calculation, workload level + message |
-| 10 | Upcoming Tasks | Upcoming (`UpcomingService`) | Query tasks within their notification window |
-| 11 | Reports | Reporting (`ReportService`) | Aggregate performance data over a date range |
+| 09 | Daily Workload | Dashboard (`WeeklyWorkloadAction`) | Weekly daily-total calculation, workload level, h/m formatting |
+| 10 | Tasks Needing Attention | Dashboard (`AttentionTasksAction`) | Query overdue + tasks within their notification window |
+| 11 | Reports | Reporting (`ReportsAction`) | Aggregate tasks/plans performance + per-day workload chart over a date range |
+
+> **Note:** UC-09, UC-10, and UC-11 are implemented as read-only query actions (`WeeklyWorkloadAction`, `AttentionTasksAction`, `ReportsAction`), invoked from page `#[Computed]` methods. No service layer is required for read-only aggregations.
 
 ### When to Create an Action vs. a Service Method
 
@@ -299,7 +301,7 @@ Add more as new rules emerge during implementation.
 | 07 | Manage Plans | Duplicate name, invalid date range, rate-limited, plan has tasks |
 | 08 | Manage Tasks | Missing/invalid fields, invalid category, invalid plan, rate-limited |
 | 09 | Daily Workload | None (computed, read-only) |
-| 10 | Upcoming Tasks | None (computed, read-only) |
+| 10 | Tasks Needing Attention | None (computed, read-only) |
 | 11 | Reports | None (computed, read-only) |
 
 ### Handling Strategy

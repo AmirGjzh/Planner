@@ -27,7 +27,7 @@ Represents an individual piece of work assigned to a specific day on the calenda
 Role in the system:
 - Appears in single-day and date-range views
 - Contributes to daily workload calculations
-- Used in performance reports, overdue tasks, and upcoming tasks
+- Used in performance reports and attention lists
 - Optionally belongs to a plan for project-level grouping
 
 ### 1.4 Plan
@@ -227,30 +227,31 @@ Main Flow:
 
 Actor: User (passive — calculated automatically)
 
-Description: The system calculates and displays the total estimated time of tasks for each day on the dashboard.
-
-Main Flow:
-1. When tasks are created, edited, or deleted, the system recalculates the total estimated minutes for that day.
-2. The total is displayed as hours and minutes with a workload alert based on thresholds.
-
-### 3.10 UC-10 – Upcoming Tasks
-
-**Module:** Upcoming Tasks Module — detect tasks within the notification window (today to today + day_before_alarm) and provide the upcoming list. Depends on the Task model. Interacts with Task Management (date/task changes affect upcoming).
-
-Actor: User
-
-Description: The user sees tasks that are approaching in the next few days.
+Description: The system calculates and displays the total estimated time of all tasks (completed or not) for each day on the dashboard.
 
 Main Flow:
 1. The user opens the dashboard.
-2. The system finds tasks within the configured window (today to today + X days).
-3. The tasks appear in an Upcoming Tasks list.
+2. The system sums the estimated minutes of all tasks for each day of the current week (Sunday–Saturday), including completed tasks.
+3. Each day is displayed as hours and minutes with a workload alert based on thresholds (No tasks / Light ≤120 min / Moderate ≤240 min / Heavy ≤360 min / Very Heavy >360 min).
+
+### 3.10 UC-10 – Tasks Needing Attention
+
+**Module:** Attention Module — detect tasks that are overdue or within their notification window (`task_date - day_before_alarm <= today`) and not done, then provide the attention list. Depends on the Task model. Interacts with Task Management (date/task changes affect attention).
+
+Actor: User
+
+Description: The user sees tasks that need attention: overdue tasks and tasks approaching within their alarm window.
+
+Main Flow:
+1. The user opens the dashboard.
+2. The system finds tasks that are not done and where `task_date - day_before_alarm <= today` (this includes overdue tasks).
+3. The tasks appear in a "Tasks needing attention" list ordered by date, each with a due/overdue label ("Due today", "Due tomorrow", "Due in X days", "X days ago").
 
 Future versions may send these notifications via email.
 
 ### 3.11 UC-11 – Reports
 
-**Module:** Reporting Module — generate performance reports for a given date range, calculating total tasks, completed tasks, completion rate, and overdue count. Depends on the Task model. Interacts with the View layer (display results in tables or charts).
+**Module:** Reporting Module — generate performance reports for a given date range, aggregating tasks (total, completed, completion rate, estimated time), plans (total, completed), and a per-day workload chart. Depends on the Task and Plan models. Interacts with the View layer (display results in stat cards and a bar chart).
 
 Actor: User
 
@@ -258,13 +259,13 @@ Description: The user views a performance summary over a chosen time range.
 
 Main Flow:
 1. The user opens the Reports page.
-2. Selects a time range (date A to date B).
+2. Selects a time range via a preset (this/last week, this/last month) or a custom date range.
 3. The system calculates:
-   - Total tasks created
-   - Completed tasks
-   - Incomplete or overdue tasks
-   - Completion rate
-4. The results are shown using numbers, simple charts, or tables.
+   - Total tasks created and completed tasks
+   - Completion rate and total estimated time
+   - Total and completed plans (those overlapping the range)
+   - Per-day completed vs. remaining estimated minutes
+4. The results are shown as stat cards and a per-day workload chart.
 
 ## 4. Conceptual Domain Model
 

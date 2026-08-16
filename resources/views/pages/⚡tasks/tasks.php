@@ -105,7 +105,7 @@ new class extends Component
             'end' => now()->today()->format('Y-m-d'),
         ];
 
-        if (request()->filled('category_filter') || request()->filled('plan_filter')) {
+        if (request()->filled('search') || request()->filled('category_filter') || request()->filled('plan_filter')) {
             $this->range_filter = null;
         }
 

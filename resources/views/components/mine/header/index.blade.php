@@ -4,7 +4,7 @@
         ['label' => 'Tasks', 'route' => 'tasks', 'icon' => 'list-bullet'],
         ['label' => 'Plans', 'route' => 'plans', 'icon' => 'rocket-launch'],
         ['label' => 'Categories', 'route' => 'categories', 'icon' => 'folder'],
-        ['label' => 'Reports', 'route' => 'report-page', 'icon' => 'chart-bar'],
+        ['label' => 'Reports', 'route' => 'reports', 'icon' => 'chart-bar'],
     ];
 @endphp
 

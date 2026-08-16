@@ -17,7 +17,7 @@
                 <a href="{{ route('tasks') }}" class="mine-text-secondary text-sm hover:text-(--mine-text-link) transition-colors duration-150">Tasks</a>
                 <a href="{{ route('plans') }}" class="mine-text-secondary text-sm hover:text-(--mine-text-link) transition-colors duration-150">Plans</a>
                 <a href="{{ route('categories') }}" class="mine-text-secondary text-sm hover:text-(--mine-text-link) transition-colors duration-150">Categories</a>
-                <a href="{{ route('report-page') }}" class="mine-text-secondary text-sm hover:text-(--mine-text-link) transition-colors duration-150">Reports</a>
+                <a href="{{ route('reports') }}" class="mine-text-secondary text-sm hover:text-(--mine-text-link) transition-colors duration-150">Reports</a>
             </div>
         </div>
 

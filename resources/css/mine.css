@@ -157,6 +157,19 @@
     --mine-progress-fill: #1A9B5C;
     --mine-progress-gray-fill: #6B7280;
     --mine-progress-danger-fill: #DC2626;
+
+    /* Workload */
+    --mine-workload-none-dot: #CBD5E1;
+    --mine-workload-none-text: #94A3B8;
+    --mine-workload-light-dot: #10B981;
+    --mine-workload-light-text: #059669;
+    --mine-workload-moderate-dot: #F59E0B;
+    --mine-workload-moderate-text: #D97706;
+    --mine-workload-heavy-dot: #EF4444;
+    --mine-workload-heavy-text: #DC2626;
+    --mine-workload-very-heavy-dot: #7F1D1D;
+    --mine-workload-very-heavy-text: #7F1D1D;
+    --mine-workload-empty-dot: #E2E8F0;
 }
 
 @utility mine-page-bg {

@@ -81,14 +81,14 @@ The MVP is organized into exactly 11 use cases (UC-01 … UC-11). Each part belo
 - Display the day's status using color indicators based on workload
 - Display appropriate warnings when the daily workload exceeds defined thresholds
 
-### UC-10 – Upcoming Tasks
+### UC-10 – Tasks Needing Attention
 
-- Display upcoming tasks on the main dashboard (or in a separate list)
+- Display tasks that need attention (overdue or whose alarm window has started) on the dashboard
 - Future enhancement: email notifications and other notification methods
 
 ### UC-11 – Reports
 
-- Generate performance reports for a selected time range (e.g., weekly or monthly)
-- Show total tasks created, completed, completion rate, and overdue count
+- Generate performance reports for a selected time range (week/month presets or a custom date range)
+- Show a tasks summary (total, completed, completion rate, estimated time), a plans summary (total, completed), and a per-day workload chart
 
 > **Cross-cutting:** Categories and plans are hard-deleted; soft deletion applies only to user accounts (UC-04). Plans and categories with tasks cannot be deleted (restrict on delete).

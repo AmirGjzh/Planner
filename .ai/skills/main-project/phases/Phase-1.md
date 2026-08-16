@@ -66,13 +66,13 @@ As a user, I want to view tasks for a single day or a custom date range, filter 
 
 As a user, I want the system to calculate the total estimated time of tasks for each day and show workload alerts on the dashboard so I know how much work I have assigned. In this version, thresholds are global and fixed. In future versions, they may become configurable.
 
-### UC-10 – Upcoming Tasks
+### UC-10 – Tasks Needing Attention
 
-As a user, I want to see tasks that are approaching within a defined window (today + X days) so that I can prepare for what's coming.
+As a user, I want to see overdue tasks and tasks whose alarm window (`task_date - day_before_alarm`) has started so that I can prepare for what needs my attention.
 
 ### UC-11 – Reports
 
-As a user, I want to select a time range and see total tasks created, completed, completion rate, and overdue count so that I can analyze my performance.
+As a user, I want to select a time range and see my performance — tasks created, completed, completion rate, estimated time, plan progress, and a per-day workload chart — so that I can analyze my performance.
 
 ## 1.2 – Non-Functional Requirements
 
@@ -84,7 +84,7 @@ As a user, I want to select a time range and see total tasks created, completed,
 
 ### Performance
 
-- For a reasonable workload (e.g., several thousand tasks per year), displaying lists (single day, date range, upcoming) must occur without noticeable delay.
+- For a reasonable workload (e.g., several thousand tasks per year), displaying lists (single day, date range, attention) must occur without noticeable delay.
 
 ### Maintainability
 
@@ -94,13 +94,13 @@ As a user, I want to select a time range and see total tasks created, completed,
   - Plan management
   - Daily workload logic
   - Reporting logic
-  - Upcoming tasks logic
+  - Tasks needing attention logic
 - Important logic components must be covered by unit tests and higher-level tests.
 
 ### Reliability
 
 - Changing task status (done/not done), editing, or soft deletion must not result in unintended data loss.
-- The system must behave consistently and predictably in calculating overdue, upcoming, and reporting metrics.
+- The system must behave consistently and predictably in calculating overdue, attention, and reporting metrics.
 
 ### Simplicity
 
@@ -254,22 +254,23 @@ The acceptance criteria are grouped into the 11 use cases (UC-01 … UC-11), in 
 
 ### UC-09 – Daily Workload
 
-**Given** the user is on the dashboard viewing a day,
-**When** tasks exist for that day,
-**Then** the total estimated minutes is summed and displayed.
-**And** a workload alert is shown based on thresholds (Rest/<3h/<6h/6h+).
+**Given** the user is on the dashboard viewing the current week,
+**When** tasks exist for a day,
+**Then** the total estimated minutes is summed and displayed as hours and minutes.
+**And** a workload alert is shown based on thresholds (No tasks / Light ≤120 min / Moderate ≤240 min / Heavy ≤360 min / Very Heavy >360 min).
 
-### UC-10 – Upcoming Tasks
+### UC-10 – Tasks Needing Attention
 
-**Given** the user has tasks within the notification window (today + X days),
+**Given** the user has tasks that are overdue or within their notification window (`task_date - day_before_alarm <= today`),
 **When** they open the dashboard,
-**Then** upcoming tasks are displayed in a list.
+**Then** those tasks are displayed in a list with due/overdue labels.
+**And** completed tasks are excluded.
 
 ### UC-11 – Reports
 
-**Given** the user selects a date range,
-**When** they request a report,
-**Then** the system displays: total tasks created, total completed, completion rate (%), and overdue count.
+**Given** the user selects a date range (preset or custom),
+**When** they open the Reports page,
+**Then** the system displays: total tasks created, completed tasks, completion rate (%), estimated time, total/completed plans, and a per-day workload chart.
 **And** the data is scoped to the authenticated user only.
 
 ## 1.4 – Requirements Prioritization (MoSCoW)
@@ -287,7 +288,7 @@ The acceptance criteria are grouped into the 11 use cases (UC-01 … UC-11), in 
 - Mark task as done / not done — UC-08
 - View tasks for a single day or a custom date range — UC-08
 - Daily workload calculation with alerts — UC-09
-- Upcoming tasks list (based on day_before_alarm) — UC-10
+- Tasks needing attention list (overdue + day_before_alarm window) — UC-10
 
 ### Should Have (High Priority — Next)
 

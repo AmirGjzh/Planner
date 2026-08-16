@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-A Laravel 13 + Livewire 4 task planner application. Users manage tasks, categories, and plans with date-range views, search/filter/sort, an upcoming-tasks dashboard, and performance reports.
+A Laravel 13 + Livewire 4 task planner application. Users manage tasks, categories, and plans with date-range views, search/filter/sort, a tasks-needing-attention dashboard with a daily workload grid, and performance reports.
 
 ## UC Numbering (Topological Order)
 
@@ -26,13 +26,12 @@ A Laravel 13 + Livewire 4 task planner application. Users manage tasks, categori
 | 07 | Manage Plans | CRUD with duplicate detection, rate limiting, task-guarded deletion |
 | 08 | Manage Tasks | CRUD, toggle done, date-range, filter/sort — with category/plan validation, rate limiting |
 | 09 | Daily Workload | Total estimated time per day with alerts (dashboard) |
-| 10 | Upcoming Tasks | Tasks within notification window (dashboard) |
+| 10 | Tasks Needing Attention | Overdue + tasks whose alarm window has started (dashboard) |
 | 11 | Reports | Performance stats over a date range |
 
 ## Implementation Status
 
-- **Completed:** UC-01, 02, 03, 04, 05, 06, 07, 08, 10, 11
-- **Pending (not implemented):** UC-09
+- **Completed:** UC-01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11
 
 ## Phases
 
@@ -49,7 +48,8 @@ A Laravel 13 + Livewire 4 task planner application. Users manage tasks, categori
 - Plan CRUD before Task CRUD (topological dependency)
 - UC specs in Phase-2 (design-time), implementation logs in Phase-4
 - UC-08 Manage Tasks includes toggle done, date-range filtering, and filter/sort
-- UC-09 Daily Workload lives on the dashboard
+- UC-09 Daily Workload lives on the dashboard as a weekly grid (includes completed tasks)
+- UC-10 is a "Tasks Needing Attention" list on the dashboard (overdue + alarm-window-started, excludes done)
 - Reports (UC-11) is the last use case — all docs are structured into 11 UC-aligned parts
 
 ## How to Use

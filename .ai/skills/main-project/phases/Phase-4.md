@@ -395,65 +395,98 @@ The phase is complete when:
 
 ### UC-09 – Daily Workload
 
-**Status:** Pending — not yet implemented
+**Status:** Completed
 
-**Goal:** Show the total estimated time of tasks for each day with a workload alert on the dashboard.
-
-**Notes:** Daily workload alerts previously lived on the task page (per-day aggregation with Rest/Light/Medium/Heavy levels). They were removed from the task page and the UC now targets the dashboard. No implementation or tests exist yet — the dashboard currently shows Upcoming Tasks only.
-
-### UC-10 – Upcoming Tasks
-
-**Status:** Completed (Layer 1)
-
-**Goal:** Allow authenticated users to see tasks approaching within their notification window (`task_date - day_before_alarm <= today AND task_date >= today`) on the dashboard.
+**Goal:** Show the total estimated time of all tasks for each day of the current week with a workload alert on the dashboard.
 
 **Routes:**
 - `GET /dashboard` → Livewire page `pages::dashboard`, auth-only route (existing).
 
 **Implementation Files:**
-- `resources/views/pages/⚡dashboard/dashboard.php` — added locked `$userId`, computed `upcomingTasks()` querying tasks where `task_date >= today` and the notification window has started (via `whereRaw` with SQLite `DATE` modifier), ordered by `task_date ASC`, eager loads `category` and `plan` relationships.
-- `resources/views/pages/⚡dashboard/dashboard.blade.php` — rewrote from empty div to a full dashboard view with "Upcoming Tasks" heading, card-per-task list showing title, due date, days-until-due label ("Due today/tomorrow/in X days"), category name, plan name (if assigned), and done/not-done badge. Empty state when no upcoming tasks. "View All Tasks" link at bottom navigating to the task page.
+- `app/Actions/Dashboard/WeeklyWorkloadAction.php` — `final` action computing the Sunday–Saturday week grid: sums `estimated_minutes` per `task_date` for the authenticated user (including completed tasks) via a single `GROUP BY` query, then builds 7 day cells with `day`, `date`, `is_today`, `past`, `minutes`, `formatted` (hours+minutes via `formatMinutes()`), and `level` (`WorkloadLevel::forMinutes`). Ownership is enforced at the relationship level (`$user->tasks()`).
+- `app/Enums/WorkloadLevel.php` — enum with `forMinutes()` mapping to None / Light (≤120) / Moderate (≤240) / Heavy (≤360) / Very Heavy (>360), plus `label()` and `rangeLabel()` for the legend.
+- `resources/views/pages/⚡dashboard/dashboard.php` — `week()` computed delegates to `WeeklyWorkloadAction` via `$this->user`.
+- `resources/views/pages/⚡dashboard/dashboard.blade.php` — "This week's workload" section: horizontal-scroll 7-day grid (today highlighted), per-day formatted minutes + level label + 4-dot indicator, and a legend listing all levels with ranges. Past/empty days render an em dash.
+- `resources/views/components/mine/horizontal-scroll/index.blade.php` — reusable horizontal scroller with edge scroll buttons and `todayIndex` centering.
+- `resources/css/mine.css` — `--mine-workload-*` dot/text colors and `--mine-workload-empty-dot`.
 
 **Testing Files:**
-- `resources/views/pages/⚡dashboard/dashboard.test.php` — 5 co-located Livewire tests covering: page renders with heading and "View All Tasks" link, shows tasks within notification window (day_before_alarm=3, task_date=+2), hides tasks outside window (day_before_alarm=1, task_date=+5), empty state when no upcoming tasks, and done/not-done badge display.
+- `tests/Feature/Actions/Dashboard/WeeklyWorkloadActionTest.php` — 9 action tests: seven-day Sunday start, today marking, past-day marking, per-day summing including completed tasks, zero for empty days, out-of-week exclusion, user scoping, level mapping, and `formatMinutes()` (0m/30m/2h/2h 30m).
+- `resources/views/pages/⚡dashboard/dashboard.test.php` — 19 co-located Livewire tests covering the whole dashboard (shared with UC-10; workload-grid portion includes summing, formatted output, done-task inclusion, out-of-week exclusion, and user scoping).
 
 **Security and Reliability Notes:**
 - Page access is protected by the `auth` middleware.
-- Ownership is enforced at the query level by `where('user_id', $this->userId)` in the `upcomingTasks()` computed.
-- The `#[Locked]` attribute on `$userId` prevents client-side tampering.
-- The notification window logic uses SQLite's `DATE()` function with per-task `day_before_alarm` modifier — correctly scoped per task, not a fixed window.
-- Tasks with `day_before_alarm = 0` only show if `task_date = today` (immediate alarm).
-- Days-until-due label uses Carbon's `diffInDays()` with `startOfDay()` for consistent day-boundary math.
-- No new routes, actions, enums, policies, or models — purely read-only computed queries on the existing dashboard page.
+- Ownership is enforced at the relationship level (`$user->tasks()`) inside the action — another user's tasks never contribute to totals.
+- Single aggregation query per render (`GROUP BY task_date`), memoized via `#[Computed]`.
+- Workload includes completed and pending tasks (total planned effort per day).
+- Level thresholds and ranges live in one place (`WorkloadLevel`) and match the Phase-1 acceptance criteria.
+- No mutations — purely read-only; no rate limiting or logging needed.
 
-**Acceptance Result:** UC-10 is accepted. Authenticated users open the dashboard and see all tasks within their notification window, with clear status badges and time-until-due labels. Tasks outside the notification window are hidden. The use case is covered by 5 dashboard tests plus 2 existing access tests.
+**Acceptance Result:** UC-09 is accepted. Authenticated users see a Sunday–Saturday workload grid on the dashboard where each day shows total estimated minutes (formatted as hours/minutes) of all tasks, a workload level, and a colored indicator, with today highlighted and past/empty days shown as an em dash. Covered by 9 action + 19 Livewire tests.
+
+### UC-10 – Tasks Needing Attention
+
+**Status:** Completed
+
+**Goal:** Show authenticated users a "Tasks needing attention" list on the dashboard: tasks that are overdue or whose notification window has started (`task_date - day_before_alarm <= today`), excluding completed tasks.
+
+**Routes:**
+- `GET /dashboard` → Livewire page `pages::dashboard`, auth-only route (existing).
+
+**Implementation Files:**
+- `app/Actions/Dashboard/AttentionTasksAction.php` — `final` action returning the authenticated user's not-done tasks where `DATE(task_date, '-' || day_before_alarm || ' days') <= today`, ordered by `task_date ASC`. Overdue tasks are included because they need attention. Ownership is enforced at the relationship level (`$user->tasks()`).
+- `resources/views/pages/⚡dashboard/dashboard.php` — `upcomingTasks()` computed delegates to `AttentionTasksAction` via `$this->user`.
+- `resources/views/pages/⚡dashboard/dashboard.blade.php` — "Tasks needing attention" heading with a count badge and a horizontal-scroll card list where overdue tasks use a danger card and upcoming tasks use a success card; each card shows title, priority badge, due/overdue label, and a "View task" deep-link to the tasks page filtered by the task title. Labels: "Due today", "Due tomorrow", "Due in X days", and overdue "X days ago" (pluralized). Empty state when nothing needs attention.
+- `resources/views/components/mine/horizontal-scroll/index.blade.php` — reusable horizontal scroller.
+
+**Testing Files:**
+- `tests/Feature/Actions/Dashboard/AttentionTasksActionTest.php` — 7 action tests: window inclusion, overdue inclusion, window exclusion, day-of alarm with future date hidden, done exclusion, user scoping, and ascending date ordering.
+- `resources/views/pages/⚡dashboard/dashboard.test.php` — 19 co-located Livewire tests covering the whole dashboard (shared with UC-09; attention-list portion includes window rules, done exclusion, due labels, pluralization, and user scoping).
+- `tests/Feature/Auth/DashboardPageAccessTest.php` — 2 access tests for guest redirect and authenticated access.
+
+**Security and Reliability Notes:**
+- Page access is protected by the `auth` middleware.
+- Ownership is enforced at the relationship level (`$user->tasks()`) inside the action — another user's tasks never appear.
+- The notification window uses SQLite's `DATE()` function with a per-task `day_before_alarm` modifier — correctly scoped per task, not a fixed window.
+- Tasks with `day_before_alarm = 0` only appear once `task_date = today` (immediate alarm); overdue tasks are always included.
+- Completed tasks are excluded from the list.
+- Due/overdue labels use Carbon `diffInDays()` with `startOfDay()` for consistent day-boundary math and correct pluralization.
+- No mutations — purely read-only; no rate limiting or logging needed.
+
+**Acceptance Result:** UC-10 is accepted. Authenticated users open the dashboard and see all tasks that need attention (overdue or within their alarm window), each with a clear due/overdue label and a deep-link to the tasks page. Tasks outside the window, completed tasks, and other users' tasks are hidden. Covered by 7 action + 19 Livewire + 2 access tests.
 
 ### UC-11 – Reports
 
-**Status:** Completed (Layer 1)
+**Status:** Completed
 
-**Goal:** Allow authenticated users to view performance reports over a date range, showing total tasks created, tasks completed, completion rate (%), and overdue count.
+**Goal:** Allow authenticated users to view performance reports over a chosen date range: tasks summary (total, completed, completion rate, estimated time), plans summary (total, completed), and a per-day workload chart.
 
 **Routes:**
-- `GET /reports` → Livewire page `pages::report-page`, auth-only route.
+- `GET /reports` → Livewire page `pages::reports`, auth-only route.
 
 **Implementation Files:**
-- `routes/web.php` — defines the authenticated report route.
-- `resources/views/pages/⚡report-page/report-page.php` — Livewire component with locked `$userId`, `DateRange $date_filter` defaulting to this month, computed `stats()` returning `tasks_created`, `tasks_completed`, `completion_rate`, and `overdue_count` (scoped by user and date range), and `applyDateFilter()` to refresh stats.
-- `resources/views/pages/⚡report-page/report-page.blade.php` — page heading ("Reports"), date range picker + Filter button, 4 stat cards in a responsive grid (Tasks Created, Tasks Completed, Completion Rate with %, Overdue Tasks), each in a white rounded card with colored emphasis text.
-- `resources/views/components/layouts/partials/⚡nav-links/nav-links.blade.php` — added "Reports" nav link between Tasks and the end of the link list.
+- `app/Actions/Reports/ReportsAction.php` — `final` read-only action with `summary()` and `chart()`. Ownership is enforced at the relationship level (`$user->tasks()`, `$user->plans()`). Two aggregate queries: tasks via `COUNT(*)`, `SUM(CASE WHEN done = 1 ...)`, `SUM(estimated_minutes)` within the date range; plans counted when `start_date <= end AND finish_date >= start` (overlap). `completion_rate` guards division by zero. An inverted range (`start > end`) is swapped before querying. Estimated time is formatted via the shared `App\Support\Minutes`.
+- `app/Support/Minutes.php` — shared static formatter (`0m`, `30m`, `2h`, `2h 30m`) used by UC-09 and UC-11 (deduplicated).
+- `resources/views/pages/⚡reports/reports.php` — `HasUser`; `stats()` and `chart()` computeds delegate to `ReportsAction` with `$this->user`; `preset`/`range_filter` UI state with `selectPreset()` and preset range calculator.
+- `resources/views/pages/⚡reports/reports.blade.php` — "My Reports" heading; preset buttons (This/Last week, This/Last month, Custom) with a calendar dropdown for custom ranges (`wire:model.live="range_filter"`); 4-card Tasks Summary (Total Tasks, Completed Tasks, Completion Rate %, Estimated Time); 2-card Plans Summary (Total, Completed); a Workload Chart (completed vs. remaining minutes per day) with a legend, rendered by `mine/bar-chart`.
+- `resources/views/components/mine/bar-chart/index.blade.php` — reusable stacked bar chart with gridlines, tooltips, and `mine/horizontal-scroll` backing.
+- `resources/views/components/mine/horizontal-scroll/index.blade.php` — reusable horizontal scroller.
+- `resources/css/mine.css` — workload chart colors (reuses `--mine-btn-primary-bg` / `--mine-btn-danger-bg`).
+- `resources/views/components/mine/header/index.blade.php` — "Reports" nav link (icon `chart-bar`).
 
 **Testing Files:**
-- `resources/views/pages/⚡report-page/report-page.test.php` — 4 co-located Livewire tests covering: page renders with all stat labels, correct stats for a multi-task date range, zero stats for empty date range, and completion rate calculation (2/3 = 67%).
+- `tests/Feature/Actions/Reports/ReportsActionTest.php` — 11 action tests: task stats summing, completion-rate rounding (2/3 → 67), plan-overlap counting (inside / straddling either boundary / outside), zero-range stats, user scoping, inverted-range guard, per-day chart values, ascending chart ordering, only-days-with-tasks behavior, chart user scoping, and inverted-range chart.
+- `resources/views/pages/⚡reports/reports.test.php` — 10 co-located Livewire tests covering rendering of all sections, default this-week range, preset switching, unknown-preset rejection, calendar only in custom mode, live stat updates when the range changes, task stats for a range, plan-overlap counting, zero stats, and the per-day chart.
+- `tests/Feature/Auth/ReportsPageAccessTest.php` — 2 access tests for guest redirect and authenticated access.
 
 **Security and Reliability Notes:**
 - Page access is protected by the `auth` middleware.
-- Ownership is enforced at the query level by `where('user_id', $this->userId)` in all stats queries.
-- The `#[Locked]` attribute on `$userId` prevents client-side tampering.
-- DateRange synthesizer handles hydration/dehydration between JS and Livewire (reused from the tasks page, UC-08).
-- Stats are computed properties — no mutations, no rate limiting needed.
-- Overdue count is scoped to the selected date range: tasks not done with `task_date < today` within the range.
-- Completion rate returns 0% when no tasks exist in the range (division by zero guard).
-- No new actions, enums, policies, or models — purely read-only computed queries.
+- Ownership is enforced at the relationship level (`$user->tasks()`, `$user->plans()`) inside the action — another user's data never appears.
+- Stats and chart are `#[Computed]` read-only aggregations; no mutations, so no rate limiting or logging needed.
+- Two aggregate queries per render (one tasks, one plans), plus one chart query.
+- Completion rate returns 0 when no tasks exist in the range (division-by-zero guard).
+- Inverted ranges (`start > end`) are normalized by swapping the boundaries.
+- Estimated time is formatted with the shared `Minutes::format()` helper (deduplicated with UC-09).
+- The chart only includes days that have tasks, ordered ascending.
 
-**Acceptance Result:** UC-11 is accepted. Authenticated users can navigate to `/reports`, select a date range, and see their performance stats (created, completed, rate, overdue). All four stats are correctly calculated and scoped to the authenticated user. The use case is covered by 4 report-page tests.
+**Acceptance Result:** UC-11 is accepted. Authenticated users can navigate to `/reports`, pick a preset or custom range, and see their tasks summary (total/completed/rate/estimated time), plans summary, and per-day workload chart — all scoped to their data. Covered by 11 action + 10 Livewire + 2 access tests.
