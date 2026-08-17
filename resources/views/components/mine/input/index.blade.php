@@ -49,7 +49,9 @@
     >
         @if($leftIcon)
             <div @class([
-                'flex h-full items-center pl-4',
+                'pl-4' => app()->getLocale() == 'en',
+                'pr-4' => app()->getLocale() == 'fa',
+                'flex h-full items-center',
                 'text-(--mine-input-icon)' => !$errors->has($name),
                 'text-(--mine-input-error-icon)' => $errors->has($name),
                 'group-focus-within:text-(--mine-input-border-focus)' => !$errors->has($name),
@@ -66,13 +68,15 @@
             placeholder="{{ $placeholder }}"
             {{ $attributes->except('class')->merge([
                 'class' => '
+                    pt-1
                     h-full
                     w-full
                     bg-transparent
                     px-4
-                    text-[15px]
+                    text-sm
                     mine-text-primary
                     placeholder:text-[var(--mine-input-placeholder)]
+                    placeholder:text-sm
                     outline-none
                 '
             ]) }}
@@ -83,7 +87,9 @@
                 type="button"
                 @click="show = !show"
                 @class([
-                    'flex h-full items-center pr-4 hover:cursor-pointer transition-colors duration-200 focus-visible:outline-none',
+                    'pr-4' => app()->getLocale() == 'en',
+                    'pl-4' => app()->getLocale() == 'fa',
+                    'flex h-full items-center hover:cursor-pointer transition-colors duration-200 focus-visible:outline-none',
                     'text-(--mine-input-icon)' => !$errors->has($name),
                     'text-(--mine-input-error-icon)' => $errors->has($name),
                     'group-focus-within:text-(--mine-input-border-focus)' => !$errors->has($name),

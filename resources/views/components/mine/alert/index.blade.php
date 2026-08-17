@@ -7,7 +7,7 @@
     $variants = [
         'danger' => [
             'container' => 'border-[var(--mine-alert-danger-border)] bg-[var(--mine-alert-danger-bg)]',
-            'icon' => 'shield-exclamation',
+            'icon' => 'x-circle',
             'icon-color' => 'text-[var(--mine-alert-danger-icon)]',
             'title' => 'text-[var(--mine-alert-danger-title)]',
         ],
@@ -36,16 +36,16 @@
 
 <div
     {{ $attributes->class([
-        'flex items-start gap-4 rounded-xl border-2 p-4',
+        'flex gap-3 rounded-xl border-2 p-4',
         $style['container'],
     ]) }}
 >
-    <div class="{{ $style['icon-color'] }} pt-0.5">
-        <x-mine.icon name="{{ $style['icon'] }}" class="size-7" />
+    <div class="{{ $style['icon-color'] }}">
+        <x-mine.icon name="{{ $style['icon'] }}" class="size-6" />
     </div>
-    <div>
+    <div class="pt-0.5">
         @if($title)
-            <h3 class="text-sm font-semibold {{ $style['title'] }}">
+            <h3 class="text-sm font-bold {{ $style['title'] }}">
                 {{ $title }}
             </h3>
         @endif

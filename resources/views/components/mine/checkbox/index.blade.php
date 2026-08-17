@@ -1,4 +1,4 @@
-<label class="mine-checkbox inline-flex items-center gap-2.5 cursor-pointer">
+<label class="mine-checkbox inline-flex items-center gap-2 cursor-pointer">
     <input
         type="checkbox"
         {{ $attributes->whereStartsWith('wire:model') }}
@@ -7,7 +7,7 @@
 
     <div
         @class([
-            'flex items-center justify-center w-5 h-5 rounded-[6px] border-2 bg-[var(--mine-input-bg)] transition-all duration-200 ease-out shrink-0',
+            'flex items-center justify-center w-5 h-5 rounded-md border-2 bg-[var(--mine-input-bg)] transition-all duration-200 ease-out shrink-0 mb-1',
             'border-[var(--mine-input-border)]',
             'peer-checked:bg-[var(--mine-checkbox-bg)] peer-checked:border-[var(--mine-checkbox-bg)]',
             'peer-focus-visible:ring-4 peer-focus-visible:ring-[var(--mine-input-ring-focus)] peer-focus-visible:outline-none',

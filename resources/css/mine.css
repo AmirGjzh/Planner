@@ -1,66 +1,67 @@
 :root {
     /* Background */
-    --mine-page-bg: linear-gradient(180deg, #FCFDFC 0%, #F2F7F4 100%);
+    --mine-page-bg: linear-gradient(180deg, #FCFDFE 0%, #F3F6FA 100%); /**/
 
     /* Card */
-    --mine-card-bg: rgba(255, 255, 255, .78);
-    --mine-card-bg-hover: rgba(255, 255, 255, .84);
-    --mine-card-border: #E9EFEB;
-    --mine-card-border-hover: #D8E2DC;
+    --mine-card-bg: rgba(255, 255, 255, .82); /**/
+    --mine-card-bg-hover: rgba(255, 255, 255, .88); /**/
+    --mine-card-border: #E2E8F0; /**/
+    --mine-card-border-hover: #CBD5E1; /**/
 
     /* Text */
-    --mine-text-primary: #0F172B;
-    --mine-text-secondary: #5E6D67;
-    --mine-text-error: #DC2626;
+    --mine-text-primary: #111827; /**/
+    --mine-text-secondary: #536174; /**/
+    --mine-text-error: #C81E1E; /**/
 
-    --mine-text-link: #178A50;
-    --mine-text-link-hover: #128047;
-    --mine-text-link-ring-focus: #C8EAD6;
+    --mine-text-link: #173B67; /**/
+    --mine-text-link-hover: #102F54; /**/
+    --mine-text-link-ring-focus: #C9D7E8; /**/
 
     --mine-text-secondary-accent: #334155;
     --mine-text-secondary-accent-ring-focus: #E2E8F0;
 
     /* Input */
-    --mine-input-bg: #FAFBFA;
-    --mine-input-autofill-bg: #FAFBFA;
-    --mine-input-border: #D2DFD8;
-    --mine-input-border-focus: #1A9B5C;
-    --mine-input-ring-focus: #C8EAD6;
-    --mine-input-icon: #9AAEA0;
-    --mine-input-placeholder: #A2B0A9;
-    --mine-input-error-bg: #FDF2F2;
-    --mine-input-error-border: #d76666;
-    --mine-input-error-ring: #f4c8c8;
-    --mine-input-error-icon: #f19c9c;
-    --mine-input-error-placeholder: #D08080;
+    --mine-input-bg: #FAFCFE; /**/
+    --mine-input-autofill-bg: #FAFCFE; /**/
+    --mine-input-border: #CBD5E1; /**/
+    --mine-input-border-focus: #173B67; /**/
+    --mine-input-ring-focus: #C9D7E8; /**/
+    --mine-input-icon: #94A3B8; /**/
+    --mine-input-placeholder: #94A3B8; /**/
 
-    --mine-checkbox-bg: #1A9B5C;
-    --mine-checkbox-text: #ffffff;
+    --mine-input-error-bg: #FFF5F5; /**/
+    --mine-input-error-border: #C81E1E; /**/
+    --mine-input-error-ring: #F3B7B7; /**/
+    --mine-input-error-icon: #C81E1E; /**/
+    --mine-input-error-placeholder: #B85C5C; /**/
+
+    --mine-checkbox-bg: #173B67; /**/
+    --mine-checkbox-text: #FFFFFF; /**/
 
     /* Alert */
-    --mine-alert-danger-bg: #FDF2F2;
-    --mine-alert-danger-border: #F2CACA;
-    --mine-alert-danger-icon: #DC2626;
-    --mine-alert-danger-icon-bg: #FEE2E2;
-    --mine-alert-danger-title: #991B1B;
+    --mine-alert-danger-bg: #FFF1F2; /**/
+    --mine-alert-danger-border: #F4A6A6; /**/
+    --mine-alert-danger-icon: #991B1B; /**/
+    --mine-alert-danger-icon-bg: #FFD6D6; /**/
+    --mine-alert-danger-title: #991B1B; /**/
 
-    --mine-alert-success-bg: #F0F9F4;
-    --mine-alert-success-border: #C8E8D5;
-    --mine-alert-success-icon: #1A9B5C;
-    --mine-alert-success-icon-bg: #E0F2E8;
-    --mine-alert-success-title: #166534;
+    --mine-alert-success-bg: #F0FDF4; /**/
+    --mine-alert-success-border: #8ED5A8; /**/
+    --mine-alert-success-icon: #166534; /**/
+    --mine-alert-success-icon-bg: #C6F0D2; /**/
+    --mine-alert-success-title: #166534; /**/
 
-    --mine-alert-warning-bg: #FFF9EE;
-    --mine-alert-warning-border: #F6E3B8;
-    --mine-alert-warning-icon: #D97706;
-    --mine-alert-warning-icon-bg: #F8EDD3;
-    --mine-alert-warning-title: #92400E;
+    --mine-alert-warning-bg: #FFFBEB; /**/
+    --mine-alert-warning-border: #E9C46A; /**/
+    --mine-alert-warning-icon: #92400E; /**/
+    --mine-alert-warning-icon-bg: #FFE8A8; /**/
+    --mine-alert-warning-title: #92400E; /**/
 
-    --mine-alert-info-bg: #F3F7FF;
-    --mine-alert-info-border: #D2E0F8;
-    --mine-alert-info-icon: #2563EB;
-    --mine-alert-info-icon-bg: #E3ECFC;
-    --mine-alert-info-title: #1D4ED8;
+    --mine-alert-info-bg: #EFF6FF; /**/
+    --mine-alert-info-border: #8FB5E8; /**/
+    --mine-alert-info-icon: #1E40AF; /**/
+    --mine-alert-info-icon-bg: #CFE0FA; /**/
+    --mine-alert-info-title: #1E40AF; /**/
 
     /* Seperator + Scrollbar */
     --mine-separator-border: #D2DFD8;
@@ -115,10 +116,10 @@
     --mine-badge-secondary-text: #334155;
 
     /* Button */
-    --mine-btn-primary-bg: #1A9B5C;
-    --mine-btn-primary-bg-hover: #178A50;
-    --mine-btn-primary-text: #FFFFFF;
-    --mine-btn-primary-ring-focus: #C8EAD6;
+    --mine-btn-primary-bg: #173B67; /**/
+    --mine-btn-primary-bg-hover: #102F54; /**/
+    --mine-btn-primary-text: #FFFFFF; /**/
+    --mine-btn-primary-ring-focus: #C9D7E8; /**/
 
     --mine-btn-danger-bg: #DC2626;
     --mine-btn-danger-bg-hover: #B91C1C;
@@ -171,6 +172,7 @@
     --mine-workload-very-heavy-text: #7F1D1D;
     --mine-workload-empty-dot: #E2E8F0;
 }
+
 
 @utility mine-page-bg {
     background: var(--mine-page-bg);

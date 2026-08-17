@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() == 'fa' ? 'rtl' : 'ltr' }}">
 
 <head>
     <meta charset="utf-8">
@@ -12,7 +12,7 @@
     @livewireStyles
 </head>
 
-<body class="min-h-dvh flex flex-col mine-page-bg">
+<body class="min-h-dvh flex flex-col mine-page-bg font-sans">
     <x-mine.header />
     {{ $slot }}
     {{-- <x-mine.footer /> --}}

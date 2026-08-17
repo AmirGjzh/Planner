@@ -1,0 +1,21 @@
+{
+    "Welcome back": "خوش اومدی",
+    "Enter your information to sign in": "برای ورود اطلاعاتتو وارد کن",
+    "Email address": "آدرس ایمیل",
+    "Enter your email address": "آدرس ایمیلتو وارد کن",
+    "Password": "رمز عبور",
+    "Enter your password": "رمز عبورتو وارد کن",
+    "Remember me": "منو یادت نگه دار",
+    "Forgot password?": "رمز عبورتو فراموش کردی؟",
+    "Sign in": "ورود",
+    "New to Planner?": "تازه با Planner آشنا شدی؟",
+    "Create your account": "حساب کاربریتو بساز",
+    "Too many sign-in attempts": "تعدادِ تلاش های ورود بیش از حد مجاز",
+    "Please try again in a minute.": "لطفاً یه دقیقه دیگه دوباره تلاش کن.",
+    "Invalid credentials": "اطلاعات ورود نادرسته",
+    "The email or password you entered is incorrect.": "ایمیل یا رمز عبوری که وارد کردی نادرسته.",
+    "Email address is required.": "وارد کردن آدرس ایمیل الزامیه.",
+    "Please enter a valid email address.": "لطفاً یه آدرس ایمیل معتبر وارد کن.",
+    "Password is required.": "وارد کردن رمز عبور الزامیه.",
+    "OR": "یا"
+}

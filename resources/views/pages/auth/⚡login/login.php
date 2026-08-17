@@ -1,9 +1,9 @@
 <?php
 
-use App\Actions\Auth\LoginUserAction;
+use Livewire\Component;
 use App\Enums\LoginResult;
 use Livewire\Attributes\Layout;
-use Livewire\Component;
+use App\Actions\Auth\LoginUserAction;
 
 new #[Layout('layouts::auth')] class extends Component
 {
@@ -11,7 +11,7 @@ new #[Layout('layouts::auth')] class extends Component
 
     public string $password = '';
 
-    public bool $remember = false;
+    public bool $remember = true;
 
     public ?string $login_error = null;
 
@@ -51,9 +51,9 @@ new #[Layout('layouts::auth')] class extends Component
     protected function messages(): array
     {
         return [
-            'email.required' => 'Email is required.',
-            'email.email' => 'Email is not a valid email address.',
-            'password.required' => 'Password is required.',
+            'email.required' => __('Email address is required.'),
+            'email.email' => __('Please enter a valid email address.'),
+            'password.required' => __('Password is required.'),
         ];
     }
 };
