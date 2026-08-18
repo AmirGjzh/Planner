@@ -57,7 +57,7 @@
                 'group-focus-within:text-(--mine-input-border-focus)' => !$errors->has($name),
                 'group-focus-within:text-(--mine-input-error-border)' => $errors->has($name),
             ])>
-                <x-mine.icon variant="solid" :name="$leftIcon" />
+                <x-mine.icon variant="micro" :name="$leftIcon" />
             </div>
         @endif
 
@@ -99,10 +99,10 @@
                 ])
             >
                 <template x-if="!show">
-                    <x-mine.icon variant="solid" name="eye-slash" />
+                    <x-mine.icon variant="micro" name="eye-slash" />
                 </template>
                 <template x-if="show">
-                    <x-mine.icon variant="solid" name="eye" />
+                    <x-mine.icon variant="micro" name="eye" />
                 </template>
             </button>
         @endif

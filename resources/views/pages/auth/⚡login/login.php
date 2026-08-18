@@ -15,6 +15,13 @@ new #[Layout('layouts::auth')] class extends Component
 
     public ?string $login_error = null;
 
+    public function mount()
+    {
+        if ($toast = session()->pull('toast')) {
+            $this->dispatch('toast', ...$toast);
+        }
+    }
+
     public function login(LoginUserAction $login_user_action)
     {
         $this->login_error = null;
@@ -34,6 +41,12 @@ new #[Layout('layouts::auth')] class extends Component
         };
 
         if ($result === LoginResult::Success) {
+            session()->flash('toast', [
+                'title' => __('Signed in successfully'),
+                'variant' => 'success',
+                'duration' => 6000,
+                'position' => 'bottom-center',
+            ]);
             return $this->redirectRoute('dashboard', navigate: true);
         }
 

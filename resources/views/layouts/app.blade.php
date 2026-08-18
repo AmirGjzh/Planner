@@ -16,6 +16,7 @@
     <x-mine.header />
     {{ $slot }}
     {{-- <x-mine.footer /> --}}
+    <x-mine.toast />
 </body>
 
 </html>

@@ -10,6 +10,13 @@ new class extends Component
 {
     use HasUser;
 
+    public function mount()
+    {
+        if ($toast = session()->pull('toast')) {
+            $this->dispatch('toast', ...$toast);
+        }
+    }
+
     #[Computed]
     public function upcomingTasks()
     {

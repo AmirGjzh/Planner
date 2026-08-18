@@ -17,6 +17,13 @@ new #[Layout('layouts::auth')] class extends Component
 
     public ?string $register_error = null;
 
+    public function mount()
+    {
+        if ($toast = session()->pull('toast')) {
+            $this->dispatch('toast', ...$toast);
+        }
+    }
+
     public function register(RegisterUserAction $register_user_action)
     {
         $this->register_error = null;
@@ -30,6 +37,12 @@ new #[Layout('layouts::auth')] class extends Component
         );
 
         if ($result === RegisterResult::Success) {
+            session()->flash('toast', [
+                'title' => __('Account created successfully, Please sign in'),
+                'variant' => 'success',
+                'duration' => 6000,
+                'position' => 'bottom-center',
+            ]);
             return $this->redirectRoute('login', navigate: true);
         }
 
@@ -55,14 +68,14 @@ new #[Layout('layouts::auth')] class extends Component
     protected function messages(): array
     {
         return [
-            'username.required' => 'Username is required.',
-            'username.regex' => 'Username must start with a letter and be 3–30 characters.',
-            'email.required' => 'Email is required.',
-            'email.email' => 'Email is not a valid email address.',
-            'password.required' => 'Password is required.',
-            'password.confirmed' => 'Password confirmation does not match.',
-            'password.min' => 'Password must be at least 8 characters.',
-            'password_confirmation.required' => 'Password confirmation is required.',
+            'username.required' => __('Username is required.'),
+            'username.regex' => __('Username must start with a letter and be 3–30 characters.'),
+            'email.required' => __('Email address is required.'),
+            'email.email' => __('Please enter a valid email address.'),
+            'password.required' => __('Password is required.'),
+            'password.confirmed' => __('Password confirmation does not match.'),
+            'password.min' => __('Password must be at least 8 characters.'),
+            'password_confirmation.required' => __('Confirm password is required.'),
         ];
     }
 };

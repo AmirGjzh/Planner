@@ -14,6 +14,7 @@
 
 <body class="font-sans">
     {{ $slot }}
+    <x-mine.toast />
 </body>
 
 </html>
