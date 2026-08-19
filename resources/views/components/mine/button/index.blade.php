@@ -67,7 +67,9 @@
         </svg>
     </div>
 
-    <span>
+    <span @class([
+        "pt-1" => app()->isLocale('en'),
+    ])>
         {{ $slot }}
     </span>
 </button>

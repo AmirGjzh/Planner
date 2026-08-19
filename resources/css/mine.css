@@ -73,7 +73,8 @@
 
     /* Modal */
     --mine-modal-bg: #ffffff;
-    --mine-btn-icon-bg-hover: #EEF5F1;
+    --mine-btn-icon-bg-hover: #EEF4FA; /**/
+    --mine-btn-icon-ring-focus: #C9D9EB; /**/
 
     /* Select */
     --mine-select-selected-bg: #EAF6EF;
@@ -96,21 +97,21 @@
     --mine-datepicker-day-ring-focus: #DFF5E7;
 
     /* Dropdown */
-    --mine-dropdown-bg: #FDFEFD;
-    --mine-dropdown-border: #E9EFEB;
-    --mine-dropdown-item-bg-hover: #EAF3ED;
-    --mine-dropdown-item-ring: #C8EAD6;
-    --mine-dropdown-item-text-danger: #DC2626;
-    --mine-dropdown-destructive-item-bg-hover: #FEE2E2;
-    --mine-dropdown-destructive-item-ring: #F2CACA;
+    --mine-dropdown-bg: #FFFFFF; /**/
+    --mine-dropdown-border: #E2E8F0; /**/
+    --mine-dropdown-item-bg-hover: #EEF4FA; /**/
+    --mine-dropdown-item-ring: #C9D9EB; /**/
+    --mine-dropdown-item-text-danger: #B91C1C; /**/
+    --mine-dropdown-destructive-item-bg-hover: #FEE2E2; /**/
+    --mine-dropdown-destructive-item-ring: #F3B4B4; /**/
 
     /* Category */
     --mine-category-border-left-green: #1A9B5C;
     --mine-category-border-left-green-hover: #128047;
 
     /* Badge */
-    --mine-badge-primary-bg: #E6F3EC;
-    --mine-badge-primary-text: #128047;
+    --mine-badge-primary-bg: #E8F0F8; /**/
+    --mine-badge-primary-text: #173F73; /**/
 
     --mine-badge-danger-bg: #f7e4e4;
     --mine-badge-danger-text: #B42318;
@@ -134,10 +135,10 @@
     --mine-btn-secondary-text: #FFFFFF;
     --mine-btn-secondary-ring-focus: #E2E8F0;
 
-    --mine-btn-ghost-bg: #F5F8F6;
-    --mine-btn-ghost-bg-hover: #EAF3ED;
-    --mine-btn-ghost-text: #5E6D67;
-    --mine-btn-ghost-ring-focus: #C8EAD6;
+    --mine-btn-ghost-bg: #F5F7FA; /**/
+    --mine-btn-ghost-bg-hover: #EAF1F8; /**/
+    --mine-btn-ghost-text: #536176; /**/
+    --mine-btn-ghost-ring-focus: #C9D9EB; /**/
 
     /* Pagination */
     --mine-pagination-bg: #FFFFFF;
@@ -149,10 +150,10 @@
     --mine-pagination-ring-focus: #DFF5E7;
 
     /* Navlink */
-    --mine-nav-link-text: #565c67;
-    --mine-nav-link-text-active: #166534;
-    --mine-nav-link-bg-hover: #eef7f1;
-    --mine-nav-link-bg-active: #EDF5F0;
+    --mine-nav-link-text: #536176; /**/
+    --mine-nav-link-text-active: #173F73; /**/
+    --mine-nav-link-bg-hover: #EEF4FA; /**/
+    --mine-nav-link-bg-active: #EAF1F8; /**/
 
     /* Progress */
     --mine-progress-track: #DAE6E0;
@@ -373,21 +374,20 @@
 
 @utility mine-btn-icon {
     @apply mine-text-secondary;
-    @apply hover:mine-text-primary;
+    @apply hover:text-(--mine-text-link);
     @apply hover:cursor-pointer;
     @apply hover:bg-(--mine-btn-icon-bg-hover);
-    @apply hover:cursor-pointer;
     @apply focus-visible:outline-none;
     @apply focus-visible:ring-4;
-    @apply focus-visible:ring-(--mine-input-ring-focus);
+    @apply focus-visible:ring-(--mine-btn-icon-ring-focus);
 }
 
 @utility mine-nav-link {
-    @apply text-sm font-medium;
-    @apply py-4 px-4 gap-2 flex justify-center items-center h-10 rounded-xl;
-    @apply transition-all duration-200;
+    @apply px-4 gap-2 flex justify-center items-center h-10 rounded-xl;
+    @apply transition-colors duration-200;
     @apply text-(--mine-nav-link-text);
     @apply hover:bg-(--mine-nav-link-bg-hover);
+    @apply hover:text-(--mine-nav-link-text-active);
 }
 
 @utility mine-nav-link-active {

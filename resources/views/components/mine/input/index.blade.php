@@ -49,8 +49,8 @@
     >
         @if($leftIcon)
             <div @class([
-                'pl-4' => app()->getLocale() == 'en',
-                'pr-4' => app()->getLocale() == 'fa',
+                'pl-4' => app()->isLocale('en'),
+                'pr-4' => app()->isLocale('fa'),
                 'flex h-full items-center',
                 'text-(--mine-input-icon)' => !$errors->has($name),
                 'text-(--mine-input-error-icon)' => $errors->has($name),
@@ -87,8 +87,8 @@
                 type="button"
                 @click="show = !show"
                 @class([
-                    'pr-4' => app()->getLocale() == 'en',
-                    'pl-4' => app()->getLocale() == 'fa',
+                    'pr-4' => app()->isLocale('en'),
+                    'pl-4' => app()->isLocale('fa'),
                     'flex h-full items-center hover:cursor-pointer transition-colors duration-200 focus-visible:outline-none',
                     'text-(--mine-input-icon)' => !$errors->has($name),
                     'text-(--mine-input-error-icon)' => $errors->has($name),

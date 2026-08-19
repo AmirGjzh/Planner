@@ -14,5 +14,11 @@ $active = $active || ($route && request()->routeIs($route));
     class="{{ $active ? 'mine-nav-link-active' : 'mine-nav-link' }}"
     {{ $active ? 'aria-current="page"' : '' }}
 >
-    {{ $slot }}
+    <p @class([
+        "pt-1" => app()->isLocale('en'),
+        "pt-0.5" => app()->isLocale('fa'),
+        "text-sm font-medium"
+    ])>
+        {{ $slot }}
+    </p>
 </a>

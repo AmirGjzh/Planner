@@ -4,11 +4,15 @@
     'disabled' => false,
     'destructive' => false,
     'value' => null,
+    'active' => false,
 ])
 
 @aware(['multiple' => false])
 
-@php $href = $route ? route($route) : $href; @endphp
+@php
+    $href = $route ? route($route) : $href;
+    $active = $active || ($route && request()->routeIs($route));
+@endphp
 
 @if ($href)
 <a
@@ -18,9 +22,11 @@
     tabindex="0"
     @click="close()"
     {{ $attributes->class([
-        'flex w-full items-center rounded-lg transition-all duration-200 ease-out outline-none no-underline text-sm mine-text-primary',
-        'hover:bg-(--mine-dropdown-item-bg-hover) focus:bg-(--mine-dropdown-item-bg-hover) focus-visible:ring-4 focus-visible:ring-(--mine-dropdown-item-ring)'
-            => ! $destructive,
+        'group flex w-full items-center rounded-lg transition-all duration-200 ease-out outline-none no-underline text-sm mine-text-secondary',
+        'hover:bg-(--mine-dropdown-item-bg-hover) hover:text-(--mine-text-link) focus:bg-(--mine-dropdown-item-bg-hover) focus:text-(--mine-text-link) focus-visible:ring-4 focus-visible:ring-(--mine-dropdown-item-ring)'
+            => ! $destructive && ! $active,
+        'bg-(--mine-dropdown-item-bg-hover) text-(--mine-text-link) hover:bg-(--mine-dropdown-item-bg-hover) hover:text-(--mine-text-link) focus:bg-(--mine-dropdown-item-bg-hover) focus:text-(--mine-text-link) focus-visible:ring-4 focus-visible:ring-(--mine-dropdown-item-ring)'
+            => ! $destructive && $active,
         'hover:bg-(--mine-dropdown-destructive-item-bg-hover) focus:bg-(--mine-dropdown-destructive-item-bg-hover) focus-visible:ring-4 focus-visible:ring-(--mine-dropdown-destructive-item-ring) text-(--mine-dropdown-item-text-danger)'
             => $destructive,
         'cursor-not-allowed opacity-50'
@@ -41,10 +47,12 @@
     @keydown.enter.prevent="$el.firstElementChild?.dispatchEvent(new MouseEvent('click', { bubbles: true }))"
     @keydown.space.prevent="$el.firstElementChild?.dispatchEvent(new MouseEvent('click', { bubbles: true }))"
     @click="multiple ? toggleSelect(@js($value)) : close()"
-    {{ $attributes->class([
-        'flex w-full items-center rounded-lg transition-all duration-200 ease-out outline-none text-sm mine-text-primary',
-        'hover:bg-(--mine-dropdown-item-bg-hover) hover:text-(--mine-dropdown-item-bg-hover) focus:bg-(--mine-dropdown-item-bg-hover) focus-visible:ring-4 focus-visible:ring-(--mine-dropdown-item-ring)'
-            => ! $destructive,
+{{ $attributes->class([
+        'group flex w-full items-center rounded-lg transition-all duration-200 ease-out outline-none text-sm mine-text-secondary',
+        'hover:bg-(--mine-dropdown-item-bg-hover) hover:text-(--mine-text-link) focus:bg-(--mine-dropdown-item-bg-hover) focus:text-(--mine-text-link) focus-visible:ring-4 focus-visible:ring-(--mine-dropdown-item-ring)'
+            => ! $destructive && ! $active,
+        'bg-(--mine-dropdown-item-bg-hover) text-(--mine-text-link) hover:bg-(--mine-dropdown-item-bg-hover) hover:text-(--mine-text-link) focus:bg-(--mine-dropdown-item-bg-hover) focus:text-(--mine-text-link) focus-visible:ring-4 focus-visible:ring-(--mine-dropdown-item-ring)'
+            => ! $destructive && $active,
         'hover:bg-(--mine-dropdown-destructive-item-bg-hover) focus:bg-(--mine-dropdown-destructive-item-bg-hover) focus-visible:ring-4 focus-visible:ring-(--mine-dropdown-destructive-item-ring) text-(--mine-dropdown-item-text-danger)'
             => $destructive,
         'cursor-not-allowed opacity-50'

@@ -1,6 +1,6 @@
 <div class="min-h-dvh mine-page-bg px-6 py-4 flex justify-center items-center">
     <div class="mine-card w-full max-w-120 flex flex-col justify-center p-6">
-        <h1 class="text-center font-medium text-xl mine-text-primary mb-2">{{ __('Create your account') }}</h1>
+        <h1 class="text-center font-semibold text-xl mine-text-primary mb-2">{{ __('Welcome to Planner') }}</h1>
         <p class="text-center text-sm mb-6 mine-text-secondary font-medium">{{ __('Enter your information to create your account') }}</p>
 
         <form wire:submit="register" class="flex flex-col">

@@ -8,7 +8,7 @@
     "Remember me": "منو به خاطر بسپار",
     "Forgot password?": "رمز عبورتو فراموش کردی؟",
     "Sign in": "ورود",
-    "New to Planner?": "تازه با Planner آشنا شدی؟",
+    "New to Planner?": "تازه با پلنر آشنا شدی؟",
     "Create your account": "حساب کاربریتو بساز",
     "Too many sign-in attempts": "تعداد تلاش های ورود بیش از حد مجاز",
     "Please try again in a minute.": "لطفاً یه دقیقه دیگه دوباره تلاش کن.",
@@ -20,6 +20,7 @@
     "Signed in successfully": "با موفقیت وارد شدی",
     "OR": "یا",
 
+    "Welcome to Planner": "به پلنر خوش اومدی",
     "Enter your information to create your account": "برای ساخت حسابت، اطلاعاتتو وارد کن",
     "Username": "نام کاربری",
     "Enter your username": "نام کاربریتو وارد کن",
@@ -38,5 +39,14 @@
     "Password must be at least 8 characters.": "رمز عبور باید حداقل ۸ کاراکتر داشته باشه.",
     "Confirm password is required.": "تکرار رمز عبور الزامیه.",
     "Password confirmation does not match.": "رمزهای عبور با هم مطابقت ندارن.",
-    "Your account created successfully, please sign in": "حساب کاربریت با موفقیت ساخته شد، لطفا وارد شو"
+    "Your account created successfully, please sign in": "حساب کاربریت با موفقیت ساخته شد، لطفا وارد شو",
+
+    "Dashboard": "داشبورد",
+    "Tasks": "تسک ها",
+    "Plans": "برنامه ها",
+    "Categories": "دسته بندی‌ ها",
+    "Reports": "گزارشات",
+    "Profile": "پروفایل",
+    "Settings": "تنطیمات",
+    "Logout": "خروج"
 }
