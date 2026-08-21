@@ -57,11 +57,11 @@
                 </div>
             </x-mine.dropdown.trigger>
 
-            <x-mine.dropdown.content class="mt-2! w-full pointer-events-auto" placement="bottom-{{ app()->isLocale('en') ? 'start' : 'end' }}">
+            <x-mine.dropdown.content class="mt-2! w-full pointer-events-auto"
+                placement="bottom-{{ app()->isLocale('en') ? 'start' : 'end' }}">
                 @foreach ($navLinks as $link)
                     <x-mine.dropdown.item :route="$link['route']">
-                        <div
-                            class="w-full py-3 px-3 flex items-center justify-between hover:cursor-pointer">
+                        <div class="w-full py-3 px-3 flex items-center justify-between hover:cursor-pointer">
                             <div class="flex gap-3 items-center">
                                 <x-mine.icon :name="$link['icon']" variant="micro" class="size-5" />
                                 <p @class([
@@ -70,7 +70,8 @@
                                     "text-sm font-medium"
                                 ])>{{ $link['label'] }}</p>
                             </div>
-                            <x-mine.icon name="chevron-{{ app()->isLocale('en') ? 'right' : 'left' }}" class="size-5" variant="micro" />
+                            <x-mine.icon name="chevron-{{ app()->isLocale('en') ? 'right' : 'left' }}" class="size-5"
+                                variant="micro" />
                         </div>
                     </x-mine.dropdown.item>
                 @endforeach
@@ -87,141 +88,144 @@
     {{-- Right actions --}}
     <div class="absolute inset-0 z-10 pointer-events-none">
         @auth
-            @php
-                $user = auth()->user();
-                $initials = $user->firstname && $user->lastname
-                    ? strtoupper(substr($user->firstname, 0, 1) . substr($user->lastname, 0, 1))
-                    : strtoupper(substr($user->username, 0, 2));
-            @endphp
+                    @php
+                        $user = auth()->user();
+                        $initials = $user->initials();
+                    @endphp
 
-            <div class="w-full h-full flex items-center justify-end" x-data="{
-                        username: @js($user->username),
-                        email: @js($user->email),
-                        initials: @js($initials),
-                    }" x-on:profile-updated.window="
-                        username = $event.detail.username;
-                        email = $event.detail.email;
-                        initials = $event.detail.firstname && $event.detail.lastname
-                            ? ($event.detail.firstname.charAt(0) + $event.detail.lastname.charAt(0)).toUpperCase()
-                            : $event.detail.username.slice(0, 2).toUpperCase();
-                    ">
-                <x-mine.dropdown group="header-action" class="flex items-center h-full pointer-events-none">
-                    <x-mine.dropdown.trigger class="pointer-events-auto">
-                        <div @class([
-                            "pr-2 md:pr-4" => app()->isLocale('en'),
-                            "pl-2 md:pl-4" => app()->isLocale('fa'),
-                            "flex items-center hover:cursor-pointer rounded-xl py-1.5"
-                        ])>
-                            <div @class([
-                                "mine-badge-primary rounded-xl size-11 flex items-center justify-center"
-                            ])>
-                                <h2 class="font-bold text-sm pt-0.5" x-text="initials">{{ $initials }}</h2>
-                            </div>
-                            <div class="hidden sm:flex items-center py-2 px-2 rounded-xl">
-                                <h2 @class([
-                                    "mr-2" => app()->isLocale('en'),
-                                    "ml-2" => app()->isLocale('fa'),
-                                    "font-medium text-sm mine-text-secondary pt-0.5 min-w-0 max-w-25 truncate"
-                                ])
-                                    x-text="username">
-                                    {{ $user->username }}
-                                </h2>
-                                <div class="relative size-4 mine-text-secondary">
-                                    <div :class="!open ? 'opacity-100 scale-100' : 'opacity-0 scale-75'"
-                                        class="absolute inset-0 transition-all duration-200 ease-out">
-                                        <x-mine.icon name="chevron-down" variant="micro" class="size-4" />
+                    <div class="w-full h-full flex items-center justify-end" x-data="{
+                                        username: @js($user->username),
+                                        email: @js($user->email),
+                                        initials: @js($initials),
+                                    }" x-on:profile-updated.window="
+                                        username = $event.detail.username;
+                                        email = $event.detail.email;
+initials = $event.detail.firstname && $event.detail.lastname
+                            ? ([...$event.detail.firstname][0] + '\u200C' + [...$event.detail.lastname][0]).toUpperCase()
+                            : [...$event.detail.username].slice(0, 2).join('\u200C').toUpperCase();
+                                    ">
+                        <x-mine.dropdown group="header-action" class="flex items-center h-full pointer-events-none">
+                            <x-mine.dropdown.trigger class="pointer-events-auto">
+                                <div @class([
+                                    "pr-2 md:pr-4" => app()->isLocale('en'),
+                                    "pl-2 md:pl-4" => app()->isLocale('fa'),
+                                    "flex items-center hover:cursor-pointer rounded-xl py-1.5"
+                                ])>
+                                    <div @class([
+                                        "mine-badge-primary rounded-xl size-11 flex items-center justify-center"
+                                    ])>
+                                        <h2 class="font-bold text-sm pt-0.5" x-text="initials">{{ $initials }}</h2>
                                     </div>
-                                    <div :class="open ? 'opacity-100 scale-100' : 'opacity-0 scale-75'"
-                                        class="absolute inset-0 transition-all duration-200 ease-out">
-                                        <x-mine.icon name="chevron-up" variant="micro" class="size-4" />
+                                    <div class="hidden sm:flex items-center py-2 px-2 rounded-xl">
+                                        <h2 @class([
+                                            "mr-2 ml-1" => app()->isLocale('en'),
+                                            "ml-2 mr-1" => app()->isLocale('fa'),
+                                            "font-medium text-sm mine-text-secondary pt-0.5 min-w-0 max-w-25 truncate"
+                                        ]) x-text="username">
+                                            {{ $user->username }}
+                                        </h2>
+                                        <div class="relative size-4 mine-text-secondary">
+                                            <div :class="!open ? 'opacity-100 scale-100' : 'opacity-0 scale-75'"
+                                                class="absolute inset-0 transition-all duration-200 ease-out">
+                                                <x-mine.icon name="chevron-down" variant="micro" class="size-4" />
+                                            </div>
+                                            <div :class="open ? 'opacity-100 scale-100' : 'opacity-0 scale-75'"
+                                                class="absolute inset-0 transition-all duration-200 ease-out">
+                                                <x-mine.icon name="chevron-up" variant="micro" class="size-4" />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </x-mine.dropdown.trigger>
+                            </x-mine.dropdown.trigger>
 
-                    <x-mine.dropdown.content class="mt-2! min-w-0! pointer-events-auto" placement="bottom-{{ app()->isLocale('fa') ? 'start' : 'end' }}">
-                        <div @class([
-                            "pl-2 pr-4" => app()->isLocale('en'),
-                            "pr-2 pl-4" => app()->isLocale('fa'),
-                            "flex items-center gap-3 py-2"
-                        ])>
-                            <div
-                                class="shrink-0 size-14 rounded-xl flex justify-center items-center text-sm font-medium mine-badge-primary">
-                                <h1 class="font-bold text-lg pt-1" x-text="initials">{{ $initials }}</h1>
-                            </div>
-                            <div class="min-w-0 max-w-60 truncate flex flex-col justify-between gap-1">
-                                <p class="text-sm font-semibold mine-text-primary" x-text="username">{{ $user->username }}
-                                </p>
-                                <p class="text-xs font-medium mine-text-secondary" x-text="email">{{ $user->email }}</p>
-                            </div>
-                        </div>
-
-                        <x-mine.dropdown.divider class="-mx-1" />
-
-                        <x-mine.dropdown.item :route="'profile'">
-                            <div
-                                class="w-full py-3 px-3 flex items-center justify-between hover:cursor-pointer">
-                                <div class="flex gap-3 items-center">
-                                    <x-mine.icon name="user" class="size-5" variant="micro" />
-                                    <p @class([
-                                        "pt-1" => app()->isLocale('en'),
-                                        "pt-0.5" => app()->isLocale('fa'),
-                                        "text-sm font-medium"
-                                    ])>{{ __('Profile') }}</p>
+                            <x-mine.dropdown.content class="mt-2! min-w-0! pointer-events-auto"
+                                placement="bottom-{{ app()->isLocale('fa') ? 'start' : 'end' }}">
+                                <div @class([
+                                    "pl-2 pr-4" => app()->isLocale('en'),
+                                    "pr-2 pl-4" => app()->isLocale('fa'),
+                                    "flex items-center gap-3 py-2"
+                                ])>
+                                    <div
+                                        class="shrink-0 size-14 rounded-xl flex justify-center items-center text-sm font-medium mine-badge-primary">
+                                        <h1 class="font-bold text-lg pt-1" x-text="initials">{{ $initials }}</h1>
+                                    </div>
+                                    <div class="min-w-0 max-w-60 truncate flex flex-col justify-between gap-1">
+                                        <p class="text-sm font-semibold mine-text-primary" x-text="username">{{ $user->username }}
+                                        </p>
+                                        <p class="text-xs font-medium mine-text-secondary" x-text="email">{{ $user->email }}</p>
+                                    </div>
                                 </div>
-                                <x-mine.icon name="chevron-{{ app()->isLocale('en') ? 'right' : 'left' }}" class="size-5" variant="micro" />
-                            </div>
-                        </x-mine.dropdown.item>
 
-                        <x-mine.dropdown.item>
-                            <div
-                                class="w-full py-3 px-3 flex items-center justify-between hover:cursor-pointer">
-                                <div class="flex gap-3 items-center">
-                                    <x-mine.icon name="cog-6-tooth" class="size-5" variant="micro" />
-                                    <p @class([
-                                        "pt-1" => app()->isLocale('en'),
-                                        "pt-0.5" => app()->isLocale('fa'),
-                                        "text-sm font-medium"
-                                    ])>{{ __('Settings') }}</p>
-                                </div>
-                                <x-mine.icon name="chevron-{{ app()->isLocale('en') ? 'right' : 'left' }}" class="size-5" variant="micro" />
-                            </div>
-                        </x-mine.dropdown.item>
+                                <x-mine.dropdown.divider class="-mx-1" />
 
-                        <x-mine.dropdown.divider class="-mx-1" />
+                                <x-mine.dropdown.item :route="'profile'">
+                                    <div class="w-full py-3 px-3 flex items-center justify-between hover:cursor-pointer">
+                                        <div class="flex gap-3 items-center">
+                                            <x-mine.icon name="user" class="size-5" variant="micro" />
+                                            <p @class([
+                                                "pt-1" => app()->isLocale('en'),
+                                                "pt-0.5" => app()->isLocale('fa'),
+                                                "text-sm font-medium"
+                                            ])>{{ __('Profile') }}</p>
+                                        </div>
+                                        <x-mine.icon name="chevron-{{ app()->isLocale('en') ? 'right' : 'left' }}" class="size-5"
+                                            variant="micro" />
+                                    </div>
+                                </x-mine.dropdown.item>
 
-                        <x-mine.dropdown.item destructive x-data="{ busy: false }" x-on:click.prevent="
-                                    if (busy) return;
-                                    busy = true;
-                                    fetch('{{ route('logout') }}', {
-                                        method: 'POST',
-                                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
-                                    })
-                                        .then((response) => {
-                                            if (! response.ok) throw new Error('Logout request failed');
-                                            window.Livewire?.navigate('{{ route('home') }}') ?? (window.location.href = '{{ route('home') }}');
-                                        })
-                                        .catch(() => busy = false);
-                                ">
-                            <div class="w-full py-3 px-3 mine-text-error flex items-center gap-3 hover:cursor-pointer">
-                                <x-mine.icon name="arrow-{{ app()->isLocale('en') ? 'right' : 'left' }}-start-on-rectangle" class="size-5" variant="micro" />
-                                <p @class([
-                                        "pt-1" => app()->isLocale('en'),
-                                        "pt-0.5" => app()->isLocale('fa'),
-                                        "text-sm font-medium"
-                                    ])>{{ __('Logout') }}</p>
-                            </div>
-                        </x-mine.dropdown.item>
-                    </x-mine.dropdown.content>
-                </x-mine.dropdown>
-            </div>
+                                <x-mine.dropdown.item>
+                                    <div class="w-full py-3 px-3 flex items-center justify-between hover:cursor-pointer">
+                                        <div class="flex gap-3 items-center">
+                                            <x-mine.icon name="cog-6-tooth" class="size-5" variant="micro" />
+                                            <p @class([
+                                                "pt-1" => app()->isLocale('en'),
+                                                "pt-0.5" => app()->isLocale('fa'),
+                                                "text-sm font-medium"
+                                            ])>{{ __('Settings') }}</p>
+                                        </div>
+                                        <x-mine.icon name="chevron-{{ app()->isLocale('en') ? 'right' : 'left' }}" class="size-5"
+                                            variant="micro" />
+                                    </div>
+                                </x-mine.dropdown.item>
+
+                                <x-mine.dropdown.divider class="-mx-1" />
+
+                                <x-mine.dropdown.item destructive x-data="{ busy: false }" x-on:click.prevent="
+                                                    if (busy) return;
+                                                    busy = true;
+                                                    fetch('{{ route('logout') }}', {
+                                                        method: 'POST',
+                                                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+                                                    })
+                                                        .then((response) => {
+                                                            if (! response.ok) throw new Error('Logout request failed');
+                                                            if (window.Livewire?.navigate) {
+                                                                window.Livewire.navigate('{{ route('home') }}');
+                                                            } else {
+                                                                window.location.href = '{{ route('home') }}';
+                                                            }
+                                                        })
+                                                        .catch(() => busy = false);
+                                                ">
+                                    <div class="w-full py-3 px-3 mine-text-error flex items-center gap-3 hover:cursor-pointer">
+                                        <x-mine.icon name="arrow-{{ app()->isLocale('en') ? 'right' : 'left' }}-start-on-rectangle"
+                                            class="size-5" variant="micro" />
+                                        <p @class([
+                                            "pt-1" => app()->isLocale('en'),
+                                            "pt-0.5" => app()->isLocale('fa'),
+                                            "text-sm font-medium"
+                                        ])>{{ __('Logout') }}</p>
+                                    </div>
+                                </x-mine.dropdown.item>
+                            </x-mine.dropdown.content>
+                        </x-mine.dropdown>
+                    </div>
         @else
             <div @class([
-                    "pr-3 md:pr-5" => app()->isLocale('en'),
-                    "pl-3 md:pl-5" => app()->isLocale('fa'),
-                    "w-full h-full pointer-events-none flex items-center justify-end gap-2"
-                ])>
+                "pr-3 md:pr-5" => app()->isLocale('en'),
+                "pl-3 md:pl-5" => app()->isLocale('fa'),
+                "w-full h-full pointer-events-none flex items-center justify-end gap-2"
+            ])>
                 <a wire:navigate.hover href="{{ route('login') }}" class="pointer-events-auto">
                     <x-mine.button class="mine-btn-primary sm:mine-btn-ghost text-sm" height="h-10">
                         <div @class([
@@ -232,7 +236,8 @@
                                 "pt-1" => app()->isLocale('en'),
                                 "pb-0.5" => app()->isLocale('fa')
                             ])>{{ __('Sign in') }}</p>
-                            <x-mine.icon name="arrow-{{ app()->isLocale('en') ? 'right' : 'left' }}-start-on-rectangle" class="size-5 sm:hidden" variant="micro" />
+                            <x-mine.icon name="arrow-{{ app()->isLocale('en') ? 'right' : 'left' }}-start-on-rectangle"
+                                class="size-5 sm:hidden" variant="micro" />
                         </div>
                     </x-mine.button>
                 </a>

@@ -25,7 +25,7 @@ it('renders the authenticated user profile', function () {
     Livewire::actingAs($user)
         ->test('pages::profile')
         ->assertStatus(200)
-        ->assertSee('My Profile')
+        ->assertSee('My profile')
         ->assertSee('amir_user')
         ->assertSee('amir@example.com')
         ->assertSee('Amir')
@@ -103,7 +103,8 @@ it('validates gender, country, and birth date', function () {
             'gender',
             'country',
             'birthday' => ['before_or_equal'],
-        ]);
+        ])
+        ->assertSee('Birthdate must be a date before or equal to today.');
 });
 
 it('updates all editable profile fields', function () {
@@ -121,6 +122,11 @@ it('updates all editable profile fields', function () {
         ->set('birthday', '1998-05-20')
         ->call('editProfile')
         ->assertHasNoErrors()
+        ->assertDispatched('close-modal', id: 'edit-profile-form')
+        ->assertDispatched('toast',
+            title: __('Your profile updated'),
+            variant: 'info',
+        )
         ->assertDispatched('profile-updated',
             username: 'new_user',
             email: $user->email,
@@ -198,7 +204,6 @@ it('clears a previous profile edit error on a new submission', function () {
         ->set('username', '')
         ->call('editProfile')
         ->assertSet('edit_error', null)
-        ->assertSet('edit_success', null)
         ->assertHasErrors(['username' => ['required']]);
 
     expect($user->refresh()->username)->toBe('amir_user');
@@ -313,7 +318,13 @@ it('deletes the account with correct password and redirects', function () {
         ->test('pages::profile')
         ->set('password', 'password')
         ->call('deleteAccount')
-        ->assertRedirect(route('login'));
+        ->assertRedirect(route('home'));
+
+    $toast = session('toast');
+
+    expect($toast)->toBeArray()
+        ->and($toast['title'])->toBe(__('Your account deleted successfully'))
+        ->and($toast['variant'])->toBe('success');
 
     $this->assertSoftDeleted($user);
 });
@@ -334,7 +345,7 @@ it('allows deletion again after rate limit expires', function () {
         ->test('pages::profile')
         ->set('password', 'password')
         ->call('deleteAccount')
-        ->assertRedirect(route('login'));
+        ->assertRedirect(route('home'));
 });
 
 it('clears a previous wrong-password error on a new delete attempt', function () {

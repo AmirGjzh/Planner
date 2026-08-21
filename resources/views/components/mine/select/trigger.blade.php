@@ -27,15 +27,21 @@
     <span
         x-text="selectedLabel"
         :class="hasSelection ? 'mine-text-primary' : 'text-(--mine-input-placeholder)'"
-        class="text-sm truncate"
+        class="text-sm truncate pt-1"
     >
         {{ $placeholder }}
     </span>
 
-    <div :class="isOpen ? 'rotate-180' : ''" class="shrink-0 transition-transform duration-200 ml-2">
+    <div :class="isOpen ? 'rotate-180' : ''"
+        @class([
+            "ml-2 -mr-1" => app()->isLocale('en'),
+            "mr-2 -ml-1" => app()->isLocale('fa'),
+            "shrink-0 transition-transform duration-200"
+        ])
+    >
         <x-mine.icon
             name="chevron-up-down"
-            variant="mini"
+            variant="micro"
             class="text-(--mine-input-icon)"
         />
     </div>

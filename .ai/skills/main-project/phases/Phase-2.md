@@ -148,7 +148,7 @@ Main Flow:
 6. If valid:
    - The account deletion process begins
    - Related data is soft-deleted or hard-deleted as configured
-7. The user is logged out and sees a message: "Your account has been deleted."
+7. The user is logged out, sees a success toast ("Your account deleted successfully"), and is redirected to the homepage.
 
 ### 3.5 UC-05 – Logout
 

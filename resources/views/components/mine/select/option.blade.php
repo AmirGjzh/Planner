@@ -38,12 +38,16 @@
 >
     <div
         :class="state === $el.closest('[role=option]').dataset.value ? 'opacity-100 scale-100' : 'opacity-0 scale-75'"
-        class="size-4 mr-3 shrink-0 transition-all duration-200"
+        @class([
+            "mr-3" => app()->isLocale('en'),
+            "ml-3" => app()->isLocale('fa'),
+            "size-4 shrink-0 transition-all duration-200"
+        ])
     >
         <x-mine.icon name="check" variant="micro" class="size-4" />
     </div>
 
-    <span class="">
+    <span class="pt-1">
         {{ $slot }}
     </span>
 </li>

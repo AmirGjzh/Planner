@@ -38,7 +38,7 @@ new #[Layout('layouts::auth')] class extends Component
 
         if ($result === RegisterResult::Success) {
             session()->flash('toast', [
-                'title' => __('Account created successfully, Please sign in'),
+                'title' => __('Your account created successfully, please sign in'),
                 'variant' => 'success',
                 'duration' => 6000,
                 'position' => 'bottom-center',

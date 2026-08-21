@@ -11,7 +11,22 @@ beforeEach(function () {
 it('renders successfully', function () {
     Livewire::test('pages::auth.register')
         ->assertStatus(200)
-        ->assertSee('Create your account');
+        ->assertSee('Welcome to Planner');
+});
+
+it('re-dispatches a flashed session toast on mount', function () {
+    session()->flash('toast', [
+        'title' => 'Your account created successfully, please sign in',
+        'variant' => 'success',
+        'duration' => 6000,
+        'position' => 'bottom-center',
+    ]);
+
+    Livewire::test('pages::auth.register')
+        ->assertDispatched('toast',
+            title: 'Your account created successfully, please sign in',
+            variant: 'success',
+        );
 });
 
 it('validates required fields', function () {
@@ -156,6 +171,22 @@ it('creates the user and redirects to login', function () {
     expect($user)->not->toBeNull()
         ->and($user->username)->toBe('amir_user')
         ->and($user->password)->not->toBe('password123');
+});
+
+it('flashes a success toast after registering', function () {
+    Livewire::test('pages::auth.register')
+        ->set('username', 'amir_user')
+        ->set('email', 'amir@example.com')
+        ->set('password', 'password123')
+        ->set('password_confirmation', 'password123')
+        ->call('register')
+        ->assertRedirect(route('login'));
+
+    $toast = session('toast');
+
+    expect($toast)->toBeArray()
+        ->and($toast['title'])->toBe(__('Your account created successfully, please sign in'))
+        ->and($toast['variant'])->toBe('success');
 });
 
 it('does not authenticate the user after registration', function () {

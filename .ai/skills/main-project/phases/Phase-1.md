@@ -142,7 +142,7 @@ The acceptance criteria are grouped into the 11 use cases (UC-01 … UC-11), in 
 
 **Given** the user is on the Profile page,
 **When** they click Delete Account and enter their password,
-**Then** the account is soft-deleted, the session is ended, and they are redirected to the login page.
+**Then** the account is soft-deleted, the session is ended, and they are redirected to the home page with a success toast.
 
 **Given** the user enters the wrong password,
 **Then** an error is shown and the account is not deleted.
@@ -154,7 +154,7 @@ The acceptance criteria are grouped into the 11 use cases (UC-01 … UC-11), in 
 
 **Given** the user is logged in,
 **When** they click Logout,
-**Then** the session is invalidated and they are redirected to the login page.
+**Then** the session is invalidated and they are redirected to the home page with a success toast.
 **And** the navigation bar shows Login and Register options again.
 
 ### UC-06 – Manage Categories

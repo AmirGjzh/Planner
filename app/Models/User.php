@@ -51,6 +51,20 @@ class User extends Authenticatable
         return trim("$this->firstname $this->lastname");
     }
 
+    public function initials(): string
+    {
+        if ($this->firstname && $this->lastname) {
+            return mb_strtoupper(mb_substr((string) $this->firstname, 0, 1))
+                ."\u{200C}"
+                .mb_strtoupper(mb_substr((string) $this->lastname, 0, 1));
+        }
+
+        $first = mb_strtoupper(mb_substr((string) $this->username, 0, 1));
+        $second = mb_strtoupper(mb_substr((string) $this->username, 1, 1));
+
+        return $second === '' ? $first : $first."\u{200C}".$second;
+    }
+
     /**
      * Get the attributes that should be cast.
      *

@@ -14,6 +14,21 @@ it('renders successfully', function () {
         ->assertSee('Welcome back');
 });
 
+it('re-dispatches a flashed session toast on mount', function () {
+    session()->flash('toast', [
+        'title' => 'Signed in successfully',
+        'variant' => 'success',
+        'duration' => 6000,
+        'position' => 'bottom-center',
+    ]);
+
+    Livewire::test('pages::auth.login')
+        ->assertDispatched('toast',
+            title: 'Signed in successfully',
+            variant: 'success',
+        );
+});
+
 it('validates required fields', function () {
     Livewire::test('pages::auth.login')
         ->call('login')
@@ -60,6 +75,25 @@ it('authenticates and redirects with valid credentials', function () {
         ->call('login')
         ->assertRedirect(route('dashboard'));
     $this->assertAuthenticatedAs($user);
+});
+
+it('flashes a success toast after signing in', function () {
+    User::factory()->create([
+        'email' => 'amir@example.com',
+        'password' => 'password',
+    ]);
+
+    Livewire::test('pages::auth.login')
+        ->set('email', 'amir@example.com')
+        ->set('password', 'password')
+        ->call('login')
+        ->assertRedirect(route('dashboard'));
+
+    $toast = session('toast');
+
+    expect($toast)->toBeArray()
+        ->and($toast['title'])->toBe(__('Signed in successfully'))
+        ->and($toast['variant'])->toBe('success');
 });
 
 it('rate limits after too many failed attempts', function () {

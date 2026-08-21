@@ -13,15 +13,17 @@
         mode: @js($mode),
         name: @js($name),
         island: @js($island),
+        fa: @js(app()->isLocale('fa')),
+        t: @js(['reset' => __('Reset')]),
         state: null,
-        month: 0,
-        year: 0,
+        anchor: new Date(),
 
         init() {
             const now = new Date()
             now.setHours(0, 0, 0, 0)
-            this.month = now.getMonth()
-            this.year = now.getFullYear()
+            this.anchor = this.fa
+                ? Jalali.toGregorian(Jalali.getPersian(now).year, Jalali.getPersian(now).month, 1)
+                : new Date(now.getFullYear(), now.getMonth(), 1)
 
             if (this.name && typeof $wire !== 'undefined') {
                 this.state = $wire.get(this.name)
@@ -31,17 +33,19 @@
             }
         },
 
-        get months() {
-            return Array.from({ length: 12 }, (_, i) => {
-                return new Date(2000, i, 1).toLocaleDateString('default', { month: 'long' })
-            })
+        get monthName() {
+            return this.fa
+                ? Jalali.monthName(this.anchor)
+                : new Date(2000, this.anchor.getMonth(), 1).toLocaleDateString('default', { month: 'long' })
         },
 
-        get monthName() {
-            return this.months[this.month]
+        get yearLabel() {
+            return this.fa ? Jalali.yearLabel(this.anchor) : String(this.anchor.getFullYear())
         },
 
         get dayLabels() {
+            if (this.fa) return Jalali.weekdayLabels()
+
             const base = new Date(2023, 0, 1)
             base.setDate(base.getDate() + (7 - base.getDay()))
             const formatter = new Intl.DateTimeFormat('default', { weekday: 'short' })
@@ -53,11 +57,15 @@
         },
 
         get daysInMonth() {
-            return new Date(this.year, this.month + 1, 0).getDate()
+            if (this.fa) return Jalali.persianMonthLength(this.anchor)
+
+            return new Date(this.anchor.getFullYear(), this.anchor.getMonth() + 1, 0).getDate()
         },
 
         get firstDayOfMonth() {
-            return new Date(this.year, this.month, 1).getDay()
+            if (this.fa) return Jalali.firstDayOffset(this.anchor)
+
+            return this.anchor.getDay()
         },
 
         toISODate(date) {
@@ -83,7 +91,9 @@
             }
 
             for (let d = 1; d <= totalDays; d++) {
-                const date = new Date(this.year, this.month, d)
+                const date = this.fa
+                    ? Jalali.addDays(this.anchor, d - 1)
+                    : new Date(this.anchor.getFullYear(), this.anchor.getMonth(), d)
                 const iso = this.toISODate(date)
                 const today = new Date()
                 today.setHours(0, 0, 0, 0)
@@ -107,6 +117,7 @@
                 cells.push({
                     key: iso,
                     day: d,
+                    dayText: this.fa ? Jalali.dayNumber(date) : d,
                     iso: iso,
                     blank: false,
                     isInMonth: true,
@@ -130,21 +141,15 @@
         },
 
         prevMonth() {
-            if (this.month === 0) {
-                this.month = 11
-                this.year--
-            } else {
-                this.month--
-            }
+            this.anchor = this.fa
+                ? Jalali.addDays(this.anchor, -this.daysInMonth)
+                : new Date(this.anchor.getFullYear(), this.anchor.getMonth() - 1, 1)
         },
 
         nextMonth() {
-            if (this.month === 11) {
-                this.month = 0
-                this.year++
-            } else {
-                this.month++
-            }
+            this.anchor = this.fa
+                ? Jalali.addDays(this.anchor, this.daysInMonth)
+                : new Date(this.anchor.getFullYear(), this.anchor.getMonth() + 1, 1)
         },
 
         commit() {
@@ -208,7 +213,7 @@
 
             <div class="flex items-center gap-3">
                 <span class="text-sm font-semibold mine-text-primary" x-text="monthName"></span>
-                <span class="text-sm font-medium mine-text-secondary" x-text="year"></span>
+                <span class="text-sm font-medium mine-text-secondary" x-text="yearLabel"></span>
             </div>
 
             <button
@@ -251,7 +256,7 @@
                                     ? 'relative z-30 flex items-center justify-center h-9 w-full bg-(--mine-datepicker-pill-between-bg) text-(--mine-datepicker-pill-between-text) ' + (cell.col === 0 ? 'rounded-s-lg' : cell.col === 6 ? 'rounded-e-lg' : 'rounded-none')
                                     : ''"
                             >
-                                <span x-text="cell.day"></span>
+                                <span x-text="cell.dayText"></span>
                             </span>
                         </button>
                     </template>
@@ -263,7 +268,7 @@
             <x-mine.button class="mine-btn-primary h-10!"
                 type="button"
                 x-on:click="reset()">
-                Reset
+                {{ __('Reset') }}
             </x-mine.button>
         </div>
     </div>

@@ -12,5 +12,5 @@ it('allows authenticated users to visit the profile page', function () {
     $this->actingAs($user)
         ->get('/profile')
         ->assertSuccessful()
-        ->assertSee('My Profile');
+        ->assertSee('My profile');
 });

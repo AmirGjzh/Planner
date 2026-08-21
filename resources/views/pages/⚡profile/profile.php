@@ -31,8 +31,6 @@ new class extends Component
 
     public ?string $edit_error = null;
 
-    public ?string $edit_success = null;
-
     public ?string $delete_error = null;
 
     public function mount(): void
@@ -40,19 +38,23 @@ new class extends Component
         $this->fillForm();
     }
 
-    #[Computed(cache: true, key: 'countries-list')]
+    #[Computed]
     public function countries(): array
     {
-        $countries = Countries::getNames('en');
-        asort($countries);
-
-        return $countries;
+        return cache()->rememberForever('countries-list-'.app()->getLocale(), function (): array {
+            $countries = Countries::getNames(app()->getLocale());
+            if (app()->isLocale('fa')) {
+                (new \Collator('fa_IR'))->asort($countries);
+            } else {
+                asort($countries);
+            }
+            return $countries;
+        });
     }
 
     public function editProfile(UpdateProfileAction $action): void
     {
         $this->edit_error = null;
-        $this->edit_success = null;
 
         $data = $this->validate();
         $result = $action->execute(
@@ -71,26 +73,28 @@ new class extends Component
             UpdateProfileResult::Success => null,
         };
         if ($this->edit_error) {
-            $this->edit_success = null;
-
             return;
         }
-        $this->edit_success = 'updated';
         $this->fillForm();
         $this->resetValidation();
-
+        $this->dispatch('close-modal', id: 'edit-profile-form');
         $this->dispatch('profile-updated',
             username: $this->username,
             email: $this->user->email,
             firstname: $this->firstname ?? '',
             lastname: $this->lastname ?? '',
         );
+        $this->dispatch('toast',
+            title: __('Your profile updated'),
+            variant: 'info',
+            duration: 3000,
+            position: 'bottom-center'
+        );
     }
 
     public function cancelEdit(): void
     {
         $this->edit_error = null;
-        $this->edit_success = null;
         $this->fillForm();
         $this->resetValidation();
     }
@@ -112,7 +116,13 @@ new class extends Component
             return;
         }
         $this->reset('password');
-        $this->redirectRoute('login', navigate: true);
+        session()->flash('toast', [
+            'title' => __('Your account deleted successfully'),
+            'variant' => 'success',
+            'duration' => 6000,
+            'position' => 'bottom-center',
+        ]);
+        $this->redirectRoute('home', navigate: true);
     }
 
     public function cancelDelete(): void
@@ -148,19 +158,19 @@ new class extends Component
     protected function messages(): array
     {
         return [
-            'username.required' => 'Username is required.',
-            'username.regex' => 'Username must start with a letter and be 3–30 characters.',
-            'firstname.min' => 'Firstname must be at least 2 characters.',
-            'firstname.max' => 'Firstname may not be greater than 50 characters.',
-            'firstname.regex' => 'Firstname may only contain letters, spaces, hyphens, and apostrophes.',
-            'lastname.min' => 'Lastname must be at least 2 characters.',
-            'lastname.max' => 'Lastname may not be greater than 50 characters.',
-            'lastname.regex' => 'Lastname may only contain letters, spaces, hyphens, and apostrophes.',
-            'gender.enum' => 'Selected gender is invalid.',
-            'country.in' => 'Selected country is invalid.',
-            'birthday.date' => 'Birthdate must be a valid date.',
-            'birthday.before_or_equal' => 'Birthdate must be a date before or equal to today.',
-            'password.required' => 'Password is required.',
+            'username.required' => __('Username is required.'),
+            'username.regex' => __('Username must start with a letter and be 3–30 characters.'),
+            'firstname.min' => __('Firstname must be at least 2 characters.'),
+            'firstname.max' => __('Firstname may not be greater than 50 characters.'),
+            'firstname.regex' => __('Firstname may only contain letters, spaces, hyphens, and apostrophes.'),
+            'lastname.min' => __('Lastname must be at least 2 characters.'),
+            'lastname.max' => __('Lastname may not be greater than 50 characters.'),
+            'lastname.regex' => __('Lastname may only contain letters, spaces, hyphens, and apostrophes.'),
+            'gender.enum' => __('Selected gender is invalid.'),
+            'country.in' => __('Selected country is invalid.'),
+            'birthday.date' => __('Birthdate must be a valid date.'),
+            'birthday.before_or_equal' => __('Birthdate must be a date before or equal to today.'),
+            'password.required' => __('Password is required.'),
         ];
     }
 };

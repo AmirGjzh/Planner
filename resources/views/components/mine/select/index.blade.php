@@ -211,12 +211,12 @@
         >
             @if ($searchable)
                 <div class="flex items-center gap-2 px-4 py-2 border-b border-(--mine-input-border)">
-                    <x-mine.icon name="magnifying-glass" class="size-5 text-(--mine-input-icon) shrink-0" />
+                    <x-mine.icon name="magnifying-glass" class="size-5 text-(--mine-input-icon) shrink-0" variant="micro" />
                     <input
                         x-model="search"
                         data-select-search
                         type="text"
-                        placeholder="Search..."
+                        placeholder="{{ __('Search...') }}"
                         class="w-full h-8 bg-transparent text-sm mine-text-primary placeholder:text-(--mine-input-placeholder) focus:outline-none focus-visible:outline-none"
                     />
                 </div>
@@ -232,7 +232,7 @@
                     x-show="isOpen && search !== '' && resultsCount === 0"
                     class="flex items-center justify-center h-14 text-sm mine-text-secondary"
                 >
-                    No results found
+                    {{ __('No results found') }}
                 </li>
             </ul>
         </div>

@@ -169,7 +169,7 @@
                     </div>
 
                     <h3
-                        class="min-w-0 flex-1 text-sm font-bold mt-1"
+                        class="min-w-0 flex-1 text-sm font-semibold mt-1"
                         :class="variantClass(toast).title"
                         x-text="toast.title"
                     ></h3>

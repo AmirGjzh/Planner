@@ -67,34 +67,34 @@
     --mine-toast-progress-bg: rgba(0, 0, 0, .03); /**/
 
     /* Seperator + Scrollbar */
-    --mine-separator-border: #D2DFD8;
-    --mine-scrollbar-thumb: #C5D1CB;
-    --mine-scrollbar-thumb-hover: #A8B8B0;
+    --mine-separator-border: #D5DFEA; /**/
+    --mine-scrollbar-thumb: #B9C7D8; /**/
+    --mine-scrollbar-thumb-hover: #8FA3BB; /**/
 
     /* Modal */
-    --mine-modal-bg: #ffffff;
+    --mine-modal-bg: #ffffff; /**/
     --mine-btn-icon-bg-hover: #EEF4FA; /**/
     --mine-btn-icon-ring-focus: #C9D9EB; /**/
 
     /* Select */
-    --mine-select-selected-bg: #EAF6EF;
-    --mine-select-selected-text: #1A9B5C;
-    --mine-select-bg-hover: #F4F7F5;
-    --mine-select-ring-focus: #DFF5E7;
+    --mine-select-selected-bg: #E8F0F8; /**/
+    --mine-select-selected-text: #173F73; /**/
+    --mine-select-bg-hover: #F4F7FA; /**/
+    --mine-select-ring-focus: #C9D9EB; /**/
 
     /* Datepicker */
-    --mine-datepicker-pill-bg: #1A9B5C;
-    --mine-datepicker-pill-text: #FFFFFF;
-    --mine-datepicker-pill-bg-hover: #128047;
-    --mine-datepicker-pill-between-bg: #EDF5F0;
-    --mine-datepicker-pill-between-text: #0F172B;
-    --mine-datepicker-day-bg-hover: #F5F8F6;
-    --mine-datepicker-day-selected-bg: #1A9B5C;
-    --mine-datepicker-day-selected-text: #FFFFFF;
-    --mine-datepicker-day-selected-bg-hover: #128047;
-    --mine-datepicker-day-dim-text: #98A8A0;
-    --mine-datepicker-today-decoration: #1A9B5C;
-    --mine-datepicker-day-ring-focus: #DFF5E7;
+    --mine-datepicker-pill-bg: #173F73; /**/
+    --mine-datepicker-pill-text: #FFFFFF; /**/
+    --mine-datepicker-pill-bg-hover: #12345F; /**/
+    --mine-datepicker-pill-between-bg: #E8F0F8; /**/
+    --mine-datepicker-pill-between-text: #173F73; /**/
+    --mine-datepicker-day-bg-hover: #F4F7FA; /**/
+    --mine-datepicker-day-selected-bg: #173F73; /**/
+    --mine-datepicker-day-selected-text: #FFFFFF; /**/
+    --mine-datepicker-day-selected-bg-hover: #12345F; /**/
+    --mine-datepicker-day-dim-text: #94A3B8; /**/
+    --mine-datepicker-today-decoration: #173F73; /**/
+    --mine-datepicker-day-ring-focus: #C9D9EB; /**/
 
     /* Dropdown */
     --mine-dropdown-bg: #FFFFFF; /**/
@@ -103,7 +103,7 @@
     --mine-dropdown-item-ring: #C9D9EB; /**/
     --mine-dropdown-item-text-danger: #B91C1C; /**/
     --mine-dropdown-destructive-item-bg-hover: #FEE2E2; /**/
-    --mine-dropdown-destructive-item-ring: #F3B4B4; /**/
+    --mine-dropdown-destructive-item-ring: #FCA5A5; /**/
 
     /* Category */
     --mine-category-border-left-green: #1A9B5C;
@@ -125,10 +125,10 @@
     --mine-btn-primary-text: #FFFFFF; /**/
     --mine-btn-primary-ring-focus: #C9D7E8; /**/
 
-    --mine-btn-danger-bg: #DC2626;
-    --mine-btn-danger-bg-hover: #B91C1C;
-    --mine-btn-danger-text: #ffffff;
-    --mine-btn-danger-ring-focus: #FAD5D5;
+    --mine-btn-danger-bg: #DC2626; /**/
+    --mine-btn-danger-bg-hover: #B91C1C; /**/
+    --mine-btn-danger-text: #FFFFFF; /**/
+    --mine-btn-danger-ring-focus: #FECACA; /**/
 
     --mine-btn-secondary-bg: #6B7280;
     --mine-btn-secondary-bg-hover: #4B5563;
@@ -365,11 +365,6 @@
 @utility mine-badge-secondary {
     @apply bg-(--mine-badge-secondary-bg);
     @apply text-(--mine-badge-secondary-text);
-}
-
-@utility avatar-secondary {
-    background: var(--mine-avatar-secondary-bg);
-    color: var(--mine-avater-secondary-text);
 }
 
 @utility mine-btn-icon {

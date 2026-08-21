@@ -67,9 +67,9 @@
             @if($type === 'password') :type="show ? 'text' : 'password'" @else type="{{ $type }}" @endif
             placeholder="{{ $placeholder }}"
             {{ $attributes->except('class')->merge([
-                'class' => '
-                    pt-1
-                    h-full
+                'class' => 
+                (app()->isLocale('en') ? 'pt-1 ' : 'pt-1 ') .
+                'h-full
                     w-full
                     bg-transparent
                     px-4
@@ -77,8 +77,7 @@
                     mine-text-primary
                     placeholder:text-[var(--mine-input-placeholder)]
                     placeholder:text-sm
-                    outline-none
-                '
+                    outline-none'
             ]) }}
         >
 
