@@ -18,7 +18,7 @@
         'bottom-end' => 'top-full mt-1.5 right-0',
         'top-start' => 'bottom-full mb-1.5 left-0',
         'top-end' => 'bottom-full mb-1.5 right-0',
-        default => 'top-full mt-1.5 left-1/2 -translate-x-1/2',
+        default => 'top-full mt-1.5 left-0',
     };
 @endphp
 
@@ -275,10 +275,10 @@
         },
 
         get triggerLabel() {
-            if (!this.hasState) return this.fa ? this.t.select_date : 'Select date'
+            if (!this.hasState) return this.mode === 'range' ? (this.fa ? this.t.select_range : 'Select a range') : (this.fa ? this.t.select_date : 'Select a date')
             if (this.mode === 'single') return this.formatDate(this.state)
             if (this.mode === 'range') return this.formatRange(this.state?.start, this.state?.end)
-            return this.fa ? this.t.select_date : 'Select date'
+            return this.fa ? this.t.select_date : 'Select a date'
         },
 
         formatDate(iso) {
@@ -300,11 +300,11 @@
         },
 
         formatRange(startISO, endISO) {
-            if (!startISO) return this.fa ? this.t.select_range : 'Select range'
+            if (!startISO) return this.fa ? this.t.select_range : 'Select a range'
             const startDate = new Date(startISO + 'T00:00:00')
             if (!endISO) return this.formatDate(startISO)
             const endDate = new Date(endISO + 'T00:00:00')
-            if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return this.fa ? this.t.select_range : 'Select range'
+            if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return this.fa ? this.t.select_range : 'Select a range'
 
             if (this.fa) {
                 const start = Jalali.getPersian(startDate)
@@ -479,7 +479,7 @@
                 </button>
             </div>
 
-            <div class="grid justify-items-center grid-cols-7 mb-2">
+            <div class="grid justify-items-center grid-cols-7 mb-6">
                 <template x-for="day in dayLabels" :key="day">
                     <div class="flex items-center justify-center h-8">
                         <span class="text-xs font-medium mine-text-secondary" x-text="day"></span>
@@ -506,11 +506,13 @@
                                 class="flex items-center justify-center h-11 w-11 hover:cursor-pointer mx-auto rounded-lg text-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--mine-datepicker-day-ring-focus)"
                             >
                                 <span
+                                    class="flex items-center justify-center w-full"
                                     :class="cell.isInRange && !cell.isRangeStart && !cell.isRangeEnd
-                                        ? 'relative z-30 flex items-center justify-center h-9 w-full bg-(--mine-datepicker-pill-between-bg) text-(--mine-datepicker-pill-between-text) ' + (cell.col === 0 ? 'rounded-s-lg' : cell.col === 6 ? 'rounded-e-lg' : 'rounded-none')
+                                        ? 'relative z-30 h-9 bg-(--mine-datepicker-pill-between-bg) text-(--mine-datepicker-pill-between-text) ' + (cell.col === 0 ? 'rounded-s-lg' : cell.col === 6 ? 'rounded-e-lg' : 'rounded-none')
                                         : ''"
                                 >
                                     <span
+                                        class="pt-1"
                                         x-text="cell.dayText"
                                     ></span>
                                 </span>

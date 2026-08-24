@@ -1,167 +1,147 @@
 :root {
-    /* Background */
-    --mine-page-bg: linear-gradient(180deg, #FCFDFE 0%, #F3F6FA 100%); /**/
+    --mine-page-bg: linear-gradient(180deg, #FCFDFE 0%, #F3F6FA 100%);
 
-    /* Card */
-    --mine-card-bg: rgba(255, 255, 255, .82); /**/
-    --mine-card-bg-hover: rgba(255, 255, 255, .88); /**/
-    --mine-card-border: #E2E8F0; /**/
-    --mine-card-border-hover: #CBD5E1; /**/
+    --mine-card-bg: rgba(255, 255, 255, .82);
+    --mine-card-bg-hover: rgba(255, 255, 255, .88);
+    --mine-card-border: #E2E8F0;
+    --mine-card-border-hover: #CBD5E1;
 
-    /* Text */
-    --mine-text-primary: #111827; /**/
-    --mine-text-secondary: #536174; /**/
-    --mine-text-error: #C81E1E; /**/
+    --mine-text-primary: #111827;
+    --mine-text-secondary: #536174;
+    --mine-text-error: #B91C1C;
 
-    --mine-text-link: #173B67; /**/
-    --mine-text-link-hover: #102F54; /**/
-    --mine-text-link-ring-focus: #C9D7E8; /**/
+    --mine-text-link: #173B67;
+    --mine-text-link-hover: #102F54;
+    --mine-text-link-ring-focus: #C9D7E8;
 
-    --mine-text-secondary-accent: #334155;
-    --mine-text-secondary-accent-ring-focus: #E2E8F0;
+    --mine-text-secondary-accent: #525B67;
+    --mine-text-secondary-accent-ring-focus: #D5DAE0;
 
-    /* Input */
-    --mine-input-bg: #FAFCFE; /**/
-    --mine-input-autofill-bg: #FAFCFE; /**/
-    --mine-input-border: #CBD5E1; /**/
-    --mine-input-border-focus: #173B67; /**/
-    --mine-input-ring-focus: #C9D7E8; /**/
-    --mine-input-icon: #94A3B8; /**/
-    --mine-input-placeholder: #94A3B8; /**/
+    --mine-input-bg: #FAFCFE;
+    --mine-input-autofill-bg: #FAFCFE;
+    --mine-input-border: #CBD5E1;
+    --mine-input-border-focus: #173B67;
+    --mine-input-ring-focus: #C9D7E8;
+    --mine-input-icon: #94A3B8;
+    --mine-input-placeholder: #94A3B8;
 
-    --mine-input-error-bg: #FFF5F5; /**/
-    --mine-input-error-border: #C81E1E; /**/
-    --mine-input-error-ring: #F3B7B7; /**/
-    --mine-input-error-icon: #C81E1E; /**/
-    --mine-input-error-placeholder: #B85C5C; /**/
+    --mine-input-error-bg: #FFF1F1;
+    --mine-input-error-border: #B91C1C;
+    --mine-input-error-ring: #F3B4B4;
+    --mine-input-error-icon: #B91C1C;
+    --mine-input-error-placeholder: #A85A5A;
 
-    --mine-checkbox-bg: #173B67; /**/
-    --mine-checkbox-text: #FFFFFF; /**/
+    --mine-checkbox-bg: #173B67;
+    --mine-checkbox-text: #FFFFFF;
 
-    /* Alert */
-    --mine-alert-danger-bg: #FFF1F2; /**/
-    --mine-alert-danger-border: #F4A6A6; /**/
-    --mine-alert-danger-icon: #991B1B; /**/
-    --mine-alert-danger-icon-bg: #FFD6D6; /**/
-    --mine-alert-danger-title: #991B1B; /**/
+    --mine-alert-danger-bg: #FFF0F0;
+    --mine-alert-danger-border: #E88A8A;
+    --mine-alert-danger-icon: #991B1B;
+    --mine-alert-danger-icon-bg: #FFD0D0;
+    --mine-alert-danger-title: #991B1B;
 
-    --mine-alert-success-bg: #F0FDF4; /**/
-    --mine-alert-success-border: #8ED5A8; /**/
-    --mine-alert-success-icon: #166534; /**/
-    --mine-alert-success-icon-bg: #C6F0D2; /**/
-    --mine-alert-success-title: #166534; /**/
+    --mine-alert-success-bg: #F0FDF4;
+    --mine-alert-success-border: #8ED5A8;
+    --mine-alert-success-icon: #166534;
+    --mine-alert-success-icon-bg: #C6F0D2;
+    --mine-alert-success-title: #166534;
 
-    --mine-alert-warning-bg: #FFFBEB; /**/
-    --mine-alert-warning-border: #E9C46A; /**/
-    --mine-alert-warning-icon: #92400E; /**/
-    --mine-alert-warning-icon-bg: #FFE8A8; /**/
-    --mine-alert-warning-title: #92400E; /**/
+    --mine-alert-warning-bg: #FFFBEB;
+    --mine-alert-warning-border: #E9C46A;
+    --mine-alert-warning-icon: #92400E;
+    --mine-alert-warning-icon-bg: #FFE8A8;
+    --mine-alert-warning-title: #92400E;
 
-    --mine-alert-info-bg: #EFF6FF; /**/
-    --mine-alert-info-border: #8FB5E8; /**/
-    --mine-alert-info-icon: #1E40AF; /**/
-    --mine-alert-info-icon-bg: #CFE0FA; /**/
-    --mine-alert-info-title: #1E40AF; /**/
+    --mine-alert-info-bg: #EFF6FF;
+    --mine-alert-info-border: #8FB5E8;
+    --mine-alert-info-icon: #1E40AF;
+    --mine-alert-info-icon-bg: #CFE0FA;
+    --mine-alert-info-title: #1E40AF;
 
-    /* Toast */
-    --mine-toast-progress-bg: rgba(0, 0, 0, .03); /**/
+    --mine-toast-progress-bg: rgba(0, 0, 0, .03);
 
-    /* Seperator + Scrollbar */
-    --mine-separator-border: #D5DFEA; /**/
-    --mine-scrollbar-thumb: #B9C7D8; /**/
-    --mine-scrollbar-thumb-hover: #8FA3BB; /**/
+    --mine-separator-border: #D5DFEA;
+    --mine-scrollbar-thumb: #B9C7D8;
+    --mine-scrollbar-thumb-hover: #8FA3BB;
 
-    /* Modal */
-    --mine-modal-bg: #ffffff; /**/
-    --mine-btn-icon-bg-hover: #EEF4FA; /**/
-    --mine-btn-icon-ring-focus: #C9D9EB; /**/
+    --mine-modal-bg: #ffffff;
+    --mine-btn-icon-bg-hover: #EEF4FA;
+    --mine-btn-icon-ring-focus: #C9D9EB;
 
-    /* Select */
-    --mine-select-selected-bg: #E8F0F8; /**/
-    --mine-select-selected-text: #173F73; /**/
-    --mine-select-bg-hover: #F4F7FA; /**/
-    --mine-select-ring-focus: #C9D9EB; /**/
+    --mine-select-selected-bg: #E8F0F8;
+    --mine-select-selected-text: #173F73;
+    --mine-select-bg-hover: #F4F7FA;
+    --mine-select-ring-focus: #C9D9EB;
 
-    /* Datepicker */
-    --mine-datepicker-pill-bg: #173F73; /**/
-    --mine-datepicker-pill-text: #FFFFFF; /**/
-    --mine-datepicker-pill-bg-hover: #12345F; /**/
-    --mine-datepicker-pill-between-bg: #E8F0F8; /**/
-    --mine-datepicker-pill-between-text: #173F73; /**/
-    --mine-datepicker-day-bg-hover: #F4F7FA; /**/
-    --mine-datepicker-day-selected-bg: #173F73; /**/
-    --mine-datepicker-day-selected-text: #FFFFFF; /**/
-    --mine-datepicker-day-selected-bg-hover: #12345F; /**/
-    --mine-datepicker-day-dim-text: #94A3B8; /**/
-    --mine-datepicker-today-decoration: #173F73; /**/
-    --mine-datepicker-day-ring-focus: #C9D9EB; /**/
+    --mine-datepicker-pill-bg: #173F73;
+    --mine-datepicker-pill-text: #FFFFFF;
+    --mine-datepicker-pill-bg-hover: #12345F;
+    --mine-datepicker-pill-between-bg: #E8F0F8;
+    --mine-datepicker-pill-between-text: #173F73;
+    --mine-datepicker-day-bg-hover: #F4F7FA;
+    --mine-datepicker-day-selected-bg: #173F73;
+    --mine-datepicker-day-selected-text: #FFFFFF;
+    --mine-datepicker-day-selected-bg-hover: #12345F;
+    --mine-datepicker-day-dim-text: #94A3B8;
+    --mine-datepicker-today-decoration: #173F73;
+    --mine-datepicker-day-ring-focus: #C9D9EB;
 
-    /* Dropdown */
-    --mine-dropdown-bg: #FFFFFF; /**/
-    --mine-dropdown-border: #E2E8F0; /**/
-    --mine-dropdown-item-bg-hover: #EEF4FA; /**/
-    --mine-dropdown-item-ring: #C9D9EB; /**/
-    --mine-dropdown-item-text-danger: #B91C1C; /**/
-    --mine-dropdown-destructive-item-bg-hover: #FEE2E2; /**/
-    --mine-dropdown-destructive-item-ring: #FCA5A5; /**/
+    --mine-dropdown-bg: #FFFFFF;
+    --mine-dropdown-border: #E2E8F0;
+    --mine-dropdown-item-bg-hover: #EEF4FA;
+    --mine-dropdown-item-ring: #C9D9EB;
+    --mine-dropdown-item-text-danger: #991B1B;
+    --mine-dropdown-destructive-item-bg-hover: #FEE2E2;
+    --mine-dropdown-destructive-item-ring: #F87171;;
 
-    /* Category */
-    --mine-category-border-left-green: #1A9B5C;
-    --mine-category-border-left-green-hover: #128047;
+    --mine-badge-primary-bg: #E8F0F8;
+    --mine-badge-primary-text: #173F73;
 
-    /* Badge */
-    --mine-badge-primary-bg: #E8F0F8; /**/
-    --mine-badge-primary-text: #173F73; /**/
+    --mine-badge-danger-bg: #FCE4E4;
+    --mine-badge-danger-text: #991B1B;
 
-    --mine-badge-danger-bg: #f7e4e4;
-    --mine-badge-danger-text: #B42318;
+    --mine-badge-secondary-bg: #E7E9EC;
+    --mine-badge-secondary-text: #525B67;
 
-    --mine-badge-secondary-bg: #EDEFF3;
-    --mine-badge-secondary-text: #334155;
+    --mine-btn-primary-bg: #173B67;
+    --mine-btn-primary-bg-hover: #102F54;
+    --mine-btn-primary-text: #FFFFFF;
+    --mine-btn-primary-ring-focus: #C9D7E8;
 
-    /* Button */
-    --mine-btn-primary-bg: #173B67; /**/
-    --mine-btn-primary-bg-hover: #102F54; /**/
-    --mine-btn-primary-text: #FFFFFF; /**/
-    --mine-btn-primary-ring-focus: #C9D7E8; /**/
+    --mine-btn-danger-bg: #C62828;
+    --mine-btn-danger-bg-hover: #A61B1B;
+    --mine-btn-danger-text: #FFFFFF;
+    --mine-btn-danger-ring-focus: #F3B4B4;
 
-    --mine-btn-danger-bg: #DC2626; /**/
-    --mine-btn-danger-bg-hover: #B91C1C; /**/
-    --mine-btn-danger-text: #FFFFFF; /**/
-    --mine-btn-danger-ring-focus: #FECACA; /**/
-
-    --mine-btn-secondary-bg: #6B7280;
-    --mine-btn-secondary-bg-hover: #4B5563;
+    --mine-btn-secondary-bg: #68717D;
+    --mine-btn-secondary-bg-hover: #515A65;
     --mine-btn-secondary-text: #FFFFFF;
-    --mine-btn-secondary-ring-focus: #E2E8F0;
+    --mine-btn-secondary-ring-focus: #D5DAE0;
 
-    --mine-btn-ghost-bg: #F5F7FA; /**/
-    --mine-btn-ghost-bg-hover: #EAF1F8; /**/
-    --mine-btn-ghost-text: #536176; /**/
-    --mine-btn-ghost-ring-focus: #C9D9EB; /**/
+    --mine-btn-ghost-bg: #F5F7FA;
+    --mine-btn-ghost-bg-hover: #EAF1F8;
+    --mine-btn-ghost-text: #536176;
+    --mine-btn-ghost-ring-focus: #C9D9EB;
 
-    /* Pagination */
     --mine-pagination-bg: #FFFFFF;
-    --mine-pagination-border: #DAE6E0;
-    --mine-pagination-text: #128047;
-    --mine-pagination-text-disabled: #9AAEA0;
-    --mine-pagination-item-bg-hover: #EDF5F0;
-    --mine-pagination-item-bg-active: #EDF5F0;
-    --mine-pagination-ring-focus: #DFF5E7;
+    --mine-pagination-border: #D7E0EA;
+    --mine-pagination-text: #1E4778;
+    --mine-pagination-text-disabled: #94A3B8;
+    --mine-pagination-item-bg-hover: #E8F0F9;
+    --mine-pagination-item-bg-active: #DCE9F6;
+    --mine-pagination-ring-focus: #B8D0EA;
 
-    /* Navlink */
-    --mine-nav-link-text: #536176; /**/
-    --mine-nav-link-text-active: #173F73; /**/
-    --mine-nav-link-bg-hover: #EEF4FA; /**/
-    --mine-nav-link-bg-active: #EAF1F8; /**/
+    --mine-nav-link-text: #536176;
+    --mine-nav-link-text-active: #173F73;
+    --mine-nav-link-bg-hover: #EEF4FA;
+    --mine-nav-link-bg-active: #EAF1F8;
 
-    /* Progress */
-    --mine-progress-track: #DAE6E0;
-    --mine-progress-gray-track: #E2E8F0;
-    --mine-progress-danger-track: #FEE2E2;
-    --mine-progress-fill: #1A9B5C;
-    --mine-progress-gray-fill: #6B7280;
-    --mine-progress-danger-fill: #DC2626;
+    --mine-progress-track: #D9E3EF;
+    --mine-progress-fill: #1B477A;
+    --mine-progress-danger-track: #FDE0E0;
+    --mine-progress-danger-fill: #C62828;
+    --mine-progress-gray-track: #E1E4E8;
+    --mine-progress-gray-fill: #68717D;
 
     /* Workload */
     --mine-workload-none-dot: #CBD5E1;
@@ -176,6 +156,8 @@
     --mine-workload-very-heavy-text: #7F1D1D;
     --mine-workload-empty-dot: #E2E8F0;
 }
+
+/* Orange */
 
 
 @utility mine-page-bg {
@@ -389,19 +371,6 @@
     @apply mine-nav-link;
     @apply bg-(--mine-nav-link-bg-active) text-(--mine-nav-link-text-active);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 @utility mine-scrollbar {
     scrollbar-width: thin;

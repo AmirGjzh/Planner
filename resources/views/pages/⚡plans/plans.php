@@ -11,6 +11,7 @@ use App\Enums\DeletePlanResult;
 use App\Enums\EditPlanResult;
 use App\Livewire\Concerns\HasUser;
 use App\Models\Plan;
+use App\Support\Jalali;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
@@ -29,8 +30,6 @@ new class extends Component
 
     public ?string $add_error = null;
 
-    public ?string $add_success = null;
-
     public ?int $editing_id = null;
 
     public string $edit_name = '';
@@ -40,8 +39,6 @@ new class extends Component
     public ?array $edit_range = null;
 
     public ?string $edit_error = null;
-
-    public ?string $edit_success = null;
 
     public ?int $deleting_id = null;
 
@@ -66,10 +63,7 @@ new class extends Component
 
     public function mount(): void
     {
-        $this->range_filter = [
-            'start' => now()->startOfMonth()->format('Y-m-d'),
-            'end' => now()->endOfMonth()->format('Y-m-d'),
-        ];
+        $this->range_filter = $this->defaultRangeFilter();
     }
 
     #[Computed]
@@ -104,12 +98,26 @@ new class extends Component
             return true;
         }
 
-        $monthStart = now()->startOfMonth()->format('Y-m-d');
-        $monthEnd = now()->endOfMonth()->format('Y-m-d');
+        $bounds = $this->defaultRangeFilter();
 
         return ($this->range_filter['start'] ?? null) !== null
-            && (($this->range_filter['start'] ?? null) !== $monthStart
-                || ($this->range_filter['end'] ?? null) !== $monthEnd);
+            && (($this->range_filter['start'] ?? null) !== $bounds['start']
+                || ($this->range_filter['end'] ?? null) !== $bounds['end']);
+    }
+
+    /**
+     * @return array{start: string, end: string}
+     */
+    private function defaultRangeFilter(): array
+    {
+        if (app()->isLocale('fa')) {
+            return Jalali::monthBounds(now());
+        }
+
+        return [
+            'start' => now()->startOfMonth()->format('Y-m-d'),
+            'end' => now()->endOfMonth()->format('Y-m-d'),
+        ];
     }
 
     public function updatingSearch(): void
@@ -148,22 +156,27 @@ new class extends Component
         };
 
         if ($this->add_error) {
-            $this->add_success = null;
-
             return;
         }
 
         $this->add_name = '';
         $this->add_description = null;
         $this->add_range = null;
-        $this->add_success = 'created';
         unset($this->plans);
+        $this->dispatch('close-modal',
+            id: 'add-plan-form'
+        );
+        $this->dispatch('toast',
+            title: __('Your plan created successfully'),
+            variant: 'success',
+            duration: 3000,
+            position: 'bottom-center'
+        );
     }
 
     public function cancelAdd(): void
     {
         $this->add_error = null;
-        $this->add_success = null;
         $this->add_name = '';
         $this->add_description = null;
         $this->add_range = null;
@@ -192,8 +205,6 @@ new class extends Component
         };
 
         if ($this->edit_error) {
-            $this->edit_success = null;
-
             return;
         }
 
@@ -201,14 +212,21 @@ new class extends Component
         $this->edit_description = null;
         $this->edit_range = null;
         $this->editing_id = null;
-        $this->edit_success = 'updated';
         unset($this->plans);
+        $this->dispatch('close-modal',
+            id: 'edit-plan-form'
+        );
+        $this->dispatch('toast',
+            title: __('Your plan updated'),
+            variant: 'info',
+            duration: 3000,
+            position: 'bottom-center'
+        );
     }
 
     public function cancelEdit(): void
     {
         $this->edit_error = null;
-        $this->edit_success = null;
         $this->edit_name = '';
         $this->edit_description = null;
         $this->edit_range = null;
@@ -231,12 +249,19 @@ new class extends Component
             $this->deleting_id = null;
             unset($this->plans);
             $this->dispatch('close-modal', id: 'delete-plan-confirmation');
+            $this->dispatch('toast',
+                title: __('Your plan deleted'),
+                variant: 'info',
+                duration: 3000,
+                position: 'bottom-center'
+            );
         }
     }
 
     public function cancelDelete(): void
     {
         $this->delete_error = null;
+        $this->deleting_id = null;
         $this->resetValidation();
     }
 
@@ -255,12 +280,19 @@ new class extends Component
             $this->completing_id = null;
             unset($this->plans);
             $this->dispatch('close-modal', id: 'complete-plan-confirmation');
+            $this->dispatch('toast',
+                title: __('Your plan completed'),
+                variant: 'info',
+                duration: 3000,
+                position: 'bottom-center'
+            );
         }
     }
 
     public function cancelComplete(): void
     {
         $this->complete_error = null;
+        $this->completing_id = null;
         $this->resetValidation();
     }
 
@@ -273,6 +305,12 @@ new class extends Component
         $this->reopening_id = null;
         unset($this->plans);
         $this->dispatch('close-modal', id: 'reopen-plan-confirmation');
+        $this->dispatch('toast',
+            title: __('Your plan reopened'),
+            variant: 'info',
+            duration: 3000,
+            position: 'bottom-center'
+        );
     }
 
     public function cancelReopen(): void
@@ -300,20 +338,20 @@ new class extends Component
     protected function messages(): array
     {
         return [
-            'add_name.required' => 'Plan name is required.',
-            'add_name.max' => 'Plan name must not exceed 255 characters.',
-            'add_description.max' => 'Plan description must not exceed 5000 characters.',
-            'add_range.required' => 'Date range is required.',
-            'add_range.start.required' => 'Start date is required.',
-            'add_range.end.required' => 'End date is required.',
-            'add_range.end.after' => 'End date must be after the start date.',
-            'edit_name.required' => 'Plan name is required.',
-            'edit_name.max' => 'Plan name must not exceed 255 characters.',
-            'edit_description.max' => 'Plan description must not exceed 5000 characters.',
-            'edit_range.required' => 'Sate range is required.',
-            'edit_range.start.required' => 'Start date is required.',
-            'edit_range.end.required' => 'End date is required.',
-            'edit_range.end.after' => 'End date must be after the start date.',
+            'add_name.required' => __('Plan name is required.'),
+            'add_name.max' => __('Plan name must not exceed 255 characters.'),
+            'add_description.max' => __('Plan description must not exceed 5000 characters.'),
+            'add_range.required' => __('Date range is required.'),
+            'add_range.start.required' => __('Start date is required.'),
+            'add_range.end.required' => __('End date is required.'),
+            'add_range.end.after' => __('End date must be after the start date.'),
+            'edit_name.required' => __('Plan name is required.'),
+            'edit_name.max' => __('Plan name must not exceed 255 characters.'),
+            'edit_description.max' => __('Plan description must not exceed 5000 characters.'),
+            'edit_range.required' => __('Date range is required.'),
+            'edit_range.start.required' => __('Start date is required.'),
+            'edit_range.end.required' => __('End date is required.'),
+            'edit_range.end.after' => __('End date must be after the start date.'),
         ];
     }
 };

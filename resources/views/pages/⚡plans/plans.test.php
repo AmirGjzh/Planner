@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\TaskPriority;
+use App\Models\Plan;
 use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\RateLimiter;
@@ -14,6 +15,14 @@ function planWideRange(): array
     ];
 }
 
+function planInCurrentMonth(): array
+{
+    return [
+        'start_date' => now()->startOfMonth()->format('Y-m-d'),
+        'finish_date' => now()->endOfMonth()->format('Y-m-d'),
+    ];
+}
+
 it('renders the plan page', function () {
     $user = User::factory()->create();
     $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
@@ -23,7 +32,7 @@ it('renders the plan page', function () {
         ->set('range_filter', planWideRange())
         ->assertStatus(200)
         ->assertSee('Add new plan')
-        ->assertSee('My Plans')
+        ->assertSee('My plans')
         ->assertSee('Work');
 });
 
@@ -32,7 +41,7 @@ it('shows empty state when no plans exist', function () {
 
     Livewire::actingAs($user)
         ->test('pages::plans')
-        ->assertSee('No plans yet.');
+        ->assertSee('No plans yet');
 });
 
 it('shows active, overdue and completed status badges', function () {
@@ -58,7 +67,8 @@ it('creates a new plan', function () {
         ->set('add_range', ['start' => '2026-01-01', 'end' => '2026-01-31'])
         ->call('addPlan')
         ->assertHasNoErrors()
-        ->assertSet('add_success', 'created');
+        ->assertDispatched('close-modal', id: 'add-plan-form')
+        ->assertDispatched('toast', title: __('Your plan created successfully'), variant: 'success');
 
     expect($user->plans()->where('name', 'Work')->exists())->toBeTrue();
 });
@@ -153,7 +163,8 @@ it('edits a plan', function () {
         ->set('edit_range', ['start' => '2026-03-01', 'end' => '2026-03-31'])
         ->call('editPlan')
         ->assertHasNoErrors()
-        ->assertSet('edit_success', 'updated');
+        ->assertDispatched('close-modal', id: 'edit-plan-form')
+        ->assertDispatched('toast', title: __('Your plan updated'), variant: 'info');
 
     expect($plan->fresh()->name)->toBe('Personal');
 });
@@ -231,7 +242,8 @@ it('deletes a plan', function () {
         ->test('pages::plans')
         ->set('deleting_id', $plan->id)
         ->call('deletePlan')
-        ->assertDispatched('close-modal', id: 'delete-plan-confirmation');
+        ->assertDispatched('close-modal', id: 'delete-plan-confirmation')
+        ->assertDispatched('toast', title: __('Your plan deleted'), variant: 'info');
 
     expect($user->plans()->where('name', 'Work')->exists())->toBeFalse();
 });
@@ -268,7 +280,8 @@ it('completes a plan when all tasks are done', function () {
         ->set('completing_id', $plan->id)
         ->call('completePlan')
         ->assertSet('complete_error', null)
-        ->assertDispatched('close-modal', id: 'complete-plan-confirmation');
+        ->assertDispatched('close-modal', id: 'complete-plan-confirmation')
+        ->assertDispatched('toast', title: __('Your plan completed'), variant: 'info');
 
     expect($plan->fresh()->done)->toBeTrue();
 });
@@ -310,7 +323,8 @@ it('reopens a completed plan', function () {
         ->test('pages::plans')
         ->set('reopening_id', $plan->id)
         ->call('reopenPlan')
-        ->assertDispatched('close-modal', id: 'reopen-plan-confirmation');
+        ->assertDispatched('close-modal', id: 'reopen-plan-confirmation')
+        ->assertDispatched('toast', title: __('Your plan reopened'), variant: 'info');
 
     expect($plan->fresh()->done)->toBeFalse();
 });
@@ -407,7 +421,7 @@ it('renders the filter dropdown options', function () {
 
     Livewire::actingAs($user)
         ->test('pages::plans')
-        ->assertSee('Filter Plan')
+        ->assertSee('Filter plan')
         ->assertSee('All')
         ->assertSee('Active')
         ->assertSee('Completed')
@@ -479,4 +493,170 @@ it('links add task with the plan preselected too', function () {
     Livewire::actingAs($user)
         ->test('pages::plans')
         ->assertSee(route('tasks', ['plan_filter' => [$plan->id], 'add_plan' => $plan->id]));
+});
+
+it('renders plan card dates in jalali when locale is fa', function () {
+    $user = User::factory()->create();
+    $user->plans()->create(['name' => 'Roadmap', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+    app()->setLocale('fa');
+
+    $start = \App\Support\Jalali::format(\Carbon\Carbon::parse('2026-01-01'), 'd MMM ، y');
+    $end = \App\Support\Jalali::format(\Carbon\Carbon::parse('2026-01-31'), 'd MMM ، y');
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('range_filter', planWideRange())
+        ->assertSee($start)
+        ->assertSee($end)
+        ->assertDontSee('01 Jan , 2026');
+});
+
+it('defaults the date range filter to the current jalali month when locale is fa', function () {
+    $this->travelTo(\Carbon\Carbon::parse('2026-01-01 12:00'));
+    $user = User::factory()->create();
+    app()->setLocale('fa');
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->assertSet('range_filter', ['start' => '2025-12-22', 'end' => '2026-01-20']);
+});
+
+it('defaults the date range filter to the current gregorian month when locale is en', function () {
+    $this->travelTo(\Carbon\Carbon::parse('2026-01-01 12:00'));
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->assertSet('range_filter', ['start' => '2026-01-01', 'end' => '2026-01-31']);
+});
+
+it('hides plans outside the default current-month window', function () {
+    $user = User::factory()->create();
+    $user->plans()->create(['name' => 'ThisMonth', ...planInCurrentMonth()]);
+    $user->plans()->create(['name' => 'FarAway', 'start_date' => now()->addMonths(2)->format('Y-m-d'), 'finish_date' => now()->addMonths(3)->format('Y-m-d')]);
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->assertSee('ThisMonth')
+        ->assertDontSee('FarAway');
+});
+
+it('filters plans by search term', function () {
+    $user = User::factory()->create();
+    $user->plans()->create(['name' => 'Workplan', ...planInCurrentMonth()]);
+    $user->plans()->create(['name' => 'Personal', ...planInCurrentMonth()]);
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('search', 'Workplan')
+        ->assertSee('Workplan')
+        ->assertDontSee('Personal');
+});
+
+it('shows the no-results message instead of the empty state when filters exclude everything', function () {
+    $user = User::factory()->create();
+    $user->plans()->create(['name' => 'Work', ...planInCurrentMonth()]);
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('search', 'Zebra')
+        ->assertSee('No plans found')
+        ->assertDontSee('No plans yet');
+});
+
+it('sorts plans by name', function () {
+    $user = User::factory()->create();
+    $user->plans()->create(['name' => 'Bravo', ...planInCurrentMonth()]);
+    $user->plans()->create(['name' => 'Alpha', ...planInCurrentMonth()]);
+
+    $html = Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('sort', 'name')
+        ->html();
+
+    expect(strpos($html, 'Alpha'))->toBeLessThan(strpos($html, 'Bravo'));
+});
+
+it('sorts plans by load using total estimated minutes', function () {
+    $user = User::factory()->create();
+    $heavy = $user->plans()->create(['name' => 'Heavy', ...planInCurrentMonth()]);
+    $light = $user->plans()->create(['name' => 'Light', ...planInCurrentMonth()]);
+    $category = $user->categories()->create(['name' => 'General']);
+    $user->tasks()->create(['title' => 'T1', 'task_date' => now(), 'estimated_minutes' => 60, 'plan_id' => $heavy->id, 'category_id' => $category->id]);
+    $user->tasks()->create(['title' => 'T2', 'task_date' => now(), 'estimated_minutes' => 10, 'plan_id' => $light->id, 'category_id' => $category->id]);
+
+    $html = Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('sort', 'load')
+        ->html();
+
+    expect(strpos($html, 'Heavy'))->toBeLessThan(strpos($html, 'Light'));
+});
+
+it('sorts plans by creation date with latest first', function () {
+    $user = User::factory()->create();
+    $old = $user->plans()->create(['name' => 'OldPlan', ...planInCurrentMonth()]);
+    $new = $user->plans()->create(['name' => 'NewPlan', ...planInCurrentMonth()]);
+    Plan::whereKey($old->id)->update(['created_at' => now()->subDays(2)]);
+    Plan::whereKey($new->id)->update(['created_at' => now()->subDay()]);
+
+    $html = Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('sort', 'latest')
+        ->html();
+
+    expect(strpos($html, 'NewPlan'))->toBeLessThan(strpos($html, 'OldPlan'));
+});
+
+it('paginates three plan cards per page', function () {
+    $user = User::factory()->create();
+    foreach (['One', 'Two', 'Three', 'Four'] as $name) {
+        $user->plans()->create(['name' => $name.'Plan', ...planInCurrentMonth()]);
+    }
+
+    $html = Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->html();
+
+    expect($html)->toContain('Next')
+        ->toContain('gotoPage(2');
+    expect(substr_count($html, 'wire:key="plan-'))->toBe(3);
+});
+
+it('resets the add form state on cancel-add', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('add_name', 'Something')
+        ->set('add_range', ['start' => '2026-01-01', 'end' => '2026-01-31'])
+        ->call('cancelAdd')
+        ->assertSet('add_name', '')
+        ->assertSet('add_range', null)
+        ->assertSet('add_error', null);
+});
+
+it('resets the edit form state on cancel-edit', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('editing_id', 7)
+        ->set('edit_name', 'Something')
+        ->set('edit_range', ['start' => '2026-01-01', 'end' => '2026-01-31'])
+        ->call('cancelEdit')
+        ->assertSet('editing_id', null)
+        ->assertSet('edit_name', '')
+        ->assertSet('edit_range', null);
+});
+
+it('falls back to a placeholder for missing descriptions', function () {
+    $user = User::factory()->create();
+    $user->plans()->create(['name' => 'NoDesc', ...planInCurrentMonth()]);
+    $user->plans()->create(['name' => 'WithDesc', 'description' => 'Roadmap detail', ...planInCurrentMonth()]);
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->assertSee(__('No description'))
+        ->assertSee('Roadmap detail');
 });

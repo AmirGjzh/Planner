@@ -11,7 +11,7 @@ it('renders the category page', function () {
         ->test('pages::categories')
         ->assertStatus(200)
         ->assertSee('Add new category')
-        ->assertSee('My Categories')
+        ->assertSee('My categories')
         ->assertSee('Work');
 });
 
@@ -20,8 +20,8 @@ it('shows empty state when no categories exist', function () {
 
     Livewire::actingAs($user)
         ->test('pages::categories')
-        ->assertSee('No categories yet.')
-        ->assertDontSee('No categories found.');
+        ->assertSee('No categories yet')
+        ->assertDontSee('No categories found');
 });
 
 it('creates a new category', function () {
@@ -175,7 +175,7 @@ it('shows no results message when search matches nothing', function () {
     Livewire::actingAs($user)
         ->test('pages::categories')
         ->set('search', 'xyz')
-        ->assertSee('No categories found.');
+        ->assertSee('No categories found');
 });
 
 it('sorts categories by name', function () {
@@ -269,4 +269,82 @@ it('links view tasks with the category filter preselected', function () {
     Livewire::actingAs($user)
         ->test('pages::categories')
         ->assertSee(route('tasks', ['category_filter' => [$category->id]]));
+});
+
+it('dispatches close-modal and toast after creating a category', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::categories')
+        ->set('add_category', 'Work')->call('addCategory')
+        ->assertDispatched('close-modal', id: 'add-category-form')
+        ->assertDispatched('toast',
+            title: __('Your category created successfully'),
+            variant: 'success',
+        );
+});
+
+it('dispatches close-modal and toast after editing a category', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+
+    Livewire::actingAs($user)
+        ->test('pages::categories')
+        ->set('editing_id', $category->id)->set('edit_name', 'Personal')->call('editCategory')
+        ->assertDispatched('close-modal', id: 'edit-category-form')
+        ->assertDispatched('toast',
+            title: __('Your category updated'),
+            variant: 'info',
+        );
+});
+
+it('dispatches close-modal and toast after deleting a category', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+
+    Livewire::actingAs($user)
+        ->test('pages::categories')
+        ->set('deleting_id', $category->id)->call('deleteCategory')
+        ->assertDispatched('close-modal', id: 'delete-category-confirmation')
+        ->assertDispatched('toast',
+            title: __('Your category deleted'),
+            variant: 'info',
+        );
+});
+
+it('sorts categories by number of tasks', function () {
+    $user = User::factory()->create();
+    $few = $user->categories()->create(['name' => 'Few']);
+    $many = $user->categories()->create(['name' => 'Many']);
+    foreach (['Task one', 'Task two'] as $title) {
+        $user->tasks()->create([
+            'title' => $title,
+            'task_date' => now(),
+            'estimated_minutes' => 30,
+            'category_id' => $many->id,
+        ]);
+    }
+
+    $html = Livewire::actingAs($user)
+        ->test('pages::categories')
+        ->set('sort', 'tasks')
+        ->html();
+
+    expect(strpos($html, 'Many'))->toBeLessThan(strpos($html, 'Few'));
+});
+
+it('renders pagination when there are more than six categories', function () {
+    $user = User::factory()->create();
+    foreach (range(1, 7) as $i) {
+        $user->categories()->create(['name' => 'Category '.$i]);
+    }
+
+    $html = Livewire::actingAs($user)
+        ->test('pages::categories')
+        ->html();
+
+    expect($html)->toContain('Next')
+        ->toContain(__('Showing'))
+        ->toContain('gotoPage(2');
+    expect(substr_count($html, 'wire:key="category-'))->toBe(6);
 });

@@ -15,11 +15,18 @@
     role="button"
     aria-disabled="@if($disabled) true @endif"
     @class([
-        'flex items-center justify-between w-full px-4 rounded-xl border-2 bg-(--mine-input-bg) transition-all duration-200 ease-out cursor-pointer focus-visible:outline-none',
+        'flex items-center justify-between w-full px-4 rounded-xl border-2 transition-all duration-200 ease-out cursor-pointer focus-visible:outline-none',
         $height => true,
-        'border-(--mine-input-border) data-open:border-(--mine-input-border-focus) focus-visible:border-(--mine-input-border-focus)' => !$invalid,
-        'data-open:ring-4 data-open:ring-(--mine-input-ring-focus) focus-visible:ring-4 focus-visible:ring-(--mine-input-ring-focus)' => !$invalid,
-        'border-(--mine-input-error-border) ring-4 ring-(--mine-input-error-ring)' => $invalid,
+        'bg-(--mine-input-bg)' => !$invalid,
+        'bg-(--mine-input-error-bg)' => $invalid,
+        'border-(--mine-input-border)' => !$invalid,
+        'border-(--mine-input-error-border)' => $invalid,
+        'data-open:border-(--mine-input-border-focus) focus-visible:border-(--mine-input-border-focus)' => !$invalid,
+        'data-open:border-(--mine-input-error-border) focus-visible:border-(--mine-input-error-border)' => $invalid,
+        'data-open:ring-4 data-open:ring-(--mine-input-ring-focus)' => !$invalid,
+        'data-open:ring-4 data-open:ring-(--mine-input-error-ring)' => $invalid,
+        'focus-visible:ring-4 focus-visible:ring-(--mine-input-ring-focus)' => !$invalid,
+        'focus-visible:ring-4 focus-visible:ring-(--mine-input-error-ring)' => $invalid,
         'opacity-60 cursor-not-allowed' => $disabled,
     ])
     {{ $attributes }}
@@ -42,7 +49,10 @@
         <x-mine.icon
             name="chevron-up-down"
             variant="micro"
-            class="text-(--mine-input-icon)"
+            @class([
+                'text-(--mine-input-icon)' => !$invalid,
+                'text-(--mine-input-error-icon)' => $invalid,
+            ])
         />
     </div>
 </div>

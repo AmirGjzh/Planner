@@ -196,7 +196,7 @@
     @endif
 
     <div class="relative">
-        <x-mine.select.trigger />
+        <x-mine.select.trigger :invalid="$invalid" />
 
         <div
             x-show="isOpen"
@@ -238,7 +238,7 @@
         </div>
     </div>
 
-    @error($name)
-        <p class="mt-2 text-sm font-medium mine-text-error">{{ $message }}</p>
-    @enderror
+    @if ($name)
+        <x-mine.input.error :name="$name" />
+    @endif
 </div>

@@ -208,7 +208,7 @@
                 x-on:click="prevMonth()"
                 class="p-1.5 rounded-lg mine-btn-icon transition-colors duration-200 mine-text-secondary focus-visible:outline-none"
             >
-                <x-mine.icon name="chevron-left" variant="mini" class="size-4" />
+                <x-mine.icon name="chevron-{{ app()->isLocale('en') ? 'left' : 'right' }}" variant="mini" class="size-4" />
             </button>
 
             <div class="flex items-center gap-3">
@@ -221,11 +221,11 @@
                 x-on:click="nextMonth()"
                 class="p-1.5 rounded-lg mine-btn-icon transition-colors duration-200 mine-text-secondary focus-visible:outline-none"
             >
-                <x-mine.icon name="chevron-right" variant="mini" class="size-4" />
+                <x-mine.icon name="chevron-{{ app()->isLocale('fa') ? 'left' : 'right' }}" variant="mini" class="size-4" />
             </button>
         </div>
 
-        <div class="grid justify-items-center grid-cols-7 mb-1">
+        <div class="grid justify-items-center grid-cols-7 mb-6">
             <template x-for="day in dayLabels" :key="day">
                 <div class="flex items-center justify-center h-8">
                     <span class="text-xs font-medium mine-text-secondary" x-text="day"></span>
@@ -244,19 +244,20 @@
                             type="button"
                             x-on:click="selectDay(cell)"
                             :class="{
-                                'bg-(--mine-datepicker-pill-bg) text-(--mine-datepicker-pill-text) hover:bg-(--mine-datepicker-pill-bg-hover) shadow-sm font-bold relative z-40': cell.isRangeStart || cell.isRangeEnd,
+                                'bg-(--mine-datepicker-pill-bg) text-(--mine-datepicker-pill-text) hover:bg-(--mine-datepicker-pill-bg-hover) shadow-sm font-semibold relative z-40': cell.isRangeStart || cell.isRangeEnd,
                                 'hover:bg-(--mine-datepicker-day-bg-hover) mine-text-primary relative': !cell.isSelected && !cell.isInRange,
                                 'text-(--mine-datepicker-day-dim-text) relative': !cell.isInMonth && !cell.isSelected && !cell.isInRange,
-                                'bg-(--mine-datepicker-day-selected-bg) text-(--mine-datepicker-day-selected-text) hover:bg-(--mine-datepicker-day-selected-bg-hover) shadow-sm font-bold relative z-40': cell.isSelected && !cell.isRangeStart && !cell.isRangeEnd
+                                'bg-(--mine-datepicker-day-selected-bg) text-(--mine-datepicker-day-selected-text) hover:bg-(--mine-datepicker-day-selected-bg-hover) shadow-sm font-semibold relative z-40': cell.isSelected && !cell.isRangeStart && !cell.isRangeEnd
                             }"
                             class="flex items-center justify-center h-11 w-11 hover:cursor-pointer mx-auto rounded-lg text-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--mine-datepicker-day-ring-focus)"
                         >
                             <span
+                                class="flex items-center justify-center w-full"
                                 :class="cell.isInRange && !cell.isRangeStart && !cell.isRangeEnd
-                                    ? 'relative z-30 flex items-center justify-center h-9 w-full bg-(--mine-datepicker-pill-between-bg) text-(--mine-datepicker-pill-between-text) ' + (cell.col === 0 ? 'rounded-s-lg' : cell.col === 6 ? 'rounded-e-lg' : 'rounded-none')
+                                    ? 'relative z-30 h-9 bg-(--mine-datepicker-pill-between-bg) text-(--mine-datepicker-pill-between-text) ' + (cell.col === 0 ? 'rounded-s-lg' : cell.col === 6 ? 'rounded-e-lg' : 'rounded-none')
                                     : ''"
                             >
-                                <span x-text="cell.dayText"></span>
+                                <span class="pt-1" x-text="cell.dayText"></span>
                             </span>
                         </button>
                     </template>
@@ -265,7 +266,7 @@
         </div>
 
         <div class="mt-3 flex justify-center w-full">
-            <x-mine.button class="mine-btn-primary h-10!"
+            <x-mine.button class="mine-btn-primary h-10! text-sm!"
                 type="button"
                 x-on:click="reset()">
                 {{ __('Reset') }}

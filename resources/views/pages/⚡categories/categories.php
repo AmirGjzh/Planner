@@ -22,15 +22,11 @@ new class extends Component
 
     public ?string $add_error = null;
 
-    public ?string $add_success = null;
-
     public ?int $editing_id = null;
 
     public string $edit_name = '';
 
     public ?string $edit_error = null;
-
-    public ?string $edit_success = null;
 
     public ?int $deleting_id = null;
 
@@ -78,20 +74,25 @@ new class extends Component
         };
 
         if ($this->add_error) {
-            $this->add_success = null;
-
             return;
         }
 
         $this->add_category = '';
-        $this->add_success = 'created';
         unset($this->categories);
+        $this->dispatch('close-modal',
+            id: 'add-category-form'
+        );
+        $this->dispatch('toast',
+            title: __('Your category created successfully'),
+            variant: 'success',
+            duration: 3000,
+            position: 'bottom-center'
+        );
     }
 
     public function cancelAdd(): void
     {
         $this->add_error = null;
-        $this->add_success = null;
         $this->add_category = '';
         $this->resetValidation();
     }
@@ -114,21 +115,26 @@ new class extends Component
         };
 
         if ($this->edit_error) {
-            $this->edit_success = null;
-
             return;
         }
 
         $this->edit_name = '';
         $this->editing_id = null;
-        $this->edit_success = 'updated';
         unset($this->categories);
+        $this->dispatch('close-modal',
+            id: 'edit-category-form'
+        );
+        $this->dispatch('toast',
+            title: __('Your category updated'),
+            variant: 'info',
+            duration: 3000,
+            position: 'bottom-center'
+        );
     }
 
     public function cancelEdit(): void
     {
         $this->edit_error = null;
-        $this->edit_success = null;
         $this->edit_name = '';
         $this->editing_id = null;
         $this->resetValidation();
@@ -149,6 +155,12 @@ new class extends Component
             $this->deleting_id = null;
             unset($this->categories);
             $this->dispatch('close-modal', id: 'delete-category-confirmation');
+            $this->dispatch('toast',
+                title: __('Your category deleted'),
+                variant: 'info',
+                duration: 3000,
+                position: 'bottom-center'
+            );
         }
     }
 
@@ -169,10 +181,10 @@ new class extends Component
     protected function messages(): array
     {
         return [
-            'add_category.required' => 'Category name is required.',
-            'add_category.max' => 'Category name must not exceed 255 characters.',
-            'edit_name.required' => 'Category name is required.',
-            'edit_name.max' => 'Category name must not exceed 255 characters.',
+            'add_category.required' => __('Category name is required.'),
+            'add_category.max' => __('Category name must not exceed 255 characters.'),
+            'edit_name.required' => __('Category name is required.'),
+            'edit_name.max' => __('Category name must not exceed 255 characters.'),
         ];
     }
 };

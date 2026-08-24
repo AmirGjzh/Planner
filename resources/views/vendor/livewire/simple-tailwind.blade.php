@@ -12,7 +12,7 @@ $scrollIntoViewJsSnippet = ($scrollTo !== false)
 
 <div>
     @if ($paginator->hasPages())
-        <nav role="navigation" aria-label="Pagination Navigation" class="w-full">
+        <nav role="navigation" class="w-full">
             <div class="flex items-center justify-between gap-4">
                 {{-- Previous Page Link --}}
                 <div class="flex-1">
