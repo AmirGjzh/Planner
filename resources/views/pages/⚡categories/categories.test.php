@@ -205,7 +205,8 @@ it('shows success message after creating a category', function () {
     Livewire::actingAs($user)
         ->test('pages::categories')
         ->set('add_category', 'Work')->call('addCategory')
-        ->assertSet('add_success', 'created');
+        ->assertDispatched('close-modal', id: 'add-category-form')
+        ->assertDispatched('toast', title: __('Your category created successfully'), variant: 'success');
 });
 
 it('shows success message after editing a category', function () {
@@ -215,7 +216,8 @@ it('shows success message after editing a category', function () {
     Livewire::actingAs($user)
         ->test('pages::categories')
         ->set('editing_id', $category->id)->set('edit_name', 'Personal')->call('editCategory')
-        ->assertSet('edit_success', 'updated');
+        ->assertDispatched('close-modal', id: 'edit-category-form')
+        ->assertDispatched('toast', title: __('Your category updated'), variant: 'info');
 });
 
 it('cancel add resets form state', function () {
@@ -226,8 +228,7 @@ it('cancel add resets form state', function () {
         ->set('add_category', 'Work')
         ->call('cancelAdd')
         ->assertSet('add_category', '')
-        ->assertSet('add_error', null)
-        ->assertSet('add_success', null);
+        ->assertSet('add_error', null);
 });
 
 it('cancel edit resets form state', function () {
@@ -239,8 +240,7 @@ it('cancel edit resets form state', function () {
         ->set('editing_id', $category->id)->set('edit_name', 'Personal')
         ->call('cancelEdit')
         ->assertSet('edit_name', '')
-        ->assertSet('edit_error', null)
-        ->assertSet('edit_success', null);
+        ->assertSet('edit_error', null);
 });
 
 it('renders the loading spinner over the category grid', function () {

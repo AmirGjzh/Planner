@@ -5,6 +5,10 @@
     --mine-card-bg-hover: rgba(255, 255, 255, .88);
     --mine-card-border: #E2E8F0;
     --mine-card-border-hover: #CBD5E1;
+    --mine-card-danger-border: #F6DFDF;
+    --mine-card-danger-border-hover: #EEBFBF;
+    --mine-card-secondary-border: #E1E3E5;
+    --mine-card-secondary-border-hover: #C3C6CB;
 
     --mine-text-primary: #111827;
     --mine-text-secondary: #536174;
@@ -61,6 +65,8 @@
     --mine-toast-progress-bg: rgba(0, 0, 0, .03);
 
     --mine-separator-border: #D5DFEA;
+    --mine-separator-danger-border: #E8A0A0;
+    --mine-separator-secondary-border: #D1D5DB;
     --mine-scrollbar-thumb: #B9C7D8;
     --mine-scrollbar-thumb-hover: #8FA3BB;
 
@@ -326,6 +332,16 @@
             0 12px 26px rgba(15, 23, 42, .06),
             0 28px 50px rgba(15, 23, 42, .04);
     }
+}
+
+@utility mine-card-danger {
+    @apply border-(--mine-card-danger-border);
+    @apply hover:border-(--mine-card-danger-border-hover);
+}
+
+@utility mine-card-secondary {
+    @apply border-(--mine-card-secondary-border);
+    @apply hover:border-(--mine-card-secondary-border-hover);
 }
 
 @utility mine-alert-danger-box {

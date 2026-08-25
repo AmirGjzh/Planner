@@ -40,8 +40,6 @@ new class extends Component
 
     public ?string $add_error = null;
 
-    public ?string $add_success = null;
-
     public ?int $editing_id = null;
 
     public string $edit_title = '';
@@ -61,8 +59,6 @@ new class extends Component
     public ?int $edit_plan_id = null;
 
     public ?string $edit_error = null;
-
-    public ?string $edit_success = null;
 
     public ?int $deleting_id = null;
 
@@ -245,8 +241,6 @@ new class extends Component
         };
 
         if ($this->add_error) {
-            $this->add_success = null;
-
             return;
         }
 
@@ -258,14 +252,19 @@ new class extends Component
         $this->add_priority = null;
         $this->add_category_id = null;
         $this->add_plan_id = null;
-        $this->add_success = 'created';
         unset($this->tasks);
+        $this->dispatch('close-modal', id: 'add-task-form');
+        $this->dispatch('toast',
+            title: __('Your task created successfully'),
+            variant: 'success',
+            duration: 3000,
+            position: 'bottom-center'
+        );
     }
 
     public function cancelAdd(): void
     {
         $this->add_error = null;
-        $this->add_success = null;
         $this->add_title = '';
         $this->add_description = null;
         $this->add_date = now()->format('Y-m-d');
@@ -314,8 +313,6 @@ new class extends Component
         };
 
         if ($this->edit_error) {
-            $this->edit_success = null;
-
             return;
         }
 
@@ -328,14 +325,19 @@ new class extends Component
         $this->edit_category_id = null;
         $this->edit_plan_id = null;
         $this->editing_id = null;
-        $this->edit_success = 'updated';
         unset($this->tasks);
+        $this->dispatch('close-modal', id: 'edit-task-form');
+        $this->dispatch('toast',
+            title: __('Your task updated'),
+            variant: 'info',
+            duration: 3000,
+            position: 'bottom-center'
+        );
     }
 
     public function cancelEdit(): void
     {
         $this->edit_error = null;
-        $this->edit_success = null;
         $this->editing_id = null;
         $this->resetValidation();
     }
@@ -354,6 +356,12 @@ new class extends Component
             $this->deleting_id = null;
             unset($this->tasks);
             $this->dispatch('close-modal', id: 'delete-task-confirmation');
+            $this->dispatch('toast',
+                title: __('Your task deleted'),
+                variant: 'info',
+                duration: 3000,
+                position: 'bottom-center'
+            );
         }
     }
 
@@ -381,6 +389,12 @@ new class extends Component
         $this->completing_id = null;
         unset($this->tasks);
         $this->dispatch('close-modal', id: 'complete-task-confirmation');
+        $this->dispatch('toast',
+            title: __('Your task completed'),
+            variant: 'info',
+            duration: 3000,
+            position: 'bottom-center'
+        );
     }
 
     public function cancelComplete(): void
@@ -408,6 +422,12 @@ new class extends Component
         $this->reopening_id = null;
         unset($this->tasks);
         $this->dispatch('close-modal', id: 'reopen-task-confirmation');
+        $this->dispatch('toast',
+            title: __('Your task reopened'),
+            variant: 'info',
+            duration: 3000,
+            position: 'bottom-center'
+        );
     }
 
     public function cancelReopen(): void
@@ -442,10 +462,10 @@ new class extends Component
     protected function messages(): array
     {
         return [
-            'add_title.required' => 'Task title is required.',
-            'add_title.max' => 'Task title must not exceed 255 characters.',
-            'add_description.max' => 'Task description must not exceed 5000 characters.',
-            'add_date.required' => 'Task date is required.',
+            'add_title.required' => __('Task title is required.'),
+            'add_title.max' => __('Task title must not exceed 255 characters.'),
+            'add_description.max' => __('Task description must not exceed 5000 characters.'),
+            'add_date.required' => __('Task date is required.'),
         ];
     }
 };

@@ -151,6 +151,8 @@
                                     'header_class' => 'mine-badge-secondary',
                                     'title_class' => 'line-through',
                                     'status_label' => __('Completed'),
+                                    'separator' => 'secondary',
+                                    'card' => 'mine-card-interactive mine-card-secondary',
                                     'percent_color' => 'mine-text-secondary-accent',
                                     'span_color' => 'mine-text-secondary-accent',
                                     'progress_variant' => 'gray',
@@ -169,6 +171,8 @@
                                     'header_class' => 'mine-badge-danger',
                                     'title_class' => '',
                                     'status_label' => __('Overdue'),
+                                    'separator' => 'danger',
+                                    'card' => 'mine-card-interactive mine-card-danger',
                                     'percent_color' => 'mine-text-error',
                                     'span_color' => 'mine-text-error',
                                     'progress_variant' => 'danger',
@@ -193,6 +197,8 @@
                                     'header_class' => 'mine-badge-primary',
                                     'title_class' => '',
                                     'status_label' => __('Active'),
+                                    'separator' => 'primary',
+                                    'card' => 'mine-card-interactive',
                                     'percent_color' => 'mine-text-link',
                                     'span_color' => 'mine-text-link',
                                     'progress_variant' => 'primary',
@@ -219,7 +225,7 @@
                             @class([
                                 $config['border-l'] => app()->isLocale('en'),
                                 $config['border-r'] => app()->isLocale('fa'),
-                                "self-start mine-card-interactive flex flex-col px-4 sm:px-6 md:px-8 py-4 sm:pb-5 md:pb-6 sm:pt-6 md:pt-8"
+                            "self-start {$config['card']} flex flex-col px-4 sm:px-6 md:px-8 py-4 sm:pb-5 md:pb-6 sm:pt-6 md:pt-8"
                             ])>
                             <div class="flex justify-between gap-4 mb-8 min-w-0">
                                 <div class="flex min-w-0 flex-1">
@@ -294,7 +300,7 @@
                                         <div @class([
                                             "pl-3 pr-4" => app()->isLocale('en'),
                                             "pr-3 pl-4" => app()->isLocale('fa'),
-                                            $config['days']['badge'] . " rounded-lg h-9 flex justify-center items-center gap-2"
+                                            $config['days']['badge'] . " rounded-xl h-9 flex justify-center items-center gap-2"
                                         ])>
                                             <x-mine.icon name="clock" variant="micro" class="" />
                                             <p @class([
@@ -308,7 +314,7 @@
                                     <div @class([
                                         "pl-3 pr-4" => app()->isLocale('en'),
                                         "pr-3 pl-4" => app()->isLocale('fa'),
-                                        $config['header_class'] . " rounded-lg h-9 flex justify-center items-center shrink-0"
+                                        $config['header_class'] . " rounded-xl h-9 flex justify-center items-center shrink-0"
                                     ])>
                                         <x-mine.icon name="calendar" variant="micro" />
                                         <p @class([
@@ -331,7 +337,7 @@
                                 </div>
                             </div>
                             <div class="mb-4 opacity-40">
-                                <x-mine.separator />
+                                <x-mine.separator :variant="$config['separator']" />
                             </div>
                             <div class="flex mb-4">
                                 <div class="flex flex-col justify-between flex-3">
@@ -344,18 +350,11 @@
                                         variant="{{ $config['progress_variant'] ?? 'primary' }}"
                                         class="h-3" />
                                 </div>
-                                <div class="flex items-center justify-center flex-2">
-                                    {{-- <x-mine.icon name="check-circle" class="size-6" />
-                                    <p class="text-[13px] font-medium mine-text-secondary">
-                                        <span class="text-lg font-bold mine-text-link">{{ $plan->tasks_done_count }}</span>
-                                        {{ __('of') }}
-                                        <span class="text-lg font-bold mine-text-link">{{ $plan->tasks_count }}</span>
-                                        {{ __('Completed') }}
-                                    </p> --}}
+                                <div class="flex items-center justify-center flex-1">
                                 </div>
                             </div>
                             <div class="mb-4 opacity-40">
-                                <x-mine.separator />
+                                <x-mine.separator :variant="$config['separator']" />
                             </div>
                             <div class="flex gap-4 justify-between items-center">
                                 @if($config['action'] === 'reopen')

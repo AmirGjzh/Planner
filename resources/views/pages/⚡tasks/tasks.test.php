@@ -2,6 +2,8 @@
 
 use App\Enums\TaskPriority;
 use App\Models\User;
+use App\Support\Jalali;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Livewire;
@@ -42,7 +44,7 @@ it('renders the task page', function () {
         ->test('pages::tasks')
         ->assertStatus(200)
         ->assertSee('Add new task')
-        ->assertSee('My Tasks')
+        ->assertSee('My tasks')
         ->assertSee('Test task');
 });
 
@@ -51,7 +53,7 @@ it('shows empty state when no tasks exist', function () {
 
     Livewire::actingAs($user)
         ->test('pages::tasks')
-        ->assertSee('No tasks yet.');
+        ->assertSee('No tasks yet');
 });
 
 it('shows active, overdue and completed status badges', function () {
@@ -84,7 +86,8 @@ it('creates a new task', function () {
         ->set('add_plan_id', null)
         ->call('addTask')
         ->assertHasNoErrors()
-        ->assertSet('add_success', 'created');
+        ->assertDispatched('close-modal', id: 'add-task-form')
+        ->assertDispatched('toast', title: __('Your task created successfully'), variant: 'success');
 
     expect($user->tasks()->where('title', 'Test task')->exists())->toBeTrue();
 });
@@ -330,7 +333,8 @@ it('edits a task', function () {
         ->set('edit_plan_id', null)
         ->call('editTask')
         ->assertHasNoErrors()
-        ->assertSet('edit_success', 'updated');
+        ->assertDispatched('close-modal', id: 'edit-task-form')
+        ->assertDispatched('toast', title: __('Your task updated'), variant: 'info');
 
     expect($task->fresh()->title)->toBe('Updated');
     expect($task->fresh()->description)->toBe('New desc');
@@ -447,7 +451,8 @@ it('deletes a task', function () {
         ->test('pages::tasks')
         ->set('deleting_id', $task->id)
         ->call('deleteTask')
-        ->assertDispatched('close-modal', id: 'delete-task-confirmation');
+        ->assertDispatched('close-modal', id: 'delete-task-confirmation')
+        ->assertDispatched('toast', title: __('Your task deleted'), variant: 'info');
 
     expect($user->tasks()->where('title', 'Test task')->exists())->toBeFalse();
 });
@@ -466,7 +471,8 @@ it('completes a task', function () {
         ->set('completing_id', $task->id)
         ->call('completeTask')
         ->assertSet('complete_error', null)
-        ->assertDispatched('close-modal', id: 'complete-task-confirmation');
+        ->assertDispatched('close-modal', id: 'complete-task-confirmation')
+        ->assertDispatched('toast', title: __('Your task completed'), variant: 'info');
 
     expect($task->fresh()->done)->toBeTrue();
 });
@@ -484,7 +490,8 @@ it('reopens a completed task', function () {
         ->test('pages::tasks')
         ->set('reopening_id', $task->id)
         ->call('reopenTask')
-        ->assertDispatched('close-modal', id: 'reopen-task-confirmation');
+        ->assertDispatched('close-modal', id: 'reopen-task-confirmation')
+        ->assertDispatched('toast', title: __('Your task reopened'), variant: 'info');
 
     expect($task->fresh()->done)->toBeFalse();
 });
@@ -834,7 +841,7 @@ it('shows no results message when search matches nothing', function () {
     Livewire::actingAs($user)
         ->test('pages::tasks')
         ->set('search', 'Missing')
-        ->assertSee('No tasks found.')
+        ->assertSee('No tasks found')
         ->assertDontSee('Alpha task');
 });
 
@@ -846,7 +853,7 @@ it('renders the sort dropdown options', function () {
         ->assertSee('Sort')
         ->assertSee('State')
         ->assertSee('Load')
-        ->assertSee('Latest')
+        ->assertSee('Date created')
         ->assertSee('Date')
         ->assertSee('Priority');
 });
@@ -856,7 +863,7 @@ it('renders the filter dropdown options', function () {
 
     Livewire::actingAs($user)
         ->test('pages::tasks')
-        ->assertSee('Filter Task')
+        ->assertSee('Filter task')
         ->assertSee('All')
         ->assertSee('Active')
         ->assertSee('Completed')
@@ -992,7 +999,7 @@ it('shows no results message when category filter matches nothing', function () 
     Livewire::actingAs($user)
         ->test('pages::tasks')
         ->set('category_filter', [999])
-        ->assertSee('No tasks found.')
+        ->assertSee('No tasks found')
         ->assertDontSee('Work task');
 });
 
@@ -1026,6 +1033,35 @@ it('hydrates the plan filter from the plans query string', function () {
         ->assertSee('Alpha task')
         ->assertDontSee('Beta task')
         ->assertSee('Old Alpha Task');
+});
+
+it('paginates six task cards per page', function () {
+    $user = User::factory()->create();
+    foreach (['One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven'] as $n) {
+        makeTask($user, 'Task '.$n);
+    }
+
+    $html = Livewire::actingAs($user)
+        ->test('pages::tasks')
+        ->html();
+
+    expect($html)->toContain('Next')
+        ->toContain('gotoPage(2');
+    expect(substr_count($html, 'wire:key="task-'))->toBe(6);
+});
+
+it('renders task card dates in jalali when locale is fa', function () {
+    $user = User::factory()->create();
+    makeTask($user, 'Jalali task', ['task_date' => '2026-01-15']);
+    app()->setLocale('fa');
+
+    $date = Jalali::format(Carbon::parse('2026-01-15'), 'd MMM ، y');
+
+    Livewire::actingAs($user)
+        ->test('pages::tasks')
+        ->set('range_filter', wideRange())
+        ->assertSee($date)
+        ->assertDontSee('15 Jan , 2026');
 });
 
 it('preselects the plan and opens the add modal via the add_plan query param', function () {

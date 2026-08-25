@@ -44,10 +44,11 @@ new class extends Component
         return cache()->rememberForever('countries-list-'.app()->getLocale(), function (): array {
             $countries = Countries::getNames(app()->getLocale());
             if (app()->isLocale('fa')) {
-                (new \Collator('fa_IR'))->asort($countries);
+                (new Collator('fa_IR'))->asort($countries);
             } else {
                 asort($countries);
             }
+
             return $countries;
         });
     }

@@ -67,7 +67,7 @@
         <div wire:loading.delay.short class="absolute inset-0 z-10">
             <div class="flex h-full w-full items-center justify-center">
                 <svg class="size-8 animate-spin mine-text-secondary" xmlns="http://www.w3.org/2000/svg"
-                    fill="none" viewBox="0 0 24 24" role="status">
+                    fill="none" viewBox="0 0 24 24" role="status" aria-label="Loading">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                     <path class="opacity-75" fill="currentColor"
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />

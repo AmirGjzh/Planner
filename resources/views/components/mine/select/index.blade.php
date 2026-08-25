@@ -102,10 +102,19 @@
         select(value, label) {
             this.state = value
             this.selectedLabel = label
-            const hidden = this.$root.querySelector('input[type=hidden]')
-            if (hidden) {
-                hidden.value = value ?? ''
-                hidden.dispatchEvent(new Event('input', { bubbles: true }))
+            let synced = false
+            @if($name)
+            if (typeof $wire !== 'undefined') {
+                $wire.set(@js($name), value === '' ? null : value, false)
+                synced = true
+            }
+            @endif
+            if (! synced) {
+                const hidden = this.$root.querySelector('input[type=hidden]')
+                if (hidden) {
+                    hidden.value = value ?? ''
+                    hidden.dispatchEvent(new Event('input', { bubbles: true }))
+                }
             }
             this.close()
         },
@@ -192,7 +201,7 @@
     @endif
 
     @if ($name)
-        <input type="hidden" name="{{ $name }}" wire:model.defer="{{ $name }}" x-bind:value="state" />
+        <input type="hidden" name="{{ $name }}" x-bind:value="state" />
     @endif
 
     <div class="relative">

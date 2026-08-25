@@ -60,7 +60,11 @@
     ]) }}
 >
     @if ($multiple)
-    <div class="cursor-pointer pl-2">
+    <div @class([
+        "pl-2" => app()->isLocale('en'),
+        "pr-2" => app()->isLocale('fa'),
+        "cursor-pointer"
+    ])>
         <span
             class="shrink-0 inline-flex items-center justify-center size-5 rounded-[6px] border-2 transition-all duration-200 ease-out"
             :class="isSelected(@js($value)) ? 'bg-(--mine-checkbox-bg) border-(--mine-checkbox-bg) text-(--mine-checkbox-text)' : 'border-(--mine-input-border) text-transparent'"

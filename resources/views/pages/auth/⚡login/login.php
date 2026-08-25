@@ -1,9 +1,9 @@
 <?php
 
-use Livewire\Component;
+use App\Actions\Auth\LoginUserAction;
 use App\Enums\LoginResult;
 use Livewire\Attributes\Layout;
-use App\Actions\Auth\LoginUserAction;
+use Livewire\Component;
 
 new #[Layout('layouts::auth')] class extends Component
 {
@@ -47,6 +47,7 @@ new #[Layout('layouts::auth')] class extends Component
                 'duration' => 6000,
                 'position' => 'bottom-center',
             ]);
+
             return $this->redirectRoute('dashboard', navigate: true);
         }
 

@@ -43,6 +43,7 @@ new #[Layout('layouts::auth')] class extends Component
                 'duration' => 6000,
                 'position' => 'bottom-center',
             ]);
+
             return $this->redirectRoute('login', navigate: true);
         }
 

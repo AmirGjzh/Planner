@@ -3,6 +3,8 @@
 use App\Enums\TaskPriority;
 use App\Models\Plan;
 use App\Models\User;
+use App\Support\Jalali;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Livewire;
@@ -500,8 +502,8 @@ it('renders plan card dates in jalali when locale is fa', function () {
     $user->plans()->create(['name' => 'Roadmap', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
     app()->setLocale('fa');
 
-    $start = \App\Support\Jalali::format(\Carbon\Carbon::parse('2026-01-01'), 'd MMM ، y');
-    $end = \App\Support\Jalali::format(\Carbon\Carbon::parse('2026-01-31'), 'd MMM ، y');
+    $start = Jalali::format(Carbon::parse('2026-01-01'), 'd MMM ، y');
+    $end = Jalali::format(Carbon::parse('2026-01-31'), 'd MMM ، y');
 
     Livewire::actingAs($user)
         ->test('pages::plans')
@@ -512,7 +514,7 @@ it('renders plan card dates in jalali when locale is fa', function () {
 });
 
 it('defaults the date range filter to the current jalali month when locale is fa', function () {
-    $this->travelTo(\Carbon\Carbon::parse('2026-01-01 12:00'));
+    $this->travelTo(Carbon::parse('2026-01-01 12:00'));
     $user = User::factory()->create();
     app()->setLocale('fa');
 
@@ -522,7 +524,7 @@ it('defaults the date range filter to the current jalali month when locale is fa
 });
 
 it('defaults the date range filter to the current gregorian month when locale is en', function () {
-    $this->travelTo(\Carbon\Carbon::parse('2026-01-01 12:00'));
+    $this->travelTo(Carbon::parse('2026-01-01 12:00'));
     $user = User::factory()->create();
 
     Livewire::actingAs($user)

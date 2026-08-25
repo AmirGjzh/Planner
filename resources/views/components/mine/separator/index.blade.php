@@ -1,7 +1,16 @@
 @props([
     'label' => null,
     'vertical' => false,
+    'variant' => 'primary',
 ])
+
+@php
+    $barClass = match ($variant) {
+        'danger' => 'bg-(--mine-separator-danger-border)',
+        'secondary' => 'bg-(--mine-separator-secondary-border)',
+        default => 'bg-(--mine-separator-border)',
+    };
+@endphp
 
 @if ($vertical)
 
@@ -12,17 +21,17 @@
             aria-orientation="vertical"
             aria-label="{{ $label }}"
         >
-            <div class="flex-1 w-px bg-(--mine-separator-border)" aria-hidden="true"></div>
+            <div class="flex-1 w-px {{ $barClass }}" aria-hidden="true"></div>
 
             <span class="text-sm font-medium mine-text-secondary whitespace-nowrap select-none">
                 {{ $label }}
             </span>
 
-            <div class="flex-1 w-px bg-(--mine-separator-border)" aria-hidden="true"></div>
+            <div class="flex-1 w-px {{ $barClass }}" aria-hidden="true"></div>
         </div>
     @else
         <div
-            class="mine-separator w-px self-stretch shrink-0 min-h-[1em] bg-(--mine-separator-border)"
+            class="mine-separator w-px self-stretch shrink-0 min-h-[1em] {{ $barClass }}"
             role="separator"
             aria-orientation="vertical"
         ></div>
@@ -36,19 +45,19 @@
     aria-orientation="horizontal"
     aria-label="{{ $label }}"
 >
-    <div class="flex-1 h-px bg-(--mine-separator-border)" aria-hidden="true"></div>
+    <div class="flex-1 h-px {{ $barClass }}" aria-hidden="true"></div>
 
     <span class="text-sm font-medium mine-text-secondary whitespace-nowrap select-none">
         {{ $label }}
     </span>
 
-    <div class="flex-1 h-px bg-(--mine-separator-border)" aria-hidden="true"></div>
+    <div class="flex-1 h-px {{ $barClass }}" aria-hidden="true"></div>
 </div>
 
 @else
 
 <div
-    class="mine-separator w-full h-px bg-(--mine-separator-border)"
+    class="mine-separator w-full h-px {{ $barClass }}"
     role="separator"
     aria-orientation="horizontal"
 ></div>
