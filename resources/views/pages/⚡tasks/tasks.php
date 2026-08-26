@@ -177,6 +177,16 @@ new class extends Component
                 || ($this->range_filter['end'] ?? null) !== $today);
     }
 
+    public function updatingAddPlanId(mixed &$value): void
+    {
+        $value = ($value === '' || $value === 'null') ? null : $value;
+    }
+
+    public function updatingEditPlanId(mixed &$value): void
+    {
+        $value = ($value === '' || $value === 'null') ? null : $value;
+    }
+
     public function updatingSearch(): void
     {
         $this->resetPage();

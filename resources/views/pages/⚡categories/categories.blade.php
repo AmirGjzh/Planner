@@ -92,7 +92,7 @@
                                     "pt-1" => app()->isLocale('en'),
                                     "mine-text-primary font-semibold text-[15px] truncate"
                                 ])>{{ $category->name }}</h2>
-                                <p class="mine-text-secondary text-[13px] font-medium">{{ $category->tasks_count ? (app()->isLocale('en') ? $category->tasks_count : App\Support\PersianNumber::show($category->tasks_count)) : __('No') }} {{ app()->isLocale('fa') ? 'تسک' : Str::plural('Task', $category->tasks_count) }}</p>
+                                <p class="mine-text-secondary text-[13px] font-medium">{{ $category->tasks_count ? (app()->isLocale('en') ? $category->tasks_count : App\Support\PersianNumber::convert($category->tasks_count)) : __('No') }} {{ app()->isLocale('fa') ? 'تسک' : Str::plural('Task', $category->tasks_count) }}</p>
                             </div>
                         </div>
                         <x-mine.dropdown group="category-actions">

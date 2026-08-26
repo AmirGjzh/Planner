@@ -108,3 +108,12 @@ it('formats minutes as hours and minutes', function () {
     expect(Minutes::format(120))->toBe('2h');
     expect(Minutes::format(150))->toBe('2h 30m');
 });
+
+it('formats minutes in persian when locale is fa', function () {
+    app()->setLocale('fa');
+
+    expect(Minutes::format(0))->toBe('۰ دقیقه');
+    expect(Minutes::format(30))->toBe('۳۰ دقیقه');
+    expect(Minutes::format(120))->toBe('۲ ساعت');
+    expect(Minutes::format(150))->toBe('۲ ساعت و ۳۰ دقیقه');
+});

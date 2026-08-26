@@ -4,7 +4,10 @@ namespace App\Support;
 
 final class PersianNumber
 {
-    private const PERSIAN_DIGITS = [
+    /**
+     * @var array<string, string>
+     */
+    private const MAP = [
         '0' => '۰',
         '1' => '۱',
         '2' => '۲',
@@ -17,16 +20,8 @@ final class PersianNumber
         '9' => '۹',
     ];
 
-    public static function show(int|string $number): string
+    public static function convert(int|string|float|null $value): string
     {
-        if ($number === '') {
-            return '';
-        }
-        $result = '';
-        foreach (mb_str_split((string) $number) as $digit) {
-            $result .= self::PERSIAN_DIGITS[$digit] ?? $digit;
-        }
-
-        return $result;
+        return strtr((string) $value, self::MAP);
     }
 }

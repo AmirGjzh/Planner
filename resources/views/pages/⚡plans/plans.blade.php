@@ -306,7 +306,7 @@
                                             <p @class([
                                                 "pt-1" => app()->isLocale('en'),
                                                 "text-[13px] font-medium"
-                                            ])>{{ app()->isLocale('fa') ? App\Support\PersianNumber::show($config['days']['value']) : $config['days']['value'] }} {{ $config['days']['label'] }}</p>
+                                            ])>{{ app()->isLocale('fa') ? App\Support\PersianNumber::convert($config['days']['value']) : $config['days']['value'] }} {{ $config['days']['label'] }}</p>
                                         </div>
                                     </div>
                                 @endif
@@ -343,7 +343,7 @@
                                 <div class="flex flex-col justify-between flex-3">
                                     <h2 class="text-[13px] font-medium mine-text-secondary mb-2">{{ __('Progress') }}</h2>
                                     <h2 class="text-2xl font-bold {{ $config['percent_color'] }} mb-2">
-                                        {{ app()->isLocale('fa') ? App\Support\PersianNumber::show($config['pct']) : $config['pct'] }}%
+                                        {{ app()->isLocale('fa') ? App\Support\PersianNumber::convert($config['pct']) : $config['pct'] }}%
                                     </h2>
                                     <x-mine.progress total="{{ $config['progress_total'] }}"
                                         progress="{{ $config['progress_value'] }}"

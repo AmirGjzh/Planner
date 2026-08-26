@@ -26,7 +26,8 @@
                     const today = cells[{{ $todayIndex }}];
 
                     if (today) {
-                        this.scroller.scrollLeft = today.offsetLeft - (this.scroller.clientWidth / 2) + (today.clientWidth / 2);
+                        const target = today.offsetLeft - (this.scroller.clientWidth / 2) + (today.clientWidth / 2);
+                        this.scroller.scrollLeft = this.isRtl() ? -target : target;
                         this.update();
                     }
                 });
@@ -37,11 +38,18 @@
             this.observer?.disconnect();
         },
 
+        isRtl() {
+            return window.getComputedStyle(this.scroller).direction === 'rtl';
+        },
+
         update() {
             if (! this.scroller) return;
 
-            this.canPrev = this.scroller.scrollLeft > 4;
-            this.canNext = this.scroller.scrollLeft < this.scroller.scrollWidth - this.scroller.clientWidth - 4;
+            const max = this.scroller.scrollWidth - this.scroller.clientWidth;
+            const position = this.isRtl() ? -this.scroller.scrollLeft : this.scroller.scrollLeft;
+
+            this.canPrev = position > 4;
+            this.canNext = position < max - 4;
         },
 
         scrollToStart() {
@@ -49,7 +57,9 @@
         },
 
         scrollToEnd() {
-            this.scroller.scrollTo({ left: this.scroller.scrollWidth, behavior: 'smooth' });
+            const left = this.isRtl() ? -this.scroller.scrollWidth : this.scroller.scrollWidth;
+
+            this.scroller.scrollTo({ left, behavior: 'smooth' });
         },
     }"
     class="relative w-full {{ $class }}"
@@ -67,10 +77,10 @@
             type="button"
             x-on:click="scrollToStart()"
             x-transition.opacity.duration.150ms
-            class="absolute left-2 top-1/2 z-10 -translate-y-1/2 flex size-9 items-center justify-center rounded-full border border-(--mine-card-border) bg-(--mine-dropdown-bg) text-(--mine-text-secondary) shadow-md transition-colors duration-200 hover:bg-(--mine-card-bg-hover) hover:text-(--mine-text-primary)"
+            class="absolute start-2 top-1/2 z-10 -translate-y-1/2 flex size-9 items-center justify-center rounded-full border border-(--mine-card-border) bg-(--mine-dropdown-bg) text-(--mine-text-secondary) shadow-md transition-colors duration-200 hover:bg-(--mine-card-bg-hover) hover:text-(--mine-text-primary)"
             aria-label="Scroll to the beginning"
         >
-            <x-mine.icon name="chevron-left" variant="mini" class="size-5" />
+            <x-mine.icon name="{{ app()->isLocale('fa') ? 'chevron-right' : 'chevron-left' }}" variant="mini" class="size-5" />
         </button>
     </template>
 
@@ -79,10 +89,10 @@
             type="button"
             x-on:click="scrollToEnd()"
             x-transition.opacity.duration.150ms
-            class="absolute right-2 top-1/2 z-10 -translate-y-1/2 flex size-9 items-center justify-center rounded-full border border-(--mine-card-border) bg-(--mine-dropdown-bg) text-(--mine-text-secondary) shadow-md transition-colors duration-200 hover:bg-(--mine-card-bg-hover) hover:text-(--mine-text-primary)"
+            class="absolute end-2 top-1/2 z-10 -translate-y-1/2 flex size-9 items-center justify-center rounded-full border border-(--mine-card-border) bg-(--mine-dropdown-bg) text-(--mine-text-secondary) shadow-md transition-colors duration-200 hover:bg-(--mine-card-bg-hover) hover:text-(--mine-text-primary)"
             aria-label="Scroll to the end"
         >
-            <x-mine.icon name="chevron-right" variant="mini" class="size-5" />
+            <x-mine.icon name="{{ app()->isLocale('fa') ? 'chevron-left' : 'chevron-right' }}" variant="mini" class="size-5" />
         </button>
     </template>
 </div>

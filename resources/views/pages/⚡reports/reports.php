@@ -2,6 +2,7 @@
 
 use App\Actions\Reports\ReportsAction;
 use App\Livewire\Concerns\HasUser;
+use App\Support\Jalali;
 use App\Support\Minutes;
 use Carbon\Carbon;
 use Livewire\Attributes\Computed;
@@ -60,6 +61,15 @@ new class extends Component
     private function presetRange(string $preset): array
     {
         $today = now();
+
+        if (app()->isLocale('fa')) {
+            return match ($preset) {
+                'this_week' => Jalali::weekBounds($today),
+                'last_week' => Jalali::weekBounds($today->copy()->subWeek()),
+                'this_month' => Jalali::monthBounds($today),
+                'last_month' => Jalali::monthBounds($today->copy()->subMonth()),
+            };
+        }
 
         return match ($preset) {
             'this_week' => [

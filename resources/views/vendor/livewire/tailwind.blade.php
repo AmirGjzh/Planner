@@ -110,11 +110,11 @@ if (count($elements) === 1 && is_array($elements[0])) {
                         "text-[13px] mine-text-secondary font-medium"
                     ])>
                         <span>{!! __('Showing') !!}</span>
-                        <span class="mine-text-link">{{ app()->isLocale('en') ? $paginator->firstItem() : App\Support\PersianNumber::show($paginator->firstItem()) }}</span>
+                        <span class="mine-text-link">{{ app()->isLocale('en') ? $paginator->firstItem() : App\Support\PersianNumber::convert($paginator->firstItem()) }}</span>
                         <span>{!! __('to') !!}</span>
-                        <span class="mine-text-link">{{ app()->isLocale('en') ? $paginator->lastItem() : App\Support\PersianNumber::show($paginator->lastItem()) }}</span>
+                        <span class="mine-text-link">{{ app()->isLocale('en') ? $paginator->lastItem() : App\Support\PersianNumber::convert($paginator->lastItem()) }}</span>
                         <span>{!! __('of') !!}</span>
-                        <span class="mine-text-link">{{ app()->isLocale('en') ? $paginator->total() : App\Support\PersianNumber::show($paginator->total()) }}</span>
+                        <span class="mine-text-link">{{ app()->isLocale('en') ? $paginator->total() : App\Support\PersianNumber::convert($paginator->total()) }}</span>
                     </p>
                 </div>
 
@@ -154,7 +154,7 @@ if (count($elements) === 1 && is_array($elements[0])) {
                                                     "pt-1" => app()->isLocale('en'),
                                                     "pt-0.5" => app()->isLocale('fa'),
                                                 ])>
-                                                    {{ app()->isLocale('en') ? $page : App\Support\PersianNumber::show($page) }}
+                                                    {{ app()->isLocale('en') ? $page : App\Support\PersianNumber::convert($page) }}
                                                 </p>
                                             </span>
                                         </span>
@@ -164,7 +164,7 @@ if (count($elements) === 1 && is_array($elements[0])) {
                                                 "pt-1" => app()->isLocale('en'),
                                                 "pt-0.5" => app()->isLocale('fa'),
                                             ])>
-                                                {{ app()->isLocale('en') ? $page : App\Support\PersianNumber::show($page) }}
+                                                {{ app()->isLocale('en') ? $page : App\Support\PersianNumber::convert($page) }}
                                             </p>
                                         </button>
                                     @endif

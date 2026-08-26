@@ -10,7 +10,7 @@ it('renders the reports page with all sections', function () {
     Livewire::actingAs($user)
         ->test('pages::reports')
         ->assertStatus(200)
-        ->assertSee('My Reports')
+        ->assertSee('My reports')
         ->assertSee('This week')
         ->assertSee('Last week')
         ->assertSee('This month')

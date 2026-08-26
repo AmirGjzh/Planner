@@ -153,7 +153,7 @@
                         </p>
                         @if(count($category_filter) > 0)
                             <span class="mine-badge-primary text-xs font-semibold rounded-full px-1.5 pb-0.5 pt-1">
-                            {{ app()->isLocale('en') ? count($category_filter) : App\Support\PersianNumber::show(count($category_filter)) }}
+                            {{ app()->isLocale('en') ? count($category_filter) : App\Support\PersianNumber::convert(count($category_filter)) }}
                             </span>
                         @endif
                     </div>
@@ -190,7 +190,7 @@
                         </p>
                         @if(count($plan_filter) > 0)
                             <span class="mine-badge-primary text-xs font-semibold rounded-full px-1.5 pb-0.5 pt-1">
-                            {{ app()->isLocale('en') ? count($plan_filter) : App\Support\PersianNumber::show(count($plan_filter)) }}
+                            {{ app()->isLocale('en') ? count($plan_filter) : App\Support\PersianNumber::convert(count($plan_filter)) }}
                             </span>
                         @endif
                     </div>
@@ -250,7 +250,7 @@
                 <div class="grid grid-cols-1 gap-4">
                     @forelse ($this->tasks as $task)
                         @php
-                            $status = $task->done ? 'completed' : ($task->task_date->isPast() ? 'overdue' : 'active');
+                            $status = $task->done ? 'completed' : ($task->task_date->lt(now()->today()) ? 'overdue' : 'active');
 
                             $config = match ($status) {
                                 'completed' => [
@@ -423,7 +423,7 @@
                                             <p @class([
                                                 "pt-1" => app()->isLocale('en'),
                                                 "text-[13px] font-medium"
-                                            ])>{{ app()->isLocale('fa') ? App\Support\PersianNumber::show($task->estimated_minutes) : $task->estimated_minutes }} {{ __('min') }}</p>
+                                            ])>{{ app()->isLocale('fa') ? App\Support\PersianNumber::convert($task->estimated_minutes) : $task->estimated_minutes }} {{ __('min') }}</p>
                                         </div>
                                         <div @class([
                                             "pl-3 pr-4" => app()->isLocale('en'),

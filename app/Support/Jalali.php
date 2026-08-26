@@ -31,6 +31,35 @@ final class Jalali
     /**
      * @return array{start: string, end: string}
      */
+    public static function weekBounds(CarbonInterface $date): array
+    {
+        $calendar = IntlCalendar::createInstance(config('app.timezone'), 'fa_IR@calendar=persian');
+
+        if ($calendar === null) {
+            throw new RuntimeException('Unable to create the Persian (Jalali) calendar.');
+        }
+
+        $calendar->setTime($date->getTimestampMs());
+        $calendar->set(IntlCalendar::FIELD_DAY_OF_WEEK, $calendar->getFirstDayOfWeek());
+
+        $toDateString = function () use ($calendar): string {
+            return Carbon::createFromTimestamp(
+                (int) ($calendar->getTime() / 1000),
+                config('app.timezone'),
+            )->startOfDay()->toDateString();
+        };
+
+        $start = $toDateString();
+
+        $calendar->add(IntlCalendar::FIELD_DAY_OF_WEEK, 6);
+        $end = $toDateString();
+
+        return ['start' => $start, 'end' => $end];
+    }
+
+    /**
+     * @return array{start: string, end: string}
+     */
     public static function monthBounds(CarbonInterface $date): array
     {
         $calendar = IntlCalendar::createInstance(config('app.timezone'), 'fa_IR@calendar=persian');

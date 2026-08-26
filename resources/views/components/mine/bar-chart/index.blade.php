@@ -3,7 +3,7 @@
     'labelKey' => 'label',
     'series' => [],
     'height' => 300,
-    'barWidth' => 50,
+    'barWidth' => 45,
     'gridlines' => [1.0, 0.75, 0.5, 0.25],
     'format' => null,
 ])
@@ -24,9 +24,17 @@
         ? $format($value)
         : (string) $value;
 
+    $isFa = app()->isLocale('fa');
+    $gutterClass = $isFa ? 'ps-22' : 'ps-12';
+    $startClass = $isFa ? 'start-22' : 'start-12';
+
+    $fa = fn (string $value): string => $isFa
+        ? \App\Support\PersianNumber::convert($value)
+        : $value;
+
     $gridLineRows = [];
     foreach ($gridlines as $fraction) {
-        $label = $formatValue((int) round($maxTotal * $fraction));
+        $label = $fa($formatValue((int) round($maxTotal * $fraction)));
 
         if ($gridLineRows !== [] && end($gridLineRows)['label'] === $label) {
             continue;
@@ -43,11 +51,11 @@
     <x-mine.horizontal-scroll>
         <div class="min-w-max">
             <div class="relative">
-                <div class="flex items-end gap-3 pl-12 pr-2 pt-2">
+                <div class="flex items-end gap-3 {{ $gutterClass }} pe-2 pt-2">
                     @foreach ($items as $item)
                         @php
                             $titleParts = array_map(
-                                fn (array $seriesItem) => $seriesItem['label'].': '.$formatValue((int) ($item[$seriesItem['key']] ?? 0)),
+                                fn (array $seriesItem) => $seriesItem['label'].': '.$fa($formatValue((int) ($item[$seriesItem['key']] ?? 0))),
                                 $series,
                             );
 
@@ -87,14 +95,14 @@
                     @endforeach
                 </div>
 
-                <div class="pointer-events-none absolute inset-0 pr-2">
+                <div class="pointer-events-none absolute inset-0 pe-2">
                     @foreach ($gridLineRows as $line)
                         <div
-                            class="absolute left-12 right-0 border-t border-dashed border-(--mine-card-border)"
+                            class="absolute {{ $startClass }} end-0 border-t border-dashed border-(--mine-card-border)"
                             style="bottom: {{ $line['offset'] }}px"
                         >
                             <span
-                                class="absolute -top-2.5 right-full mr-2 text-right text-[10px] font-medium mine-text-secondary whitespace-nowrap"
+                                class="absolute -top-2.5 end-full me-2 text-end text-[10px] font-medium mine-text-secondary whitespace-nowrap"
                             >
                                 {{ $line['label'] }}
                             </span>
@@ -103,10 +111,10 @@
                 </div>
             </div>
 
-            <div class="flex gap-3 pl-12 pr-2">
+            <div class="flex gap-3 {{ $gutterClass }} pe-2">
                 @foreach ($items as $item)
                     <div class="shrink-0 text-center" style="width: {{ $barWidth }}px">
-                        <span class="text-xs font-medium mine-text-secondary whitespace-nowrap">
+                        <span class="text-[11px] font-medium mine-text-secondary whitespace-nowrap">
                             {{ $item[$labelKey] ?? '' }}
                         </span>
                     </div>
