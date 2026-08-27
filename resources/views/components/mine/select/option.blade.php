@@ -8,8 +8,8 @@
 @aware(['height' => 'h-11'])
 
 @php
-    $value = filled($value) ? $value : trim($slot->__toString());
-    $label = filled($label) ? $label : trim($slot->__toString());
+    $value = $value !== null ? (string) $value : trim($slot->__toString());
+    $label = $label !== null ? (string) $label : trim($slot->__toString());
     $searchLabel = filled($searchLabel) ? $searchLabel : $label;
 @endphp
 

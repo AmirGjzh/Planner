@@ -3,6 +3,7 @@
 use App\Actions\Dashboard\WeeklyWorkloadAction;
 use App\Enums\WorkloadLevel;
 use App\Models\User;
+use App\Support\Jalali;
 use App\Support\Minutes;
 use Carbon\Carbon;
 
@@ -116,4 +117,28 @@ it('formats minutes in persian when locale is fa', function () {
     expect(Minutes::format(30))->toBe('۳۰ دقیقه');
     expect(Minutes::format(120))->toBe('۲ ساعت');
     expect(Minutes::format(150))->toBe('۲ ساعت و ۳۰ دقیقه');
+});
+
+it('renders the day and date in Jalali when locale is fa', function () {
+    app()->setLocale('fa');
+
+    $user = User::factory()->create();
+    $week = app(WeeklyWorkloadAction::class)->execute($user);
+
+    $start = now()->startOfWeek(Carbon::SATURDAY);
+
+    expect($week[0]['day'])->toBe(Jalali::format($start, 'EEEE'));
+    expect($week[6]['date'])->toBe(Jalali::format($start->copy()->addDays(6), 'd MMM'));
+});
+
+it('starts the week on Saturday when locale is fa', function () {
+    app()->setLocale('fa');
+
+    $user = User::factory()->create();
+    $week = app(WeeklyWorkloadAction::class)->execute($user);
+
+    $saturday = now()->startOfWeek(Carbon::SATURDAY);
+
+    expect($week[0]['day'])->toBe(Jalali::format($saturday, 'EEEE'));
+    expect($week[0]['day'])->toBe('شنبه');
 });

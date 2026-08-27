@@ -26,8 +26,13 @@
                     const today = cells[{{ $todayIndex }}];
 
                     if (today) {
-                        const target = today.offsetLeft - (this.scroller.clientWidth / 2) + (today.clientWidth / 2);
-                        this.scroller.scrollLeft = this.isRtl() ? -target : target;
+                        const scrollerRect = this.scroller.getBoundingClientRect();
+                        const cellRect = today.getBoundingClientRect();
+                        const center = this.scroller.scrollLeft
+                            + (cellRect.left - scrollerRect.left)
+                            + (cellRect.width / 2)
+                            - (this.scroller.clientWidth / 2);
+                        this.scroller.scrollLeft = center;
                         this.update();
                     }
                 });

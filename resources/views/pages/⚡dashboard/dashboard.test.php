@@ -28,7 +28,7 @@ it('renders the dashboard with attention heading and view all link', function ()
         ->test('pages::dashboard')
         ->assertStatus(200)
         ->assertSee('Tasks needing attention')
-        ->assertSee("This week's workload", escape: false)
+        ->assertSee("This week's workload")
         ->assertSeeHtml('href="'.route('tasks').'"');
 });
 
@@ -85,8 +85,8 @@ it('shows priority, overdue and due-in badges', function () {
 
     Livewire::actingAs($user)
         ->test('pages::dashboard')
-        ->assertSee('high')
-        ->assertSee('low')
+        ->assertSee('High')
+        ->assertSee('Low')
         ->assertSee('Overdue')
         ->assertSee('Due in');
 });
@@ -138,6 +138,19 @@ it('shows the current week with today marked', function () {
         ->test('pages::dashboard')
         ->assertSee('Today')
         ->assertSee($start->copy()->addDays(1)->format('D'));
+});
+
+it('renders localized strings and Jalali dates in fa', function () {
+    app()->setLocale('fa');
+
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::dashboard')
+        ->assertSee('تسک‌ های نیازمند توجه')
+        ->assertSee('حجم کار این هفته')
+        ->assertSee('امروز')
+        ->assertSee(\App\Support\Jalali::format(now(), 'd MMM'));
 });
 
 it('sums estimated minutes for each day in the workload grid', function () {

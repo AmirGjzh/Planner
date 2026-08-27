@@ -162,9 +162,6 @@
     --mine-workload-empty-dot: #E2E8F0;
 }
 
-/* Orange */
-
-
 @utility mine-page-bg {
     background: var(--mine-page-bg);
 }

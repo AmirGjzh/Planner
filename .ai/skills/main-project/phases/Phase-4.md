@@ -375,6 +375,7 @@ The phase is complete when:
 
 **Global Components Updated:**
 - `resources/views/components/mine/select/index.blade.php` — wire-bound selects now submit proper `null`s: the option-click handler calls `$wire.set(name, value === '' ? null : value, false)` (deferred, matching `wire:model.defer` semantics) instead of relying on a hidden input whose `wire:model.defer` re-read the empty-string sentinel. This fixes a `Cannot assign string to property … of type ?int` TypeError when clearing optional selects (e.g. removing a task's plan). Non-wire usages keep the hidden-input fallback.
+- `resources/views/components/mine/select/option.blade.php` — `value`/`label` resolution changed from `filled($value) ? $value : trim($slot)` to `$value !== null ? (string) $value : trim($slot)` so an explicit empty string (`value=""`, e.g. a "No plan" option) is preserved in `data-value` instead of being replaced by the localized slot text. Before this fix, `filled("")` was false and `data-value` became the label string (e.g. "No plan"), which skipped the index handler's `value === ''` null-mapping and hit the `?int` TypeError; `data-value=""` is what lets the index convert to `null`.
 - `resources/views/components/mine/dropdown/item.blade.php` — multi-select checkbox padding is now locale-aware (`pl-2` in `en`, `pr-2` in `fa`).
 - `resources/views/components/mine/separator/index.blade.php` — new optional `variant` prop: `primary` (default) keeps `--mine-separator-border`; `danger`/`secondary` reuse the matching button background variables.
 - `resources/css/mine.css` — added `--mine-card-{danger,secondary}-border[-hover]` variables plus `mine-card-danger` / `mine-card-secondary` utilities so card outlines (static + hover) match each status theme instead of always using the primary-neutral slate border.
@@ -385,6 +386,7 @@ The phase is complete when:
 - `tests/Feature/Actions/Task/DeleteTaskActionTest.php` — 3 action tests: deletion, cross-user ownership 403 via `HttpException`, logging.
 - `tests/Feature/Actions/Task/ToggleTaskDoneActionTest.php` — 6 action tests covering: toggle from not-done to done, toggle from done to not-done, cross-user ownership 403 via `HttpException`, logging, rate limiting at 20 attempts, and recovery after the limit expires.
 - `resources/views/pages/⚡tasks/tasks.test.php` — 68 co-located Livewire tests (208 assertions): full CRUD with validation, localized errors, ownership (`ModelNotFoundException`), rate limiting on all four limited paths, complete/reopen flows with toast + close-modal contracts asserted on every mutation, today-default range plus custom and open-ended ranges, all five sort orders (deterministic `created_at` seeding for `latest`), single/multi category & plan filters including combinations, status filters with URL hydration, search with no-results distinction, the `add_plan` deep-link prefill (success + foreign-plan rejection), the `tasks-content` island wrapper and island-scoped filters, loading spinner (`aria-label="Loading"`), pagination at 6 cards per page (`wire:key="task-"` counted in island HTML), and Jalali card-date rendering in `fa`.
+- `tests/Feature/Livewire/TasksPageTest.php` — 2 regression tests for the optional-plan flow: (a) the "No plan" option renders with `data-value=""` (fails if the option component falls back to the label), and (b) creating a task without a plan via `Livewire->test('pages::tasks')` with `add_plan_id=null` yields no validation errors and a task with a `null` plan.
 - `tests/Feature/Auth/TasksPageAccessTest.php` — 2 access tests for guest redirect and authenticated access.
 
 **Security and Reliability Notes:**
@@ -401,28 +403,29 @@ The phase is complete when:
 - Database foreign key constraints (`restrictOnDelete` on `category_id` and `plan_id`) ensure referential integrity.
 - Inline errors via `$this->addError()`/custom error banners; Blade output remains escaped.
 
-**Acceptance Result:** UC-08 is accepted. Authenticated users can create tasks with all required/optional fields (placeholders instead of defaults, proper `null` handling when clearing optional selects), edit all fields from a modal, delete tasks with a confirmation modal, toggle tasks done/not done (rate-limited at 20/min), and browse tasks by single day or custom date range with search, status/category/plan filters, five sort orders, and pagination (6 per page) inside a live island. Status-themed cards (icons, badges, separators, outlines, solid action buttons, Jalali dates), an `add_plan` deep-link that prefills and opens the add form, and toast confirmations complete the UX. Invalid category/plan selections show clear errors; ownership is enforced at two layers. The use case is covered by 98 passing tests (10 create + 9 edit + 3 delete + 6 toggle action + 68 Livewire [208 assertions] + 2 access).
+**Acceptance Result:** UC-08 is accepted. Authenticated users can create tasks with all required/optional fields (placeholders instead of defaults, proper `null` handling when clearing optional selects), edit all fields from a modal, delete tasks with a confirmation modal, toggle tasks done/not done (rate-limited at 20/min), and browse tasks by single day or custom date range with search, status/category/plan filters, five sort orders, and pagination (6 per page) inside a live island. Status-themed cards (icons, badges, separators, outlines, solid action buttons, Jalali dates), an `add_plan` deep-link that prefills and opens the add form, and toast confirmations complete the UX. Invalid category/plan selections show clear errors; ownership is enforced at two layers. The use case is covered by 100 passing tests (10 create + 9 edit + 3 delete + 6 toggle action + 68 Livewire [208 assertions] + 2 no-plan Livewire + 2 access).
 
 ### UC-09 – Daily Workload
 
 **Status:** Completed
 
-**Goal:** Show the total estimated time of all tasks for each day of the current week with a workload alert on the dashboard.
+**Goal:** Show the total estimated time of all tasks for each day of the current week with a workload alert on the dashboard. Fully localizes `day`/`date` to Jalali, workload level names/ranges, and time formatting in the Persian (fa) locale.
 
 **Routes:**
 - `GET /dashboard` → Livewire page `pages::dashboard`, auth-only route (existing).
 
 **Implementation Files:**
-- `app/Actions/Dashboard/WeeklyWorkloadAction.php` — `final` action computing the Sunday–Saturday week grid: sums `estimated_minutes` per `task_date` for the authenticated user (including completed tasks) via a single `GROUP BY` query, then builds 7 day cells with `day`, `date`, `is_today`, `past`, `minutes`, `formatted` (hours+minutes via `formatMinutes()`), and `level` (`WorkloadLevel::forMinutes`). Ownership is enforced at the relationship level (`$user->tasks()`).
-- `app/Enums/WorkloadLevel.php` — enum with `forMinutes()` mapping to None / Light (≤120) / Moderate (≤240) / Heavy (≤360) / Very Heavy (>360), plus `label()` and `rangeLabel()` for the legend.
+- `app/Actions/Dashboard/WeeklyWorkloadAction.php` — `final` action computing the week grid: sums `estimated_minutes` per `task_date` for the authenticated user (including completed tasks) via a single `GROUP BY` query, then builds 7 day cells with `day`, `date`, `is_today`, `past`, `minutes`, `formatted` (hours+minutes via `Minutes::format()`), and `level` (`WorkloadLevel::forMinutes`). The week start is locale-aware: `en` starts Sunday (`Carbon::SUNDAY`), `fa` starts Saturday (شنبه, `Carbon::SATURDAY`) matching the Persian calendar's first day. `day`/`date` are locale-aware: in `fa`, `day` renders the full Jalali weekday via `Jalali::format($date, 'EEEE')` and `date` as `Jalali::format($date, 'd MMM')`; in `en`, `D`/`M j`. Ownership is enforced at the relationship level (`$user->tasks()`).
+- `app/Enums/WorkloadLevel.php` — enum with `forMinutes()` mapping to None / Light (≤120) / Moderate (≤240) / Heavy (≤360) / Very Heavy (>360), plus `label()` and `rangeLabel()`. Kept as a pure value object (language-agnostic); localized labels/ranges are mapped in the Blade via `__()`.
 - `resources/views/pages/⚡dashboard/dashboard.php` — `week()` computed delegates to `WeeklyWorkloadAction` via `$this->user`.
-- `resources/views/pages/⚡dashboard/dashboard.blade.php` — "This week's workload" section: horizontal-scroll 7-day grid (today highlighted), per-day formatted minutes + level label + 4-dot indicator, and a legend listing all levels with ranges. Past/empty days render an em dash.
-- `resources/views/components/mine/horizontal-scroll/index.blade.php` — reusable horizontal scroller with edge scroll buttons and `todayIndex` centering.
+- `resources/views/pages/⚡dashboard/dashboard.blade.php` — "This week's workload" section (`text-base` h1 via `__()`): horizontal-scroll 7-day grid (today highlighted, localizes "Today"), per-day formatted minutes + level label + 4-dot indicator, and a legend listing all levels with ranges (localized via `$levelLabel`/`$levelRange` closures). Past/empty days render an em dash. All strings wrapped in `__()`. The grid's `day`/`date` come from the locale-aware action. The per-level dot/text classes are written as literal Tailwind classes in the `$workloadMeta` match (e.g. `bg-(--mine-workload-light-dot)`) so Tailwind's scanner generates them — dynamic concatenation would silently drop the colors. The "Today" cell uses the primary dark-blue fill (`--mine-datepicker-day-selected-bg`) with white text (`--mine-datepicker-day-selected-text`) and a translucent white separator instead of the green success theme.
+- `resources/views/components/mine/horizontal-scroll/index.blade.php` — reusable horizontal scroller with edge scroll buttons and `todayIndex` centering. Initial centering is computed from `getBoundingClientRect()` deltas (relative on-screen position + `scrollLeft`) instead of `offsetLeft`, so it works identically in LTR (`en`) and RTL (`fa`) — this is what keeps the current day focused on mobile in Persian, where the old `scrollLeft = isRtl() ? -target : target` math mis-centered.
 - `resources/css/mine.css` — `--mine-workload-*` dot/text colors and `--mine-workload-empty-dot`.
+- `lang/fa.json` — dashboard block: `Tasks needing attention`, `This week's workload`, workload level names (`No tasks`/`Light`/`Moderate`/`Heavy`/`Very heavy`) and interval ranges with Persian digits (e.g. `سبک (۱–۱۲۰ دقیقه)`).
 
 **Testing Files:**
-- `tests/Feature/Actions/Dashboard/WeeklyWorkloadActionTest.php` — 9 action tests: seven-day Sunday start, today marking, past-day marking, per-day summing including completed tasks, zero for empty days, out-of-week exclusion, user scoping, level mapping, and `formatMinutes()` (0m/30m/2h/2h 30m).
-- `resources/views/pages/⚡dashboard/dashboard.test.php` — 19 co-located Livewire tests covering the whole dashboard (shared with UC-10; workload-grid portion includes summing, formatted output, done-task inclusion, out-of-week exclusion, and user scoping).
+- `tests/Feature/Actions/Dashboard/WeeklyWorkloadActionTest.php` — 12 action tests: seven-day Sunday start (en), today marking, past-day marking, per-day summing including completed tasks, zero for empty days, out-of-week exclusion, user scoping, level mapping, `formatMinutes()` (0m/30m/2h/2h 30m), `formatMinutes()` in fa (۰ دقیقه/۳۰ دقیقه/۲ ساعت/۲ ساعت و ۳۰ دقیقه), Jalali `day`/`date` rendering in fa, and a fa test asserting the week starts on Saturday (شنبه).
+- `resources/views/pages/⚡dashboard/dashboard.test.php` — 20 co-located Livewire tests covering the whole dashboard (shared with UC-10; workload-grid portion includes summing, formatted output, done-task inclusion, out-of-week exclusion, user scoping, and a fa-locale test asserting localized headings and a Jalali grid date).
 
 **Security and Reliability Notes:**
 - Page access is protected by the `auth` middleware.
@@ -432,13 +435,13 @@ The phase is complete when:
 - Level thresholds and ranges live in one place (`WorkloadLevel`) and match the Phase-1 acceptance criteria.
 - No mutations — purely read-only; no rate limiting or logging needed.
 
-**Acceptance Result:** UC-09 is accepted. Authenticated users see a Sunday–Saturday workload grid on the dashboard where each day shows total estimated minutes (formatted as hours/minutes) of all tasks, a workload level, and a colored indicator, with today highlighted and past/empty days shown as an em dash. Covered by 9 action + 19 Livewire tests.
+**Acceptance Result:** UC-09 is accepted. Authenticated users see a weekly workload grid on the dashboard (Sunday start in `en`, Saturday/شنبه start in `fa`) where each day shows total estimated minutes (formatted as hours/minutes), a workload level, and a colored indicator, with today highlighted in the primary dark-blue fill and past/empty days shown as an em dash. In `fa`, the grid renders Jalali weekdays/dates, Persian-digit time phrases (e.g. "۲ ساعت و ۳۰ دقیقه"), and localized level names/ranges. Covered by 12 action + 20 Livewire tests.
 
 ### UC-10 – Tasks Needing Attention
 
 **Status:** Completed
 
-**Goal:** Show authenticated users a "Tasks needing attention" list on the dashboard: tasks that are overdue or whose notification window has started (`task_date - day_before_alarm <= today`), excluding completed tasks.
+**Goal:** Show authenticated users a "Tasks needing attention" list on the dashboard: tasks that are overdue or whose notification window has started (`task_date - day_before_alarm <= today`), excluding completed tasks. Fully localized for the Persian (fa) locale with themed status cards and directional arrows.
 
 **Routes:**
 - `GET /dashboard` → Livewire page `pages::dashboard`, auth-only route (existing).
@@ -446,12 +449,13 @@ The phase is complete when:
 **Implementation Files:**
 - `app/Actions/Dashboard/AttentionTasksAction.php` — `final` action returning the authenticated user's not-done tasks where `DATE(task_date, '-' || day_before_alarm || ' days') <= today`, ordered by `task_date ASC`. Overdue tasks are included because they need attention. Ownership is enforced at the relationship level (`$user->tasks()`).
 - `resources/views/pages/⚡dashboard/dashboard.php` — `upcomingTasks()` computed delegates to `AttentionTasksAction` via `$this->user`.
-- `resources/views/pages/⚡dashboard/dashboard.blade.php` — "Tasks needing attention" heading with a count badge and a horizontal-scroll card list where overdue tasks use a danger card and upcoming tasks use a success card; each card shows title, priority badge, due/overdue label, and a "View task" deep-link to the tasks page filtered by the task title. Labels: "Due today", "Due tomorrow", "Due in X days", and overdue "X days ago" (pluralized). Empty state when nothing needs attention.
+- `resources/views/pages/⚡dashboard/dashboard.blade.php` — "Tasks needing attention" heading (`text-base`) with a count badge and a horizontal-scroll card list where overdue cards use the `mine-card-danger` utility and upcoming cards use `mine-card-secondary` (UC-08-theme parity). Each card shows title, a localized priority badge (`low/medium/high → Low/Medium/High` via `__()`), due/overdue label, and a "View task" deep-link to the tasks page filtered by the task title. Labels: "Due today", "Due tomorrow", "Due in X days", and overdue "1 day ago"/"X days ago" (pluralized). Empty state when nothing needs attention. All strings wrapped in `__()`; action buttons use a directionally-flipped `arrow-long-left`/`arrow-long-right` icon per locale.
 - `resources/views/components/mine/horizontal-scroll/index.blade.php` — reusable horizontal scroller.
+- `lang/fa.json` — attention block: `Tasks needing attention`, `These tasks are due or their alarm time has been reached.`, `View`/`All`/`tasks` (button), `View task`, `Overdue`, `1 day ago`/`:count days ago`, `Due today`/`Due tomorrow`/`Due in`/`:count days`, `No tasks need your attention right now.`
 
 **Testing Files:**
 - `tests/Feature/Actions/Dashboard/AttentionTasksActionTest.php` — 7 action tests: window inclusion, overdue inclusion, window exclusion, day-of alarm with future date hidden, done exclusion, user scoping, and ascending date ordering.
-- `resources/views/pages/⚡dashboard/dashboard.test.php` — 19 co-located Livewire tests covering the whole dashboard (shared with UC-09; attention-list portion includes window rules, done exclusion, due labels, pluralization, and user scoping).
+- `resources/views/pages/⚡dashboard/dashboard.test.php` — 20 co-located Livewire tests covering the whole dashboard (shared with UC-09; attention-list portion includes window rules, done exclusion, localized priority labels `High`/`Low`, due labels, pluralization, user scoping, and a fa-locale test asserting localized headings).
 - `tests/Feature/Auth/DashboardPageAccessTest.php` — 2 access tests for guest redirect and authenticated access.
 
 **Security and Reliability Notes:**
@@ -463,7 +467,7 @@ The phase is complete when:
 - Due/overdue labels use Carbon `diffInDays()` with `startOfDay()` for consistent day-boundary math and correct pluralization.
 - No mutations — purely read-only; no rate limiting or logging needed.
 
-**Acceptance Result:** UC-10 is accepted. Authenticated users open the dashboard and see all tasks that need attention (overdue or within their alarm window), each with a clear due/overdue label and a deep-link to the tasks page. Tasks outside the window, completed tasks, and other users' tasks are hidden. Covered by 7 action + 19 Livewire + 2 access tests.
+**Acceptance Result:** UC-10 is accepted. Authenticated users open the dashboard and see all tasks that need attention (overdue or within their alarm window), each with a clear due/overdue label and a deep-link to the tasks page. Tasks outside the window, completed tasks, and other users' tasks are hidden. In `fa`, all labels are localized and overdue/upcoming cards use the themed `mine-card-danger`/`mine-card-secondary` utilities. Covered by 7 action + 20 Livewire + 2 access tests.
 
 ### UC-11 – Reports
 
