@@ -16,7 +16,6 @@
 <body class="min-h-dvh flex flex-col mine-page-bg font-sans">
     <x-mine.header />
     {{ $slot }}
-    {{-- <x-mine.footer /> --}}
     <x-mine.toast />
 </body>
 

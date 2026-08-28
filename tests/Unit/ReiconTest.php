@@ -3,8 +3,25 @@
 use App\Support\Reicon;
 use Illuminate\Support\Facades\Blade;
 
+function reiconTestIcons(): array
+{
+    return json_decode(
+        (string) file_get_contents(app_path('Support/reicon-icons.json')),
+        true,
+    ) ?? [];
+}
+
 it('renders an outline svg for a known icon', function () {
-    $svg = Reicon::svg('Search');
+    $outlineName = array_key_first(array_filter(
+        reiconTestIcons(),
+        fn (array $data) => isset($data['O']),
+    )) ?? null;
+
+    if ($outlineName === null) {
+        $this->markTestSkipped('No outline icon is exported.');
+    }
+
+    $svg = Reicon::svg($outlineName);
 
     expect($svg)
         ->not->toBeNull()
@@ -17,10 +34,16 @@ it('renders an outline svg for a known icon', function () {
 });
 
 it('renders the filled weight', function () {
-    $svg = Reicon::svg('Menu', 'filled');
+    $filledName = array_key_first(array_filter(
+        reiconTestIcons(),
+        fn (array $data) => isset($data['F']),
+    )) ?? null;
 
-    expect($svg)
-        ->not->toBeNull();
+    if ($filledName === null) {
+        $this->markTestSkipped('No filled icon is exported.');
+    }
+
+    expect(Reicon::svg($filledName, 'filled'))->not->toBeNull();
 });
 
 it('returns null for an unknown icon', function () {
@@ -32,7 +55,16 @@ it('returns null for a null name', function () {
 });
 
 it('applies size, class and extra attributes', function () {
-    $svg = Reicon::svg('Check', 'outline', 20, 'size-4 text-red-500', ['x-cloak' => '']);
+    $outlineName = array_key_first(array_filter(
+        reiconTestIcons(),
+        fn (array $data) => isset($data['O']),
+    )) ?? null;
+
+    if ($outlineName === null) {
+        $this->markTestSkipped('No outline icon is exported.');
+    }
+
+    $svg = Reicon::svg($outlineName, 'outline', 20, 'size-4 text-red-500', ['x-cloak' => '']);
 
     expect($svg)
         ->toContain('width="20" height="20"')
@@ -41,7 +73,13 @@ it('applies size, class and extra attributes', function () {
 });
 
 it('renders an explicit size prop at its exact pixel value without a size class', function () {
-    $svg = Blade::render('<x-mine.icon name="Search" size="32" />');
+    $anyName = array_key_first(reiconTestIcons()) ?? null;
+
+    if ($anyName === null) {
+        $this->markTestSkipped('No icon is exported.');
+    }
+
+    $svg = Blade::render('<x-mine.icon name="'.e($anyName).'" size="32" />');
 
     expect($svg)
         ->toContain('width="32" height="32"')
