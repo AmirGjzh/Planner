@@ -4,7 +4,8 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "reicon:export": "node scripts/reicon-export.mjs"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",
@@ -14,6 +15,7 @@
         "vite": "^8.0.0"
     },
     "dependencies": {
-        "fontaine": "^0.8.0"
+        "fontaine": "^0.8.0",
+        "reicon": "^1.2.1"
     }
 }
