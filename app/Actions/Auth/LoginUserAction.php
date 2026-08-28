@@ -27,7 +27,7 @@ final class LoginUserAction
     ): LoginResult {
         $email = Str::lower(Str::trim($email));
 
-        $rate_limit_key = $this->rateLimitKey($email, $request);
+        $rate_limit_key = $this->rateLimitKey($request);
         if (RateLimiter::tooManyAttempts($rate_limit_key, self::MAX_ATTEMPTS)) {
             $this->logger->warning('Login rate limited.', [
                 'email' => $email,
@@ -56,8 +56,8 @@ final class LoginUserAction
         return LoginResult::Success;
     }
 
-    private function rateLimitKey(string $email, Request $request): string
+    private function rateLimitKey(Request $request): string
     {
-        return Str::transliterate('login:'.$email.'|'.$request->ip());
+        return Str::transliterate('login:'.$request->ip());
     }
 }

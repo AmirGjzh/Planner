@@ -4,5 +4,4 @@ Before planning or editing, find the row whose globs match the file's path and r
 
 | Applies to | Rule file |
 | --- | --- |
-| config/themes.php, config/themes/*.json, resources/views/components/mine/theme-vars.blade.php, resources/css/mine.css | .ai/rules/css.md |
-| resources/views/components/mine/icon/** | .ai/rules/icon.md |
+| app/Actions/** | .ai/rules/actions.md |

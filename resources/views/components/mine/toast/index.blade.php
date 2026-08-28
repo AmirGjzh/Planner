@@ -155,16 +155,16 @@
 
                     <div class="relative size-6 shrink-0">
                         <div x-show="toast.variant === 'danger'" class="absolute inset-0 text-[var(--mine-alert-danger-icon)]">
-                            <x-mine.icon name="x-circle" class="size-6" />
+                            <x-mine.icon name="ShieldAlert" size="24" />
                         </div>
                         <div x-show="toast.variant === 'success'" class="absolute inset-0 text-[var(--mine-alert-success-icon)]">
-                            <x-mine.icon name="check-circle" class="size-6" />
+                            <x-mine.icon name="CheckSquare" size="24" />
                         </div>
                         <div x-show="toast.variant === 'warning'" class="absolute inset-0 text-[var(--mine-alert-warning-icon)]">
-                            <x-mine.icon name="exclamation-triangle" class="size-6" />
+                            <x-mine.icon name="AlertTriangle" size="24" />
                         </div>
                         <div x-show="toast.variant === 'info'" class="absolute inset-0 text-[var(--mine-alert-info-icon)]">
-                            <x-mine.icon name="information-circle" class="size-6" />
+                            <x-mine.icon name="AlertCircle" size="24" />
                         </div>
                     </div>
 
@@ -181,7 +181,7 @@
                         @click="removeToast(toast.id)"
                         aria-label="Close notification"
                     >
-                        <x-mine.icon name="x-mark" class="size-4" variant="micro" />
+                        <x-mine.icon name="Xmark" size="14" weight="filled" />
                     </button>
                 </div>
             </template>

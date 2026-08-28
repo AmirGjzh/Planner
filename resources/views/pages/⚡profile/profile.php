@@ -160,7 +160,7 @@ new class extends Component
     {
         return [
             'username.required' => __('Username is required.'),
-            'username.regex' => __('Username must start with a letter and be 3–30 characters.'),
+            'username.regex' => __('Start with a letter, Use 3 to 30 characters.'),
             'firstname.min' => __('Firstname must be at least 2 characters.'),
             'firstname.max' => __('Firstname may not be greater than 50 characters.'),
             'firstname.regex' => __('Firstname may only contain letters, spaces, hyphens, and apostrophes.'),

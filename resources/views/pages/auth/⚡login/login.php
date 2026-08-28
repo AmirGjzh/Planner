@@ -11,7 +11,7 @@ new #[Layout('layouts::auth')] class extends Component
 
     public string $password = '';
 
-    public bool $remember = true;
+    public bool $remember = false;
 
     public ?string $login_error = null;
 
@@ -42,7 +42,7 @@ new #[Layout('layouts::auth')] class extends Component
 
         if ($result === LoginResult::Success) {
             session()->flash('toast', [
-                'title' => __('Signed in successfully'),
+                'title' => __('You\'re signed in'),
                 'variant' => 'success',
                 'duration' => 6000,
                 'position' => 'bottom-center',
@@ -57,7 +57,7 @@ new #[Layout('layouts::auth')] class extends Component
     protected function rules(): array
     {
         return [
-            'email' => ['required', 'email'],
+            'email' => ['required', 'email:rfc'],
             'password' => ['required'],
         ];
     }
@@ -65,8 +65,8 @@ new #[Layout('layouts::auth')] class extends Component
     protected function messages(): array
     {
         return [
-            'email.required' => __('Email address is required.'),
-            'email.email' => __('Please enter a valid email address.'),
+            'email.required' => __('Email is required.'),
+            'email.email' => __('Enter a valid email.'),
             'password.required' => __('Password is required.'),
         ];
     }

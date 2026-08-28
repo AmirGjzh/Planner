@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Livewire;
 
 beforeEach(function () {
-    RateLimiter::clear('login:amir@example.com|127.0.0.1');
+    RateLimiter::clear('login:127.0.0.1');
 });
 
 it('renders successfully', function () {
@@ -16,7 +16,7 @@ it('renders successfully', function () {
 
 it('re-dispatches a flashed session toast on mount', function () {
     session()->flash('toast', [
-        'title' => 'Signed in successfully',
+        'title' => 'You\'re signed in',
         'variant' => 'success',
         'duration' => 6000,
         'position' => 'bottom-center',
@@ -24,7 +24,7 @@ it('re-dispatches a flashed session toast on mount', function () {
 
     Livewire::test('pages::auth.login')
         ->assertDispatched('toast',
-            title: 'Signed in successfully',
+            title: 'You\'re signed in',
             variant: 'success',
         );
 });
@@ -92,7 +92,7 @@ it('flashes a success toast after signing in', function () {
     $toast = session('toast');
 
     expect($toast)->toBeArray()
-        ->and($toast['title'])->toBe(__('Signed in successfully'))
+        ->and($toast['title'])->toBe(__('You\'re signed in'))
         ->and($toast['variant'])->toBe('success');
 });
 

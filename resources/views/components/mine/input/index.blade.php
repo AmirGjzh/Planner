@@ -57,7 +57,7 @@
                 'group-focus-within:text-(--mine-input-border-focus)' => !$errors->has($name),
                 'group-focus-within:text-(--mine-input-error-border)' => $errors->has($name),
             ])>
-                <x-mine.icon variant="micro" :name="$leftIcon" />
+                <x-mine.icon :name="$leftIcon" size="20" weight="filled" />
             </div>
         @endif
 
@@ -68,7 +68,7 @@
             placeholder="{{ $placeholder }}"
             {{ $attributes->except('class')->merge([
                 'class' => 
-                (app()->isLocale('en') ? 'pt-1 ' : 'pt-1 ') .
+                (app()->isLocale('en') ? 'pt-1 ' : 'pt-1 placeholder:mb-1 ') .
                 'h-full
                     w-full
                     bg-transparent
@@ -98,10 +98,10 @@
                 ])
             >
                 <template x-if="!show">
-                    <x-mine.icon variant="micro" name="eye-slash" />
+                    <x-mine.icon name="EyeClosed" size="20" weight="filled" />
                 </template>
                 <template x-if="show">
-                    <x-mine.icon variant="micro" name="eye" />
+                    <x-mine.icon name="EyeOpen" size="20" weight="filled" />
                 </template>
             </button>
         @endif

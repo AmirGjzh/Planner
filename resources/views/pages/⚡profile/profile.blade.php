@@ -83,21 +83,21 @@
 
             @if($edit_error === 'rate_limited')
                 <div class="mb-4">
-                    <x-mine.alert variant="warning" title="{{ __('Too many profile-update attempts!') }}">{{ __('Please try again in a minute.') }}
+                    <x-mine.alert variant="warning" title="{{ __('Too many profile-update attempts!') }}">{{ __('Try again in a minute.') }}
                     </x-mine.alert>
                 </div>
             @endif
 
             @if($edit_error === 'username_taken')
                 <div class="mb-4">
-                    <x-mine.alert variant="danger" title="{{ __('Duplicate username!') }}">{{ __('This username is already in use.') }}
+                    <x-mine.alert variant="danger" title="{{ __('Username taken') }}">{{ __('Try a different username.') }}
                     </x-mine.alert>
                 </div>
             @endif
 
             <form class="flex flex-col gap-4" wire:submit="editProfile">
                 <div>
-                    <x-mine.input label="{{ __('Username') }}" wire:model="username" placeholder="{{ __('Enter your username') }}" />
+                    <x-mine.input label="{{ __('Username') }}" wire:model="username" placeholder="{{ __('Your username') }}" />
                 </div>
                 <div class="flex flex-col sm:flex-row gap-4">
                     <x-mine.input label="{{ __('Firstname') }}" wire:model="firstname" placeholder="{{ __('Enter your firstname') }}" />
@@ -147,7 +147,7 @@
             </div>
 
             @if($delete_error === 'rate_limited')
-                <x-mine.alert variant="warning" title="{{ __('Too many delete-account attempts!') }}" class="mb-4">{{ __('Please try again in a minute.') }}
+                <x-mine.alert variant="warning" title="{{ __('Too many delete-account attempts!') }}" class="mb-4">{{ __('Try again in a minute.') }}
                 </x-mine.alert>
             @endif
 
@@ -158,12 +158,12 @@
 
             @unless($delete_error)
                 <x-mine.alert variant="warning" title="{{ __('Be Careful!') }}" class="mb-4">
-                    {{ __('This action is permanent and cannot be undone, Enter your password to continue.') }}
+                    {{ __('This action is permanent and cannot be undone, Your password to continue.') }}
                 </x-mine.alert>
             @endunless
 
             <form wire:submit="deleteAccount" class="flex flex-col gap-6">
-                <x-mine.input wire:model="password" label="{{ __('Password') }}" placeholder="{{ __('Enter your password') }}" type="password"
+                <x-mine.input wire:model="password" label="{{ __('Password') }}" placeholder="{{ __('Your password') }}" type="password"
                     leftIcon="lock-closed" />
                 <div class="flex gap-4 justify-between items-center">
                     <x-mine.button type="button" @click="close(); $wire.cancelDelete()" class="mine-btn-ghost">

@@ -14,21 +14,6 @@ it('renders successfully', function () {
         ->assertSee('Welcome to Planner');
 });
 
-it('re-dispatches a flashed session toast on mount', function () {
-    session()->flash('toast', [
-        'title' => 'Your account created successfully, please sign in',
-        'variant' => 'success',
-        'duration' => 6000,
-        'position' => 'bottom-center',
-    ]);
-
-    Livewire::test('pages::auth.register')
-        ->assertDispatched('toast',
-            title: 'Your account created successfully, please sign in',
-            variant: 'success',
-        );
-});
-
 it('validates required fields', function () {
     Livewire::test('pages::auth.register')
         ->call('register')
@@ -185,7 +170,7 @@ it('flashes a success toast after registering', function () {
     $toast = session('toast');
 
     expect($toast)->toBeArray()
-        ->and($toast['title'])->toBe(__('Your account created successfully, please sign in'))
+        ->and($toast['title'])->toBe(__('Your account is ready, Sign in to continue.'))
         ->and($toast['variant'])->toBe('success');
 });
 

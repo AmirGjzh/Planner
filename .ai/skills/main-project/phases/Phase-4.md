@@ -89,7 +89,7 @@ The phase is complete when:
 
 **Implementation Files:**
 - `routes/web.php` — defines guest login route and authenticated dashboard route.
-- `resources/views/pages/auth/⚡login/login.php` — Livewire component with typed `$login_error` property (`null` | `'rate_limited'` | `'invalid'`), `$remember` bool for the remember-me toggle, validates email/password with custom localized `messages()`, resets `$login_error` to `null` before each submission, uses a `match` expression on `LoginResult` enum cases, calls `LoginUserAction`, redirects on success, resets password and sets error state on failure. On success it flashes a `Signed in successfully` toast into the session before redirecting; `mount()` re-dispatches any flashed session toast as a browser `toast` event so the toast survives the redirect.
+- `resources/views/pages/auth/⚡login/login.php` — Livewire component with typed `$login_error` property (`null` | `'rate_limited'` | `'invalid'`), `$remember` bool for the remember-me toggle (defaults to `false`, opt-in), validates email (`email:rfc`, aligned with Register) and password with custom localized `messages()`, resets `$login_error` to `null` before each submission, uses a `match` expression on `LoginResult` enum cases, calls `LoginUserAction`, redirects on success, resets password and sets error state on failure. On success it flashes a `You're signed in` toast into the session before redirecting; `mount()` re-dispatches any flashed session toast as a browser `toast` event so the toast survives the redirect.
 - `resources/views/pages/auth/⚡login/login.blade.php` — login form using mine/* components (`mine.input`, `mine.button`, `mine.checkbox`, `mine.alert`, `mine.separator`), error alerts driven by `$login_error` state (titles wrapped in `__()`), remember-me checkbox, forgot password placeholder. The auth layout (`layouts/auth.blade.php`) includes `<x-mine.toast />`; the dashboard's `mount()` pulls the flashed toast so it is displayed after the redirect.
 - `app/Actions/Auth/LoginUserAction.php` — final action class; rate limiting via `RateLimiter` with configurable constants (`MAX_ATTEMPTS: 5`, `DECAY_SECONDS: 60`), normalizes email with `Str::lower(Str::trim())`, `Auth::attempt()`, session regeneration, structured logging for all outcomes with `'available_in'` context key.
 - `app/Enums/LoginResult.php` — backed string enum (`Fail`, `Success`, `RateLimited`).
@@ -102,8 +102,8 @@ The phase is complete when:
 **Security and Reliability Notes:**
 - Validation handled server-side by Livewire with custom messages.
 - Failed credentials use a generic error message to prevent user enumeration.
-- Login attempts are rate-limited by normalized email and IP address (5 attempts per 60 seconds).
-- Rate limit key uses `Str::transliterate()` and `Str::lower()` to prevent Unicode bypass.
+- Login attempts are rate-limited by client IP address only (5 attempts per 60 seconds), keyed as `login:{ip}` — matching the guest `register:{ip}` pattern and preventing one IP from spraying many emails. The IP-only key intentionally replaces the earlier `login:{email}|{ip}` form.
+- Rate limit key uses `Str::transliterate()` on the IP to prevent Unicode bypass.
 - Error state managed via `$login_error` component property instead of the validation error bag — keeps error bag clean for actual field validation.
 - Successful login regenerates the session to prevent session fixation.
 - Login success, failed attempts, and rate-limited attempts are logged in the action layer with structured context.
@@ -124,14 +124,14 @@ The phase is complete when:
 
 **Implementation Files:**
 - `routes/web.php` — defines the guest-only register route.
-- `resources/views/pages/auth/⚡register/register.php` — Livewire component with typed `$register_error` property (`null` | `'rate_limited'` | `'username_taken'` | `'email_taken'`), `$password_confirmation` property, validates username (regex `/^[a-zA-Z][a-zA-Z0-9_-]{2,29}$/`), email (`email:rfc`), and password (confirmed, min:8) with custom localized `messages()`, uses a `match` expression to handle all 4 `RegisterResult` enum cases, calls `RegisterUserAction`, resets password fields on failure, redirects to login on success. On success it flashes a `Your account created successfully, please sign in` toast into the session before redirecting; `mount()` re-dispatches any flashed session toast as a browser `toast` event so the toast survives the redirect.
+- `resources/views/pages/auth/⚡register/register.php` — Livewire component with typed `$register_error` property (`null` | `'rate_limited'` | `'username_taken'` | `'email_taken'`), `$password_confirmation` property, validates username (regex `/^[a-zA-Z][a-zA-Z0-9_-]{2,29}$/`), email (`email:rfc`), and password (confirmed, min:8) with custom localized `messages()`, uses a `match` expression to handle all 4 `RegisterResult` enum cases, calls `RegisterUserAction`, resets password fields on failure, redirects to login on success. On success it flashes a `Your account is ready, Sign in to continue.` toast into the session before redirecting; the **login** page's `mount()` re-dispatches the flashed session toast as a browser `toast` event so it survives the redirect. (Register itself has no `mount()` — a previously duplicated toast re-dispatch there was removed in the UC-02 audit pass because no flow redirects to `/register` with a toast.)
 - `resources/views/pages/auth/⚡register/register.blade.php` — registration form UI (`Welcome to Planner` heading), field errors, register-level error display driven by `$register_error` state (alert titles wrapped in `__()`), and login navigation link. The auth layout (`layouts/auth.blade.php`) includes `<x-mine.toast />`; the login page's `mount()` pulls the flashed toast so it is displayed after the redirect.
 - `app/Actions/Auth/RegisterUserAction.php` — final action class; rate limiting via `RateLimiter` with configurable constants (`MAX_ATTEMPTS: 5`, `DECAY_SECONDS: 60`), username/email uniqueness checks after the limiter gate, user creation via `User::create()`, race-condition duplicate handling via `QueryException` / `isIntegrityConstraintViolation()` (SQLSTATE '23' prefix), structured logging for all outcomes with `'available_in'` context key.
 - `app/Enums/RegisterResult.php` — result enum returned by the register action (`Success`, `UsernameTaken`, `EmailTaken`, `RateLimited`).
 - `resources/views/pages/auth/⚡login/login.blade.php` — cross-navigation link from login to register.
 
 **Testing Files:**
-- `resources/views/pages/auth/⚡register/register.test.php` — co-located Livewire tests for rendering the page heading, validation (required fields, username-format dataset, email format, password confirmation and length), duplicate username or email errors, clearing a previous error on a new submission, successful registration with redirect and flashed success toast, re-dispatching a flashed session toast on mount, guest state after registration, and rate limiting with cooldown retry.
+- `resources/views/pages/auth/⚡register/register.test.php` — co-located Livewire tests for rendering the page heading, validation (required fields, username-format dataset, email format, password confirmation and length), duplicate username or email errors, clearing a previous error on a new submission, successful registration with redirect and flashed success toast, guest state after registration, and rate limiting with cooldown retry.
 - `tests/Feature/Auth/RegisterAccessTest.php` — route/middleware tests for guest and authenticated access.
 - `tests/Feature/Actions/Auth/RegisterUserActionTest.php` — action tests for success, duplicate results, rate limiting, password hashing, and logging.
 
@@ -146,7 +146,7 @@ The phase is complete when:
 - Registration success, duplicate failures, and rate-limited attempts are logged in the action layer.
 - Blade output remains escaped; no raw user-controlled HTML is rendered.
 
-**Acceptance Result:** UC-02 is accepted. 29 passing test executions (82 assertions): 19 co-located Livewire UI tests (16 test functions, including the 4-case username-format dataset), 8 action tests (success, username taken, email taken, rate limited, logging, and more), and 2 access tests.
+**Acceptance Result:** UC-02 is accepted. 28 passing test executions (79 assertions): 18 co-located Livewire UI tests (15 test functions, including the 4-case username-format dataset), 8 action tests (success, username taken, email taken, rate limited, logging, and more), and 2 access tests. (The removed test was `re-dispatching a flashed session toast on mount` — the register `mount()` that made it reachable was dead code and was removed in the UC-02 audit pass.)
 
 ### UC-03 – View and Edit Profile
 
@@ -293,8 +293,8 @@ The phase is complete when:
 
 **Acceptance Result:** UC-06 is accepted. Authenticated users can create categories (with duplicate detection and rate limiting), rename categories (with duplicate detection and rate limiting), delete categories (blocked if tasks exist), search categories, sort by latest, name, or task count, view task counts per category, navigate paginated results (6 per page with first/…/last slider), and the use case is covered by 51 passing tests (30 Livewire + 7 create action + 8 edit action + 4 delete action + 2 access).
 
-**Global Component Added — Footer:**
-- `resources/views/components/mine/footer/index.blade.php` — new footer component with a 4-column layout: brand/description column, quick links column (Categories, Tasks, Plans, Reports), account column (Profile, Settings placeholder, Sign Out), and tech stack column (Laravel, Tailwind, Livewire, Alpine). Uses the app's mine/* component system and `route()` for authenticated routes.
+**Global Component Removed — Footer:**
+- `resources/views/components/mine/footer/index.blade.php` — the footer component added with UC-06 was later removed during the global audit cleanup; its usage line in `resources/views/layouts/app.blade.php` was removed with it. (No dead/unlocalized markup left behind.)
 
 ### UC-07 – Manage Plans
 

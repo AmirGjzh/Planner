@@ -10,7 +10,17 @@ const root = join(__dirname, '..');
 const ICONS = [
     'EyeOpen',
     'EyeClosed',
-    
+    'CheckSquare',
+    'AlertTriangle',
+    'ShieldAlert',
+    'AlertCircle',
+    'Envelope2',
+    'Lock',
+    'EyeClosed',
+    'EyeOpen',
+    'Check',
+    'User4',
+    'Xmark'
 ];
 
 const store = {};

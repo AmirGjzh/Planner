@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 
 beforeEach(function () {
-    RateLimiter::clear('login:amir@example.com|127.0.0.1');
+    RateLimiter::clear('login:127.0.0.1');
 });
 
 function loginRequest(): Request
@@ -67,7 +67,7 @@ it('logs failed, limited, and successful login events', function () {
     }
     Log::shouldHaveReceived('warning')
         ->with('Login rate limited.', Mockery::on(fn (array $context) => isset($context['available_in'])));
-    RateLimiter::clear('login:amir@example.com|127.0.0.1');
+    RateLimiter::clear('login:127.0.0.1');
     app(LoginUserAction::class)->execute('amir@example.com', 'password', true, loginRequest());
     Log::shouldHaveReceived('info')
         ->with('User logged in.', Mockery::on(fn (array $context) => isset($context['user_id'])));

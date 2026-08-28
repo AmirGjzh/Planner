@@ -17,13 +17,6 @@ new #[Layout('layouts::auth')] class extends Component
 
     public ?string $register_error = null;
 
-    public function mount()
-    {
-        if ($toast = session()->pull('toast')) {
-            $this->dispatch('toast', ...$toast);
-        }
-    }
-
     public function register(RegisterUserAction $register_user_action)
     {
         $this->register_error = null;
@@ -38,7 +31,7 @@ new #[Layout('layouts::auth')] class extends Component
 
         if ($result === RegisterResult::Success) {
             session()->flash('toast', [
-                'title' => __('Your account created successfully, please sign in'),
+                'title' => __('Your account is ready, Sign in to continue.'),
                 'variant' => 'success',
                 'duration' => 6000,
                 'position' => 'bottom-center',
@@ -70,13 +63,13 @@ new #[Layout('layouts::auth')] class extends Component
     {
         return [
             'username.required' => __('Username is required.'),
-            'username.regex' => __('Username must start with a letter and be 3–30 characters.'),
-            'email.required' => __('Email address is required.'),
-            'email.email' => __('Please enter a valid email address.'),
+            'username.regex' => __('Start with a letter, Use 3 to 30 characters.'),
+            'email.required' => __('Email is required.'),
+            'email.email' => __('Enter a valid email.'),
             'password.required' => __('Password is required.'),
-            'password.confirmed' => __('Password confirmation does not match.'),
-            'password.min' => __('Password must be at least 8 characters.'),
-            'password_confirmation.required' => __('Confirm password is required.'),
+            'password.confirmed' => __('The passwords don\'t match.'),
+            'password.min' => __('Use at least 8 characters.'),
+            'password_confirmation.required' => __('Confirm your password.'),
         ];
     }
 };

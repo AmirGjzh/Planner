@@ -7,25 +7,25 @@
     $variants = [
         'danger' => [
             'container' => 'border-[var(--mine-alert-danger-border)] bg-[var(--mine-alert-danger-bg)]',
-            'icon' => 'x-circle',
+            'icon' => 'ShieldAlert',
             'icon-color' => 'text-[var(--mine-alert-danger-icon)]',
             'title' => 'text-[var(--mine-alert-danger-title)]',
         ],
         'success' => [
             'container' => 'border-[var(--mine-alert-success-border)] bg-[var(--mine-alert-success-bg)]',
-            'icon' => 'check-circle',
+            'icon' => 'CheckSquare',
             'icon-color' => 'text-[var(--mine-alert-success-icon)]',
             'title' => 'text-[var(--mine-alert-success-title)]',
         ],
         'warning' => [
             'container' => 'border-[var(--mine-alert-warning-border)] bg-[var(--mine-alert-warning-bg)]',
-            'icon' => 'exclamation-triangle',
+            'icon' => 'AlertTriangle',
             'icon-color' => 'text-[var(--mine-alert-warning-icon)]',
             'title' => 'text-[var(--mine-alert-warning-title)]',
         ],
         'info' => [
             'container' => 'border-[var(--mine-alert-info-border)] bg-[var(--mine-alert-info-bg)]',
-            'icon' => 'information-circle',
+            'icon' => 'AlertCircle',
             'icon-color' => 'text-[var(--mine-alert-info-icon)]',
             'title' => 'text-[var(--mine-alert-info-title)]',
         ],
@@ -41,7 +41,7 @@
     ]) }}
 >
     <div class="{{ $style['icon-color'] }}">
-        <x-mine.icon name="{{ $style['icon'] }}" class="size-6" />
+        <x-mine.icon name="{{ $style['icon'] }}" size="24" />
     </div>
     <div class="pt-0.5">
         @if($title)

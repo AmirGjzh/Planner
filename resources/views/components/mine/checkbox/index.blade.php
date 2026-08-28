@@ -15,9 +15,10 @@
         ])
     >
         <x-mine.icon
-            name="check"
-            variant="micro"
-            class="text-(--mine-checkbox-text)! size-4 transition-all duration-200 ease-out"
+            name="Check"
+            size="12"
+            weight="filled"
+            class="text-(--mine-checkbox-text)! transition-all duration-200 ease-out"
         />
     </div>
 
