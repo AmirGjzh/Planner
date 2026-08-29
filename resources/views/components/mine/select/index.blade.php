@@ -7,6 +7,7 @@
     'invalid' => false,
     'position' => 'bottom-start',
     'height' => 'h-11',
+    'leftIcon' => null,
 ])
 
 @php
@@ -220,7 +221,7 @@
         >
             @if ($searchable)
                 <div class="flex items-center gap-2 px-4 py-2 border-b border-(--mine-input-border)">
-                    <x-mine.icon name="magnifying-glass" class="size-5 text-(--mine-input-icon) shrink-0" variant="micro" />
+                    <x-mine.icon name="Magnifier" weight="filled" size="20" class="text-(--mine-input-icon) shrink-0" />
                     <input
                         x-model="search"
                         data-select-search

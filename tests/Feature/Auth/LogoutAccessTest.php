@@ -12,7 +12,7 @@ it('logs out an authenticated user and flashes a success toast', function () {
     $toast = session('toast');
 
     expect($toast)->toBeArray()
-        ->and($toast['title'])->toBe(__('You logged out successfully'))
+        ->and($toast['title'])->toBe(__('Logged out successfully'))
         ->and($toast['variant'])->toBe('success');
     $this->assertGuest();
 });

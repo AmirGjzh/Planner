@@ -55,9 +55,9 @@
                 class="flex flex-col sm:flex-row gap-4 px-4 sm:px-6 py-4 mt-6 sm:justify-between mine-alert-danger-box">
                 <div class="flex items-center justify-center gap-4">
                     <div class="size-12 rounded-full mine-badge-danger flex justify-center items-center">
-                        <x-mine.icon name="trash" class="size-6" variant="micro" />
+                        <x-mine.icon name="Trash5" size="24" weight="filled" />
                     </div>
-                    <p class="text-sm font-medium mine-text-secondary pt-1">{{ __('Delete your account and all of your data.') }}</p>
+                    <p class="text-sm font-medium mine-text-secondary pt-1">{{ __('Delete your account and all your data') }}</p>
                 </div>
                 <div class="flex justify-center items-center">
                     <x-mine.modal.trigger class="w-full" id="delete-account-confirmation">
@@ -77,39 +77,39 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-base font-semibold mine-text-primary">{{ __('Edit your information') }}</h2>
                 <button type="button" @click="close(); $wire.cancelEdit()" class="mine-btn-icon p-2 rounded-xl">
-                    <x-mine.icon name="x-mark" variant="micro" />
+                    <x-mine.icon name="Xmark" weight="filled" size="16" />
                 </button>
             </div>
 
             @if($edit_error === 'rate_limited')
                 <div class="mb-4">
-                    <x-mine.alert variant="warning" title="{{ __('Too many profile-update attempts!') }}">{{ __('Try again in a minute.') }}
+                    <x-mine.alert variant="warning" title="{{ __('Too many attempts') }}">{{ __('Try again in a minute') }}
                     </x-mine.alert>
                 </div>
             @endif
 
             @if($edit_error === 'username_taken')
                 <div class="mb-4">
-                    <x-mine.alert variant="danger" title="{{ __('Username taken') }}">{{ __('Try a different username.') }}
+                    <x-mine.alert variant="danger" title="{{ __('Username taken') }}">{{ __('Try a different username') }}
                     </x-mine.alert>
                 </div>
             @endif
 
             <form class="flex flex-col gap-4" wire:submit="editProfile">
                 <div>
-                    <x-mine.input label="{{ __('Username') }}" wire:model="username" placeholder="{{ __('Your username') }}" />
+                    <x-mine.input label="{{ __('Username') }}" wire:model="username" placeholder="{{ __('Your username') }}" leftIcon="User4" />
                 </div>
                 <div class="flex flex-col sm:flex-row gap-4">
-                    <x-mine.input label="{{ __('Firstname') }}" wire:model="firstname" placeholder="{{ __('Enter your firstname') }}" />
-                    <x-mine.input label="{{ __('Lastname') }}" wire:model="lastname" placeholder="{{  __('Enter your lastname')  }}" />
+                    <x-mine.input label="{{ __('Firstname') }}" wire:model="firstname" placeholder="{{ __('Your first name') }}" leftIcon="User4" />
+                    <x-mine.input label="{{ __('Lastname') }}" wire:model="lastname" placeholder="{{  __('Your last name')  }}" leftIcon="User4" />
                 </div>
                 <div class="flex flex-col sm:flex-row gap-4">
-                    <x-mine.select wire:model="gender" label="{{ __('Gender') }}" placeholder="{{ __('Select your gender') }}">
+                    <x-mine.select wire:model="gender" label="{{ __('Gender') }}" placeholder="{{ __('Select your gender') }}" leftIcon="Male">
                         <x-mine.select.option value="male">{{ __('Male') }}</x-mine.select.option>
                         <x-mine.select.option value="female">{{ __('Female') }}</x-mine.select.option>
                     </x-mine.select>
 
-                    <x-mine.select wire:model="country" label="{{ __('Country') }}" placeholder="{{ __('Select your Country') }}" searchable>
+                    <x-mine.select wire:model="country" label="{{ __('Country') }}" placeholder="{{ __('Select your country') }}" searchable leftIcon="Earth">
                         @foreach($this->countries as $code => $name)
                             <x-mine.select.option wire:key="{{ $code }}"
                                 value="{{ $code }}">{{ $name }}</x-mine.select.option>
@@ -118,7 +118,7 @@
                 </div>
                 <div>
                     <x-mine.datepicker mode="single" selectable-months selectable-years position="top-{{ app()->isLocale('en') ? 'end' : 'start' }}"
-                        :years-range="[-100, 0]" wire:model="birthday" label="{{ __('Birthday') }}" />
+                        :years-range="[-100, 0]" wire:model="birthday" label="{{ __('Birthday') }}" leftIcon="Calendar" />
                 </div>
                 <div class="flex gap-4 justify-end mt-4">
                     <x-mine.button type="button" @click="close(); $wire.cancelEdit()" class="mine-btn-ghost">
@@ -142,29 +142,29 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-base font-semibold mine-text-primary">{{ __('Delete your account') }}</h2>
                 <button type="button" @click="close(); $wire.cancelDelete()" class="mine-btn-icon p-2 rounded-xl">
-                    <x-mine.icon name="x-mark" variant="micro" />
+                    <x-mine.icon name="Xmark" weight="filled" size="16" />
                 </button>
             </div>
 
             @if($delete_error === 'rate_limited')
-                <x-mine.alert variant="warning" title="{{ __('Too many delete-account attempts!') }}" class="mb-4">{{ __('Try again in a minute.') }}
+                <x-mine.alert variant="warning" title="{{ __('Too many attempts') }}" class="mb-4">{{ __('Try again in a minute') }}
                 </x-mine.alert>
             @endif
 
             @if($delete_error === 'wrong_password')
-                <x-mine.alert variant="danger" title="{{ __('Wrong password!') }}" class="mb-4">{{ __('The password you entered is incorrect.') }}
+                <x-mine.alert variant="danger" title="{{ __('Wrong password') }}" class="mb-4">{{ __('The password you entered is incorrect') }}
                 </x-mine.alert>
             @endif
 
             @unless($delete_error)
-                <x-mine.alert variant="warning" title="{{ __('Be Careful!') }}" class="mb-4">
-                    {{ __('This action is permanent and cannot be undone, Your password to continue.') }}
+                <x-mine.alert variant="warning" title="{{ __('Be careful') }}" class="mb-4">
+                    {{ __('This action is permanent, enter your password to continue') }}
                 </x-mine.alert>
             @endunless
 
             <form wire:submit="deleteAccount" class="flex flex-col gap-6">
                 <x-mine.input wire:model="password" label="{{ __('Password') }}" placeholder="{{ __('Your password') }}" type="password"
-                    leftIcon="lock-closed" />
+                    leftIcon="Lock" />
                 <div class="flex gap-4 justify-between items-center">
                     <x-mine.button type="button" @click="close(); $wire.cancelDelete()" class="mine-btn-ghost">
                         <p class="text-sm">

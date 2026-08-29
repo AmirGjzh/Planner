@@ -1,10 +1,10 @@
 @php
     $navLinks = [
-        ['label' => __('Dashboard'), 'route' => 'dashboard', 'icon' => 'squares-plus'],
-        ['label' => __('Tasks'), 'route' => 'tasks', 'icon' => 'list-bullet'],
-        ['label' => __('Plans'), 'route' => 'plans', 'icon' => 'rocket-launch'],
-        ['label' => __('Categories'), 'route' => 'categories', 'icon' => 'folder'],
-        ['label' => __('Reports'), 'route' => 'reports', 'icon' => 'chart-bar'],
+        ['label' => __('Dashboard'), 'route' => 'dashboard', 'icon' => 'Home'],
+        ['label' => __('Tasks'), 'route' => 'tasks', 'icon' => 'Clipboard'],
+        ['label' => __('Plans'), 'route' => 'plans', 'icon' => 'Bullseye'],
+        ['label' => __('Categories'), 'route' => 'categories', 'icon' => 'Folder'],
+        ['label' => __('Reports'), 'route' => 'reports', 'icon' => 'Chart2'],
     ];
 @endphp
 
@@ -45,13 +45,13 @@
                     <div class="relative block size-6">
                         <div :style="open ? 'opacity:0; transform: rotate(90deg) scale(0.75);' : 'opacity:1; transform: rotate(0deg) scale(1);'"
                             style="opacity:1; transform: rotate(0deg) scale(1);"
-                            class="absolute inset-0 flex items-center justify-center transition-all duration-200 ease-out">
-                            <x-mine.icon name="bars-3" variant="micro" class="size-6" />
+                            class="absolute inset-0 flex flex-col items-center justify-center transition-all duration-200 ease-out">
+                            <x-mine.icon name="MoreH" size="28" weight="filled" />
                         </div>
                         <div :style="open ? 'opacity:1; transform: rotate(0deg) scale(1);' : 'opacity:0; transform: rotate(-90deg) scale(0.75);'"
                             style="opacity:0; transform: rotate(-90deg) scale(0.75);"
                             class="absolute inset-0 flex items-center justify-center transition-all duration-200 ease-out">
-                            <x-mine.icon name="x-mark" variant="micro" class="size-6" />
+                            <x-mine.icon name="Xmark" size="20" weight="filled" />
                         </div>
                     </div>
                 </div>
@@ -63,15 +63,14 @@
                     <x-mine.dropdown.item :route="$link['route']">
                         <div class="w-full py-3 px-3 flex items-center justify-between hover:cursor-pointer">
                             <div class="flex gap-3 items-center">
-                                <x-mine.icon :name="$link['icon']" variant="micro" class="size-5" />
+                                <x-mine.icon :name="$link['icon']" weight="filled" size="20" />
                                 <p @class([
                                     "pt-1" => app()->isLocale('en'),
                                     "pt-0.5" => app()->isLocale('fa'),
                                     "text-sm font-medium"
                                 ])>{{ $link['label'] }}</p>
                             </div>
-                            <x-mine.icon name="chevron-{{ app()->isLocale('en') ? 'right' : 'left' }}" class="size-5"
-                                variant="micro" />
+                            <x-mine.icon name="Angle{{ app()->isLocale('en') ? 'Right' : 'Left' }}" weight="filled" size="20" />
                         </div>
                     </x-mine.dropdown.item>
                 @endforeach
@@ -100,9 +99,7 @@
                                     }" x-on:profile-updated.window="
                                         username = $event.detail.username;
                                         email = $event.detail.email;
-initials = $event.detail.firstname && $event.detail.lastname
-                            ? ([...$event.detail.firstname][0] + '\u200C' + [...$event.detail.lastname][0]).toUpperCase()
-                            : [...$event.detail.username].slice(0, 2).join('\u200C').toUpperCase();
+                                        initials = $event.detail.initials;
                                     ">
                         <x-mine.dropdown group="header-action" class="flex items-center h-full pointer-events-none">
                             <x-mine.dropdown.trigger class="pointer-events-auto">
@@ -127,11 +124,11 @@ initials = $event.detail.firstname && $event.detail.lastname
                                         <div class="relative size-4 mine-text-secondary">
                                             <div :class="!open ? 'opacity-100 scale-100' : 'opacity-0 scale-75'"
                                                 class="absolute inset-0 transition-all duration-200 ease-out">
-                                                <x-mine.icon name="chevron-down" variant="micro" class="size-4" />
+                                                <x-mine.icon name="AngleDown" weight="filled" size="16" />
                                             </div>
                                             <div :class="open ? 'opacity-100 scale-100' : 'opacity-0 scale-75'"
                                                 class="absolute inset-0 transition-all duration-200 ease-out">
-                                                <x-mine.icon name="chevron-up" variant="micro" class="size-4" />
+                                                <x-mine.icon name="AngleUp" weight="filled" size="16" />
                                             </div>
                                         </div>
                                     </div>
@@ -161,30 +158,28 @@ initials = $event.detail.firstname && $event.detail.lastname
                                 <x-mine.dropdown.item :route="'profile'">
                                     <div class="w-full py-3 px-3 flex items-center justify-between hover:cursor-pointer">
                                         <div class="flex gap-3 items-center">
-                                            <x-mine.icon name="user" class="size-5" variant="micro" />
+                                            <x-mine.icon name="User4" size="20" weight="filled" />
                                             <p @class([
                                                 "pt-1" => app()->isLocale('en'),
                                                 "pt-0.5" => app()->isLocale('fa'),
                                                 "text-sm font-medium"
                                             ])>{{ __('Profile') }}</p>
                                         </div>
-                                        <x-mine.icon name="chevron-{{ app()->isLocale('en') ? 'right' : 'left' }}" class="size-5"
-                                            variant="micro" />
+                                        <x-mine.icon name="Angle{{ app()->isLocale('en') ? 'Right' : 'Left' }}" weight="filled" size="20" />
                                     </div>
                                 </x-mine.dropdown.item>
 
                                 <x-mine.dropdown.item>
                                     <div class="w-full py-3 px-3 flex items-center justify-between hover:cursor-pointer">
                                         <div class="flex gap-3 items-center">
-                                            <x-mine.icon name="cog-6-tooth" class="size-5" variant="micro" />
+                                            <x-mine.icon name="Gear" size="20" weight="filled" />
                                             <p @class([
                                                 "pt-1" => app()->isLocale('en'),
                                                 "pt-0.5" => app()->isLocale('fa'),
                                                 "text-sm font-medium"
                                             ])>{{ __('Settings') }}</p>
                                         </div>
-                                        <x-mine.icon name="chevron-{{ app()->isLocale('en') ? 'right' : 'left' }}" class="size-5"
-                                            variant="micro" />
+                                        <x-mine.icon name="Angle{{ app()->isLocale('en') ? 'Right' : 'Left' }}" weight="filled" size="20" />
                                     </div>
                                 </x-mine.dropdown.item>
 
@@ -208,13 +203,12 @@ initials = $event.detail.firstname && $event.detail.lastname
                                                         .catch(() => busy = false);
                                                 ">
                                     <div class="w-full py-3 px-3 mine-text-error flex items-center gap-3 hover:cursor-pointer">
-                                        <x-mine.icon name="arrow-{{ app()->isLocale('en') ? 'right' : 'left' }}-start-on-rectangle"
-                                            class="size-5" variant="micro" />
+                                        <x-mine.icon name="Logout4" weight="filled" size="18" />
                                         <p @class([
                                             "pt-1" => app()->isLocale('en'),
                                             "pt-0.5" => app()->isLocale('fa'),
                                             "text-sm font-medium"
-                                        ])>{{ __('Logout') }}</p>
+                                        ])>{{ __('Log out') }}</p>
                                     </div>
                                 </x-mine.dropdown.item>
                             </x-mine.dropdown.content>
@@ -236,8 +230,7 @@ initials = $event.detail.firstname && $event.detail.lastname
                                 "pt-1" => app()->isLocale('en'),
                                 "pb-0.5" => app()->isLocale('fa')
                             ])>{{ __('Sign in') }}</p>
-                            <x-mine.icon name="arrow-{{ app()->isLocale('en') ? 'right' : 'left' }}-start-on-rectangle"
-                                class="size-5 sm:hidden" variant="micro" />
+                            <x-mine.icon name="Login4" weight="filled" size="18" class="sm:hidden" />
                         </div>
                     </x-mine.button>
                 </a>

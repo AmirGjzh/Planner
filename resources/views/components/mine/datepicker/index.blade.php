@@ -7,6 +7,7 @@
     'position' => 'bottom-start',
     'height' => 'h-11',
     'showIcon' => false,
+    'leftIcon' => null,
 ])
 
 @php
@@ -380,7 +381,15 @@
                 'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-(--mine-input-error-ring)' => $hasError,
             ])
         >
-            @if($showIcon)
+            @if($leftIcon)
+                <x-mine.icon :name="$leftIcon" size="20" weight="filled" @class([
+                    "mr-2" => app()->isLocale('en'),
+                    "ml-2" => app()->isLocale('fa'),
+                    "size-5 shrink-0",
+                    'text-(--mine-input-icon)' => !$hasError,
+                    'text-(--mine-input-error-icon)' => $hasError,
+                ]) />
+            @elseif($showIcon)
                 <x-mine.icon name="calendar" variant="mini" @class([
                     "mr-2" => app()->isLocale('en'),
                     "ml-2" => app()->isLocale('fa'),
@@ -392,7 +401,7 @@
 
             <span
                 x-text="triggerLabel"
-                class="flex-1 text-sm truncate {{ app()->isLocale('fa') ? 'text-right' : 'text-left' }} pt-1 {{ $showIcon ? 'mx-2' : (app()->isLocale('en') ? 'mr-2' : 'ml-2') }}"
+                class="flex-1 text-sm truncate {{ app()->isLocale('fa') ? 'text-right' : 'text-left' }} pt-1 {{ ($leftIcon || $showIcon) ? 'mx-2' : (app()->isLocale('en') ? 'mr-2' : 'ml-2') }}"
                 :class="hasState ? 'mine-text-primary' : 'text-(--mine-input-placeholder)'"
             ></span>
 
@@ -401,7 +410,7 @@
                 "-ml-1" => app()->isLocale('fa'),
                 "shrink-0 transition-transform duration-200"
             ])>
-                <x-mine.icon name="chevron-up-down" variant="micro" @class([
+                <x-mine.icon name="ChevronExpandY" size="16" weight="filled" @class([
                     'text-(--mine-input-icon)' => !$hasError,
                     'text-(--mine-input-error-icon)' => $hasError,
                 ]) />
@@ -425,7 +434,7 @@
                     x-on:click="prevMonth()"
                     class="p-1.5 rounded-lg mine-btn-icon transition-colors duration-200 mine-text-secondary focus-visible:outline-none"
                 >
-                    <x-mine.icon name="chevron-{{ app()->isLocale('en') ? 'left' : 'right' }}" variant="micro" class="size-4" />
+                    <x-mine.icon name="Angle{{ app()->isLocale('en') ? 'Left' : 'Right' }}" weight="filled" size="16" />
                 </button>
 
                 <div class="flex items-center gap-3">
@@ -475,7 +484,7 @@
                     x-on:click="nextMonth()"
                     class="p-1.5 rounded-lg mine-btn-icon transition-colors duration-200 mine-text-secondary focus-visible:outline-none"
                 >
-                    <x-mine.icon name="chevron-{{ app()->isLocale('fa') ? 'left' : 'right' }}" variant="micro" class="size-4" />
+                    <x-mine.icon name="Angle{{ app()->isLocale('fa') ? 'Left' : 'Right' }}" weight="filled" size="16" />
                 </button>
             </div>
 

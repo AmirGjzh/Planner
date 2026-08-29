@@ -104,7 +104,7 @@ it('validates gender, country, and birth date', function () {
             'country',
             'birthday' => ['before_or_equal'],
         ])
-        ->assertSee('Birthdate must be a date before or equal to today.');
+        ->assertSee('Birthdate must be today or earlier');
 });
 
 it('updates all editable profile fields', function () {
@@ -124,7 +124,7 @@ it('updates all editable profile fields', function () {
         ->assertHasNoErrors()
         ->assertDispatched('close-modal', id: 'edit-profile-form')
         ->assertDispatched('toast',
-            title: __('Your profile updated'),
+            title: __('Profile updated'),
             variant: 'info',
         )
         ->assertDispatched('profile-updated',
@@ -132,6 +132,7 @@ it('updates all editable profile fields', function () {
             email: $user->email,
             firstname: 'New',
             lastname: 'Name',
+            initials: 'N'."\u{200C}".'N',
         );
 
     $user->refresh();
@@ -323,7 +324,7 @@ it('deletes the account with correct password and redirects', function () {
     $toast = session('toast');
 
     expect($toast)->toBeArray()
-        ->and($toast['title'])->toBe(__('Your account deleted successfully'))
+        ->and($toast['title'])->toBe(__('Account deleted'))
         ->and($toast['variant'])->toBe('success');
 
     $this->assertSoftDeleted($user);

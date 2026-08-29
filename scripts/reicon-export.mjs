@@ -20,7 +20,27 @@ const ICONS = [
     'EyeOpen',
     'Check',
     'User4',
-    'Xmark'
+    'Xmark',
+    'Home',
+    'Clipboard',
+    'Folder',
+    'Rocket2',
+    'Chart2',
+    'Gear',
+    'Login4',
+    'Logout4',
+    'AngleLeft',
+    'AngleRight',
+    'AngleUp',
+    'AngleDown',
+    'MoreH',
+    'Bullseye',
+    'Trash5',
+    'Calendar',
+    'Male',
+    'Earth',
+    'ChevronExpandY',
+    'Magnifier'
 ];
 
 const store = {};

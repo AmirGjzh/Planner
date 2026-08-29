@@ -84,9 +84,10 @@ new class extends Component
             email: $this->user->email,
             firstname: $this->firstname ?? '',
             lastname: $this->lastname ?? '',
+            initials: $this->user->initials(),
         );
         $this->dispatch('toast',
-            title: __('Your profile updated'),
+            title: __('Profile updated'),
             variant: 'info',
             duration: 3000,
             position: 'bottom-center'
@@ -118,7 +119,7 @@ new class extends Component
         }
         $this->reset('password');
         session()->flash('toast', [
-            'title' => __('Your account deleted successfully'),
+            'title' => __('Account deleted'),
             'variant' => 'success',
             'duration' => 6000,
             'position' => 'bottom-center',
@@ -159,19 +160,19 @@ new class extends Component
     protected function messages(): array
     {
         return [
-            'username.required' => __('Username is required.'),
-            'username.regex' => __('Start with a letter, Use 3 to 30 characters.'),
-            'firstname.min' => __('Firstname must be at least 2 characters.'),
-            'firstname.max' => __('Firstname may not be greater than 50 characters.'),
-            'firstname.regex' => __('Firstname may only contain letters, spaces, hyphens, and apostrophes.'),
-            'lastname.min' => __('Lastname must be at least 2 characters.'),
-            'lastname.max' => __('Lastname may not be greater than 50 characters.'),
-            'lastname.regex' => __('Lastname may only contain letters, spaces, hyphens, and apostrophes.'),
-            'gender.enum' => __('Selected gender is invalid.'),
-            'country.in' => __('Selected country is invalid.'),
-            'birthday.date' => __('Birthdate must be a valid date.'),
-            'birthday.before_or_equal' => __('Birthdate must be a date before or equal to today.'),
-            'password.required' => __('Password is required.'),
+            'username.required' => __('Username is required'),
+            'username.regex' => __('Start with a letter, use 3 to 30 characters'),
+            'firstname.min' => __('First name must be at least 2 characters'),
+            'firstname.max' => __('First name cannot exceed 50 characters'),
+            'firstname.regex' => __('First name can only contain letters, spaces, hyphens and apostrophes'),
+            'lastname.min' => __('Last name must be at least 2 characters'),
+            'lastname.max' => __('Last name cannot exceed 50 characters'),
+            'lastname.regex' => __('Last name can only contain letters, spaces, hyphens and apostrophes'),
+            'gender.enum' => __('Selected gender is invalid'),
+            'country.in' => __('Selected country is invalid'),
+            'birthday.date' => __('Birthdate must be a valid date'),
+            'birthday.before_or_equal' => __('Birthdate must be today or earlier'),
+            'password.required' => __('Password is required'),
         ];
     }
 };

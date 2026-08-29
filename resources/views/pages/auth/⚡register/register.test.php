@@ -170,7 +170,7 @@ it('flashes a success toast after registering', function () {
     $toast = session('toast');
 
     expect($toast)->toBeArray()
-        ->and($toast['title'])->toBe(__('Your account is ready, Sign in to continue.'))
+        ->and($toast['title'])->toBe(__('Your account is ready, sign in to continue'))
         ->and($toast['variant'])->toBe('success');
 });
 

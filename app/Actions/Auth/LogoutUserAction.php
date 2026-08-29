@@ -2,7 +2,6 @@
 
 namespace App\Actions\Auth;
 
-use App\Enums\LogoutResult;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Psr\Log\LoggerInterface;
@@ -13,7 +12,7 @@ final class LogoutUserAction
         private readonly LoggerInterface $logger,
     ) {}
 
-    public function execute(Request $request): LogoutResult
+    public function execute(Request $request): void
     {
         $userId = Auth::id();
         Auth::logout();
@@ -23,7 +22,5 @@ final class LogoutUserAction
             'user_id' => $userId,
             'ip' => $request->ip(),
         ]);
-
-        return LogoutResult::Success;
     }
 }

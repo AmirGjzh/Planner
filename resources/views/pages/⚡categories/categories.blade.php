@@ -177,7 +177,7 @@
 
             @if($add_error === 'rate_limited')
                 <div class="mb-4">
-                    <x-mine.alert variant="warning" title="{{ __('Too many create-category attempts!') }}">{{ __('Try again in a minute.') }}</x-mine.alert>
+                    <x-mine.alert variant="warning" title="{{ __('Too many create-category attempts!') }}">{{ __('Try again in a minute') }}</x-mine.alert>
                 </div>
             @endif
 
@@ -218,7 +218,7 @@
 
             @if($edit_error === 'rate_limited')
                 <div class="mb-4">
-                    <x-mine.alert variant="warning" title="{{ __('Too many edit-category attempts!') }}">{{ __('Try again in a minute.') }}</x-mine.alert>
+                    <x-mine.alert variant="warning" title="{{ __('Too many edit-category attempts!') }}">{{ __('Try again in a minute') }}</x-mine.alert>
                 </div>
             @endif
 

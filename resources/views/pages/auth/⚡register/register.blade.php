@@ -6,17 +6,17 @@
         <form wire:submit="register" class="flex flex-col">
             @if($register_error === 'rate_limited')
                 <div class="mb-4">
-                    <x-mine.alert variant="warning" title="{{ __('Too many attempts') }}">{{ __('Try again in a minute.') }}</x-mine.alert>
+                    <x-mine.alert variant="warning" title="{{ __('Too many attempts') }}">{{ __('Try again in a minute') }}</x-mine.alert>
                 </div>
             @endif
             @if($register_error === 'username_taken')
                 <div class="mb-4">
-                    <x-mine.alert variant="danger" title="{{ __('Username taken') }}">{{ __('Try a different username.') }}</x-mine.alert>
+                    <x-mine.alert variant="danger" title="{{ __('Username taken') }}">{{ __('Try a different username') }}</x-mine.alert>
                 </div>
             @endif
             @if($register_error === 'email_taken')
                 <div class="mb-4">
-                    <x-mine.alert variant="danger" title="{{ __('Email already registered') }}">{{ __('Sign in, or use another email.') }}</x-mine.alert>
+                    <x-mine.alert variant="danger" title="{{ __('Email already registered') }}">{{ __('Sign in, or use another email') }}</x-mine.alert>
                 </div>
             @endif
 

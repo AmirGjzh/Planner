@@ -6,13 +6,13 @@
         <form wire:submit="login" class="flex flex-col">
             @if($login_error === 'rate_limited')
                 <div class="mb-4">
-                    <x-mine.alert variant="warning" title="{{ __('Too many attempts') }}">{{ __('Try again in a minute.') }}</x-mine.alert>
+                    <x-mine.alert variant="warning" title="{{ __('Too many attempts') }}">{{ __('Try again in a minute') }}</x-mine.alert>
                 </div>
             @endif
 
             @if($login_error === 'invalid')
                 <div class="mb-4">
-                    <x-mine.alert variant="danger" title="{{ __('Sign-in failed') }}">{{ __('The email or password you entered is incorrect.') }}</x-mine.alert>
+                    <x-mine.alert variant="danger" title="{{ __('Sign-in failed') }}">{{ __('The email or password you entered is incorrect') }}</x-mine.alert>
                 </div>
             @endif
 

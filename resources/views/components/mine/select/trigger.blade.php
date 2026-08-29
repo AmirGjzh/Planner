@@ -3,6 +3,7 @@
     'disabled' => false,
     'invalid' => false,
     'height' => 'h-11',
+    'leftIcon' => null,
 ])
 
 <div
@@ -31,13 +32,28 @@
     ])
     {{ $attributes }}
 >
-    <span
-        x-text="selectedLabel"
-        :class="hasSelection ? 'mine-text-primary' : 'text-(--mine-input-placeholder)'"
-        class="text-sm truncate pt-1"
-    >
-        {{ $placeholder }}
-    </span>
+    <div class="flex items-center min-w-0">
+        @if($leftIcon)
+            <div @class([
+                'shrink-0',
+                'pr-3' => app()->isLocale('en'),
+                'pl-3' => app()->isLocale('fa'),
+                'flex h-full items-center',
+                'text-(--mine-input-icon)' => !$invalid,
+                'text-(--mine-input-error-icon)' => $invalid,
+            ])>
+                <x-mine.icon :name="$leftIcon" size="20" weight="filled" />
+            </div>
+        @endif
+
+        <span
+            x-text="selectedLabel"
+            :class="hasSelection ? 'mine-text-primary' : 'text-(--mine-input-placeholder)'"
+            class="text-sm truncate pt-1"
+        >
+            {{ $placeholder }}
+        </span>
+    </div>
 
     <div :class="isOpen ? 'rotate-180' : ''"
         @class([
@@ -47,8 +63,9 @@
         ])
     >
         <x-mine.icon
-            name="chevron-up-down"
-            variant="micro"
+            name="ChevronExpandY"
+            weight="filled"
+            size="16"
             @class([
                 'text-(--mine-input-icon)' => !$invalid,
                 'text-(--mine-input-error-icon)' => $invalid,

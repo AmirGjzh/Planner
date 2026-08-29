@@ -14,7 +14,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/logout', function (LogoutUserAction $logoutUserAction, Request $request) {
         $logoutUserAction->execute($request);
         session()->flash('toast', [
-            'title' => __('You logged out successfully'),
+            'title' => __('Logged out successfully'),
             'variant' => 'success',
             'duration' => 6000,
             'position' => 'bottom-center',

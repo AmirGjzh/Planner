@@ -44,7 +44,7 @@
             "size-4 shrink-0 transition-all duration-200"
         ])
     >
-        <x-mine.icon name="check" variant="micro" class="size-4" />
+        <x-mine.icon name="Check" size="16" weight="filled" />
     </div>
 
     <span class="pt-1">
