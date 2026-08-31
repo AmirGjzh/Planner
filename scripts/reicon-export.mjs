@@ -31,6 +31,8 @@ const ICONS = [
     'Logout4',
     'AngleLeft',
     'AngleRight',
+    'AnglesLeft2',
+    'AnglesRight2',
     'AngleUp',
     'AngleDown',
     'MoreH',
@@ -40,7 +42,12 @@ const ICONS = [
     'Male',
     'Earth',
     'ChevronExpandY',
-    'Magnifier'
+    'Magnifier',
+    'Plus',
+    'ArrowUp',
+    'ArrowDown',
+    'ArrowRight',
+    'ArrowLeft'
 ];
 
 const store = {};

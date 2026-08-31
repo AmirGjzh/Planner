@@ -6,7 +6,7 @@
     <div class="flex items-center justify-between gap-2 sm:gap-4 mb-6">
         <div class="w-full">
             <x-mine.input wire:model.live.debounce.200ms="search" placeholder="{{ __('Search categories...') }}"
-                leftIcon="magnifying-glass" />
+                leftIcon="Magnifier" />
         </div>
         <x-mine.modal.trigger id="add-category-form">
             <x-mine.button type="button" @class([
@@ -15,10 +15,9 @@
                 "mine-btn-primary px-3.5! sm:px-3!"
             ])>
                 <div class="flex justify-center items-center gap-2">
-                    <x-mine.icon name="plus" @class([
+                    <x-mine.icon name="Plus" @class([
                         "mb-1" => app()->isLocale('en'),
-                        "size-4"
-                    ]) variant="micro" />
+                    ]) size="16" weight="filled" />
                     <p class="text-sm font-medium hidden sm:inline"><span class="hidden sm:inline md:hidden">{{ __('New') }}</span><span class="hidden md:inline">{{ __('New category') }}</span></p>
                 </div>
             </x-mine.button>
@@ -30,16 +29,16 @@
                     "sm:pr-3!" => app()->isLocale('fa'),
                     "w-full mine-btn-primary flex items-center h-11 px-5 sm:px-4 rounded-xl cursor-pointer select-none"
                 ])>
-                    <x-mine.icon name="arrow-long-up" @class([
+                    <x-mine.icon name="ArrowUp" @class([
                         "-mr-1 -ml-2.5 sm:ml-0" => app()->isLocale('en'),
                         "-ml-1 -mr-2.5 sm:mr-0" => app()->isLocale('fa'),
-                        "inline size-4"
-                    ]) variant="micro" />
-                    <x-mine.icon name="arrow-long-down" @class([
+                        "inline"
+                    ]) size="16" weight="filled" />
+                    <x-mine.icon name="ArrowDown" @class([
                         "-ml-1 -mr-2.5 sm:mr-0" => app()->isLocale('en'),
                         "-mr-1 -ml-2.5 sm:ml-0" => app()->isLocale('fa'),
-                        "inline size-4"
-                    ]) variant="micro" />
+                        "inline"
+                    ]) size="16" weight="filled" />
                     <p @class([
                         "sm:pl-1 pt-1" => app()->isLocale('en'),
                         "sm:pr-1" => app()->isLocale('fa'),
@@ -85,7 +84,7 @@
                     <div class="flex justify-between items-start mb-3">
                         <div class="flex gap-4 min-w-0">
                             <div class="rounded-xl size-16 shrink-0 mine-badge-primary flex justify-center items-center">
-                                <x-mine.icon name="folder" class="size-8" variant="mini" />
+                                <x-mine.icon name="Folder" weight="filled" size="32" />
                             </div>
                             <div class="flex flex-col justify-between py-1 min-w-0">
                                 <h2 @class([
@@ -98,7 +97,7 @@
                         <x-mine.dropdown group="category-actions">
                             <x-mine.dropdown.trigger>
                                 <div class="mine-btn-icon p-2 rounded-xl">
-                                    <x-mine.icon name="ellipsis-horizontal" class="size-5" variant="mini" />
+                                    <x-mine.icon name="MoreH" size="18" weight="filled" />
                                 </div>
                             </x-mine.dropdown.trigger>
                             <x-mine.dropdown.content placement="bottom-{{ app()->isLocale('en') ? 'end' : 'start' }}">
@@ -135,19 +134,19 @@
                                 "pt-1" => app()->isLocale('en'),
                                 "text-[13px] font-semibold"
                             ])>{{ __('View tasks') }}</p>
-                            <x-mine.icon name="arrow-long-{{ app()->isLocale('en') ? 'right' : 'left' }}" variant="micro" class="size-4 mt-0.5" />
+                            <x-mine.icon name="Arrow{{ app()->isLocale('en') ? 'Right' : 'Left' }}" weight="filled" size="18" class="mt-0.5" />
                         </a>
                     </div>
                 </div>
                 @empty
                     @if($this->search)
                         <div class="col-span-full text-center py-12">
-                            <x-mine.icon name="magnifying-glass" class="size-10 mx-auto mb-3 mine-text-secondary" variant="mini" />
+                            <x-mine.icon name="Magnifier" size="40" weight="filled" class="mx-auto mb-3 mine-text-secondary" />
                             <p class="mine-text-secondary text-sm font-medium">{{ __('No categories found') }}</p>
                         </div>
                     @else
                         <div class="col-span-full text-center py-12">
-                            <x-mine.icon name="folder" class="size-10 mx-auto mb-3 mine-text-secondary" variant="mini" />
+                            <x-mine.icon name="Folder" size="40" weight="filled" class="mx-auto mb-3 mine-text-secondary" />
                             <p class="mine-text-secondary text-sm font-medium">{{ __('No categories yet') }}</p>
                         </div>
                     @endif
@@ -165,25 +164,25 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-base font-semibold mine-text-primary">{{ __('Add new category') }}</h2>
                 <button type="button" @click="close(); $wire.cancelAdd()" class="mine-btn-icon p-2 rounded-xl">
-                    <x-mine.icon name="x-mark" variant="micro" />
+                    <x-mine.icon name="Xmark" weight="filled" size="16" />
                 </button>
             </div>
 
             @if($add_error === 'already_exists')
                 <div class="mb-4">
-                    <x-mine.alert variant="danger" title="{{ __('Duplicate category!') }}">{{ __('A category with this name already exists.') }}</x-mine.alert>
+                    <x-mine.alert variant="danger" title="{{ __('Duplicate category') }}">{{ __('You have a category with this name') }}</x-mine.alert>
                 </div>
             @endif
 
             @if($add_error === 'rate_limited')
                 <div class="mb-4">
-                    <x-mine.alert variant="warning" title="{{ __('Too many create-category attempts!') }}">{{ __('Try again in a minute') }}</x-mine.alert>
+                    <x-mine.alert variant="warning" title="{{ __('Too many attempts') }}">{{ __('Try again in a minute') }}</x-mine.alert>
                 </div>
             @endif
 
             <form class="flex flex-col gap-4" wire:submit="addCategory">
                 <div>
-                    <x-mine.input label="{{ __('Category name') }}" wire:model="add_category" placeholder="{{ __('Enter category name') }}" />
+                    <x-mine.input label="{{ __('Category name') }}" wire:model="add_category" placeholder="{{ __('Your category name') }}" leftIcon="Folder" />
                 </div>
                 <div class="flex gap-4 justify-end mt-4">
                     <x-mine.button type="button" @click="close(); $wire.cancelAdd()" class="mine-btn-ghost">
@@ -206,25 +205,25 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-base font-semibold mine-text-primary">{{ __('Edit category') }}</h2>
                 <button type="button" @click="close(); $wire.cancelEdit()" class="mine-btn-icon p-2 rounded-xl">
-                    <x-mine.icon name="x-mark" variant="micro" />
+                    <x-mine.icon name="Xmark" weight="filled" size="16" />
                 </button>
             </div>
 
             @if($edit_error === 'already_exists')
                 <div class="mb-4">
-                    <x-mine.alert variant="danger" title="{{ __('Duplicate category!') }}">{{ __('A category with this name already exists.') }}</x-mine.alert>
+                    <x-mine.alert variant="danger" title="{{ __('Duplicate category') }}">{{ __('You have a category with this name') }}</x-mine.alert>
                 </div>
             @endif
 
             @if($edit_error === 'rate_limited')
                 <div class="mb-4">
-                    <x-mine.alert variant="warning" title="{{ __('Too many edit-category attempts!') }}">{{ __('Try again in a minute') }}</x-mine.alert>
+                    <x-mine.alert variant="warning" title="{{ __('Too many attempts') }}">{{ __('Try again in a minute') }}</x-mine.alert>
                 </div>
             @endif
 
             <form class="flex flex-col gap-4" wire:submit="editCategory">
                 <div>
-                    <x-mine.input label="{{ __('Category name') }}" wire:model="edit_name" placeholder="{{ __('Enter category name') }}" />
+                    <x-mine.input label="{{ __('Category name') }}" wire:model="edit_name" placeholder="{{ __('Your category name') }}" leftIcon="Folder" />
                 </div>
                 <div class="flex gap-4 justify-end mt-4">
                     <x-mine.button type="button" @click="close(); $wire.cancelEdit()" class="mine-btn-ghost">
@@ -248,17 +247,17 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-base font-semibold mine-text-primary">{{ __('Delete category') }}</h2>
                 <button type="button" @click="close(); $wire.cancelDelete()" class="mine-btn-icon p-2 rounded-xl">
-                    <x-mine.icon name="x-mark" variant="micro" />
+                    <x-mine.icon name="Xmark" weight="filled" size="16" />
                 </button>
             </div>
 
             @if($delete_error === 'has_tasks')
                 <div class="mb-4">
-                    <x-mine.alert variant="danger" title="{{ __('Cannot delete category!') }}">{{ __('This category has tasks, reassign or delete them first.') }}</x-mine.alert>
+                    <x-mine.alert variant="danger" title="{{ __('Cannot delete category') }}">{{ __('This category has tasks, reassign or delete them first') }}</x-mine.alert>
                 </div>
             @else
                 <div class="mb-4">
-                    <x-mine.alert variant="warning" title="{{ __('Are you sure?') }}">{{ __('This action cannot be undone.') }}</x-mine.alert>
+                    <x-mine.alert variant="warning" title="{{ __('Are you sure?') }}">{{ __('This action cannot be undone') }}</x-mine.alert>
                 </div>
             @endif
 

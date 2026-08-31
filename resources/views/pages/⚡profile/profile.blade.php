@@ -100,8 +100,8 @@
                     <x-mine.input label="{{ __('Username') }}" wire:model="username" placeholder="{{ __('Your username') }}" leftIcon="User4" />
                 </div>
                 <div class="flex flex-col sm:flex-row gap-4">
-                    <x-mine.input label="{{ __('Firstname') }}" wire:model="firstname" placeholder="{{ __('Your first name') }}" leftIcon="User4" />
-                    <x-mine.input label="{{ __('Lastname') }}" wire:model="lastname" placeholder="{{  __('Your last name')  }}" leftIcon="User4" />
+                    <x-mine.input label="{{ __('Firstname') }}" wire:model="firstname" placeholder="{{ __('Your firstname') }}" leftIcon="User4" />
+                    <x-mine.input label="{{ __('Lastname') }}" wire:model="lastname" placeholder="{{  __('Your lastname')  }}" leftIcon="User4" />
                 </div>
                 <div class="flex flex-col sm:flex-row gap-4">
                     <x-mine.select wire:model="gender" label="{{ __('Gender') }}" placeholder="{{ __('Select your gender') }}" leftIcon="Male">

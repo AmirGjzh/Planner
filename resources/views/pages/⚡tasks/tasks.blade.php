@@ -649,7 +649,7 @@
             </div>
 
             <div class="mb-4">
-                <x-mine.alert variant="warning" title="{{ __('Are you sure?') }}">{{ __('This action cannot be undone.') }}</x-mine.alert>
+                <x-mine.alert variant="warning" title="{{ __('Are you sure?') }}">{{ __('This action cannot be undone') }}</x-mine.alert>
             </div>
 
             <form class="flex flex-col gap-4" wire:submit="deleteTask">

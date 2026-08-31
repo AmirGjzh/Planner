@@ -367,7 +367,7 @@
             data-datepicker-trigger
             :data-open="open"
             @class([
-                'flex items-center justify-between w-full px-4 rounded-xl border-2 transition-all duration-200 ease-out cursor-pointer',
+                'group flex items-center justify-between w-full px-4 rounded-xl border-2 transition-all duration-200 ease-out cursor-pointer',
                 $height => true,
                 'bg-(--mine-input-bg)' => !$hasError,
                 'bg-(--mine-input-error-bg)' => $hasError,
@@ -388,6 +388,8 @@
                     "size-5 shrink-0",
                     'text-(--mine-input-icon)' => !$hasError,
                     'text-(--mine-input-error-icon)' => $hasError,
+                    'group-data-open:text-(--mine-input-border-focus)' => !$hasError,
+                    'group-data-open:text-(--mine-input-error-border)' => $hasError,
                 ]) />
             @elseif($showIcon)
                 <x-mine.icon name="calendar" variant="mini" @class([
@@ -396,6 +398,8 @@
                     "size-5 shrink-0",
                     'text-(--mine-input-icon)' => !$hasError,
                     'text-(--mine-input-error-icon)' => $hasError,
+                    'group-data-open:text-(--mine-input-border-focus)' => !$hasError,
+                    'group-data-open:text-(--mine-input-error-border)' => $hasError,
                 ]) />
             @endif
 

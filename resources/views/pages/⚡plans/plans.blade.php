@@ -521,7 +521,7 @@
                 </div>
             @else
                 <div class="mb-4">
-                    <x-mine.alert variant="warning" title="{{ __('Are you sure?') }}">{{ __('This action cannot be undone.') }}</x-mine.alert>
+                    <x-mine.alert variant="warning" title="{{ __('Are you sure?') }}">{{ __('This action cannot be undone') }}</x-mine.alert>
                 </div>
             @endif
 

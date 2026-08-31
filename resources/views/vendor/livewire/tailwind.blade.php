@@ -58,7 +58,7 @@ if (count($elements) === 1 && is_array($elements[0])) {
                         "pl-4 pr-3" => app()->isLocale('fa'),
                         "text-[13px] font-medium mine-pagination-item py-2 text-(--mine-pagination-text-disabled) opacity-70 cursor-default flex gap-1 items-center"
                     ])>
-                        <x-mine.icon name="chevron-double-{{ app()->isLocale('en') ? 'left' : 'right' }}" variant="micro" class="size-4" />
+                        <x-mine.icon name="Angles{{ app()->isLocale('en') ? 'Left' : 'Right' }}2" size="16" weight="filled" />
                         <p @class(["pt-1" => app()->isLocale('en'), "pt-0.5" => app()->isLocale('fa')])>
                             {{ __('Previous') }}
                         </p>
@@ -69,7 +69,7 @@ if (count($elements) === 1 && is_array($elements[0])) {
                         "pl-4 pr-3" => app()->isLocale('fa'),
                         "text-[13px] font-medium mine-pagination-item py-2 flex gap-1 items-center cursor-pointer"
                     ])>
-                        <x-mine.icon name="chevron-double-{{ app()->isLocale('en') ? 'left' : 'right' }}" variant="micro" class="size-4" />
+                        <x-mine.icon name="Angles{{ app()->isLocale('en') ? 'Left' : 'Right' }}2" size="16" weight="filled" />
                         <p @class(["pt-1" => app()->isLocale('en'), "pt-0.5" => app()->isLocale('fa')])>
                             {{ __('Previous') }}
                         </p>
@@ -85,7 +85,7 @@ if (count($elements) === 1 && is_array($elements[0])) {
                         <p @class(["pt-1" => app()->isLocale('en'), "pt-0.5" => app()->isLocale('fa')])>
                             {{ __('Next') }}
                         </p>
-                        <x-mine.icon name="chevron-double-{{ app()->isLocale('fa') ? 'left' : 'right' }}" variant="micro" class="size-4" />
+                        <x-mine.icon name="Angles{{ app()->isLocale('fa') ? 'Left' : 'Right' }}2" size="16" weight="filled" />
                     </button>
                 @else
                     <span @class([
@@ -96,7 +96,7 @@ if (count($elements) === 1 && is_array($elements[0])) {
                         <p @class(["pt-1" => app()->isLocale('en'), "pt-0.5" => app()->isLocale('fa')])>
                             {{ __('Next') }}
                         </p>
-                        <x-mine.icon name="chevron-double-{{ app()->isLocale('fa') ? 'left' : 'right' }}" variant="micro" class="size-4" />
+                        <x-mine.icon name="Angles{{ app()->isLocale('fa') ? 'Left' : 'Right' }}2" size="16" weight="filled" />
                     </span>
                 @endif
             </div>
@@ -123,12 +123,12 @@ if (count($elements) === 1 && is_array($elements[0])) {
                     @if ($paginator->onFirstPage())
                         <span aria-disabled="true">
                             <span class="mine-pagination-item size-10 !p-0 inline-flex items-center justify-center text-(--mine-pagination-text-disabled) opacity-70 cursor-default" aria-hidden="true">
-                                <x-mine.icon name="chevron-{{ app()->isLocale('en') ? 'left' : 'right' }}" class="size-4" variant="micro" />
+                                <x-mine.icon name="Angle{{ app()->isLocale('en') ? 'Left' : 'Right' }}" size="18" weight="filled" />
                             </span>
                         </span>
                     @else
                         <button type="button" wire:click="previousPage('{{ $paginator->getPageName() }}')" x-on:click="{{ $scrollIntoViewJsSnippet }}" dusk="previousPage{{ $paginator->getPageName() == 'page' ? '' : '.' . $paginator->getPageName() }}.after" class="mine-pagination-item size-10 !p-0 inline-flex items-center justify-center cursor-pointer">
-                            <x-mine.icon name="chevron-{{ app()->isLocale('en') ? 'left' : 'right' }}" class="size-4" variant="micro" />
+                            <x-mine.icon name="Angle{{ app()->isLocale('en') ? 'Left' : 'Right' }}" size="18" weight="filled" />
                         </button>
                     @endif
 
@@ -176,12 +176,12 @@ if (count($elements) === 1 && is_array($elements[0])) {
                     {{-- Next Page Link --}}
                     @if ($paginator->hasMorePages())
                         <button type="button" wire:click="nextPage('{{ $paginator->getPageName() }}')" x-on:click="{{ $scrollIntoViewJsSnippet }}" dusk="nextPage{{ $paginator->getPageName() == 'page' ? '' : '.' . $paginator->getPageName() }}.after" class="mine-pagination-item size-10 !p-0 inline-flex items-center justify-center cursor-pointer">
-                            <x-mine.icon name="chevron-{{ app()->isLocale('fa') ? 'left' : 'right' }}" class="size-4" variant="micro" />
+                            <x-mine.icon name="Angle{{ app()->isLocale('fa') ? 'Left' : 'Right' }}" size="18" weight="filled" />
                         </button>
                     @else
                         <span aria-disabled="true">
                             <span class="mine-pagination-item size-10 !p-0 inline-flex items-center justify-center text-(--mine-pagination-text-disabled) opacity-70 cursor-default" aria-hidden="true">
-                                <x-mine.icon name="chevron-{{ app()->isLocale('fa') ? 'left' : 'right' }}" class="size-4" variant="micro" />
+                                <x-mine.icon name="Angle{{ app()->isLocale('fa') ? 'Left' : 'Right' }}" size="18" weight="filled" />
                             </span>
                         </span>
                     @endif

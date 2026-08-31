@@ -255,6 +255,57 @@ Goal: *Allow an authenticated user to end their session and return to the homepa
 
 ---
 
+## Section: UC-06 — Manage Categories
+
+> **Report pass** (audit only). Two minor candidates for a fix decision — see below.
+
+Goal: *Allow an authenticated user to create, read, update, delete categories, and enforce restrict-on-delete when a category still has tasks.*
+
+### Current Implementation
+
+`/categories` (auth-only → `pages::categories`) lists the user's categories in a paginated (6/page), searchable, sortable grid inside a Livewire island (`category-content`), each card showing a task count and a "View tasks" link that preselects a category filter. CRUD lives in three separated actions — `CreateCategoryAction`, `EditCategoryAction`, `DeleteCategoryAction` — each returning a multi-state `Create/Edit/DeleteCategoryResult` enum that the page maps to localized alerts + toasts. Ownership is enforced by `CategoryPolicy` (`update`/`delete` → `user->id === category->user_id`) inside each action, and `findOrFail` is scoped within `$this->user->categories()` in the page. Create/Edit rate-limit with `create-category`/`edit-category:{user_id}|{ip}` (5/min, `clear()` on success). Delete prevents when the category has tasks (`HasTasks`) and hard-deletes otherwise.
+
+### Critical
+
+- **None.**
+
+### 🟢 Good (already correct)
+
+- **Per-user uniqueness enforced structurally** — composite unique index `(user_id, name)` at the DB level, so the same category name is independently available to each user while unique per user.
+- **Restrict-on-delete enforced at the DB and app layers** — `tasks.category_id` FK is `on_delete: restrict` (hard guarantee), plus the friendly `HasTasks` pre-check + policy `delete` guard.
+- **Ownership / defense in depth** — policy gates inside actions + `findOrFail` scoped to the owner in the page; a foreign user's category can't be edited/deleted (both action tests cover this).
+- **Rate limit keys** — `create-category` / `edit-category:{user_id}|{ip}` match the recorded `app/Actions` rule. Delete is deliberately not rate-limited (ownership + restrict guard make it low-risk).
+- **Multi-state result enums are meaningful and consumed** (unlike the removed UC-05 single-case enum) — justified abstraction.
+- **No N+1 / sane queries** — `withCount('tasks')` in one query; `orderByDesc('tasks_count')` uses the counted column; search `like %term%`; `updatingSearch()` resets the page; computed `categories()` cache invalidated via `unset($this->categories)` after each mutation.
+- **Localization** — `PersianNumber::convert`, `Str::plural`, `__()` labels, RTL class switches, locale-aware dropdown placements and arrows.
+- **Tests** — thorough co-located page tests (render, empty state, create/edit/delete, duplicate + required/max validation, search, all three sorts, pagination, toasts/close-modal, cancel resets, island presence, View-tasks filter link) + action tests (success, per-user duplicate split, ownership, rate limit + retry, logging) + access tests (guest redirect, auth render).
+
+### ✅ Resolved (in this pass)
+
+- **2. Redundant name normalization** — removed the duplicate `Str::ucfirst(Str::lower())` calls in `addCategory`/`editCategory` (`categories.php`); the `CreateCategoryAction`/`EditCategoryAction` remain the single source of truth for normalization.
+- **New: search is now case-insensitive** — `whereRaw('LOWER(name) LIKE ?', [Str::lower('%'.$term.'%')])` so "cat" matches "CAt" (collation-independent, not relying on the DB being case-insensitive). Added a case-insensitive search test.
+
+### 🔸 Deferred / By Decision
+
+- **1. Uncaught unique-violation race on create/edit** — left as-is (option A). The `exists()` pre-check + rate limit + modal UX make the TOCTOU window negligible; the DB composite unique index still prevents duplicates structurally. Noted as a known convention divergence from register/profile.
+
+### ⚪ Missing / Out of Scope
+
+- Hard delete for categories is intentional (not soft-delete) — tasks prevent deletion while linked.
+- Icons (`Plus`/`Xmark`/`Folder`/`MoreH`/`ArrowUp/Down`/`Magnifier`) out of scope per standing decision.
+
+### Overall Status
+
+```text
+🟢 Good — no critical; fixed redundant normalization + added case-insensitive search; deferred the negligible create/edit race.
+```
+
+### ⚠️ Related note (out of UC-06 scope)
+
+While running the full suite, a **pre-existing date-bound Dashboard test** failed (`dashboard.test.php` "shows the current week with today marked") because today is Monday (Aug 31, 2026) and the test asserts a hardcoded `Carbon::SUNDAY`-derived weekday that doesn't match the dashboard's actual week start on this weekday. Unrelated to UC-06 — revisit in the UC-09 (Dashboard) audit.
+
+---
+
 ## Audit Progress
 
 | Section | Audit | Fixes |
@@ -265,7 +316,7 @@ Goal: *Allow an authenticated user to end their session and return to the homepa
 | UC-03 Profile | ✅ done | ✅ done (deferred items by decision) |
 | UC-04 Delete Account | ✅ done (report pass) | ✅ no changes needed |
 | UC-05 Logout | ✅ done | ✅ done |
-| UC-06 Categories | ⬜ | ⬜ |
+| UC-06 Categories | ✅ done | ✅ done (deferred: create/edit race) |
 | UC-07 Plans | ⬜ | ⬜ |
 | UC-08 Tasks | ⬜ | ⬜ |
 | UC-09 Daily Workload | ⬜ | ⬜ |

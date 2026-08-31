@@ -70,7 +70,7 @@
             :class="isSelected(@js($value)) ? 'bg-(--mine-checkbox-bg) border-(--mine-checkbox-bg) text-(--mine-checkbox-text)' : 'border-(--mine-input-border) text-transparent'"
             aria-hidden="true"
         >
-            <x-mine.icon name="check" variant="micro" class=" size-4 transition-all duration-200 ease-out" />
+            <x-mine.icon name="Check" weight="filled" size="12" class="transition-all duration-200 ease-out" />
         </span>
     </div>
     @endif

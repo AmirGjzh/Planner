@@ -168,6 +168,18 @@ it('filters categories by search term', function () {
         ->assertDontSee('Personal');
 });
 
+it('filters categories case-insensitively', function () {
+    $user = User::factory()->create();
+    $user->categories()->create(['name' => 'Work']);
+    $user->categories()->create(['name' => 'Personal']);
+
+    Livewire::actingAs($user)
+        ->test('pages::categories')
+        ->set('search', 'wor')
+        ->assertSee('Work')
+        ->assertDontSee('Personal');
+});
+
 it('shows no results message when search matches nothing', function () {
     $user = User::factory()->create();
     $user->categories()->create(['name' => 'Work']);
@@ -206,7 +218,7 @@ it('shows success message after creating a category', function () {
         ->test('pages::categories')
         ->set('add_category', 'Work')->call('addCategory')
         ->assertDispatched('close-modal', id: 'add-category-form')
-        ->assertDispatched('toast', title: __('Your category created successfully'), variant: 'success');
+        ->assertDispatched('toast', title: __('Your category created'), variant: 'success');
 });
 
 it('shows success message after editing a category', function () {
@@ -279,7 +291,7 @@ it('dispatches close-modal and toast after creating a category', function () {
         ->set('add_category', 'Work')->call('addCategory')
         ->assertDispatched('close-modal', id: 'add-category-form')
         ->assertDispatched('toast',
-            title: __('Your category created successfully'),
+            title: __('Your category created'),
             variant: 'success',
         );
 });

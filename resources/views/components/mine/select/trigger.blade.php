@@ -16,7 +16,7 @@
     role="button"
     aria-disabled="@if($disabled) true @endif"
     @class([
-        'flex items-center justify-between w-full px-4 rounded-xl border-2 transition-all duration-200 ease-out cursor-pointer focus-visible:outline-none',
+        'group flex items-center justify-between w-full px-4 rounded-xl border-2 transition-all duration-200 ease-out cursor-pointer focus-visible:outline-none',
         $height => true,
         'bg-(--mine-input-bg)' => !$invalid,
         'bg-(--mine-input-error-bg)' => $invalid,
@@ -41,6 +41,8 @@
                 'flex h-full items-center',
                 'text-(--mine-input-icon)' => !$invalid,
                 'text-(--mine-input-error-icon)' => $invalid,
+                'group-data-open:text-(--mine-input-border-focus)' => !$invalid,
+                'group-data-open:text-(--mine-input-error-border)' => $invalid,
             ])>
                 <x-mine.icon :name="$leftIcon" size="20" weight="filled" />
             </div>

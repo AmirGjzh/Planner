@@ -44,7 +44,7 @@ new class extends Component
         return Category::query()
             ->select(['id', 'name', 'user_id', 'created_at'])
             ->where('user_id', auth()->id())
-            ->when($this->search, fn ($q) => $q->where('name', 'like', '%'.$this->search.'%'))
+            ->when($this->search, fn ($q) => $q->whereRaw('LOWER(name) LIKE ?', [Str::lower('%'.$this->search.'%')]))
             ->withCount('tasks')
             ->when($this->sort === 'name', fn ($q) => $q->orderBy('name'))
             ->when($this->sort === 'tasks', fn ($q) => $q->orderByDesc('tasks_count'))
@@ -63,9 +63,7 @@ new class extends Component
             'add_category' => $this->rules()['add_category'],
         ]);
 
-        $name = Str::ucfirst(Str::lower($this->add_category));
-
-        $result = $action->execute($this->user, $name, request());
+        $result = $action->execute($this->user, $this->add_category, request());
 
         $this->add_error = match ($result) {
             CreateCategoryResult::AlreadyExists => 'already_exists',
@@ -83,7 +81,7 @@ new class extends Component
             id: 'add-category-form'
         );
         $this->dispatch('toast',
-            title: __('Your category created successfully'),
+            title: __('Your category created'),
             variant: 'success',
             duration: 3000,
             position: 'bottom-center'
@@ -103,10 +101,8 @@ new class extends Component
             'edit_name' => $this->rules()['edit_name'],
         ]);
 
-        $name = Str::ucfirst(Str::lower($this->edit_name));
-
         $category = $this->user->categories()->findOrFail($this->editing_id);
-        $result = $action->execute($this->user, $category, $name, request());
+        $result = $action->execute($this->user, $category, $this->edit_name, request());
 
         $this->edit_error = match ($result) {
             EditCategoryResult::AlreadyExists => 'already_exists',
@@ -181,10 +177,10 @@ new class extends Component
     protected function messages(): array
     {
         return [
-            'add_category.required' => __('Category name is required.'),
-            'add_category.max' => __('Category name must not exceed 255 characters.'),
-            'edit_name.required' => __('Category name is required.'),
-            'edit_name.max' => __('Category name must not exceed 255 characters.'),
+            'add_category.required' => __('Category name is required'),
+            'add_category.max' => __('Category name cannot exceed 255 characters'),
+            'edit_name.required' => __('Category name is required'),
+            'edit_name.max' => __('Category name cannot exceed 255 characters'),
         ];
     }
 };
