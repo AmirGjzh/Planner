@@ -165,7 +165,7 @@ new class extends Component
             id: 'add-plan-form'
         );
         $this->dispatch('toast',
-            title: __('Your plan created successfully'),
+            title: __('Your plan created'),
             variant: 'success',
             duration: 3000,
             position: 'bottom-center'
@@ -302,7 +302,7 @@ new class extends Component
         unset($this->plans);
         $this->dispatch('close-modal', id: 'reopen-plan-confirmation');
         $this->dispatch('toast',
-            title: __('Your plan reopened'),
+            title: __('Your plan reactivated'),
             variant: 'info',
             duration: 3000,
             position: 'bottom-center'
@@ -334,20 +334,20 @@ new class extends Component
     protected function messages(): array
     {
         return [
-            'add_name.required' => __('Plan name is required.'),
-            'add_name.max' => __('Plan name must not exceed 255 characters.'),
-            'add_description.max' => __('Plan description must not exceed 5000 characters.'),
-            'add_range.required' => __('Date range is required.'),
-            'add_range.start.required' => __('Start date is required.'),
-            'add_range.end.required' => __('End date is required.'),
-            'add_range.end.after' => __('End date must be after the start date.'),
-            'edit_name.required' => __('Plan name is required.'),
-            'edit_name.max' => __('Plan name must not exceed 255 characters.'),
-            'edit_description.max' => __('Plan description must not exceed 5000 characters.'),
-            'edit_range.required' => __('Date range is required.'),
-            'edit_range.start.required' => __('Start date is required.'),
-            'edit_range.end.required' => __('End date is required.'),
-            'edit_range.end.after' => __('End date must be after the start date.'),
+            'add_name.required' => __('Plan name is required'),
+            'add_name.max' => __('Plan name cannot exceed 255 characters'),
+            'add_description.max' => __('Plan description cannot exceed 5000 characters'),
+            'add_range.required' => __('Plan range is required'),
+            'add_range.start.required' => __('Start date is required'),
+            'add_range.end.required' => __('End date is required'),
+            'add_range.end.after' => __('End date must be after the start date'),
+            'edit_name.required' => __('Plan name is required'),
+            'edit_name.max' => __('Plan name cannot exceed 255 characters'),
+            'edit_description.max' => __('Plan description cannot exceed 5000 characters'),
+            'edit_range.required' => __('Plan range is required'),
+            'edit_range.start.required' => __('Start date is required'),
+            'edit_range.end.required' => __('End date is required'),
+            'edit_range.end.after' => __('End date must be after the start date'),
         ];
     }
 };

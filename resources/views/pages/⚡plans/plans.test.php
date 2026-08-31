@@ -70,7 +70,7 @@ it('creates a new plan', function () {
         ->call('addPlan')
         ->assertHasNoErrors()
         ->assertDispatched('close-modal', id: 'add-plan-form')
-        ->assertDispatched('toast', title: __('Your plan created successfully'), variant: 'success');
+        ->assertDispatched('toast', title: __('Your plan created'), variant: 'success');
 
     expect($user->plans()->where('name', 'Work')->exists())->toBeTrue();
 });
@@ -110,7 +110,7 @@ it('validates plan name max length', function () {
         ->assertHasErrors('add_name');
 });
 
-it('validates date range is required', function () {
+it('validates Calendar is required', function () {
     $user = User::factory()->create();
 
     Livewire::actingAs($user)
@@ -326,7 +326,7 @@ it('reopens a completed plan', function () {
         ->set('reopening_id', $plan->id)
         ->call('reopenPlan')
         ->assertDispatched('close-modal', id: 'reopen-plan-confirmation')
-        ->assertDispatched('toast', title: __('Your plan reopened'), variant: 'info');
+        ->assertDispatched('toast', title: __('Your plan reactivated'), variant: 'info');
 
     expect($plan->fresh()->done)->toBeFalse();
 });
@@ -423,7 +423,7 @@ it('renders the filter dropdown options', function () {
 
     Livewire::actingAs($user)
         ->test('pages::plans')
-        ->assertSee('Filter plan')
+        ->assertSee('Filter')
         ->assertSee('All')
         ->assertSee('Active')
         ->assertSee('Completed')
@@ -513,7 +513,7 @@ it('renders plan card dates in jalali when locale is fa', function () {
         ->assertDontSee('01 Jan , 2026');
 });
 
-it('defaults the date range filter to the current jalali month when locale is fa', function () {
+it('defaults the Calendar filter to the current jalali month when locale is fa', function () {
     $this->travelTo(Carbon::parse('2026-01-01 12:00'));
     $user = User::factory()->create();
     app()->setLocale('fa');
@@ -523,7 +523,7 @@ it('defaults the date range filter to the current jalali month when locale is fa
         ->assertSet('range_filter', ['start' => '2025-12-22', 'end' => '2026-01-20']);
 });
 
-it('defaults the date range filter to the current gregorian month when locale is en', function () {
+it('defaults the Calendar filter to the current gregorian month when locale is en', function () {
     $this->travelTo(Carbon::parse('2026-01-01 12:00'));
     $user = User::factory()->create();
 

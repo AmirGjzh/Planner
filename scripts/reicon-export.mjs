@@ -51,7 +51,9 @@ const ICONS = [
     'Filter',
     'Clock',
     'ArrowRotate',
-    'Text'
+    'PenWriting',
+    'Trophy',
+    'Siren2'
 ];
 
 const store = {};

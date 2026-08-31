@@ -1,5 +1,5 @@
 <div class="min-h-dvh mine-page-bg px-6 py-4 flex justify-center items-center">
-    <div class="mine-card w-full max-w-120 flex flex-col justify-center p-6">
+    <x-mine.animate as="div" delay="100" class="mine-card w-full max-w-120 flex flex-col justify-center p-6">
         <h1 class="text-center font-semibold text-xl mine-text-primary mb-2">{{ __('Welcome back') }}</h1>
         <p class="text-center text-sm mb-6 mine-text-secondary font-medium">{{ __('Enter your details to sign in') }}</p>
 
@@ -44,5 +44,5 @@
             <p class="text-sm mine-text-primary font-medium">{{ __('New to Planner?') }}</p>
             <a wire:navigate.hover href="{{ route('register') }}" class="text-sm mine-text-link font-medium">{{ __('Create your account') }}</a>
         </div>
-    </div>
+    </x-mine.animate>
 </div>

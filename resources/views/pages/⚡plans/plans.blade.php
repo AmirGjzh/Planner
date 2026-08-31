@@ -79,7 +79,7 @@
                             "pt-1" => app()->isLocale('en'),
                             "text-sm font-medium"
                         ])>
-                            {{ __('Filter plan') }}
+                            {{ __('Filter') }}
                         </p>
                     </div>
                 </x-mine.dropdown.trigger>
@@ -112,7 +112,7 @@
                             "pt-1" => app()->isLocale('en'),
                             "text-sm font-medium"
                         ])>
-                            {{ __('Date range') }}
+                            {{ __('Calendar') }}
                         </p>
                     </div>
                 </x-mine.dropdown.trigger>
@@ -144,7 +144,7 @@
 
                             $config = match (true) {
                                 $plan->done => [
-                                    'icon' => 'trophy',
+                                    'icon' => 'Trophy',
                                     'header_class' => 'mine-badge-secondary',
                                     'title_class' => 'line-through',
                                     'status_label' => __('Completed'),
@@ -164,7 +164,7 @@
                                     'border-r' => 'border-r-6 border-r-(--mine-btn-secondary-bg) hover:border-r-(--mine-btn-secondary-bg-hover)',
                                 ],
                                 $plan->finish_date->isPast() => [
-                                    'icon' => 'bell-alert',
+                                    'icon' => 'Siren2',
                                     'header_class' => 'mine-badge-danger',
                                     'title_class' => '',
                                     'status_label' => __('Overdue'),
@@ -359,7 +359,7 @@
                                         @click.stop="$wire.set('reopening_id', {{ $plan->id }}, false); $dispatch('open-modal', { id: 'reopen-plan-confirmation' })">
                                         <div class="flex justify-center items-center gap-2 text-sm font-medium">
                                             <x-mine.icon name="ArrowRotate" size="16" weight="filled" />
-                                            <p>{{ __('Reopen') }}</p>
+                                            <p>{{ __('Reactive plan') }}</p>
                                         </div>
                                     </x-mine.button>
                                 @else
@@ -418,26 +418,26 @@
 
             @if($add_error === 'already_exists')
                 <div class="mb-4">
-                    <x-mine.alert variant="danger" title="{{ __('Duplicate plan!') }}">{{ __('A plan with this name already exists.') }}</x-mine.alert>
+                    <x-mine.alert variant="danger" title="{{ __('Duplicate plan') }}">{{ __('You have a plan with this name') }}</x-mine.alert>
                 </div>
             @endif
 
             @if($add_error === 'rate_limited')
                 <div class="mb-4">
-                    <x-mine.alert variant="warning" title="{{ __('Too many create-plan attempts!') }}">{{ __('Try again in a minute') }}</x-mine.alert>
+                    <x-mine.alert variant="warning" title="{{ __('Too many attempts') }}">{{ __('Try again in a minute') }}</x-mine.alert>
                 </div>
             @endif
 
             <form class="flex flex-col gap-4" wire:submit="addPlan">
                 <div>
-                    <x-mine.input label="{{ __('Plan name') }}" wire:model="add_name" placeholder="{{ __('Enter plan name') }}" leftIcon="Bullseye" />
+                    <x-mine.input label="{{ __('Plan name') }}" wire:model="add_name" placeholder="{{ __('Your plan name') }}" leftIcon="Bullseye" />
                 </div>
                 <div>
-                    <x-mine.datepicker leftIcon="Calendar" mode="range" position="bottom-{{ app()->isLocale('en') ? 'end' : 'start' }}" wire:model="add_range" label="{{ __('Date range') }}" />
+                    <x-mine.datepicker leftIcon="Calendar" mode="range" position="bottom-{{ app()->isLocale('en') ? 'end' : 'start' }}" wire:model="add_range" label="{{ __('Plan range') }}" />
                 </div>
                 <div>
                     <x-mine.textarea label="{{ __('Plan description') }}" wire:model="add_description"
-                        placeholder="{{ __('Enter plan description') }}" leftIcon="Text" />
+                        placeholder="{{ __('Your plan description') }}" leftIcon=PenWriting />
                 </div>
                 <div class="flex gap-4 justify-end mt-4">
                     <x-mine.button type="button" @click="close(); $wire.cancelAdd()" class="mine-btn-ghost">
@@ -466,26 +466,26 @@
 
             @if($edit_error === 'already_exists')
                 <div class="mb-4">
-                    <x-mine.alert variant="danger" title="{{ __('Duplicate plan!') }}">{{ __('A plan with this name already exists.') }}</x-mine.alert>
+                    <x-mine.alert variant="danger" title="{{ __('Duplicate plan') }}">{{ __('You have a plan with this name') }}</x-mine.alert>
                 </div>
             @endif
 
             @if($edit_error === 'rate_limited')
                 <div class="mb-4">
-                    <x-mine.alert variant="warning" title="{{ __('Too many edit-plan attempts!') }}">{{ __('Try again in a minute') }}</x-mine.alert>
+                    <x-mine.alert variant="warning" title="{{ __('Too many attempts') }}">{{ __('Try again in a minute') }}</x-mine.alert>
                 </div>
             @endif
 
             <form class="flex flex-col gap-4" wire:submit="editPlan">
                 <div>
-                    <x-mine.input leftIcon="Bullseye" label="{{ __('Plan name') }}" wire:model="edit_name" placeholder="{{ __('Enter plan name') }}" />
+                    <x-mine.input leftIcon="Bullseye" label="{{ __('Plan name') }}" wire:model="edit_name" placeholder="{{ __('Your plan name') }}" />
                 </div>
                 <div>
-                    <x-mine.datepicker leftIcon="Calendar" mode="range" position="bottom-{{ app()->isLocale('en') ? 'end' : 'start' }}" wire:model="edit_range" label="{{ __('Date range') }}" />
+                    <x-mine.datepicker leftIcon="Calendar" mode="range" position="bottom-{{ app()->isLocale('en') ? 'end' : 'start' }}" wire:model="edit_range" label="{{ __('Plan range') }}" />
                 </div>
                 <div>
                     <x-mine.textarea label="{{ __('Plan description') }}" wire:model="edit_description"
-                        placeholder="{{ __('Enter plan description') }}" leftIcon="Text" />
+                        placeholder="{{ __('Your plan description') }}" leftIcon=PenWriting />
                 </div>
                 <div class="flex gap-4 justify-end mt-4">
                     <x-mine.button type="button" @click="close(); $wire.cancelEdit()" class="mine-btn-ghost">
@@ -514,7 +514,7 @@
 
             @if($delete_error === 'has_tasks')
                 <div class="mb-4">
-                    <x-mine.alert variant="danger" title="{{ __('Cannot delete plan!') }}">{{ __('This plan has tasks, reassign or delete them first.') }}</x-mine.alert>
+                    <x-mine.alert variant="danger" title="{{ __('Cannot delete plan') }}">{{ __('This plan has tasks, reassign or delete them first') }}</x-mine.alert>
                 </div>
             @else
                 <div class="mb-4">
@@ -550,11 +550,11 @@
 
             @if($complete_error === 'has_undone_tasks')
                 <div class="mb-4">
-                    <x-mine.alert variant="danger" title="{{ __('Cannot complete plan!') }}">{{ __('This plan still has unfinished tasks, complete or remove them first.') }}</x-mine.alert>
+                    <x-mine.alert variant="danger" title="{{ __('Cannot complete plan') }}">{{ __('This plan still has unfinished tasks, complete or remove them first') }}</x-mine.alert>
                 </div>
             @else
                 <div class="mb-4">
-                    <x-mine.alert variant="warning" title="{{ __('Are you sure?') }}">{{ __('This will mark the plan as completed.') }}</x-mine.alert>
+                    <x-mine.alert variant="warning" title="{{ __('Are you sure?') }}">{{ __('This will mark the plan as completed') }}</x-mine.alert>
                 </div>
             @endif
 
@@ -578,14 +578,14 @@
     <x-mine.modal id="reopen-plan-confirmation" :close-by-clicking-away="false" :close-by-escaping="false" width="lg">
         <div class="px-6 sm:px-8 py-6">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-base font-semibold mine-text-primary">{{ __('Reopen plan') }}</h2>
+                <h2 class="text-base font-semibold mine-text-primary">{{ __('Reactive plan') }}</h2>
                 <button type="button" @click="close(); $wire.cancelReopen()" class="mine-btn-icon p-2 rounded-xl">
                     <x-mine.icon name="Xmark" weight="filled" size="16" />
                 </button>
             </div>
 
             <div class="mb-4">
-                <x-mine.alert variant="warning" title="{{ __('Are you sure?') }}">{{ __('This plan will be moved back to active.') }}</x-mine.alert>
+                <x-mine.alert variant="warning" title="{{ __('Are you sure?') }}">{{ __('This plan will be moved back to active') }}</x-mine.alert>
             </div>
 
             <form class="flex flex-col gap-4" wire:submit="reopenPlan">
@@ -597,7 +597,7 @@
                     </x-mine.button>
                     <x-mine.button wire:target="reopenPlan" class="mine-btn-primary">
                         <p class="text-sm">
-                            {{ __('Reopen') }}
+                            {{ __('Reactive') }}
                         </p>
                     </x-mine.button>
                 </div>
