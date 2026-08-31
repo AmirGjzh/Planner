@@ -208,7 +208,7 @@
                 x-on:click="prevMonth()"
                 class="p-1.5 rounded-lg mine-btn-icon transition-colors duration-200 mine-text-secondary focus-visible:outline-none"
             >
-                <x-mine.icon name="chevron-{{ app()->isLocale('en') ? 'left' : 'right' }}" variant="mini" class="size-4" />
+                <x-mine.icon name="Angle{{ app()->isLocale('en') ? 'Left' : 'Right' }}" weight="filled" size="16" />
             </button>
 
             <div class="flex items-center gap-3">
@@ -221,7 +221,7 @@
                 x-on:click="nextMonth()"
                 class="p-1.5 rounded-lg mine-btn-icon transition-colors duration-200 mine-text-secondary focus-visible:outline-none"
             >
-                <x-mine.icon name="chevron-{{ app()->isLocale('fa') ? 'left' : 'right' }}" variant="mini" class="size-4" />
+                <x-mine.icon name="Angle{{ app()->isLocale('fa') ? 'Left' : 'Right' }}" weight="filled" size="16" />
             </button>
         </div>
 

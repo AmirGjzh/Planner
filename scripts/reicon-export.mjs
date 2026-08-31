@@ -47,7 +47,11 @@ const ICONS = [
     'ArrowUp',
     'ArrowDown',
     'ArrowRight',
-    'ArrowLeft'
+    'ArrowLeft',
+    'Filter',
+    'Clock',
+    'ArrowRotate',
+    'Text'
 ];
 
 const store = {};

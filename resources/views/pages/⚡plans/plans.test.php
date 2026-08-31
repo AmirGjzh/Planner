@@ -555,6 +555,18 @@ it('filters plans by search term', function () {
         ->assertDontSee('Personal');
 });
 
+it('filters plans by search term case-insensitively', function () {
+    $user = User::factory()->create();
+    $user->plans()->create(['name' => 'Workplan', ...planInCurrentMonth()]);
+    $user->plans()->create(['name' => 'Personal', ...planInCurrentMonth()]);
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('search', 'workplan')
+        ->assertSee('Workplan')
+        ->assertDontSee('Personal');
+});
+
 it('shows the no-results message instead of the empty state when filters exclude everything', function () {
     $user = User::factory()->create();
     $user->plans()->create(['name' => 'Work', ...planInCurrentMonth()]);

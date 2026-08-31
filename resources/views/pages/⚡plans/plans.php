@@ -72,7 +72,7 @@ new class extends Component
         return Plan::query()
             ->select(['id', 'name', 'description', 'start_date', 'finish_date', 'done', 'user_id', 'created_at'])
             ->where('user_id', auth()->id())
-            ->when($this->search, fn ($q) => $q->where('name', 'like', '%'.$this->search.'%'))
+            ->when($this->search, fn ($q) => $q->whereRaw('LOWER(name) LIKE ?', [Str::lower('%'.$this->search.'%')]))
             ->when($this->range_filter['start'] ?? null, fn ($q) => $q->whereDate('finish_date', '>=', $this->range_filter['start']))
             ->when($this->range_filter['end'] ?? null, fn ($q) => $q->whereDate('start_date', '<=', $this->range_filter['end']))
             ->withCount([
@@ -145,9 +145,7 @@ new class extends Component
             'add_range.end' => $this->rules()['add_range.end'],
         ]);
 
-        $name = Str::ucfirst(Str::lower($this->add_name));
-
-        $result = $action->execute($this->user, $name, $this->add_description, $this->add_range, request());
+        $result = $action->execute($this->user, $this->add_name, $this->add_description, $this->add_range, request());
 
         $this->add_error = match ($result) {
             CreatePlanResult::AlreadyExists => 'already_exists',
@@ -193,10 +191,8 @@ new class extends Component
             'edit_range.end' => $this->rules()['edit_range.end'],
         ]);
 
-        $name = Str::ucfirst(Str::lower($this->edit_name));
-
         $plan = $this->user->plans()->findOrFail($this->editing_id);
-        $result = $action->execute($this->user, $plan, $name, $this->edit_description, $this->edit_range, request());
+        $result = $action->execute($this->user, $plan, $this->edit_name, $this->edit_description, $this->edit_range, request());
 
         $this->edit_error = match ($result) {
             EditPlanResult::AlreadyExists => 'already_exists',

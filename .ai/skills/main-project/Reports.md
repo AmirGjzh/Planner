@@ -306,6 +306,54 @@ While running the full suite, a **pre-existing date-bound Dashboard test** faile
 
 ---
 
+## Section: UC-07 — Manage Plans
+
+> **✅ Resolved.** Both fix candidates applied (mirroring UC-06 decisions): redundant component-level name normalization removed; search is now case-insensitive. 80 tests pass.
+
+Goal: *Allow an authenticated user to create, read, update, delete plans, plus complete/reopen, with duplicate detection, rate limiting, and restrict-on-delete while a plan still has tasks.*
+
+### Current Implementation
+
+`/plans` (auth-only → `pages::plans`) lists the user's plans in a paginated (3/page), searchable list inside a Livewire island (`plans-content`), with a status filter (all/active/completed/overdue), a locale-aware default month window (`Jalali` in `fa`, Gregorian in `en`), five sort orders (state/deadline/load/latest/name), and per-plan progress bars + day counts. CRUD lives in five separated actions — `CreatePlanAction`, `EditPlanAction`, `DeletePlanAction`, `CompletePlanAction`, `ReopenPlanAction` — each returning a multi-state `Create/Edit/Delete/CompletePlanResult` enum that the page maps to localized alerts + toasts (Reopen returns `void`). Ownership is enforced by `PlanPolicy` (`update`/`delete` → `user->id === plan->user_id`) inside each action, and `findOrFail` is scoped within `$this->user->plans()` in the page. Create/Edit rate-limit with `create-plan`/`edit-plan:{user_id}|{ip}` (5/min, `clear()` on success, `Str::transliterate('…')` key — matches the recorded `app/Actions` rule). Delete blocks when the plan has tasks (`HasTasks`); Complete blocks when undone tasks remain (`HasUndoneTasks`); both hard-mutate otherwise. Complete and Reopen are deliberately not rate-limited.
+
+### Critical
+
+- **None.**
+
+### 🟢 Good (already correct)
+
+- **Per-user uniqueness enforced structurally** — composite unique index `(user_id, name)` at the DB level.
+- **Restrict-on-delete at DB + app layers** — `tasks.plan_id` FK is `on_delete: restrict` (hard guarantee), plus the friendly `HasTasks` pre-check and policy `delete` guard.
+- **Ownership / defense in depth** — policy gates inside actions + `findOrFail` scoped to the owner; foreign-plan complete/reopen tests assert `ModelNotFoundException`.
+- **Rate limit keys** — `create-plan` / `edit-plan:{user_id}|{ip}` match the recorded `app/Actions` rule; delete (and complete/reopen) not rate-limited (ownership + guards make them low-risk, consistent with categories-delete).
+- **Multi-state result enums are meaningful and consumed** (Reopen correctly returns `void` — single outcome).
+- **No N+1 / sane queries** — `select` only needed columns, `withCount('tasks')` + `withCount('tasks as tasks_done_count')` + `withSum('tasks','estimated_minutes')` (one aggregate query w/ aliases), `orderByDesc('tasks_sum_estimated_minutes')`/`orderByDesc('tasks_count')` use counted columns, `orderByRaw` for the state order, `updatingSearch/StatusFilter/RangeFilter()` reset the page, computed `plans()` invalidated via `unset($this->plans)` after each mutation.
+- **Localization** — Jalali/Gregorian date rendering and default month bounds, `PersianNumber::convert`, `__()` labels, RTL class switches, locale-aware placements/arrows.
+- **Tests** — thorough co-located page tests (render, empty state, create/edit/delete, duplicates, required/max/date-range validation, status filter incl. URL preselect, all five sorts, pagination, jalali defaults + card dates, search, no-results, toasts/close-modal, cancel resets, island presence, view-tasks + add-task filter links, no-description fallback) + five action tests + access tests.
+
+### ✅ Resolved (both applied)
+
+- **1. Redundant component-level name normalization — applied.** Removed the `Str::ucfirst(Str::lower(...))` lines in `plans.php` `addPlan()`/`editPlan()`; the raw validated value is now passed to `CreatePlanAction`/`EditPlanAction`, which remain the single source of truth (consistent with UC-06 Fix 2A and `.ai/rules/category.md`).
+- **2. Plans search not case-insensitive — applied.** Line 75 now uses `whereRaw('LOWER(name) LIKE ?', [Str::lower('%'.$this->search.'%')])` (collation-independent, mirrors UC-06). Added a `filters plans by search term case-insensitively` test.
+
+### 🔸 Deferred / By Decision
+
+- **Complete/Reopen not rate-limited** — left as-is; ownership-guarded, low-frequency mutations, consistent with the categories-delete decision. Not applying a new limiter per the `actions.md` "never add a second ad-hoc limiter" guidance.
+
+### ⚪ Missing / Out of Scope
+
+- Hard delete is intentional (not soft-delete) — tasks prevent deletion while linked.
+- Icons out of scope per standing decision.
+- No `view`/`viewAny` on `PlanPolicy` — not needed; the page lists via `$this->user->plans()` (same as categories).
+
+### Overall Status
+
+```text
+🟢 Good — no critical; both consistency fix candidates resolved (normalization single source of truth; case-insensitive search). 80 tests pass.
+```
+
+---
+
 ## Audit Progress
 
 | Section | Audit | Fixes |
@@ -317,7 +365,7 @@ While running the full suite, a **pre-existing date-bound Dashboard test** faile
 | UC-04 Delete Account | ✅ done (report pass) | ✅ no changes needed |
 | UC-05 Logout | ✅ done | ✅ done |
 | UC-06 Categories | ✅ done | ✅ done (deferred: create/edit race) |
-| UC-07 Plans | ⬜ | ⬜ |
+| UC-07 Plans | ✅ done | ✅ done |
 | UC-08 Tasks | ⬜ | ⬜ |
 | UC-09 Daily Workload | ⬜ | ⬜ |
 | UC-10 Needing Attention | ⬜ | ⬜ |
