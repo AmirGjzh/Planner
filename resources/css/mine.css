@@ -267,12 +267,11 @@
 @utility mine-animate {
     opacity: 0;
     transform: translateY(16px);
-    will-change: opacity, transform;
 }
 
 @utility mine-animate-visible {
-    opacity: 1;
-    transform: translateY(0) !important;
+    opacity: 1 !important;
+    transform: none !important;
     transition: opacity 0.5s ease-out, transform 0.5s ease-out;
 }
 

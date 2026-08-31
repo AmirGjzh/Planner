@@ -1,10 +1,9 @@
 <div class="flex-1 px-4 sm:px-8 md:px-16 pb-6 pt-4 flex flex-col">
-    <div class="mb-6">
+    <x-mine.animate class="mb-6">
         <h1 class="font-bold text-base mine-text-primary">{{ __('My profile') }}</h1>
-    </div>
+    </x-mine.animate>
     <div class="flex flex-col md:flex-row gap-6">
-        <div
-            class="mine-card flex-1 p-4 sm:p-6  flex flex-col sm:flex-row sm:items-center sm:justify-between md:flex-col md:items-center md:justify-center gap-4">
+        <x-mine.animate delay="50" class="flex-1 mine-card p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between md:flex-col md:items-center md:justify-center gap-4">
             <div class="flex items-center gap-4 md:flex-col">
                 <div class="md:mt-20 size-20 shrink-0 rounded-full mine-badge-primary flex justify-center items-center">
                     <h1 class="font-bold text-xl pt-1">
@@ -25,10 +24,10 @@
                     </x-mine.button>
                 </x-mine.modal.trigger>
             </div>
-        </div>
+        </x-mine.animate>
 
         <div class="md:flex-2 flex flex-col">
-            <div class="mine-card px-4 py-6 sm:p-8 flex flex-col gap-4">
+            <x-mine.animate delay="100" class="mine-card px-4 py-6 sm:p-8 flex flex-col gap-4">
                 <div class="mb-4">
                     <h1 class="font-bold text-sm mine-text-primary px-1">{{ __('Personal information') }}</h1>
                 </div>
@@ -50,9 +49,8 @@
                         </p>
                     </div>
                 @endforeach
-            </div>
-            <div
-                class="flex flex-col sm:flex-row gap-4 px-4 sm:px-6 py-4 mt-6 sm:justify-between mine-alert-danger-box">
+            </x-mine.animate>
+            <x-mine.animate delay="150" class="flex flex-col sm:flex-row gap-4 px-4 sm:px-6 py-4 mt-6 sm:justify-between mine-alert-danger-box">
                 <div class="flex items-center justify-center gap-4">
                     <div class="size-12 rounded-full mine-badge-danger flex justify-center items-center">
                         <x-mine.icon name="Trash5" size="24" weight="filled" />
@@ -68,7 +66,7 @@
                         </x-mine.button>
                     </x-mine.modal.trigger>
                 </div>
-            </div>
+            </x-mine.animate>
         </div>
     </div>
 

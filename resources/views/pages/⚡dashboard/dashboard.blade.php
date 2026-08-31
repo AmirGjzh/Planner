@@ -82,7 +82,7 @@
             @forelse ($this->upcomingTasks as $task)
                 @if ($task->task_date < $today)
                     <div wire:key="task-{{ $task->id }}"
-                        class="min-w-50 mine-card-interactive mine-card-danger flex flex-col p-4">
+                        class="min-w-50 mine-card mine-card-danger flex flex-col p-4">
                         <h2 class="text-sm font-semibold mine-text-primary mb-4">{{ $task->title }}</h2>
                         <div class="self-start mine-badge-danger rounded-xl h-7 flex items-center gap-1 px-2 mb-4">
                             <x-mine.icon name="fire" class="size-4" variant="micro" />
@@ -107,7 +107,7 @@
                     </div>
                 @else
                     <div wire:key="task-{{ $task->id }}"
-                        class="min-w-50 mine-card-interactive mine-card-primary flex flex-col p-4">
+                        class="min-w-50 mine-card mine-card-primary flex flex-col p-4">
                         <h2 class="text-sm font-semibold mine-text-primary mb-4">{{ $task->title }}</h2>
                         <div class="self-start mine-badge-primary rounded-xl h-7 flex items-center gap-1 px-2 mb-4">
                             <x-mine.icon name="fire" class="size-4" variant="micro" />

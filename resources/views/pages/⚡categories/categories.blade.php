@@ -1,9 +1,9 @@
 <div class="flex-1 px-4 sm:px-8 md:px-16 pb-6 pt-4 flex flex-col">
-    <div class="mb-6">
+    <x-mine.animate class="mb-6">
         <h1 class="font-bold text-base mine-text-primary">{{ __('My categories') }}</h1>
-    </div>
+    </x-mine.animate>
     @island(name: 'category-content', always: true)
-    <div class="flex items-center justify-between gap-2 sm:gap-4 mb-6">
+    <x-mine.animate delay="50" class="flex items-center justify-between gap-2 sm:gap-4 mb-6">
         <div class="w-full">
             <x-mine.input wire:model.live.debounce.200ms="search" placeholder="{{ __('Search categories...') }}"
                 leftIcon="Magnifier" />
@@ -61,7 +61,7 @@
                 @endforeach
             </x-mine.dropdown.content>
         </x-mine.dropdown>
-    </div>
+    </x-mine.animate>
     <div class="relative">
         <div wire:loading.delay.short class="absolute inset-0 z-10">
             <div class="flex h-full w-full items-center justify-center">
@@ -76,10 +76,10 @@
         <div wire:loading.delay.short.class="opacity-40" class="transition-opacity">
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 @forelse ($this->categories as $category)
-                <div wire:key="category-{{ $category->id }}" @class([
+                <x-mine.animate wire:key="category-{{ $category->id }}" stagger="60" data-anim-index="{{ $loop->index }}" @class([
                     "border-l-6 border-l-(--mine-btn-primary-bg) hover:border-l-(--mine-btn-primary-bg-hover)" => app()->isLocale('en'),
                     "border-r-6 border-r-(--mine-btn-primary-bg) hover:border-r-(--mine-btn-primary-bg-hover)" => app()->isLocale('fa'),
-                    "mine-card-interactive w-full flex flex-col justify-between px-4 pt-4 pb-4"
+                    "mine-card w-full flex flex-col justify-between px-4 pt-4 pb-4"
                 ])>
                     <div class="flex justify-between items-start mb-3">
                         <div class="flex gap-4 min-w-0">
@@ -137,7 +137,7 @@
                             <x-mine.icon name="Arrow{{ app()->isLocale('en') ? 'Right' : 'Left' }}" weight="filled" size="18" class="mt-0.5" />
                         </a>
                     </div>
-                </div>
+                </x-mine.animate>
                 @empty
                     @if($this->search)
                         <div class="col-span-full text-center py-12">
@@ -154,9 +154,9 @@
             </div>
         </div>
     </div>
-    <div class="mt-6 w-full">
+    <x-mine.animate class="mt-6 w-full">
         {{ $this->categories->links(data: ['scrollTo' => false]) }}
-    </div>
+    </x-mine.animate>
     @endisland
 
     <x-mine.modal id="add-category-form" :close-by-clicking-away="false" :close-by-escaping="false" width="lg">

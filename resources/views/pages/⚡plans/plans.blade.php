@@ -1,9 +1,9 @@
 <div class="flex-1 px-4 sm:px-8 md:px-16 pb-6 pt-4 flex flex-col">
-    <div class="mb-6">
+    <x-mine.animate class="mb-6">
         <h1 class="font-bold text-base mine-text-primary">{{ __('My plans') }}</h1>
-    </div>
+    </x-mine.animate>
     @island(name: 'plans-content', always: true)
-    <div class="flex flex-col md:flex-row gap-2 sm:gap-4 mb-6">
+    <x-mine.animate delay="50" class="flex flex-col md:flex-row gap-2 sm:gap-4 mb-6">
         <div class="w-full flex items-center justify-between gap-2 sm:gap-4">
             <div class="w-full">
                 <x-mine.input wire:model.live.debounce.200ms="search" placeholder="{{ __('Search plans...') }}"
@@ -123,7 +123,7 @@
                 </x-mine.dropdown.content>
             </x-mine.dropdown>
         </div>
-    </div>
+    </x-mine.animate>
     <div class="md:flex md:gap-6">
         <div class="relative flex-1">
             <div wire:loading.delay.short class="absolute inset-0 z-10">
@@ -149,7 +149,7 @@
                                     'title_class' => 'line-through',
                                     'status_label' => __('Completed'),
                                     'separator' => 'secondary',
-                                    'card' => 'mine-card-interactive mine-card-secondary',
+                                    'card' => 'mine-card mine-card-secondary',
                                     'percent_color' => 'mine-text-secondary-accent',
                                     'span_color' => 'mine-text-secondary-accent',
                                     'progress_variant' => 'gray',
@@ -169,7 +169,7 @@
                                     'title_class' => '',
                                     'status_label' => __('Overdue'),
                                     'separator' => 'danger',
-                                    'card' => 'mine-card-interactive mine-card-danger',
+                                    'card' => 'mine-card mine-card-danger',
                                     'percent_color' => 'mine-text-error',
                                     'span_color' => 'mine-text-error',
                                     'progress_variant' => 'danger',
@@ -195,7 +195,7 @@
                                     'title_class' => '',
                                     'status_label' => __('Active'),
                                     'separator' => 'primary',
-                                    'card' => 'mine-card-interactive',
+                                    'card' => 'mine-card',
                                     'percent_color' => 'mine-text-link',
                                     'span_color' => 'mine-text-link',
                                     'progress_variant' => 'primary',
@@ -218,12 +218,11 @@
                             };
                         @endphp
 
-                        <div wire:key="plan-{{ $plan->id }}"
-                            @class([
+                        <x-mine.animate wire:key="plan-{{ $plan->id }}" stagger="60" data-anim-index="{{ $loop->index }}"
+                            :class="\Illuminate\Support\Arr::toCssClasses([
                                 $config['border-l'] => app()->isLocale('en'),
                                 $config['border-r'] => app()->isLocale('fa'),
-                            "self-start {$config['card']} flex flex-col px-4 sm:px-6 md:px-8 py-4 sm:pb-5 md:pb-6 sm:pt-6 md:pt-8"
-                            ])>
+                            ]) . ' self-start ' . $config['card'] . ' flex flex-col px-4 sm:px-6 md:px-8 py-4 sm:pb-5 md:pb-6 sm:pt-6 md:pt-8'">
                             <div class="flex justify-between gap-4 mb-8 min-w-0">
                                 <div class="flex min-w-0 flex-1">
                                     <div @class([
@@ -381,7 +380,7 @@
                                     </x-mine.button>
                                 @endif
                             </div>
-                        </div>
+                        </x-mine.animate>
                     @empty
                         @if($this->hasActiveFilters)
                             <div class="col-span-full text-center py-12">
@@ -398,13 +397,13 @@
                 </div>
             </div>
         </div>
-        <div class="hidden md:flex justify-center w-80">
+        <x-mine.animate delay="100" class="hidden md:flex justify-center w-80">
             <x-mine.calendar wire:model.live="range_filter" island="plans-content" />
-        </div>
+        </x-mine.animate>
     </div>
-    <div class="mt-6 w-full">
+    <x-mine.animate class="mt-6 w-full">
         {{ $this->plans->links(data: ['scrollTo' => false]) }}
-    </div>
+    </x-mine.animate>
     @endisland
 
     <x-mine.modal id="add-plan-form" :close-by-clicking-away="false" :close-by-escaping="false" width="lg">
