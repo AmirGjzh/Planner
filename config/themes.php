@@ -11,7 +11,7 @@
 |
 */
 
-$themes = ['ocean', 'forest', 'magic', 'safrron', 'amber'];
+$themes = ['ocean', 'forest', 'magic', 'safrron', 'amber', 'chocolate'];
 
 $theme = env('APP_THEME', 'blue');
 
