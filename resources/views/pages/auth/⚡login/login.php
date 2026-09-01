@@ -65,9 +65,9 @@ new #[Layout('layouts::auth')] class extends Component
     protected function messages(): array
     {
         return [
-            'email.required' => __('Email is required'),
-            'email.email' => __('Enter a valid email'),
-            'password.required' => __('Password is required'),
+            'email.required' => __('Email is required.'),
+            'email.email' => __('Enter a valid email.'),
+            'password.required' => __('Password is required.'),
         ];
     }
 };

@@ -177,10 +177,10 @@ new class extends Component
     protected function messages(): array
     {
         return [
-            'add_category.required' => __('Category name is required'),
-            'add_category.max' => __('Category name cannot exceed 255 characters'),
-            'edit_name.required' => __('Category name is required'),
-            'edit_name.max' => __('Category name cannot exceed 255 characters'),
+            'add_category.required' => __('Category name is required.'),
+            'add_category.max' => __('Category name cannot exceed 255 characters.'),
+            'edit_name.required' => __('Category name is required.'),
+            'edit_name.max' => __('Category name cannot exceed 255 characters.'),
         ];
     }
 };

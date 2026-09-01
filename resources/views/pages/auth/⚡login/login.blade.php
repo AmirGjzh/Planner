@@ -1,18 +1,18 @@
 <div class="min-h-dvh mine-page-bg px-6 py-4 flex justify-center items-center">
     <x-mine.animate as="div" delay="100" class="mine-card w-full max-w-120 flex flex-col justify-center p-6">
         <h1 class="text-center font-semibold text-xl mine-text-primary mb-2">{{ __('Welcome back') }}</h1>
-        <p class="text-center text-sm mb-6 mine-text-secondary font-medium">{{ __('Enter your details to sign in') }}</p>
+        <p class="text-center text-sm mb-6 mine-text-secondary font-medium">{{ __('Enter your information to sign in') }}</p>
 
         <form wire:submit="login" class="flex flex-col">
             @if($login_error === 'rate_limited')
                 <div class="mb-4">
-                    <x-mine.alert variant="warning" title="{{ __('Too many attempts') }}">{{ __('Try again in a minute') }}</x-mine.alert>
+                    <x-mine.alert variant="warning" title="{{ __('Too many sign-in attempts!') }}">{{ __('Try again in a minute.') }}</x-mine.alert>
                 </div>
             @endif
 
             @if($login_error === 'invalid')
                 <div class="mb-4">
-                    <x-mine.alert variant="danger" title="{{ __('Sign-in failed') }}">{{ __('The email or password you entered is incorrect') }}</x-mine.alert>
+                    <x-mine.alert variant="danger" title="{{ __('Sign-in failed!') }}">{{ __('The email or password you entered is incorrect.') }}</x-mine.alert>
                 </div>
             @endif
 

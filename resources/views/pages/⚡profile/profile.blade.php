@@ -55,7 +55,7 @@
                     <div class="size-12 rounded-full mine-badge-danger flex justify-center items-center">
                         <x-mine.icon name="Trash5" size="24" weight="filled" />
                     </div>
-                    <p class="text-sm font-medium mine-text-secondary pt-1">{{ __('Delete your account and all your data') }}</p>
+                    <p class="text-sm font-medium mine-text-secondary pt-1">{{ __('Delete your account and all your data.') }}</p>
                 </div>
                 <div class="flex justify-center items-center">
                     <x-mine.modal.trigger class="w-full" id="delete-account-confirmation">
@@ -81,14 +81,14 @@
 
             @if($edit_error === 'rate_limited')
                 <div class="mb-4">
-                    <x-mine.alert variant="warning" title="{{ __('Too many attempts') }}">{{ __('Try again in a minute') }}
+                    <x-mine.alert variant="warning" title="{{ __('Too many edit-profile attempts!') }}">{{ __('Try again in a minute.') }}
                     </x-mine.alert>
                 </div>
             @endif
 
             @if($edit_error === 'username_taken')
                 <div class="mb-4">
-                    <x-mine.alert variant="danger" title="{{ __('Username taken') }}">{{ __('Try a different username') }}
+                    <x-mine.alert variant="danger" title="{{ __('Username taken!') }}">{{ __('Try a different username.') }}
                     </x-mine.alert>
                 </div>
             @endif
@@ -145,18 +145,18 @@
             </div>
 
             @if($delete_error === 'rate_limited')
-                <x-mine.alert variant="warning" title="{{ __('Too many attempts') }}" class="mb-4">{{ __('Try again in a minute') }}
+                <x-mine.alert variant="warning" title="{{ __('Too many delete-account attempts!') }}" class="mb-4">{{ __('Try again in a minute.') }}
                 </x-mine.alert>
             @endif
 
             @if($delete_error === 'wrong_password')
-                <x-mine.alert variant="danger" title="{{ __('Wrong password') }}" class="mb-4">{{ __('The password you entered is incorrect') }}
+                <x-mine.alert variant="danger" title="{{ __('Wrong password!') }}" class="mb-4">{{ __('The password you entered is incorrect.') }}
                 </x-mine.alert>
             @endif
 
             @unless($delete_error)
-                <x-mine.alert variant="warning" title="{{ __('Be careful') }}" class="mb-4">
-                    {{ __('This action is permanent, enter your password to continue') }}
+                <x-mine.alert variant="warning" title="{{ __('Be careful!') }}" class="mb-4">
+                    {{ __('This action is permanent, enter your password to continue.') }}
                 </x-mine.alert>
             @endunless
 

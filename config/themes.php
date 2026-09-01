@@ -13,10 +13,10 @@
 
 $themes = ['ocean', 'forest', 'magic', 'safrron', 'amber', 'chocolate'];
 
-$theme = env('APP_THEME', 'blue');
+$theme = env('APP_THEME', 'forest');
 
 if (! in_array($theme, $themes, true)) {
-    $theme = 'blue';
+    $theme = 'forest';
 }
 
 // config/themes/{theme}.json lives one level above the config directory.
@@ -28,10 +28,19 @@ if (! is_array($vars)) {
     $vars = [];
 }
 
-unset($vars['name']);
+$darkFile = dirname(__DIR__).DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'themes'.DIRECTORY_SEPARATOR.$theme.'-dark.json';
+
+$darkVars = is_file($darkFile) ? json_decode((string) file_get_contents($darkFile), true) : [];
+
+if (! is_array($darkVars)) {
+    $darkVars = $vars;
+}
+
+unset($vars['name'], $darkVars['name']);
 
 return [
     'name' => $theme,
     'available' => $themes,
     'vars' => $vars,
+    'dark_vars' => $darkVars,
 ];

@@ -160,19 +160,19 @@ new class extends Component
     protected function messages(): array
     {
         return [
-            'username.required' => __('Username is required'),
-            'username.regex' => __('Start with a letter, use 3 to 30 characters'),
-            'firstname.min' => __('Firstname must be at least 2 characters'),
-            'firstname.max' => __('Firstname cannot exceed 50 characters'),
-            'firstname.regex' => __('Firstname can only contain letters, spaces, hyphens and apostrophes'),
-            'lastname.min' => __('Lastname must be at least 2 characters'),
-            'lastname.max' => __('Lastname cannot exceed 50 characters'),
-            'lastname.regex' => __('Lastname can only contain letters, spaces, hyphens and apostrophes'),
-            'gender.enum' => __('Selected gender is invalid'),
-            'country.in' => __('Selected country is invalid'),
-            'birthday.date' => __('Birthdate must be a valid date'),
-            'birthday.before_or_equal' => __('Birthdate must be today or earlier'),
-            'password.required' => __('Password is required'),
+            'username.required' => __('Username is required.'),
+            'username.regex' => __('Start with a letter, use 3 to 30 characters.'),
+            'firstname.min' => __('Firstname must be at least 2 characters.'),
+            'firstname.max' => __('Firstname cannot exceed 50 characters.'),
+            'firstname.regex' => __('Firstname can only contain letters, spaces, hyphens and apostrophes.'),
+            'lastname.min' => __('Lastname must be at least 2 characters.'),
+            'lastname.max' => __('Lastname cannot exceed 50 characters.'),
+            'lastname.regex' => __('Lastname can only contain letters, spaces, hyphens and apostrophes.'),
+            'gender.enum' => __('Selected gender is invalid.'),
+            'country.in' => __('Selected country is invalid.'),
+            'birthday.date' => __('Birthdate must be a valid date.'),
+            'birthday.before_or_equal' => __('Birthdate must be today or earlier.'),
+            'password.required' => __('Password is required.'),
         ];
     }
 };

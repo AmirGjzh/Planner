@@ -2,6 +2,10 @@
     background: var(--mine-page-bg);
 }
 
+@utility mine-logo {
+    @apply text-(--mine-btn-primary-bg);
+}
+
 @utility mine-text-primary {
     @apply text-(--mine-text-primary);
 }

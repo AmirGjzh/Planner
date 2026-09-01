@@ -62,14 +62,14 @@ new #[Layout('layouts::auth')] class extends Component
     protected function messages(): array
     {
         return [
-            'username.required' => __('Username is required'),
-            'username.regex' => __('Start with a letter, use 3 to 30 characters'),
-            'email.required' => __('Email is required'),
-            'email.email' => __('Enter a valid email'),
-            'password.required' => __('Password is required'),
-            'password.confirmed' => __('The passwords don\'t match'),
-            'password.min' => __('Use at least 8 characters'),
-            'password_confirmation.required' => __('Confirm your password'),
+            'username.required' => __('Username is required.'),
+            'username.regex' => __('Start with a letter, use 3 to 30 characters.'),
+            'email.required' => __('Email is required.'),
+            'email.email' => __('Enter a valid email.'),
+            'password.required' => __('Password is required.'),
+            'password.confirmed' => __('The passwords don\'t match.'),
+            'password.min' => __('Use at least 8 characters.'),
+            'password_confirmation.required' => __('Confirm your password.'),
         ];
     }
 };

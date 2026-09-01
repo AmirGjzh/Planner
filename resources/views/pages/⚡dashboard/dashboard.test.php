@@ -2,6 +2,7 @@
 
 use App\Enums\WorkloadLevel;
 use App\Models\User;
+use App\Support\Jalali;
 use Carbon\Carbon;
 use Livewire\Livewire;
 
@@ -150,7 +151,7 @@ it('renders localized strings and Jalali dates in fa', function () {
         ->assertSee('تسک‌ های نیازمند توجه')
         ->assertSee('حجم کار این هفته')
         ->assertSee('امروز')
-        ->assertSee(\App\Support\Jalali::format(now(), 'd MMM'));
+        ->assertSee(Jalali::format(now(), 'd MMM'));
 });
 
 it('sums estimated minutes for each day in the workload grid', function () {

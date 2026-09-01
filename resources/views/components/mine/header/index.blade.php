@@ -17,7 +17,7 @@
             "flex items-center"
         ])>
             <a wire:navigate.hover href="{{ route('home') }}">
-                <img src="{{ asset('storage/images/logo.svg') }}" alt="{{ config('app.name') }}" width="100">
+                <x-mine.brand-logo width="100" aria-label="{{ config('app.name') }}" />
             </a>
         </div>
         <div @class([
@@ -80,7 +80,7 @@
 
     <div class="flex items-center md:hidden mx-auto">
         <a wire:navigate.hover href="{{ route('home') }}">
-            <img src="{{ asset('storage/images/logo.svg') }}" alt="{{ config('app.name') }}" width="100">
+            <x-mine.brand-logo width="100" aria-label="{{ config('app.name') }}" />
         </a>
     </div>
 
@@ -101,6 +101,13 @@
                                         email = $event.detail.email;
                                         initials = $event.detail.initials;
                                     ">
+                        <div @class([
+                            "pr-2" => app()->isLocale('en'),
+                            "pl-2" => app()->isLocale('fa'),
+                            "flex items-center"
+                        ])>
+                            <x-mine.theme-switcher class="pointer-events-auto" />
+                        </div>
                         <x-mine.dropdown group="header-action" class="flex items-center h-full pointer-events-none">
                             <x-mine.dropdown.trigger class="pointer-events-auto">
                                 <div @class([
@@ -220,6 +227,7 @@
                 "pl-3 md:pl-5" => app()->isLocale('fa'),
                 "w-full h-full pointer-events-none flex items-center justify-end gap-2"
             ])>
+                <x-mine.theme-switcher class="pointer-events-auto" />
                 <a wire:navigate.hover href="{{ route('login') }}" class="pointer-events-auto">
                     <x-mine.button class="mine-btn-primary sm:mine-btn-ghost text-sm" height="h-10">
                         <div @class([

@@ -13,6 +13,8 @@ const ICONS = [
     'CheckSquare',
     'AlertTriangle',
     'ShieldAlert',
+    'Sun',
+    'Moon',
     'AlertCircle',
     'Envelope2',
     'Lock',

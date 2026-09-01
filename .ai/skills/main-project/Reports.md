@@ -52,7 +52,7 @@ Routes (`/login` guest-only → `pages::auth.login`, `/dashboard` auth-only), Li
 ### 🔸 Deferred / By Decision
 
 - **"Forgot password?" link** is a dead `href="#"` — no reset flow exists. Kept for now (product decision); revisit when password reset is in scope.
-- **Cooldown countdown text** — left as "Try again in a minute" (does not surface live `available_in`).
+- **Cooldown countdown text** — left as "Try again in a minute." (does not surface live `available_in`).
 - **Autocomplete attributes** on login inputs — skipped (browser inference works).
 - **Route-level IP throttle middleware** — skipped; the IP-only action key already provides the anti-spray behavior without a second limiter.
 

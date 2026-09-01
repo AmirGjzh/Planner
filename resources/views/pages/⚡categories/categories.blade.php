@@ -170,13 +170,13 @@
 
             @if($add_error === 'already_exists')
                 <div class="mb-4">
-                    <x-mine.alert variant="danger" title="{{ __('Duplicate category') }}">{{ __('You have a category with this name') }}</x-mine.alert>
+                    <x-mine.alert variant="danger" title="{{ __('Duplicate category!') }}">{{ __('You have a category with this name.') }}</x-mine.alert>
                 </div>
             @endif
 
             @if($add_error === 'rate_limited')
                 <div class="mb-4">
-                    <x-mine.alert variant="warning" title="{{ __('Too many attempts') }}">{{ __('Try again in a minute') }}</x-mine.alert>
+                    <x-mine.alert variant="warning" title="{{ __('Too many add-category attempts!') }}">{{ __('Try again in a minute.') }}</x-mine.alert>
                 </div>
             @endif
 
@@ -211,13 +211,13 @@
 
             @if($edit_error === 'already_exists')
                 <div class="mb-4">
-                    <x-mine.alert variant="danger" title="{{ __('Duplicate category') }}">{{ __('You have a category with this name') }}</x-mine.alert>
+                    <x-mine.alert variant="danger" title="{{ __('Duplicate category!') }}">{{ __('You have a category with this name.') }}</x-mine.alert>
                 </div>
             @endif
 
             @if($edit_error === 'rate_limited')
                 <div class="mb-4">
-                    <x-mine.alert variant="warning" title="{{ __('Too many attempts') }}">{{ __('Try again in a minute') }}</x-mine.alert>
+                    <x-mine.alert variant="warning" title="{{ __('Too many edit-category attempts!') }}">{{ __('Try again in a minute.') }}</x-mine.alert>
                 </div>
             @endif
 
@@ -253,11 +253,11 @@
 
             @if($delete_error === 'has_tasks')
                 <div class="mb-4">
-                    <x-mine.alert variant="danger" title="{{ __('Cannot delete category') }}">{{ __('This category has tasks, reassign or delete them first') }}</x-mine.alert>
+                    <x-mine.alert variant="danger" title="{{ __('Cannot delete category!') }}">{{ __('This category has tasks, reassign or delete them first.') }}</x-mine.alert>
                 </div>
             @else
                 <div class="mb-4">
-                    <x-mine.alert variant="warning" title="{{ __('Are you sure?') }}">{{ __('This action cannot be undone') }}</x-mine.alert>
+                    <x-mine.alert variant="warning" title="{{ __('Are you sure?') }}">{{ __('This action cannot be undone.') }}</x-mine.alert>
                 </div>
             @endif
 

@@ -1,22 +1,22 @@
 <div class="min-h-dvh mine-page-bg px-6 py-4 flex justify-center items-center">
     <x-mine.animate as="div" delay="100" class="mine-card w-full max-w-120 flex flex-col justify-center p-6">
         <h1 class="text-center font-semibold text-xl mine-text-primary mb-2">{{ __('Welcome to Planner') }}</h1>
-        <p class="text-center text-sm mb-6 mine-text-secondary font-medium">{{ __('Enter your details to create your account') }}</p>
+        <p class="text-center text-sm mb-6 mine-text-secondary font-medium">{{ __('Enter your information to create your account') }}</p>
 
         <form wire:submit="register" class="flex flex-col">
             @if($register_error === 'rate_limited')
                 <div class="mb-4">
-                    <x-mine.alert variant="warning" title="{{ __('Too many attempts') }}">{{ __('Try again in a minute') }}</x-mine.alert>
+                    <x-mine.alert variant="warning" title="{{ __('Too many sign-up attempts!') }}">{{ __('Try again in a minute.') }}</x-mine.alert>
                 </div>
             @endif
             @if($register_error === 'username_taken')
                 <div class="mb-4">
-                    <x-mine.alert variant="danger" title="{{ __('Username taken') }}">{{ __('Try a different username') }}</x-mine.alert>
+                    <x-mine.alert variant="danger" title="{{ __('Username taken!') }}">{{ __('Try a different username.') }}</x-mine.alert>
                 </div>
             @endif
             @if($register_error === 'email_taken')
                 <div class="mb-4">
-                    <x-mine.alert variant="danger" title="{{ __('Email already registered') }}">{{ __('Sign in, or use another email') }}</x-mine.alert>
+                    <x-mine.alert variant="danger" title="{{ __('Email already registered!') }}">{{ __('Sign in, or use another email.') }}</x-mine.alert>
                 </div>
             @endif
 
