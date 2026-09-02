@@ -623,9 +623,9 @@ it('sorts plans by creation date with latest first', function () {
     expect(strpos($html, 'NewPlan'))->toBeLessThan(strpos($html, 'OldPlan'));
 });
 
-it('paginates three plan cards per page', function () {
+it('paginates four plan cards per page', function () {
     $user = User::factory()->create();
-    foreach (['One', 'Two', 'Three', 'Four'] as $name) {
+    foreach (['One', 'Two', 'Three', 'Four', 'Five'] as $name) {
         $user->plans()->create(['name' => $name.'Plan', ...planInCurrentMonth()]);
     }
 
@@ -635,7 +635,7 @@ it('paginates three plan cards per page', function () {
 
     expect($html)->toContain('Next')
         ->toContain('gotoPage(2');
-    expect(substr_count($html, 'wire:key="plan-'))->toBe(3);
+    expect(substr_count($html, 'wire:key="plan-'))->toBe(4);
 });
 
 it('resets the add form state on cancel-add', function () {

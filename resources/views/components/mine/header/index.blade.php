@@ -106,8 +106,6 @@
                             "pl-2" => app()->isLocale('fa'),
                             "flex items-center"
                         ])>
-                            <x-mine.theme-switcher class="pointer-events-auto" />
-                        </div>
                         <x-mine.dropdown group="header-action" class="flex items-center h-full pointer-events-none">
                             <x-mine.dropdown.trigger class="pointer-events-auto">
                                 <div @class([
@@ -227,7 +225,6 @@
                 "pl-3 md:pl-5" => app()->isLocale('fa'),
                 "w-full h-full pointer-events-none flex items-center justify-end gap-2"
             ])>
-                <x-mine.theme-switcher class="pointer-events-auto" />
                 <a wire:navigate.hover href="{{ route('login') }}" class="pointer-events-auto">
                     <x-mine.button class="mine-btn-primary sm:mine-btn-ghost text-sm" height="h-10">
                         <div @class([

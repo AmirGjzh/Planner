@@ -22,4 +22,3 @@ Before planning or editing, find the row whose globs match the file's path and r
 | resources/views/components/mine/{select,datepicker,input}/** | .ai/rules/selectdatepickerinput.md |
 | app/Actions/Task/** | .ai/rules/task.md |
 | tests/**, tests/**/*.test.php | .ai/rules/tests.md |
-| config/themes/** | .ai/rules/themes.md |
