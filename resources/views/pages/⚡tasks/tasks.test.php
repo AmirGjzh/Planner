@@ -491,7 +491,7 @@ it('reopens a completed task', function () {
         ->set('reopening_id', $task->id)
         ->call('reopenTask')
         ->assertDispatched('close-modal', id: 'reopen-task-confirmation')
-        ->assertDispatched('toast', title: __('Your task reopened'), variant: 'info');
+        ->assertDispatched('toast', title: __('Your task re activated'), variant: 'info');
 
     expect($task->fresh()->done)->toBeFalse();
 });
@@ -834,6 +834,18 @@ it('searches tasks by title', function () {
         ->assertDontSee('Bravo task');
 });
 
+it('searches tasks by title case-insensitively', function () {
+    $user = User::factory()->create();
+    makeTask($user, 'Alpha task');
+    makeTask($user, 'Bravo task');
+
+    Livewire::actingAs($user)
+        ->test('pages::tasks')
+        ->set('search', 'alpha')
+        ->assertSee('Alpha task')
+        ->assertDontSee('Bravo task');
+});
+
 it('shows no results message when search matches nothing', function () {
     $user = User::factory()->create();
     makeTask($user, 'Alpha task');
@@ -863,7 +875,7 @@ it('renders the filter dropdown options', function () {
 
     Livewire::actingAs($user)
         ->test('pages::tasks')
-        ->assertSee('Filter task')
+        ->assertSee(__('Filter'))
         ->assertSee('All')
         ->assertSee('Active')
         ->assertSee('Completed')
@@ -1055,7 +1067,7 @@ it('renders task card dates in jalali when locale is fa', function () {
     makeTask($user, 'Jalali task', ['task_date' => '2026-01-15']);
     app()->setLocale('fa');
 
-    $date = Jalali::format(Carbon::parse('2026-01-15'), 'd MMM ، y');
+    $date = Jalali::format(Carbon::parse('2026-01-15'), 'd MMM');
 
     Livewire::actingAs($user)
         ->test('pages::tasks')

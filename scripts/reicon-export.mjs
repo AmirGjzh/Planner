@@ -22,9 +22,13 @@ const ICONS = [
     'EyeOpen',
     'Check',
     'User4',
+    'Fire',
+    'Bell',
     'Xmark',
     'Home',
     'Clipboard',
+    'ClipboardCheck',
+    'ClipboardRemove',
     'Folder',
     'Rocket2',
     'Chart2',
@@ -55,7 +59,8 @@ const ICONS = [
     'ArrowRotate',
     'PenWriting',
     'Trophy',
-    'Siren2'
+    'Siren2',
+    'Pie2'
 ];
 
 const store = {};

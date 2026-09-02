@@ -16,28 +16,6 @@ enum WorkloadLevel: string
 
     public const HEAVY_MAX_MINUTES = 360;
 
-    public function label(): string
-    {
-        return match ($this) {
-            self::None => 'No tasks',
-            self::Light => 'Light',
-            self::Moderate => 'Moderate',
-            self::Heavy => 'Heavy',
-            self::VeryHeavy => 'Very Heavy',
-        };
-    }
-
-    public function rangeLabel(): string
-    {
-        return match ($this) {
-            self::None => 'No tasks',
-            self::Light => 'Light (1–120 min)',
-            self::Moderate => 'Moderate (121–240 min)',
-            self::Heavy => 'Heavy (241–360 min)',
-            self::VeryHeavy => 'Very Heavy (361+ min)',
-        };
-    }
-
     public static function forMinutes(int $minutes): self
     {
         return match (true) {

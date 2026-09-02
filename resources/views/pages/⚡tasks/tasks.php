@@ -13,6 +13,7 @@ use App\Livewire\Concerns\HasUser;
 use App\Models\Category;
 use App\Models\Plan;
 use App\Models\Task;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -127,7 +128,7 @@ new class extends Component
             ->select(['id', 'title', 'description', 'task_date', 'estimated_minutes', 'priority', 'done', 'day_before_alarm', 'plan_id', 'category_id', 'user_id', 'created_at'])
             ->with('category:id,name', 'plan:id,name')
             ->where('user_id', $userId)
-            ->when($this->search, fn ($q) => $q->where('title', 'like', '%'.$this->search.'%'))
+            ->when($this->search, fn ($q) => $q->whereRaw('LOWER(title) LIKE ?', [Str::lower('%'.$this->search.'%')]))
             ->when($this->range_filter['start'] ?? null, fn ($q) => $q->whereDate('task_date', '>=', $this->range_filter['start']))
             ->when($this->range_filter['end'] ?? null, fn ($q) => $q->whereDate('task_date', '<=', $this->range_filter['end']))
             ->when($this->status_filter === 'active', fn ($q) => $q->where('done', false)->whereDate('task_date', '>=', $today))
@@ -433,7 +434,7 @@ new class extends Component
         unset($this->tasks);
         $this->dispatch('close-modal', id: 'reopen-task-confirmation');
         $this->dispatch('toast',
-            title: __('Your task reopened'),
+            title: __('Your task re activated'),
             variant: 'info',
             duration: 3000,
             position: 'bottom-center'
@@ -473,8 +474,8 @@ new class extends Component
     {
         return [
             'add_title.required' => __('Task title is required.'),
-            'add_title.max' => __('Task title must not exceed 255 characters.'),
-            'add_description.max' => __('Task description must not exceed 5000 characters.'),
+            'add_title.max' => __('Task title cannot exceed 255 characters.'),
+            'add_description.max' => __('Task description cannot exceed 5000 characters.'),
             'add_date.required' => __('Task date is required.'),
         ];
     }

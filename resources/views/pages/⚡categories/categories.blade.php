@@ -140,15 +140,15 @@
                 </x-mine.animate>
                 @empty
                     @if($this->search)
-                        <div class="col-span-full text-center py-12">
+                        <x-mine.animate class="col-span-full text-center py-12">
                             <x-mine.icon name="Magnifier" size="40" weight="filled" class="mx-auto mb-3 mine-text-secondary" />
                             <p class="mine-text-secondary text-sm font-medium">{{ __('No categories found') }}</p>
-                        </div>
+                        </x-mine.animate>
                     @else
-                        <div class="col-span-full text-center py-12">
+                        <x-mine.animate class="col-span-full text-center py-12">
                             <x-mine.icon name="Folder" size="40" weight="filled" class="mx-auto mb-3 mine-text-secondary" />
                             <p class="mine-text-secondary text-sm font-medium">{{ __('No categories yet') }}</p>
-                        </div>
+                        </x-mine.animate>
                     @endif
                 @endforelse
             </div>

@@ -88,7 +88,7 @@ new class extends Component
             ->when($this->sort === 'latest', fn ($q) => $q->latest())
             ->when($this->sort === 'load', fn ($q) => $q->orderByDesc('tasks_sum_estimated_minutes'))
             ->when($this->sort === 'state', fn ($q) => $q->orderByRaw('CASE WHEN done = 0 AND finish_date >= ? THEN 0 WHEN done = 0 THEN 1 ELSE 2 END', [now()->toDateString()]))
-            ->paginate(3)->onEachSide(1);
+            ->paginate(4)->onEachSide(1);
     }
 
     #[Computed]
@@ -302,7 +302,7 @@ new class extends Component
         unset($this->plans);
         $this->dispatch('close-modal', id: 'reopen-plan-confirmation');
         $this->dispatch('toast',
-            title: __('Your plan reactivated'),
+            title: __('Your plan re activated'),
             variant: 'info',
             duration: 3000,
             position: 'bottom-center'

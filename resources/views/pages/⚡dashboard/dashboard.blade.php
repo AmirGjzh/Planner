@@ -51,12 +51,12 @@
         'high' => __('High'),
     };
 
-    $arrowIcon = app()->isLocale('fa') ? 'arrow-long-left' : 'arrow-long-right';
+    $arrowIcon = app()->isLocale('fa') ? 'ArrowLeft' : 'ArrowRight';
 @endphp
 
 <div class="flex-1 px-4 sm:px-8 md:px-16 pb-6 pt-4 flex flex-col">
     <div class="flex flex-col">
-        <div class="flex items-center justify-between gap-4 mb-4">
+        <x-mine.animate class="flex items-center justify-between gap-4 mb-4">
             <div>
                 <div class="flex items-center gap-2">
                     <h1 class="font-semibold text-base mine-text-primary mb-1">{{ __('Tasks needing attention') }}</h1>
@@ -68,53 +68,53 @@
             </div>
             <a wire:navigate href="{{ route('tasks') }}"
                 class="relative inline-flex items-center justify-center h-10 px-4 rounded-xl text-sm font-medium transition duration-200 ease-out cursor-pointer select-none whitespace-nowrap mine-btn-primary">
-                <div class="flex items-center gap-1">
+                <div class="flex items-center gap-2">
                     <p @class([
                         "pt-1" => app()->isLocale('en'),
                         "text-[13px] font-medium"
                     ])><span class="hidden md:inline">{{ __('View') }}</span> {{ __('All') }} <span
                             class="hidden sm:inline">{{ __('tasks') }}</span></p>
-                    <x-mine.icon name="{{ $arrowIcon }}" variant="micro" class="size-4" />
+                    <x-mine.icon name="{{ $arrowIcon }}" size="16" weight="filled" />
                 </div>
             </a>
-        </div>
+        </x-mine.animate>
         <x-mine.horizontal-scroll scroller-class="flex gap-2 self-center px-2 pb-10 pt-2" class="px-0!">
             @forelse ($this->upcomingTasks as $task)
                 @if ($task->task_date < $today)
-                    <div wire:key="task-{{ $task->id }}"
+                    <x-mine.animate wire:key="task-{{ $task->id }}" stagger="50" data-anim-index="{{ $loop->index }}"
                         class="min-w-50 mine-card mine-card-danger flex flex-col p-4">
                         <h2 class="text-sm font-semibold mine-text-primary mb-4">{{ $task->title }}</h2>
                         <div class="self-start mine-badge-danger rounded-xl h-7 flex items-center gap-1 px-2 mb-4">
-                            <x-mine.icon name="fire" class="size-4" variant="micro" />
+                            <x-mine.icon name="Fire" size="16" weight="filled" />
                             <p class="font-medium text-xs">{{ $priorityLabel($task->priority->value) }}</p>
                         </div>
                         <div class="self-start mine-badge-danger rounded-xl h-7 flex items-center gap-1 px-2 mb-4">
-                            <x-mine.icon name="calendar" class="size-5" variant="micro" />
+                            <x-mine.icon name="Calendar" size="16" weight="filled" />
                             <p class="font-semibold text-xs">{{ __('Overdue') }}</p>
                             @php $daysAgo = (int) $task->task_date->startOfDay()->diffInDays($today); @endphp
                             <p class="font-medium text-xs">{{ $daysAgo === 1 ? __('1 day ago') : __(':count days ago', ['count' => $daysAgo]) }}</p>
                         </div>
                         <a wire:navigate href="{{ route('tasks', ['search' => $task->title]) }}"
                             class="relative inline-flex items-center justify-center h-9 px-4 rounded-xl text-sm font-semibold transition duration-200 ease-out cursor-pointer select-none whitespace-nowrap mine-btn-danger">
-                            <div class="flex items-center gap-1">
+                            <div class="flex items-center gap-2">
                                 <p @class([
                                     "pt-1" => app()->isLocale('en'),
                                     "text-[13px] font-medium"
                                 ])>{{ __('View task') }}</p>
-                                <x-mine.icon name="{{ $arrowIcon }}" variant="micro" class="size-4" />
+                                <x-mine.icon name="{{ $arrowIcon }}" size="16" weight="filled" />
                             </div>
                         </a>
-                    </div>
+                    </x-mine.animate>
                 @else
-                    <div wire:key="task-{{ $task->id }}"
+                    <x-mine.animate wire:key="task-{{ $task->id }}" stagger="50" data-anim-index="{{ $loop->index }}"
                         class="min-w-50 mine-card mine-card-primary flex flex-col p-4">
                         <h2 class="text-sm font-semibold mine-text-primary mb-4">{{ $task->title }}</h2>
                         <div class="self-start mine-badge-primary rounded-xl h-7 flex items-center gap-1 px-2 mb-4">
-                            <x-mine.icon name="fire" class="size-4" variant="micro" />
+                            <x-mine.icon name="Fire" size="16" weight="filled" />
                             <p class="font-medium text-xs">{{ $priorityLabel($task->priority->value) }}</p>
                         </div>
                         <div class="self-start mine-badge-primary rounded-xl h-7 flex items-center gap-1 px-2 mb-4">
-                            <x-mine.icon name="calendar" class="size-5" variant="micro" />
+                            <x-mine.icon name="Calendar" size="16" weight="filled" />
                             @php $daysUntil = -(int) $task->task_date->startOfDay()->diffInDays($today); @endphp
                             @if ($daysUntil === 0)
                                 <p class="font-semibold text-xs">{{ __('Due today') }}</p>
@@ -127,35 +127,35 @@
                         </div>
                         <a wire:navigate href="{{ route('tasks', ['search' => $task->title]) }}"
                             class="relative inline-flex items-center justify-center h-9 px-4 rounded-xl text-sm font-semibold transition duration-200 ease-out cursor-pointer select-none whitespace-nowrap mine-btn-primary">
-                            <div class="flex items-center gap-1">
+                            <div class="flex items-center gap-2">
                                 <p @class([
                                     "pt-1" => app()->isLocale('en'),
                                     "text-[13px] font-medium"
                                 ])>{{ __('View task') }}</p>
-                                <x-mine.icon name="{{ $arrowIcon }}" variant="micro" class="size-4" />
+                                <x-mine.icon name="{{ $arrowIcon }}" size="16" weight="filled" />
                             </div>
                         </a>
-                    </div>
+                    </x-mine.animate>
                 @endif
             @empty
-                <div class="w-full mine-card flex items-center justify-center py-8 px-4 shadow-none">
+                <x-mine.animate class="w-full mine-card flex items-center justify-center py-8 px-4 shadow-none">
                     <p class="text-sm font-medium mine-text-secondary">{{ __('No tasks need your attention right now.') }}</p>
-                </div>
+                </x-mine.animate>
             @endforelse
         </x-mine.horizontal-scroll>
     </div>
 
     <div class="flex flex-col mb-6">
-        <div class="mb-4">
+        <x-mine.animate delay="50" class="mb-4">
             <h1 class="font-semibold text-base mine-text-primary mb-1">{{ __("This week's workload") }}</h1>
             <p class="font-medium text-[13px] mine-text-secondary">{{ __('Estimated workload based on task duration.') }}</p>
-        </div>
+        </x-mine.animate>
         <x-mine.horizontal-scroll :today-index="collect($this->week)->search(fn ($d) => $d['is_today'])">
             <div class="grid min-w-210 grid-cols-7 gap-1">
                 @foreach ($this->week as $day)
                     @php $meta = $workloadMeta[$day['level']]; @endphp
 
-                    <div data-day
+                    <x-mine.animate data-day stagger="40" data-anim-index="{{ $loop->index }}"
                         class="{{ $day['is_today'] ? 'bg-(--mine-datepicker-day-selected-bg)' : '' }} min-h-30 mine-card shadow-none">
                         <div class="px-2 py-3 text-center">
                             <p
@@ -192,13 +192,13 @@
                                 </div>
                             @endif
                         </div>
-                    </div>
+                    </x-mine.animate>
                 @endforeach
             </div>
         </x-mine.horizontal-scroll>
     </div>
 
-    <div class="flex flex-col">
+    <x-mine.animate delay="100" class="flex flex-col">
         <div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs font-medium mine-text-secondary">
             @foreach (\App\Enums\WorkloadLevel::cases() as $level)
                 <span class="inline-flex items-center gap-1.5">
@@ -207,5 +207,5 @@
                 </span>
             @endforeach
         </div>
-    </div>
+    </x-mine.animate>
 </div>

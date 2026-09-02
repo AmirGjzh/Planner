@@ -357,15 +357,19 @@
                                     <x-mine.button type="button" class="mine-btn-secondary"
                                         @click.stop="$wire.set('reopening_id', {{ $plan->id }}, false); $dispatch('open-modal', { id: 'reopen-plan-confirmation' })">
                                         <div class="flex justify-center items-center gap-2 text-sm font-medium">
-                                            <x-mine.icon name="ArrowRotate" size="16" weight="filled" />
-                                            <p>{{ __('Reactive plan') }}</p>
+                                            <x-mine.icon name="ArrowRotate" size="16" weight="filled" @class([
+                                                "mb-1" => app()->isLocale('en')
+                                            ]) />
+                                            <p>{{ __('Re active plan') }}</p>
                                         </div>
                                     </x-mine.button>
                                 @else
                                     <a href="{{ route('tasks', ['plan_filter' => [$plan->id], 'add_plan' => $plan->id]) }}" wire:navigate.hover class="w-full">
                                         <x-mine.button type="button" class="{{ $config['add_class'] }}">
                                             <div class="flex justify-center items-center gap-2 text-sm font-md">
-                                                <x-mine.icon name="Plus" size="16" weight="filled" />
+                                                <x-mine.icon name="Plus" size="16" weight="filled" @class([
+                                                    "mb-1" => app()->isLocale('en')
+                                                ]) />
                                                 <p>{{ __('Add task') }}</p>
                                             </div>
                                         </x-mine.button>
@@ -373,7 +377,9 @@
                                     <x-mine.button type="button" class="{{ $config['complete_class'] }}"
                                         @click.stop="$wire.set('completing_id', {{ $plan->id }}, false); $dispatch('open-modal', { id: 'complete-plan-confirmation' })">
                                         <div class="flex justify-center items-center gap-2 text-sm font-medium">
-                                            <x-mine.icon name="Check" size="16" weight="filled" />
+                                            <x-mine.icon name="Check" size="16" weight="filled" @class([
+                                                "mb-1" => app()->isLocale('en')
+                                            ]) />
                                             <p class="hidden sm:block">{{ __('Mark as completed') }}</p>
                                             <p class="sm:hidden">{{ __('Complete') }}</p>
                                         </div>
@@ -383,15 +389,15 @@
                         </x-mine.animate>
                     @empty
                         @if($this->hasActiveFilters)
-                            <div class="col-span-full text-center py-12">
+                            <x-mine.animate class="col-span-full text-center py-12">
                                 <x-mine.icon name="Magnifier" weight="filled" size="40" class="mx-auto mb-3 mine-text-secondary" />
                                 <p class="mine-text-secondary text-sm font-medium">{{ __('No plans found') }}</p>
-                            </div>
+                            </x-mine.animate>
                         @else
-                            <div class="col-span-full text-center py-12">
+                            <x-mine.animate class="col-span-full text-center py-12">
                                 <x-mine.icon name="Bullseye" size="40" weight="filled" class="mx-auto mb-3 mine-text-secondary" />
                                 <p class="mine-text-secondary text-sm font-medium">{{ __('No plans yet') }}</p>
-                            </div>
+                            </x-mine.animate>
                         @endif
                     @endforelse
                 </div>
@@ -577,7 +583,7 @@
     <x-mine.modal id="reopen-plan-confirmation" :close-by-clicking-away="false" :close-by-escaping="false" width="lg">
         <div class="px-6 sm:px-8 py-6">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-base font-semibold mine-text-primary">{{ __('Reactive plan') }}</h2>
+                <h2 class="text-base font-semibold mine-text-primary">{{ __('Re active plan') }}</h2>
                 <button type="button" @click="close(); $wire.cancelReopen()" class="mine-btn-icon p-2 rounded-xl">
                     <x-mine.icon name="Xmark" weight="filled" size="16" />
                 </button>
@@ -596,7 +602,7 @@
                     </x-mine.button>
                     <x-mine.button wire:target="reopenPlan" class="mine-btn-primary">
                         <p class="text-sm">
-                            {{ __('Reactive') }}
+                            {{ __('Re active') }}
                         </p>
                     </x-mine.button>
                 </div>

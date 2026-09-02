@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Support\Jalali;
 use Carbon\Carbon;
 use Livewire\Livewire;
 
@@ -221,4 +222,33 @@ it('builds a per-day chart from estimated minutes, only for days with tasks', fu
     expect($chart[1]['remaining'])->toBe(30);
 
     $component->assertSeeHtml('border-t border-dashed');
+});
+
+it('uses Jalali bounds and localized stats when locale is fa', function () {
+    app()->setLocale('fa');
+
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+
+    $user->tasks()->create([
+        'title' => 'Fa task', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 30,
+        'category_id' => $category->id, 'done' => true,
+    ]);
+
+    $component = Livewire::actingAs($user)->test('pages::reports');
+
+    expect($component->instance()->range_filter)->toBe(Jalali::weekBounds(now()));
+
+    $component->call('selectPreset', 'last_week');
+    expect($component->instance()->range_filter)->toBe(Jalali::weekBounds(now()->copy()->subWeek()));
+
+    $component->call('selectPreset', 'this_month');
+    expect($component->instance()->range_filter)->toBe(Jalali::monthBounds(now()));
+
+    $component->call('selectPreset', 'this_week');
+
+    expect($component->instance()->chart[0]['label'])->toBe(Jalali::format(now(), 'd MMM'));
+    expect($component->instance()->stats['estimated_time'])->toBe('۳۰ دقیقه');
+
+    $component->assertSee('۳۰ دقیقه');
 });

@@ -326,7 +326,7 @@ it('reopens a completed plan', function () {
         ->set('reopening_id', $plan->id)
         ->call('reopenPlan')
         ->assertDispatched('close-modal', id: 'reopen-plan-confirmation')
-        ->assertDispatched('toast', title: __('Your plan reactivated'), variant: 'info');
+        ->assertDispatched('toast', title: __('Your plan re activated'), variant: 'info');
 
     expect($plan->fresh()->done)->toBeFalse();
 });
@@ -389,6 +389,7 @@ it('filters plans by overdue status', function () {
 
     Livewire::actingAs($user)
         ->test('pages::plans')
+        ->set('range_filter', planWideRange())
         ->set('status_filter', 'overdue')
         ->assertSee('Alpha')
         ->assertDontSee('Bravo');

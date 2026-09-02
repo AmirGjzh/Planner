@@ -85,7 +85,7 @@
             class="absolute start-2 top-1/2 z-10 -translate-y-1/2 flex size-9 items-center justify-center rounded-full border border-(--mine-card-border) bg-(--mine-dropdown-bg) text-(--mine-text-secondary) shadow-md transition-colors duration-200 hover:bg-(--mine-card-bg-hover) hover:text-(--mine-text-primary)"
             aria-label="Scroll to the beginning"
         >
-            <x-mine.icon name="{{ app()->isLocale('fa') ? 'chevron-right' : 'chevron-left' }}" variant="mini" class="size-5" />
+            <x-mine.icon name="Angle{{ app()->isLocale('fa') ? 'Right' : 'Left' }}" variant="mini" class="size-5" />
         </button>
     </template>
 
@@ -97,7 +97,7 @@
             class="absolute end-2 top-1/2 z-10 -translate-y-1/2 flex size-9 items-center justify-center rounded-full border border-(--mine-card-border) bg-(--mine-dropdown-bg) text-(--mine-text-secondary) shadow-md transition-colors duration-200 hover:bg-(--mine-card-bg-hover) hover:text-(--mine-text-primary)"
             aria-label="Scroll to the end"
         >
-            <x-mine.icon name="{{ app()->isLocale('fa') ? 'chevron-left' : 'chevron-right' }}" variant="mini" class="size-5" />
+            <x-mine.icon name="Angle{{ app()->isLocale('fa') ? 'Left' : 'Right' }}" variant="mini" class="size-5" />
         </button>
     </template>
 </div>

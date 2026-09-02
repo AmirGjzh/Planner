@@ -133,12 +133,12 @@ it('scopes the attention list to the authenticated user', function () {
 
 it('shows the current week with today marked', function () {
     $user = User::factory()->create();
-    $start = now()->startOfWeek(Carbon::SUNDAY);
 
-    Livewire::actingAs($user)
-        ->test('pages::dashboard')
-        ->assertSee('Today')
-        ->assertSee($start->copy()->addDays(1)->format('D'));
+    $component = Livewire::actingAs($user)->test('pages::dashboard');
+    $nonToday = collect($component->instance()->week)->firstWhere('is_today', false);
+
+    $component->assertSee('Today')
+        ->assertSee($nonToday['day']);
 });
 
 it('renders localized strings and Jalali dates in fa', function () {
