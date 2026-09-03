@@ -21,6 +21,8 @@ return new class extends Migration
             $table->date('birthday')->nullable();
             $table->string('country')->nullable();
             $table->enum('gender', ['male', 'female'])->nullable();
+            $table->enum('locale', ['en', 'fa'])->default('fa');
+            $table->enum('theme', ['ocean', 'magic', 'forest', 'chocolate', 'amber', 'safrron', 'midnight', 'gol-goli'])->default('ocean');
             $table->softDeletes();
             $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();

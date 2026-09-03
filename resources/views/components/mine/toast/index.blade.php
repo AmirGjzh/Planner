@@ -158,7 +158,7 @@
                             <x-mine.icon name="ShieldAlert" size="24" />
                         </div>
                         <div x-show="toast.variant === 'success'" class="absolute inset-0 text-[var(--mine-alert-success-icon)]">
-                            <x-mine.icon name="CheckSquare" size="24" />
+                            <x-mine.icon name="CheckCircle" size="24" />
                         </div>
                         <div x-show="toast.variant === 'warning'" class="absolute inset-0 text-[var(--mine-alert-warning-icon)]">
                             <x-mine.icon name="AlertTriangle" size="24" />

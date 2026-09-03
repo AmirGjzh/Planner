@@ -48,7 +48,7 @@ new #[Layout('layouts::auth')] class extends Component
                 'position' => 'bottom-center',
             ]);
 
-            return $this->redirectRoute('dashboard', navigate: true);
+            return $this->redirectRoute('dashboard');
         }
 
         $this->reset(['password']);

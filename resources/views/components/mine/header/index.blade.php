@@ -46,7 +46,7 @@
                         <div :style="open ? 'opacity:0; transform: rotate(90deg) scale(0.75);' : 'opacity:1; transform: rotate(0deg) scale(1);'"
                             style="opacity:1; transform: rotate(0deg) scale(1);"
                             class="absolute inset-0 flex flex-col items-center justify-center transition-all duration-200 ease-out">
-                            <x-mine.icon name="MoreH" size="28" weight="filled" />
+                            <x-mine.icon name="MoreH" size="24" weight="filled" />
                         </div>
                         <div :style="open ? 'opacity:1; transform: rotate(0deg) scale(1);' : 'opacity:0; transform: rotate(-90deg) scale(0.75);'"
                             style="opacity:0; transform: rotate(-90deg) scale(0.75);"
@@ -101,11 +101,6 @@
                                         email = $event.detail.email;
                                         initials = $event.detail.initials;
                                     ">
-                        <div @class([
-                            "pr-2" => app()->isLocale('en'),
-                            "pl-2" => app()->isLocale('fa'),
-                            "flex items-center"
-                        ])>
                         <x-mine.dropdown group="header-action" class="flex items-center h-full pointer-events-none">
                             <x-mine.dropdown.trigger class="pointer-events-auto">
                                 <div @class([
@@ -193,17 +188,10 @@
                                 <x-mine.dropdown.item destructive x-data="{ busy: false }" x-on:click.prevent="
                                                     if (busy) return;
                                                     busy = true;
-                                                    fetch('{{ route('logout') }}', {
-                                                        method: 'POST',
-                                                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
-                                                    })
+                                                    fetch('{{ route('logout') }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
                                                         .then((response) => {
                                                             if (! response.ok) throw new Error('Logout request failed');
-                                                            if (window.Livewire?.navigate) {
-                                                                window.Livewire.navigate('{{ route('home') }}');
-                                                            } else {
-                                                                window.location.href = '{{ route('home') }}';
-                                                            }
+                                                            window.location.assign('{{ route('home') }}');
                                                         })
                                                         .catch(() => busy = false);
                                                 ">

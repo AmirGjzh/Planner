@@ -21,6 +21,8 @@ use Illuminate\Notifications\Notifiable;
     'birthday',
     'country',
     'gender',
+    'locale',
+    'theme'
 ])]
 #[Hidden([
     'password',

@@ -2,12 +2,20 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        // TODO: we must add admin user, but later (after auth and role management)
+        User::query()->create([
+            'username' => 'amirgjz',
+            'email' => 'amir.futurefight@gmail.com',
+            'password' => Hash::make('Ag09909165872'),
+            'firstname' => 'AmirMohammad',
+            'lastname' => 'Ganjizade',
+        ]);
     }
 }

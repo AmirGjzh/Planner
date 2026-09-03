@@ -19,7 +19,6 @@ Route::middleware(['auth'])->group(function () {
             'duration' => 6000,
             'position' => 'bottom-center',
         ]);
-
         return response()->noContent();
     })->name('logout');
 });

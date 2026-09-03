@@ -10,7 +10,7 @@ const root = join(__dirname, '..');
 const ICONS = [
     'EyeOpen',
     'EyeClosed',
-    'CheckSquare',
+    'CheckCircle',
     'AlertTriangle',
     'ShieldAlert',
     'Sun',

@@ -13,7 +13,7 @@
         ],
         'success' => [
             'container' => 'border-[var(--mine-alert-success-border)] bg-[var(--mine-alert-success-bg)]',
-            'icon' => 'CheckSquare',
+            'icon' => 'CheckCircle',
             'icon-color' => 'text-[var(--mine-alert-success-icon)]',
             'title' => 'text-[var(--mine-alert-success-title)]',
         ],

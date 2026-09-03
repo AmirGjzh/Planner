@@ -1,5 +1,5 @@
 @php
-    $vars = config('themes.vars');
+    $vars = config('themes.vars')[auth()->user()?->theme ?? env('APP_THEME', 'forest')];
 @endphp
 
 @if ($vars)

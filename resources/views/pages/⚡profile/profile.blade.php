@@ -28,7 +28,7 @@
 
         <div class="md:flex-2 flex flex-col">
             <x-mine.animate delay="100" class="mine-card px-4 py-6 sm:p-8 flex flex-col gap-4">
-                <div class="mb-4">
+                <div class="mb-2">
                     <h1 class="font-bold text-sm mine-text-primary px-1">{{ __('Personal information') }}</h1>
                 </div>
                 @foreach ([
@@ -49,6 +49,13 @@
                         </p>
                     </div>
                 @endforeach
+                <div class="mb-2 mt-4">
+                    <h1 class="font-bold text-sm mine-text-primary px-1">{{ __('Personal information') }}</h1>
+                </div>
+                <div class="flex justify-between px-2">
+                    <p class="text-sm font-medium mine-text-secondary">{{ __('Theme') }}</p>
+                    <p class="text-sm font-medium mine-text-secondary max-w-40 min-w-0 truncate">{{ __(ucfirst($this->user->theme)) }}</p>
+                </div>
             </x-mine.animate>
             <x-mine.animate delay="150" class="flex flex-col sm:flex-row gap-4 px-4 sm:px-6 py-4 mt-6 sm:justify-between mine-alert-danger-box">
                 <div class="flex items-center justify-center gap-4">
@@ -100,6 +107,19 @@
                 <div class="flex flex-col sm:flex-row gap-4">
                     <x-mine.input label="{{ __('Firstname') }}" wire:model="firstname" placeholder="{{ __('Your firstname') }}" leftIcon="User4" />
                     <x-mine.input label="{{ __('Lastname') }}" wire:model="lastname" placeholder="{{  __('Your lastname')  }}" leftIcon="User4" />
+                </div>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <x-mine.select wire:model="gender" label="{{ __('Gender') }}" placeholder="{{ __('Select your gender') }}" leftIcon="Male">
+                        <x-mine.select.option value="male">{{ __('Male') }}</x-mine.select.option>
+                        <x-mine.select.option value="female">{{ __('Female') }}</x-mine.select.option>
+                    </x-mine.select>
+
+                    <x-mine.select wire:model="theme" label="{{ __('Theme') }}" placeholder="{{ __('Select your theme') }}" leftIcon="Sun">
+                        @foreach(config('themes.name') as $name)
+                            <x-mine.select.option wire:key="{{ $name }}"
+                                value="{{ $name }}">{{ __(ucfirst($name)) }}</x-mine.select.option>
+                        @endforeach
+                    </x-mine.select>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-4">
                     <x-mine.select wire:model="gender" label="{{ __('Gender') }}" placeholder="{{ __('Select your gender') }}" leftIcon="Male">
