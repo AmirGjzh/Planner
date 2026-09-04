@@ -25,6 +25,8 @@ new class extends Component
 
     public string $theme = '';
 
+    public string $locale = '';
+
     public ?string $country = null;
 
     public ?string $birthday = null;
@@ -62,7 +64,7 @@ new class extends Component
     {
         $this->edit_error = null;
 
-        $need_reload = ($this->theme !== $this->user->theme);
+        $need_reload = ($this->theme !== $this->user->theme or $this->locale !== $this->user->locale);
 
         $data = $this->validate();
         $result = $action->execute(
@@ -74,6 +76,7 @@ new class extends Component
             $data['country'],
             $data['birthday'],
             $data['theme'],
+            $data['locale'],
             request()
         );
         $this->edit_error = match ($result) {
@@ -89,13 +92,15 @@ new class extends Component
         $this->dispatch('close-modal', id: 'edit-profile-form');
 
         if ($need_reload) {
+            app()->setLocale($this->user->locale);
             session()->flash('toast', [
                 'title' => __('Profile updated'),
                 'variant' => 'info',
                 'duration' => 3000,
-                'position' => 'bottom-center'
+                'position' => 'bottom-center',
             ]);
-            $this->redirectRoute('profile', navigate: true);
+            $this->redirectRoute('profile', navigate: false);
+
             return;
         }
         $this->dispatch('profile-updated',
@@ -137,6 +142,7 @@ new class extends Component
             return;
         }
         $this->reset('password');
+        app()->setLocale(config('app.locale'));
         session()->flash('toast', [
             'title' => __('Account deleted'),
             'variant' => 'success',
@@ -160,6 +166,7 @@ new class extends Component
         $this->firstname = $user->firstname;
         $this->lastname = $user->lastname;
         $this->theme = $user->theme;
+        $this->locale = $user->locale;
         $this->gender = $user->gender?->value;
         $this->country = $user->country;
         $this->birthday = $user->birthday?->format('Y-m-d');
@@ -172,6 +179,7 @@ new class extends Component
             'firstname' => ['nullable', 'string', 'min:2', 'max:50', 'regex:/^[\p{L}\s\'-]+$/u'],
             'lastname' => ['nullable', 'string', 'min:2', 'max:50', 'regex:/^[\p{L}\s\'-]+$/u'],
             'theme' => ['required', Rule::in(config('themes.name'))],
+            'locale' => ['required', Rule::in(['fa', 'en'])],
             'gender' => ['nullable', Rule::enum(UserGender::class)],
             'country' => ['nullable', Rule::in(array_keys($this->countries()))],
             'birthday' => ['nullable', 'date', 'before_or_equal:today'],
@@ -192,6 +200,8 @@ new class extends Component
             'gender.enum' => __('Selected gender is invalid.'),
             'theme.required' => __('Theme is required.'),
             'theme.in' => __('Selected theme is invalid.'),
+            'locale.required' => __('Language is required.'),
+            'locale.in' => __('Selected language is invalid.'),
             'country.in' => __('Selected country is invalid.'),
             'birthday.date' => __('Birthdate must be a valid date.'),
             'birthday.before_or_equal' => __('Birthdate must be today or earlier.'),

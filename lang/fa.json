@@ -50,6 +50,11 @@
     "Log out": "خروج",
 
     "My profile": "پروفایل من",
+    "Preferences": "شخصی‌ سازی",
+    "Select your language": "زبان مورد نظرتو انتخاب کن",
+    "Language is required.": "زبان مورد نظرتو انتخاب کن.",
+    "Selected language is invalid." : "زبان انتخاب شده معتبر نیست.",
+    "Language": "زبان",
     "Theme": "تم",
     "Ocean": "اقیانوس",
     "Amber": "کهربا",

@@ -50,11 +50,15 @@
                     </div>
                 @endforeach
                 <div class="mb-2 mt-4">
-                    <h1 class="font-bold text-sm mine-text-primary px-1">{{ __('Personal information') }}</h1>
+                    <h1 class="font-bold text-sm mine-text-primary px-1">{{ __('Preferences') }}</h1>
                 </div>
                 <div class="flex justify-between px-2">
                     <p class="text-sm font-medium mine-text-secondary">{{ __('Theme') }}</p>
                     <p class="text-sm font-medium mine-text-secondary max-w-40 min-w-0 truncate">{{ __(ucfirst($this->user->theme)) }}</p>
+                </div>
+                <div class="flex justify-between px-2">
+                    <p class="text-sm font-medium mine-text-secondary">{{ __('Language') }}</p>
+                    <p class="text-sm font-medium mine-text-secondary max-w-40 min-w-0 truncate">{{ $this->user->locale == 'fa' ? 'فارسی' : "English" }}</p>
                 </div>
             </x-mine.animate>
             <x-mine.animate delay="150" class="flex flex-col sm:flex-row gap-4 px-4 sm:px-6 py-4 mt-6 sm:justify-between mine-alert-danger-box">
@@ -109,9 +113,9 @@
                     <x-mine.input label="{{ __('Lastname') }}" wire:model="lastname" placeholder="{{  __('Your lastname')  }}" leftIcon="User4" />
                 </div>
                 <div class="flex flex-col sm:flex-row gap-4">
-                    <x-mine.select wire:model="gender" label="{{ __('Gender') }}" placeholder="{{ __('Select your gender') }}" leftIcon="Male">
-                        <x-mine.select.option value="male">{{ __('Male') }}</x-mine.select.option>
-                        <x-mine.select.option value="female">{{ __('Female') }}</x-mine.select.option>
+                    <x-mine.select wire:model="locale" label="{{ __('Language') }}" placeholder="{{ __('Select your language') }}" leftIcon="Language">
+                        <x-mine.select.option value="fa">فارسی</x-mine.select.option>
+                        <x-mine.select.option value="en">English</x-mine.select.option>
                     </x-mine.select>
 
                     <x-mine.select wire:model="theme" label="{{ __('Theme') }}" placeholder="{{ __('Select your theme') }}" leftIcon="Sun">

@@ -32,7 +32,7 @@
             </div>
 
             <div class="mb-4">
-                <x-mine.button type="submit" height="h-12">{{ __('Sign in') }}</x-mine.button>
+                <x-mine.button wire:target="login" type="submit" height="h-12">{{ __('Sign in') }}</x-mine.button>
             </div>
         </form>
 

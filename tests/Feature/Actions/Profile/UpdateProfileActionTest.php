@@ -25,7 +25,7 @@ it('returns success and updates profile fields', function () {
 
     RateLimiter::clear(profileRateLimitKey($user));
 
-    $result = app(UpdateProfileAction::class)->execute($user, 'new_user', ' Amir ', ' Planner ', 'male', 'IR', '2000-01-15', profileRequest());
+    $result = app(UpdateProfileAction::class)->execute($user, 'new_user', ' Amir ', ' Planner ', 'male', 'IR', '2000-01-15', 'forest', 'en', profileRequest());
 
     expect($result)->toBe(UpdateProfileResult::Success);
 
@@ -54,7 +54,7 @@ it('returns username taken when username belongs to another user', function () {
 
     RateLimiter::clear(profileRateLimitKey($user));
 
-    $result = app(UpdateProfileAction::class)->execute($user, 'taken_user', null, null, null, null, null, profileRequest());
+    $result = app(UpdateProfileAction::class)->execute($user, 'taken_user', null, null, null, null, null, 'forest', 'en', profileRequest());
 
     expect($result)->toBe(UpdateProfileResult::UsernameTaken)
         ->and($user->refresh()->username)->toBe('amir_user');
@@ -72,7 +72,7 @@ it('returns username taken for mixed-case username matching existing lowercase',
 
     RateLimiter::clear(profileRateLimitKey($user));
 
-    $result = app(UpdateProfileAction::class)->execute($user, 'Taken_User', null, null, null, null, null, profileRequest());
+    $result = app(UpdateProfileAction::class)->execute($user, 'Taken_User', null, null, null, null, null, 'forest', 'en', profileRequest());
 
     expect($result)->toBe(UpdateProfileResult::UsernameTaken)
         ->and($user->refresh()->username)->toBe('amir_user');
@@ -85,7 +85,7 @@ it('trims surrounding whitespace and lowercases the username before updating', f
     $this->actingAs($user);
     RateLimiter::clear(profileRateLimitKey($user));
 
-    $result = app(UpdateProfileAction::class)->execute($user, '  New_User  ', null, null, null, null, null, profileRequest());
+    $result = app(UpdateProfileAction::class)->execute($user, '  New_User  ', null, null, null, null, null, 'forest', 'en', profileRequest());
 
     expect($result)->toBe(UpdateProfileResult::Success);
 
@@ -106,7 +106,7 @@ it('returns username taken for a whitespace-padded mixed-case username matching 
     $this->actingAs($user);
     RateLimiter::clear(profileRateLimitKey($user));
 
-    $result = app(UpdateProfileAction::class)->execute($user, '  Taken_User  ', null, null, null, null, null, profileRequest());
+    $result = app(UpdateProfileAction::class)->execute($user, '  Taken_User  ', null, null, null, null, null, 'forest', 'en', profileRequest());
 
     expect($result)->toBe(UpdateProfileResult::UsernameTaken)
         ->and($user->refresh()->username)->toBe('amir_user');
@@ -120,7 +120,7 @@ it('allows keeping the current username', function () {
 
     RateLimiter::clear(profileRateLimitKey($user));
 
-    $result = app(UpdateProfileAction::class)->execute($user, 'amir_user', 'Updated', null, null, null, null, profileRequest());
+    $result = app(UpdateProfileAction::class)->execute($user, 'amir_user', 'Updated', null, null, null, null, 'forest', 'en', profileRequest());
 
     expect($result)->toBe(UpdateProfileResult::Success)
         ->and($user->refresh()->firstname)->toBe('Updated');
@@ -135,7 +135,7 @@ it('stores blank optional strings as null', function () {
 
     RateLimiter::clear(profileRateLimitKey($user));
 
-    $result = app(UpdateProfileAction::class)->execute($user, $user->username, '   ', '', null, null, null, profileRequest());
+    $result = app(UpdateProfileAction::class)->execute($user, $user->username, '   ', '', null, null, null, 'forest', 'en', profileRequest());
 
     expect($result)->toBe(UpdateProfileResult::Success);
 
@@ -155,10 +155,10 @@ it('returns rate limited after repeated profile update attempts', function () {
     RateLimiter::clear(profileRateLimitKey($user));
 
     foreach (range(1, 5) as $ignored) {
-        app(UpdateProfileAction::class)->execute($user, 'taken_user', null, null, null, null, null, profileRequest());
+        app(UpdateProfileAction::class)->execute($user, 'taken_user', null, null, null, null, null, 'forest', 'en', profileRequest());
     }
 
-    $result = app(UpdateProfileAction::class)->execute($user, 'another_user', null, null, null, null, null, profileRequest());
+    $result = app(UpdateProfileAction::class)->execute($user, 'another_user', null, null, null, null, null, 'forest', 'en', profileRequest());
 
     expect($result)->toBe(UpdateProfileResult::RateLimited);
 });
@@ -170,12 +170,12 @@ it('allows profile updates again after one minute', function () {
     RateLimiter::clear(profileRateLimitKey($user));
 
     foreach (range(1, 5) as $ignored) {
-        app(UpdateProfileAction::class)->execute($user, 'taken_user', null, null, null, null, null, profileRequest());
+        app(UpdateProfileAction::class)->execute($user, 'taken_user', null, null, null, null, null, 'forest', 'en', profileRequest());
     }
 
     $this->travel(61)->seconds();
 
-    $result = app(UpdateProfileAction::class)->execute($user, 'amir_user', 'Allowed', null, null, null, null, profileRequest());
+    $result = app(UpdateProfileAction::class)->execute($user, 'amir_user', 'Allowed', null, null, null, null, 'forest', 'en', profileRequest());
 
     expect($result)->toBe(UpdateProfileResult::Success)
         ->and($user->refresh()->firstname)->toBe('Allowed');
@@ -194,7 +194,7 @@ it('logs failed, limited, and successful profile update events', function () {
     $this->actingAs($user);
     RateLimiter::clear(profileRateLimitKey($user));
 
-    app(UpdateProfileAction::class)->execute($user, 'taken_user', null, null, null, null, null, profileRequest());
+    app(UpdateProfileAction::class)->execute($user, 'taken_user', null, null, null, null, null, 'forest', 'en', profileRequest());
 
     Log::shouldHaveReceived('warning')
         ->with('Profile update failed, username already taken.', Mockery::on(
@@ -202,7 +202,7 @@ it('logs failed, limited, and successful profile update events', function () {
         ));
 
     foreach (range(1, 5) as $ignored) {
-        app(UpdateProfileAction::class)->execute($user, 'taken_user', null, null, null, null, null, profileRequest());
+        app(UpdateProfileAction::class)->execute($user, 'taken_user', null, null, null, null, null, 'forest', 'en', profileRequest());
     }
 
     Log::shouldHaveReceived('warning')
@@ -212,7 +212,7 @@ it('logs failed, limited, and successful profile update events', function () {
 
     RateLimiter::clear(profileRateLimitKey($user));
 
-    app(UpdateProfileAction::class)->execute($user, 'amir_user', 'Logged', null, null, null, null, profileRequest());
+    app(UpdateProfileAction::class)->execute($user, 'amir_user', 'Logged', null, null, null, null, 'forest', 'en', profileRequest());
 
     Log::shouldHaveReceived('info')
         ->with('Profile updated.', Mockery::on(

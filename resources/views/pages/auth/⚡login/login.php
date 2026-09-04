@@ -41,6 +41,7 @@ new #[Layout('layouts::auth')] class extends Component
         };
 
         if ($result === LoginResult::Success) {
+            app()->setLocale(auth()->user()->locale);
             session()->flash('toast', [
                 'title' => __('You\'re signed in'),
                 'variant' => 'success',

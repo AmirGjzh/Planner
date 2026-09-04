@@ -7,6 +7,11 @@ use Livewire\Attributes\Computed;
 
 trait HasUser
 {
+    public function boot()
+    {
+        app()->setLocale($this->user->locale);
+    }
+
     #[Computed]
     public function user(): User
     {

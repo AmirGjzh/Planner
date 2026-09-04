@@ -3,7 +3,6 @@
 use App\Enums\WorkloadLevel;
 use App\Models\User;
 use App\Support\Jalali;
-use Carbon\Carbon;
 use Livewire\Livewire;
 
 function dashboardTask(User $user, string $title, array $overrides = []): void
@@ -142,9 +141,7 @@ it('shows the current week with today marked', function () {
 });
 
 it('renders localized strings and Jalali dates in fa', function () {
-    app()->setLocale('fa');
-
-    $user = User::factory()->create();
+    $user = User::factory()->create(['locale' => 'fa']);
 
     Livewire::actingAs($user)
         ->test('pages::dashboard')

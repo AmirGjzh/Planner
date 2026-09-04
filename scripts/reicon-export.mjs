@@ -8,6 +8,7 @@ const root = join(__dirname, '..');
 // Reicon icon names to export (PascalCase, exact filenames in reicon/icons).
 // Add any new icon used in the app here, then run: npm run reicon:export
 const ICONS = [
+    'Language',
     'EyeOpen',
     'EyeClosed',
     'CheckCircle',

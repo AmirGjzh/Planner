@@ -499,9 +499,8 @@ it('links add task with the plan preselected too', function () {
 });
 
 it('renders plan card dates in jalali when locale is fa', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['locale' => 'fa']);
     $user->plans()->create(['name' => 'Roadmap', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
-    app()->setLocale('fa');
 
     $start = Jalali::format(Carbon::parse('2026-01-01'), 'd MMM ، y');
     $end = Jalali::format(Carbon::parse('2026-01-31'), 'd MMM ، y');
@@ -516,8 +515,7 @@ it('renders plan card dates in jalali when locale is fa', function () {
 
 it('defaults the Calendar filter to the current jalali month when locale is fa', function () {
     $this->travelTo(Carbon::parse('2026-01-01 12:00'));
-    $user = User::factory()->create();
-    app()->setLocale('fa');
+    $user = User::factory()->create(['locale' => 'fa']);
 
     Livewire::actingAs($user)
         ->test('pages::plans')
@@ -526,7 +524,7 @@ it('defaults the Calendar filter to the current jalali month when locale is fa',
 
 it('defaults the Calendar filter to the current gregorian month when locale is en', function () {
     $this->travelTo(Carbon::parse('2026-01-01 12:00'));
-    $user = User::factory()->create();
+    $user = User::factory()->create(['locale' => 'en']);
 
     Livewire::actingAs($user)
         ->test('pages::plans')

@@ -13,12 +13,14 @@ Route::middleware(['auth'])->group(function () {
     Route::livewire('/reports', 'pages::reports')->name('reports');
     Route::post('/logout', function (LogoutUserAction $logoutUserAction, Request $request) {
         $logoutUserAction->execute($request);
+        app()->setLocale(config('app.locale'));
         session()->flash('toast', [
             'title' => __('Logged out successfully'),
             'variant' => 'success',
             'duration' => 6000,
             'position' => 'bottom-center',
         ]);
+
         return response()->noContent();
     })->name('logout');
 });

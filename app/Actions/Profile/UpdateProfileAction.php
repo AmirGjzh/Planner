@@ -29,6 +29,7 @@ final class UpdateProfileAction
         ?string $country,
         ?string $birthday,
         string $theme,
+        string $locale,
         Request $request,
     ): UpdateProfileResult {
         abort_unless($user->is(auth()->user()), 403);
@@ -53,6 +54,7 @@ final class UpdateProfileAction
                 'firstname' => $this->nullableString($firstname),
                 'lastname' => $this->nullableString($lastname),
                 'theme' => $theme,
+                'locale' => $locale,
                 'gender' => $gender,
                 'country' => $country,
                 'birthday' => $birthday,

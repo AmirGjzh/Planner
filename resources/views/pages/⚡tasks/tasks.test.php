@@ -1063,9 +1063,8 @@ it('paginates six task cards per page', function () {
 });
 
 it('renders task card dates in jalali when locale is fa', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['locale' => 'fa']);
     makeTask($user, 'Jalali task', ['task_date' => '2026-01-15']);
-    app()->setLocale('fa');
 
     $date = Jalali::format(Carbon::parse('2026-01-15'), 'd MMM');
 

@@ -225,9 +225,7 @@ it('builds a per-day chart from estimated minutes, only for days with tasks', fu
 });
 
 it('uses Jalali bounds and localized stats when locale is fa', function () {
-    app()->setLocale('fa');
-
-    $user = User::factory()->create();
+    $user = User::factory()->create(['locale' => 'fa']);
     $category = $user->categories()->create(['name' => 'Work']);
 
     $user->tasks()->create([

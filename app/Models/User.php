@@ -22,7 +22,7 @@ use Illuminate\Notifications\Notifiable;
     'country',
     'gender',
     'locale',
-    'theme'
+    'theme',
 ])]
 #[Hidden([
     'password',

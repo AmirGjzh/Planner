@@ -13,9 +13,7 @@ class UserSeeder extends Seeder
         User::query()->create([
             'username' => 'amirgjz',
             'email' => 'amir.futurefight@gmail.com',
-            'password' => Hash::make('Ag09909165872'),
-            'firstname' => 'AmirMohammad',
-            'lastname' => 'Ganjizade',
+            'password' => Hash::make('12345678'),
         ]);
     }
 }

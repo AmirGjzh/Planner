@@ -13,7 +13,7 @@ it('defaults to the forest theme when APP_THEME is unset', function () {
 });
 
 it('bundles a valid, complete theme json for every available theme', function () {
-    foreach (config('themes.available') as $theme) {
+    foreach (config('themes.name') as $theme) {
         $path = base_path("config/themes/{$theme}.json");
         $vars = json_decode((string) file_get_contents($path), true);
 
@@ -26,13 +26,14 @@ it('bundles a valid, complete theme json for every available theme', function ()
     }
 });
 
-it('exposes the same variable set as the active theme json', function () {
-    $theme = config('themes.name');
-    $json = json_decode(
-        (string) file_get_contents(base_path("config/themes/{$theme}.json")),
-        true
-    );
-    unset($json['name']);
+it('exposes the same variable set as each theme json', function () {
+    foreach (config('themes.name') as $theme) {
+        $json = json_decode(
+            (string) file_get_contents(base_path("config/themes/{$theme}.json")),
+            true
+        );
+        unset($json['name']);
 
-    expect(config('themes.vars'))->toBe($json);
+        expect(config('themes.vars')[$theme])->toBe($json);
+    }
 });
