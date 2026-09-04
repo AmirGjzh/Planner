@@ -51,23 +51,26 @@ Plan (0..1) ——— (0..N) Task
 | `username` | `string` | Unique, not null |
 | `email` | `string` | Unique, not null |
 | `password` | `string` | Not null |
-| `first_name` | `string` | Nullable |
-| `last_name` | `string` | Nullable |
-| `birth_date` | `date` | Nullable |
+| `firstname` | `string` | Nullable |
+| `lastname` | `string` | Nullable |
+| `birthday` | `date` | Nullable |
 | `country` | `string` | Nullable |
 | `gender` | `enum('male', 'female')` | Nullable |
+| `locale` | `enum('en', 'fa')` | Not null, default `fa` (stored as lowercase string, not cast) |
+| `theme` | `enum('ocean','magic','forest','chocolate','amber','safrron','midnight','gol-goli')` | Not null, default `ocean` (stored as string, not cast) |
 | `deleted_at` | `timestamp` | Soft delete |
 | `email_verified_at` | `timestamp` | Nullable |
 | `remember_token` | `string` | Nullable |
 | `created_at` / `updated_at` | `timestamp` | Auto-managed |
 
 **Model details:**
-- `#[Fillable]`: `username`, `email`, `password`, `first_name`, `last_name`, `birth_date`, `country`, `gender`
+- `#[Fillable]`: `username`, `email`, `password`, `firstname`, `lastname`, `birthday`, `country`, `gender`, `locale`, `theme`
 - `#[Hidden]`: `password`, `remember_token`
-- **Casts:** `email_verified_at` → `datetime`, `birth_date` → `date:Y-m-d`, `gender` → `UserGender` enum, `password` → `hashed`
-- **Accessor:** `fullName()` — returns trimmed `"{first_name} {last_name}"`
+- **Casts:** `email_verified_at` → `datetime`, `birthday` → `date:Y-m-d`, `gender` → `UserGender` enum, `password` → `hashed`
+- **Accessors:** `fullName()` — trimmed `"{firstname} {lastname}"`; `initials()` — multibyte-safe ZWNJ-separated initials from firstname+lastname (falls back to username)
 - **Relationships:** `plans()` (HasMany), `tasks()` (HasMany), `categories()` (HasMany)
 - **Soft deletes:** Yes (only entity with this)
+- **Locale note:** `locale` (`fa`/`en`) selects the UI language and is read by the shared `HasUser` trait `boot()`; `theme` selects the CSS variable set resolved by `mine/theme-vars`. See `.ai/rules/factories.md` and `.ai/rules/config.md`.
 
 #### `categories`
 
@@ -160,7 +163,7 @@ Used by `User.gender` column with automatic cast.
 
 | Factory | Key Details |
 |---------|-------------|
-| `UserFactory` | Cached `Hash::make('password')`, `UserGender::cases()` for gender |
+| `UserFactory` | Cached `Hash::make('password')`, `UserGender::cases()` for gender, fixed `locale='en'` (deterministic tests), random theme from the 8 present themes |
 | `CategoryFactory` | `fake()->unique()->word()` for name, inline `User::factory()` |
 | `TaskFactory` | `task_date` ≥ today, `estimated_minutes` 1–1200, `TaskPriority::cases()` for priority, nested User/Plan/Category factories |
 | `PlanFactory` | `start_date` ±1 month, `finish_date` closure depends on `start_date` + up to 3 months |

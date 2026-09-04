@@ -35,11 +35,11 @@ A Laravel 13 + Livewire 4 task planner application. Users manage tasks, categori
 
 ## Phases
 
-- `phases/phase-0.md` — Vision & Scope
-- `phases/phase-1.md` — Requirements (11 UCs, NFRs, ACs)
-- `phases/phase-2.md` — Domain Design + UC Specs
-- `phases/phase-3.md` — Data Model & Architecture
-- `phases/phase-4.md` — Implementation Process & Logs
+- `phases/Phase-0.md` — Vision & Scope
+- `phases/Phase-1.md` — Requirements (11 UCs, NFRs, ACs)
+- `phases/Phase-2.md` — Domain Design + UC Specs
+- `phases/Phase-3.md` — Data Model & Architecture
+- `phases/Phase-4.md` — Implementation Process & Logs
 - `best-practices/Laravel.md` — Laravel Performance & Best Practices Bible
 - `best-practices/Livewire.md` — Livewire v4 Performance Tricks
 
@@ -51,6 +51,7 @@ A Laravel 13 + Livewire 4 task planner application. Users manage tasks, categori
 - UC-09 Daily Workload lives on the dashboard as a weekly grid (includes completed tasks)
 - UC-10 is a "Tasks Needing Attention" list on the dashboard (overdue + alarm-window-started, excludes done)
 - Reports (UC-11) is the last use case — all docs are structured into 11 UC-aligned parts
+- **Per-user language preference**: users pick a UI language (`users.locale`, `fa`/`en`) on the Profile page (UC-03); the shared `HasUser` trait's `boot()` applies it app-wide (`app()->setLocale($this->user->locale)`) on every Livewire request. Guest pages use the app/.env locale, and only the auth boundaries (login/logout/profile-delete) set the locale explicitly. Handled in `.ai/rules/factories.md`, `.ai/rules/pages.md`, and `.ai/rules/tests.md`.
 
 ## How to Use
 

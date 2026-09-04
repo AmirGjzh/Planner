@@ -12,8 +12,10 @@ Before planning or editing, find the row whose globs match the file's path and r
 | config/themes.php | .ai/rules/config.md |
 | resources/css/mine.css | .ai/rules/css.md |
 | app/Actions/Dashboard/** | .ai/rules/dashboard.md |
+| app/Livewire/**, resources/views/pages/**, database/factories/** | .ai/rules/factories.md |
 | tests/Feature/Actions/** | .ai/rules/feature-actions.md |
 | lang/** | .ai/rules/lang.md |
+| .ai/skills/main-project/**.md | .ai/rules/main-project.md |
 | database/migrations/** | .ai/rules/migrations.md |
 | resources/views/components/mine/brand-logo.blade.php, resources/views/components/mine/** | .ai/rules/mine.md |
 | app/Models/** | .ai/rules/models.md |

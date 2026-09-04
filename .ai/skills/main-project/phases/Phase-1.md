@@ -129,11 +129,14 @@ The acceptance criteria are grouped into the 11 use cases (UC-01 … UC-11), in 
 
 **Given** the user is on the Profile page,
 **When** they view their profile,
-**Then** current information is displayed (name, date of birth, country, gender).
+**Then** current information is displayed (name, date of birth, country, gender, theme, and language).
 
 **Given** the user modifies profile fields and saves,
 **When** the data is valid,
 **Then** the profile is updated and a success message is shown.
+
+**Given** the user chooses a different language (fa/en) or theme and saves,
+**Then** the whole app re-renders in the chosen language/theme on the next page load.
 
 **Given** the user enters a username that is already taken,
 **Then** an error is shown and the profile is not updated.
