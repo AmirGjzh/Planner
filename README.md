@@ -1,58 +1,150 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Planner
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+> Introduction to the project — to be written later.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 2. How to use this project
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+This guide shows you how to set the app up, run it, update it, and make sure it's always
+working well. Take it step by step and you'll be fine.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### What you need
 
-## Learning Laravel
+- **Docker with Docker Compose** — any recent version.
+- **Git** — used to download and update the project.
+- An **internet connection** — only the very first time.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Set it up from scratch
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Do these steps once, in order:
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+1. **Download the project.**
 
-## Agentic Development
+   ```bash
+   git clone <your-repo-url> planner
+   cd planner
+   ```
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+2. **Create your personal settings file** (a ready-made template is included):
+
+   - **Mac / Linux:**
+
+     ```bash
+     cp .env.production .env
+     ```
+
+   - **Windows** (PowerShell):
+
+     ```powershell
+     Copy-Item .env.production .env
+     ```
+
+3. **Open `.env` and fill in these 4 things.** Leave everything else as it is.
+
+   - `APP_KEY` — the security key. Generate it, then paste the result into the file:
+
+     - **Mac / Linux:**
+
+       ```bash
+       openssl rand -base64 32
+       ```
+
+     - **Windows** (PowerShell):
+
+       ```powershell
+       [System.Convert]::ToBase64String([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+       ```
+
+   - `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `REDIS_PASSWORD` — just fill them in with any
+     passwords you like.
+
+4. **Build and start the app** (this works the same on every system). The first time is
+   slower, because everything gets downloaded and put together:
+
+   ```bash
+   docker compose -f compose.prod.yaml up -d --build
+   ```
+
+5. **Check that it's running perfectly** (see below).
+
+That's it. You're done.
+
+### Make sure it's running perfectly
+
+After starting (or updating), do this small check:
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+docker compose -f compose.prod.yaml ps
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+You should see **4 items** — `php-fpm`, `nginx`, `mysql`, `redis` — all of them `Up` /
+`running` / `healthy`.
 
-## Contributing
+Then:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+1. Open your browser and go to **<http://localhost>** — the app should load.
+2. Create your account (there's a **Register / Sign up** link) and log in.
+3. Bonus check: visit <http://localhost/up> — it should just show the number `200`.
 
-## Code of Conduct
+If all of that works, the app is running perfectly.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Use it every day
 
-## Security Vulnerabilities
+- Open your browser and go to **<http://localhost>**, log in, and use it.
+- You can also use it from other devices on your network — instead of `localhost`, type
+  the computer's IP, e.g. `http://192.168.1.20`.
+- Your data is saved and stays there. Updating, restarting, or rebuilding the app
+  **never** deletes it.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Stop, start, and clean up
 
-## License
+All commands run from the project folder (`planner`). They **all** keep your data safe —
+stopping or cleaning up never touches it.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+There are 4 commands you might ever need:
+
+| Command | What it does | When to use it |
+|---|---|---|
+| `docker compose -f compose.prod.yaml start` | Turns the app back on, right where it was | After you paused it with `stop` |
+| `docker compose -f compose.prod.yaml stop` | Pauses the app and frees up your computer's resources | When you want the app off for a while (it starts back up fast with `start`) |
+| `docker compose -f compose.prod.yaml up -d` | Starts the app using the current (already built) version | A plain start — e.g. after `down`, or after a restart where the app didn't come back on its own |
+| `docker compose -f compose.prod.yaml up -d --build` | Builds the newest code, then starts the app | After every update (the `--build` part is what makes the new code appear) |
+| `docker compose -f compose.prod.yaml down` | Stops the app completely and removes all temporary stuff | Rarely — when you want a totally clean slate. Bring it back with `up -d` |
+
+How to think about them:
+
+- **Start / Stop** are the everyday pair — pause the app to free resources, resume it when
+  you need it again.
+- **`up -d`** is the "official start" — it makes sure the app is running from its current
+  version. **On its own it does not bring in new code**; that's what `--build` is for, so
+  after an update always use `up -d --build`.
+- **`down`** and **`up -d`** are the rare pair — a full shutdown, then a full fresh start.
+  `down` does not delete your data.
+- Never run `docker compose down -v` — that extra `-v` **deletes your saved data**.
+
+Nice to know: after your computer restarts, the app **starts by itself** — you don't have
+to do anything.
+
+### Update the app (when a new version arrives)
+
+1. Get the newest code:
+
+   ```bash
+   git pull
+   ```
+
+2. Build and start the new version (your data stays untouched):
+
+   ```bash
+   docker compose -f compose.prod.yaml up -d --build
+   ```
+
+3. Wait for it to finish, then repeat the check from
+   ["Make sure it's running perfectly"](#make-sure-its-running-perfectly).
+
+---
+
+## 3. How to develop this app
+
+> Development setup is not ready yet — it will be documented here later.

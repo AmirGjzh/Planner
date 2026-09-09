@@ -65,7 +65,7 @@ enum UserStatus: string
 ### 1.3 Environment Configuration Power Moves
 
 ```env
-# .env - Never commit, always use .env.example
+# .env
 APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://example.com

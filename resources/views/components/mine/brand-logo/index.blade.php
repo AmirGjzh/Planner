@@ -5,7 +5,7 @@
 @php
     $paths = '';
 
-    $file = public_path('storage/images/logo.svg');
+    $file = resource_path('images/logo.svg');
 
     if (is_file($file)) {
         $svg = simplexml_load_file($file);

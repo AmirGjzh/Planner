@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
+use Livewire\Mechanisms\HandleRequests\RequireLivewireHeaders;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +22,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Livewire::setUpdateRoute(function ($handle, $path) {
+            return Route::post($path, $handle)
+                ->middleware(['web', RequireLivewireHeaders::class])
+                ->name('livewire.update')
+                ->block(10, 10);
+        });
     }
 }

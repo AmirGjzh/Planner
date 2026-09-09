@@ -10,12 +10,13 @@ final class AttentionTasksAction
 {
     public function execute(User $user, ?Carbon $today = null): Collection
     {
-        $today = ($today ?? now())->format('Y-m-d');
+        $today = ($today ?? now())->startOfDay();
 
         return $user->tasks()
             ->where('done', false)
-            ->whereRaw("DATE(task_date, '-' || day_before_alarm || ' days') <= ?", [$today])
-            ->orderBy('task_date')
-            ->get();
+            ->get()
+            ->filter(fn ($task) => $today->lte(Carbon::parse($task->task_date)->subDays($task->day_before_alarm)))
+            ->sortBy('task_date')
+            ->values();
     }
 }
