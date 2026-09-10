@@ -1,0 +1,60 @@
+name: planner-dev
+
+services:
+  workspace:
+    container_name: planner-dev-workspace
+    build:
+      context: .
+      dockerfile: ./docker/common/php-cli/Dockerfile
+    restart: unless-stopped
+    user: "${UID:-1000}:${GID:-1000}"
+    tty: true
+    stdin_open: true
+    working_dir: /var/www
+    env_file:
+      - .env
+    volumes:
+      - .:/var/www
+    ports:
+      - "8000:8000"
+      - "5173:5173"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - dev-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  mysql:
+    container_name: planner-dev-mysql
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - dev-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  dev-network:
+
+volumes:
+  mysql-data:
