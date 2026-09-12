@@ -1,8 +1,8 @@
-name: planner-dev
+name: planner-development
 
 services:
   workspace:
-    container_name: planner-dev-workspace
+    container_name: planner-development-workspace
     build:
       context: .
       dockerfile: ./docker/common/php-cli/Dockerfile
@@ -13,6 +13,8 @@ services:
     working_dir: /var/www
     env_file:
       - .env
+    environment:
+      APP_KEY: ${APP_KEY:?Set APP_KEY in .env}
     volumes:
       - .:/var/www
     ports:
@@ -24,37 +26,61 @@ services:
         max-size: "10m"
         max-file: "3"
     networks:
-      - dev-network
+      - network
     depends_on:
       mysql:
         condition: service_healthy
+      redis:
+        condition: service_healthy
 
   mysql:
-    container_name: planner-dev-mysql
+    container_name: planner-development-mysql
     image: mysql:8.4
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_USER: ${DB_USERNAME}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
     volumes:
-      - mysql-data:/var/lib/mysql
+      - database:/var/lib/mysql
     networks:
-      - dev-network
+      - network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root}"]
+      test: ["CMD", "mysql", "-uroot", "-p${MYSQL_ROOT_PASSWORD}", "-e", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  redis:
+    container_name: planner-development-redis
+    image: redis:8.10
+    restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+    command: ["sh", "-c", "exec redis-server --requirepass \"$$REDIS_PASSWORD\""]
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
 
 networks:
-  dev-network:
+  network:
 
 volumes:
-  mysql-data:
+  database:

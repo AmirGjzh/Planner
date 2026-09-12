@@ -40,21 +40,24 @@ Do these steps once, in order:
      Copy-Item .env.production .env
      ```
 
-3. **Open `.env` and fill in these 4 things.** Leave everything else as it is.
+3. **Open `.env` and fill in these 4 things.** Leave everything else as it is. All 4 are
+   required — if you skip one, the start command stops immediately with a clear message
+   naming the missing one.
 
-   - `APP_KEY` — the security key. Generate it, then paste the result into the file:
+   - `APP_KEY` — the security key. Generate it, then paste the result into the file. The
+     value **must** start with `base64:` followed by a 32-byte key (44 characters):
 
      - **Mac / Linux:**
 
        ```bash
-       openssl rand -base64 32
+       printf 'base64:%s\n' "$(openssl rand -base64 32)"
        ```
 
-     - **Windows** (PowerShell):
+- **Windows** (PowerShell):
 
-       ```powershell
-       [System.Convert]::ToBase64String([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
-       ```
+        ```powershell
+        'base64:' + [System.Convert]::ToBase64String([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+        ```
 
    - `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `REDIS_PASSWORD` — just fill them in with any
      passwords you like.
@@ -182,26 +185,28 @@ Do these steps once, in order:
      Copy-Item .env.development .env
      ```
 
-3. **Open `.env` and fill in these 3 things.** Leave everything else as it is.
+3. **Open `.env` and fill in these 4 things.** Leave everything else as it is.
 
-   - `APP_KEY` — the security key:
+   - `APP_KEY` — the security key. It must start with `base64:` followed by a 32-byte key
+     (44 characters):
 
       - **Mac / Linux:**
 
         ```bash
-        openssl rand -base64 32
+        printf 'base64:%s\n' "$(openssl rand -base64 32)"
         ```
 
       - **Windows** (PowerShell):
 
         ```powershell
-        [System.Convert]::ToBase64String([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+        'base64:' + [System.Convert]::ToBase64String([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
         ```
 
-        (Or skip this step — the first section below can generate it for you.)
+      `APP_KEY` must be in place **before you start for the first time** — the start
+      command refuses to run without it.
 
-   - `DB_PASSWORD` and `MYSQL_ROOT_PASSWORD` — fill them in with any passwords you like,
-     *before* starting for the first time.
+   - `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `REDIS_PASSWORD` — fill them in with any
+     passwords you like, *before* starting for the first time.
 
 4. **Build and start the dev setup** (same on every system; first time is slow because it
    downloads everything):
@@ -216,17 +221,17 @@ Do these steps once, in order:
    docker compose -f compose.dev.yaml exec workspace sh
    ```
 
-Then, **only the first time**, install the project's libraries inside that terminal:
-
-```sh
-composer install
-npm install
-```
-
-If you didn't fill in `APP_KEY` earlier, run `php artisan key:generate` now — it writes
-the key into your `.env` automatically.
+No manual install needed — on every container start the workspace automatically installs
+your project's libraries (`composer install` + `npm install`) itself. `vendor/` and
+`node_modules/` get created on the very first boot.
 
 ### Start developing
+
+> **One-command shortcut:** `composer run dev` starts the app server, the queue worker,
+> and Vite all together. The steps below are the same thing, one by one (`--host=0.0.0.0`
+> is required because Docker forwards ports to the container's network interface — a
+> server bound to `127.0.0.1` inside the container is invisible from your browser; Vite
+> already binds `0.0.0.0` via its config, which is why `npm run dev` needs no flag):
 
 1. In the container terminal, start the app server:
 
@@ -282,8 +287,9 @@ Same rule as production: **never** run `docker compose -f compose.dev.yaml down 
 Your computer keeps only **one settings file** (`.env`) at a time — one copy holds the
 values for the environment you're currently running. If you switch between them:
 
-- Dev: `cp .env.development .env`, fill `APP_KEY`, `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD`.
-- Prod: `cp .env.production .env`, fill `APP_KEY`, `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD`,
+- Dev: `cp .env.development .env`, fill `APP_KEY`, `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD`,
   `REDIS_PASSWORD`.
+- Prod: `cp .env.production .env`, fill `APP_KEY`, `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD`,
+  `REDIS_PASSWORD` (all required — the start command stops until they're set).
 
 Each setup keeps its own database — switching never mixes data.

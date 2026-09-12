@@ -1,4 +1,4 @@
-FROM node:24-bookworm-slim AS node
+FROM node:24 AS node
 
 FROM composer:2.10 AS composer
 
@@ -27,6 +27,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gd \
     && apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+RUN pecl install redis && docker-php-ext-enable redis
+
 COPY --from=composer /usr/bin/composer /usr/local/bin/composer
 
 COPY --from=node /usr/local/bin/node /usr/local/bin/node
@@ -38,10 +40,15 @@ RUN ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
     && npm --version \
     && composer --version
 
-RUN mkdir -p /home/workspace && chown -R 1000:1000 /home/workspace
+RUN mkdir -p /home/workspace && chown -R 1000:1000 /home/workspace && php -m | grep -q redis
 
 ENV HOME=/home/workspace
 
 WORKDIR /var/www
+
+COPY ./docker/common/php-cli/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 CMD ["sleep", "infinity"]

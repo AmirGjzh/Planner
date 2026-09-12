@@ -4,19 +4,23 @@ WORKDIR /var/www
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-scripts --optimize-autoloader --no-interaction --no-progress --prefer-dist
 
-FROM node:24-alpine AS builder
+FROM node:24 AS builder
 
 WORKDIR /var/www
 
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --no-audit --no-fund
 
 COPY --from=composer /var/www/vendor /var/www/vendor
 COPY . .
 
 RUN npm run build
 
-FROM nginx:1.30-alpine
+FROM nginx:1.30
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY ./docker/production/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf
 

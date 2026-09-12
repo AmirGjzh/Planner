@@ -22,11 +22,11 @@ It is **not** user documentation. The end user never sees this file.
 | Orchestration | Docker Compose v2 (`compose.prod.yaml`) |
 | App | Laravel 13.x + Livewire 4.x (see `composer.json`) |
 | PHP-FPM image | `php:8.4-fpm`, multi-stage, runs as `www-data` |
-| Nginx image | `nginx:1.30-alpine` (running 1.30.4) |
+| Nginx image | `nginx:1.30` (running 1.30.4) |
 | MySQL image | `mysql:8.4` (running 8.4.11) |
-| Redis image | `redis:8.10-alpine` (running 8.10.1) |
+| Redis image | `redis:8.10` (running 8.10.1) |
 | Composer image (build-only) | `composer:2.10` (2.10.3) |
-| Node image (build-only) | `node:24-alpine` |
+| Node image (build-only) | `node:24` |
 | Containers | `planner-php-fpm`, `planner-nginx`, `planner-mysql`, `planner-redis` |
 | Named volumes | `planner_database`, `planner_storage` |
 | Network | single user network `network` → prefixed `planner_network` |
@@ -58,7 +58,7 @@ Runtime state at the time of writing: all 4 containers healthy, `/up` returns 20
              ▼
    ┌───────────────────┐
    │  planner-nginx    │  serves /var/www/public (built assets) + routes PHP to fpm
-   │  nginx:1.30-alpine│  /up healthcheck; publishes port 80 only
+   │  nginx:1.30       │  /up healthcheck; publishes port 80 only
    └─────────┬─────────┘
              │  fastcgi → php-fpm:9000
              ▼
@@ -71,7 +71,7 @@ Runtime state at the time of writing: all 4 containers healthy, `/up` returns 20
              ▼
    ┌───────────────────┐
    │  planner-redis    │
-   │  redis:8.10-alpine│  requirepass, no volume (ephemeral)
+   │  redis:8.10       │  requirepass, no volume (ephemeral)
    └───────────────────┘
 ```
 
@@ -138,6 +138,8 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      APP_KEY: ${APP_KEY:?Set APP_KEY in .env}
     volumes:
       - storage:/var/www/storage
     logging:
@@ -178,7 +180,7 @@ services:
       php-fpm:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/up || exit 1"]
+      test: ["CMD", "curl", "-fs", "http://127.0.0.1/up"]
       interval: 30s
       timeout: 3s
       retries: 3
@@ -189,10 +191,10 @@ services:
     image: mysql:8.4
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_USER: ${DB_USERNAME}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
     logging:
       driver: json-file
       options:
@@ -203,17 +205,19 @@ services:
     networks:
       - network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root}"]
+      test: ["CMD", "mysql", "-uroot", "-p${MYSQL_ROOT_PASSWORD}", "-e", "SELECT 1"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
 
   redis:
     container_name: planner-redis
-    image: redis:8.10-alpine
+    image: redis:8.10
     restart: unless-stopped
     environment:
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
     command: ["sh", "-c", "exec redis-server --requirepass \"$$REDIS_PASSWORD\""]
     logging:
       driver: json-file
@@ -223,7 +227,7 @@ services:
     networks:
       - network
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping | grep -q PONG || exit 1"]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -242,17 +246,21 @@ Rationale per decision (details in [Decisions Log](#decisions-log)):
   `planner-mysql`, `planner-redis`). Names must be unique on the host.
 - **`env_file: .env`** gives php-fpm the full environment; MySQL/Redis get only the values
   they need via `environment:` interpolation. Compose automatically reads the top-level
-  `.env` for `${VAR}` interpolation. `:-root` / `:-` defaults make the YAML valid even
-  before the user fills secrets, and MySQL will self-init with the password when the data
-  dir is empty.
+  `.env` for `${VAR}` interpolation. All four secrets (`APP_KEY`, `DB_PASSWORD`,
+  `MYSQL_ROOT_PASSWORD`, `REDIS_PASSWORD`) are enforced with `${VAR:?msg}` — Compose
+  aborts immediately with a clear error if any is missing, so a fresh `.env` can never boot
+  insecurely.
 - **Volumes**: `database:/var/lib/mysql` is the real data. `storage:/var/www/storage` keeps
   runtime app storage (logs). Both are named volumes; in this project the volumes get the
-  `planner_` prefix (`planner_database`, `planner_storage`).
+  `planner_` prefix (`planner_database`, `planner_storage`) — the project name is declared
+  explicitly with `name: planner` at the top of `compose.prod.yaml`, so the prefix no
+  longer depends on the checkout directory being named `planner`.
 - **No bind mounts**: the code lives inside the images (immutable artifact). Updating the
   app always means rebuilding. This is intentional — a fresh machine just builds from git.
 - **Healthchecks** form the boot chain: `mysql` and `redis` must be healthy before
   php-fpm starts (so the entrypoint's `migrate` works), php-fpm must be healthy before
-  nginx starts. nginx health is what an external check would use (`/up`).
+  nginx starts. nginx health is what an external check would use (`/up`). Each service
+  tests itself — see the healthcheck table in [Verification & Troubleshooting](#verification--troubleshooting).
 - **Logging** is capped (10 MB × 3 files per container) — this app is chatty by design
   (`LOG_LEVEL=info`, access logs), so unbounded Docker logs would fill the disk.
 - **`restart: unless-stopped`** — survives host reboots; someone can `docker stop` a
@@ -265,7 +273,7 @@ The php-fpm image. Multi-stage; four stages, each a disposable workshop:
 ```dockerfile
 FROM composer:2.10 AS composer          # (1) pinned Composer binary
 FROM php:8.4-fpm AS builder            # (2) compiles extensions + vendor
-FROM node:24-alpine AS frontend        # (3) builds JS/CSS with Vite
+FROM node:24 AS frontend        # (3) builds JS/CSS with Vite
 FROM php:8.4-fpm AS production         # (4) final slim runtime
 ```
 
@@ -274,9 +282,9 @@ Build order and reasoning:
 1. **composer stage**: `composer:2.10` is the official image. Both this Dockerfile and the
    nginx one copy `/usr/bin/composer` from it, so every build installs PHP dependencies with
    the identical Composer version. (Previously Composer was installed via the curl
-   installer; the `composer` image is now the single source. The `curl` package in the
-   `apt-get` line of the builder stage is a harmless leftover and can be removed on the
-   next rebuild.)
+   installer; the `composer` image is now the single source. The leftover `curl` package
+   was removed from the builder's `apt-get`; `unzip` stays because `--prefer-dist` needs
+   it to unpack dependency archives.)
 2. **builder stage** (`php:8.4-fpm`):
    - Installs the `-dev` system libraries needed to *compile* extensions: `libonig-dev`
      (mbstring), `libicu-dev` (intl), `libzip-dev` (zip), `libpng-dev` `libjpeg-dev`
@@ -291,10 +299,12 @@ Build order and reasoning:
      `--no-scripts` is safe because the `.env`-dependent post-install scripts are not
      present (no `.env` in the image) and the autoloader only needs the files.
    - The stage discards everything except its compiled artifacts.
-3. **frontend stage** (`node:24-alpine`): `npm ci` from lockfile, copies `vendor/` from the
-   builder stage so Vite can resolve the Livewire ESM import in `resources/js/app.js`, then
-   `npm run build`. `npm ci` is used (not `npm install`) so builds are reproducible from
-   `package-lock.json`.
+3. **frontend stage** (`node:24`): `npm ci --no-audit --no-fund` from lockfile, copies
+   `vendor/` from the builder stage so Vite can resolve the Livewire ESM import in
+   `resources/js/app.js`, then `npm run build`. `npm ci` is used (not `npm install`) so
+   builds are reproducible from `package-lock.json`; `--no-audit --no-fund` keeps the log
+   quiet and fast (harmless — the lockfile is the source of truth, and Docker reads updates
+   anyway).
 4. **production stage** (`php:8.4-fpm`):
    - Installs the same libraries using the `-dev` Debian packages (on this Debian release
      the *versioned* runtime names differ, so the -dev packages double as the runtime
@@ -322,17 +332,18 @@ Verified intentionally: `exec php-fpm which composer` fails, which is expected.
 
 ```dockerfile
 FROM composer:2.10 AS composer          # vendor/ for Vite's Livewire import
-FROM node:24-alpine AS builder          # build assets
-FROM nginx:1.30-alpine                  # runtime
+FROM node:24 AS builder                 # build assets
+FROM nginx:1.30                         # runtime (Debian)
 ```
 
 - The composer stage installs `vendor/` so the Vite build can resolve the Livewire ESM
   module. `--no-dev --no-scripts` because there's no full app/artisan here.
-- The builder stage does `npm ci` then `npm run build` — same pins as the php-fpm build,
-  so both images contain identical hashed assets.
+- The builder stage does `npm ci --no-audit --no-fund` then `npm run build` — same pins as
+  the php-fpm build, so both images contain identical hashed assets.
 - The runtime image gets the vhost (`/etc/nginx/conf.d/default.conf`, auto-included by the
-  nginx image) and the built `public/` tree. `CMD ["nginx", "-g", "daemon off;"]` keeps the
-  container alive.
+  nginx image), the built `public/` tree, and `curl` (`apt-get`, used only by the
+  healthcheck — the Debian nginx image has no `wget`). `CMD ["nginx", "-g", "daemon off;"]`
+  keeps the container alive.
 
 ### `docker/production/nginx/conf.d/default.conf`
 
@@ -371,8 +382,10 @@ writability, which `www-data` has. Script:
 #!/bin/bash
 set -e
 
-if [ -z "${APP_KEY}" ]; then
-    echo "ERROR: APP_KEY is not set." >&2
+raw_key="${APP_KEY#base64:}"
+
+if [ -z "${APP_KEY}" ] || [[ "${APP_KEY}" != base64:* ]] || [ "${#raw_key}" -ne 44 ] || [ "$(printf '%s' "${raw_key}" | base64 -d | wc -c)" -ne 32 ]; then
+    echo "ERROR: APP_KEY is missing or in a bad format (expected: base64: + a 32-byte key). Generate a key and put it in .env, e.g. printf 'base64:%s\n' \"\$(openssl rand -base64 32)\"" >&2
     exit 1
 fi
 
@@ -382,13 +395,16 @@ php artisan optimize
 exec php-fpm
 ```
 
-- Values come from `env_file`; there is no `.env` *file* in the container, so the guard
-  catches a missing `APP_KEY` fast instead of Laravel silently using a blank key.
+- One guard, one message. It catches empty, a missing `base64:` prefix, wrong length,
+  invalid base64, and keys that don't decode to exactly 32 bytes (AES-256-CBC) in a single
+  condition — e.g. pasting a bare `openssl rand -base64 32` string without the prefix.
+- The guard catches a bad key fast instead of Laravel silently failing at first encrypt.
 - The guard only **reports** the problem — it cannot fix it from inside the container.
   Without `APP_KEY` the cached config is broken and `artisan` itself fails to run, and
   there is no writeable `.env` to write a key into anyway. The fix is done on the user's
-  own machine (generate with `openssl rand -base64 32`, paste into `.env`) and is taught
-  in the deployment runbook below.
+  own machine (generate a key locally — e.g. `printf 'base64:%s\n' "$(openssl rand -base64 32)"`;
+  paste it into `.env`, the value must start with `base64:`) and is taught in the
+  deployment runbook below.
 - `migrate --force` every boot: idempotent (migrations table tracks ran migrations) and
   Compose guarantees MySQL is healthy first. **Not** `--seed`: `UserSeeder` seeds a known
   developer account with a public password — production should be seeded by hand or not at
@@ -480,6 +496,7 @@ DB_HOST=mysql
 DB_PORT=3306
 DB_DATABASE=planner
 DB_USERNAME=planner
+# Required — app DB user password (MYSQL_PASSWORD) and MySQL root password.
 DB_PASSWORD=
 MYSQL_ROOT_PASSWORD=
 
@@ -495,6 +512,7 @@ CACHE_STORE=redis
 
 REDIS_CLIENT=phpredis
 REDIS_HOST=redis
+# Required — Redis requirepass.
 REDIS_PASSWORD=
 REDIS_PORT=6379
 REDIS_DB=0
@@ -600,15 +618,25 @@ matter.
 | `MYSQL_USER` | `DB_USERNAME` | create user `planner` on init |
 | `MYSQL_PASSWORD` | `DB_PASSWORD` | password for that user (init only) |
 | `REDIS_PASSWORD` (redis `environment` + `$$REDIS_PASSWORD` in command) | `REDIS_PASSWORD` | `requirepass` for Redis |
-| `${MYSQL_ROOT_PASSWORD:-root}`, `${REDIS_PASSWORD:-}` | same keys | defaults so YAML is always valid |
+| `REDISCLI_AUTH` (redis) | `REDIS_PASSWORD` | redis-cli reads it for healthcheck auth |
+| `${VAR:?Set X in .env}` (APP_KEY, DB_PASSWORD, MYSQL_ROOT_PASSWORD, REDIS_PASSWORD) | same keys | required — Compose aborts immediately if any is empty |
 
 Notes:
 
 - Compose reads the top-level `.env` automatically for interpolation; the same `.env` is
   then handed to php-fpm via `env_file`.
 - `$$` escapes a literal `$` from Compose interpolation so the *container* expands the var
-  at runtime (`"exec redis-server --requirepass \"$$REDIS_PASSWORD\""` → the shell inside
-  redis expands `$REDIS_PASSWORD`).
+  at runtime; plain `${VAR}` is interpolated by Compose at parse time. The redis command
+  uses the former (`"exec redis-server --requirepass \"$$REDIS_PASSWORD\""`), the mysql
+  healthcheck the latter (`"-p${MYSQL_ROOT_PASSWORD}"`). All healthchecks are exec-form
+  `CMD` — no shell.
+- **No `MYSQL_PWD` anywhere.** The mysql image's first-boot bootstrap connects to a
+  temporary server whose `root` is passwordless on purpose; any `MYSQL_PWD` in the
+  environment makes those connections (and therefore the whole init) fail with
+  `Access denied (using password: YES)` — leaving root empty-password, the app user
+  uncreated, and a half-initialized data dir. The container env only passes
+  `MYSQL_ROOT_PASSWORD` for the *entrypoint*; the healthcheck gets it via Compose
+  interpolation (`-p${MYSQL_ROOT_PASSWORD}`), not via the client's `MYSQL_PWD` auto-read.
 - Sanity-checked at the audit: connecting with each password from `.env` works
   (planner user, root, PONG with pass / NOAUTH without).
 
@@ -626,7 +654,7 @@ Chronological; every significant choice with its why + the alternative considere
    one-shot container and ordering hacks; duplicating the build with identical pins is
    simpler and self-contained.
 3. **Pinned, reproducible versions.** Tags: `composer:2.10`, `php:8.4-fpm`,
-   `node:24-alpine`, `nginx:1.30-alpine`, `mysql:8.4`, `redis:8.10-alpine`. These are
+   `node:24`, `nginx:1.30`, `mysql:8.4`, `redis:8.10`. These are
    MAJOR.MINOR tags → patch updates come free with each rebuild; moving the minor is a
    deliberate act. Composer kept in sync across both images from the single `composer:2.10`
    image.
@@ -673,10 +701,41 @@ Chronological; every significant choice with its why + the alternative considere
     accidentally be exposed someday.
 21. **`.env.production` committed; `.env` ignored.** A fresh user copies the template.
     The dev template and its `composer.json` wiring are documented in `development.md`.
-22. **`curl`/`unzip` in the builder.** `unzip` is needed for PHP deps/pecl; `curl` is a
-    legacy leftover from the removed Composer curl-installer — keep until the next rebuild
-    removes it (it hurts nothing; validation on a rebuild is the honest test).
+22. **`unzip` in the builder.** Needed to unpack Composer `--prefer-dist` dependency
+    archives and PECL tarballs. The `curl` leftover from the removed Composer curl-installer
+    was removed on this rebuild (verified: nothing in the build uses it).
 23. **App-level redirects** (`/login` guest, `/dashboard` auth) — single clear entry point.
+24. **Enforce secrets at Compose level** via `${VAR:?msg}` for `APP_KEY`, `DB_PASSWORD`,
+    `MYSQL_ROOT_PASSWORD`, `REDIS_PASSWORD`. A fresh `.env` now can't boot insecurely;
+    Compose aborts immediately with the name of the missing var. Replaced the old
+    `:-root`/`:-` defaults which silently fell back to weak or empty passwords. The
+    entrypoint additionally validates `APP_KEY` is a `base64:`-prefixed key decoding to
+    exactly 32 bytes (AES-256-CBC), catching the common mistake of pasting a bare
+    `openssl rand -base64 32` output.
+25. **MySQL healthcheck `start_period: 30s`.** First boot initializes the data dir and is
+    slow; without it MySQL flips to "unhealthy" during init and delays the whole chain.
+26. **Production stage keeps `-dev` libs** (not the smaller non-dev variants). The
+    `php:8.4-fpm` tag is a floating major.minor — its base Debian release can change across
+    rebuilds (bookworm → trixie shifts `libzip4`→`libzip5`, `libicu72`→`libicu76`, etc.).
+    `-dev` names are stable across that; the runtime names are not. Slimming the image
+    isn't worth that build fragility for this scale.
+27. **`npm ci --no-audit --no-fund`** — quiet and fast; harmless because the lockfile is
+    the source of truth and the rebuild already ignores registry metadata.
+28. **All-Debian, no-suffix base images.** `node:24`, `nginx:1.30`, `redis:8.10` (were
+    `-alpine`) so every image uses glibc and `apt`. Chosen for consistency and the boring
+    default; costs only image size/disk (runtime is unaffected). All-Alpine was never
+    possible — `mysql:8.4` has no official Alpine variant, and its no-suffix tag is Debian
+    anyway. Making every image no-suffix yields one distro everywhere for free. The Debian
+    nginx image ships no `wget`, so the nginx runtime now installs `curl` for its healthcheck.
+29. **Healthchecks real, not just "alive".** MySQL switched `mysqladmin ping` (which returns
+    0 even on failed auth) for a real `mysql -e 'SELECT 1'` round-trip. nginx uses
+    `curl -fs /up` (`-f` fails on any non-2xx). Redis checks via plain `ping`. All four
+    healthchecks are exec-form `CMD` — no shell. Auth is passed without dedicated
+    `-p`/`-a` **flags on the command line at check time** where possible: redis is authed
+    via `REDISCLI_AUTH` env; mysql gets its password interpolated by Compose at parse time
+    (`-p${MYSQL_ROOT_PASSWORD}`). **Not `MYSQL_PWD`** — an env var by that name breaks the
+    image's first-boot init outright (see the notes above), so the root password never
+    rides the client's `MYSQL_PWD` auto-read.
 
 ---
 
@@ -694,7 +753,7 @@ cp .env.production .env          # source of truth template
 Fill `.env` — four required values:
 
 ```bash
-APP_KEY=$(openssl rand -base64 32)      # 32-byte, base64 — do NOT reuse from elsewhere
+APP_KEY=$(printf 'base64:%s' "$(openssl rand -base64 32)")  # 32-byte, base64: prefix — do NOT reuse from elsewhere
 # in the file, set strong values for:
 DB_PASSWORD=...                          # app DB user password
 MYSQL_ROOT_PASSWORD=...                  # host mysql root password (first init only)
@@ -739,12 +798,12 @@ see the startup note in Verification/Troubleshooting.
 | Force recreate everything | `docker compose -f compose.prod.yaml up -d --force-recreate` |
 | Stop everything | `docker compose -f compose.prod.yaml down` (volumes survive) |
 | **Never** | `down -v` / `docker volume rm planner_database planner_storage` on a live install — this is the whole database |
-| Generate a fresh APP_KEY | on your own machine: `openssl rand -base64 32`, then paste into `.env` |
+| Generate a fresh APP_KEY | on your own machine: `printf 'base64:%s\n' "$(openssl rand -base64 32)"`, then paste into `.env` (must start with `base64:`) |
 | Shell into a service | `docker compose -f compose.prod.yaml exec php-fpm sh` (runs as `www-data`) |
 | Manual DB backup (recommended, no automation yet) | `docker compose -f compose.prod.yaml exec mysql sh -c 'mysqldump -u planner -p"$MYSQL_PASSWORD" planner' > backup.sql` |
 
 APP_KEY rotation procedure (rare; forces everyone to re-login):
-1. Generate a new key on your own machine: `openssl rand -base64 32`.
+1. Generate a new key on your own machine: `printf 'base64:%s\n' "$(openssl rand -base64 32)"`.
 2. Edit `.env`, then `up -d --force-recreate php-fpm nginx` (php-fpm re-bakes config from
    the key; sessions/cookies are invalidated on next access).
 3. Verify `/up` and a fresh login.
@@ -763,6 +822,8 @@ config (which embeds env values) is rebuilt automatically and needs no manual
 
 | Symptom | Check | Fix |
 |---|---|---|
+| `docker compose up` aborts "required variable … missing a value" | `.env` has blank `APP_KEY` / `DB_PASSWORD` / `MYSQL_ROOT_PASSWORD` / `REDIS_PASSWORD` | fill the named var in `.env` |
+| `php artisan key:generate` or `up` throws "Unsupported cipher or incorrect key length" | `APP_KEY` is bare base64 without `base64:` prefix | regenerate: `printf 'base64:%s\n' "$(openssl rand -base64 32)"`, paste into `.env`, `up -d --force-recreate php-fpm` |
 | `502 Bad Gateway` | is php-fpm healthy? | `docker compose -f compose.prod.yaml up -d php-fpm`; check `logs php-fpm` |
 | `/up` 500 / "whoops" | php-fpm logs | app exception; check memory, APP_KEY validity |
 | Container restart-loop | `logs` shows migration error | mysql not ready (wait, `start_period` covers first boot) or DB credentials wrong |
@@ -776,9 +837,9 @@ Healthcheck definitions (for reference when diagnosing the chain):
 | Service | Test | interval/timeout/retries/start |
 |---|---|---|
 | php-fpm | `php -r` fsockopen TCP 127.0.0.1:9000 | 10s/3s/5/30s |
-| nginx | `wget -qO- http://127.0.0.1/up` | 30s/3s/3/5s |
-| mysql | `mysqladmin ping -h localhost -u root -p<root pass>` | 10s/5s/5 |
-| redis | `redis-cli -a <pass> ping` grep PONG | 10s/5s/5 |
+| nginx | `curl -fs http://127.0.0.1/up` (full stack) | 30s/3s/3/5s |
+| mysql | `mysql -uroot -p"${MYSQL_ROOT_PASSWORD}" -e SELECT 1` (exec CMD; real auth) | 10s/5s/5/30s |
+| redis | `redis-cli ping` (auth via `REDISCLI_AUTH`) | 10s/5s/5 |
 
 `depends_on: condition: service_healthy` orders them: mysql+redis → php-fpm → nginx.
 
@@ -799,8 +860,8 @@ Rules forever:
   live install — those delete `planner_database`/`planner_storage`.
 - Safe weekly-ish hygiene:
   `docker system prune -f` (dangling images) and `docker builder prune -f`.
-- Build bases (`php:8.4-fpm`, `composer:2.10`, `node:24-alpine`, `nginx:1.30-alpine`,
-  `mysql:8.4`, `redis:8.10-alpine`, plus pulled tags) are ephemeral — deleting them is
+- Build bases (`php:8.4-fpm`, `composer:2.10`, `node:24`, `nginx:1.30`,
+  `mysql:8.4`, `redis:8.10`, plus pulled tags) are ephemeral — deleting them is
   fine; the next `up --build` re-pulls automatically.
 - Check footprint: `docker system df`.
 
@@ -829,8 +890,8 @@ update in this document is just "change the pins/files, rebuild, verify."
    dependency bump but ALSO re-check `bootstrap/app.php`/`config/database.php` against the
    new skeleton and re-run the prod audit (config defaults vs `.env.production`).
 4. **Base-image patch updates (free)**: our tags are MAJOR.MINOR, so a rebuild silently
-   pulls the latest patch (php:8.4-fpm, nginx:1.30-alpine, mysql:8.4, redis:8.10-alpine,
-   node:24-alpine). If a security advisory appears for a series, just `up -d --build` to
+   pulls the latest patch (php:8.4-fpm, nginx:1.30, mysql:8.4, redis:8.10,
+   node:24). If a security advisory appears for a series, just `up -d --build` to
    update the patch and re-verify health.
 5. **Base-image MINOR updates (deliberate)**: when moving to a new tag line (PHP 8.5,
    nginx 1.31, MySQL 9, Redis 9, Node 26 LTS, Composer 2.11): bump the tag in BOTH
@@ -863,7 +924,7 @@ update in this document is just "change the pins/files, rebuild, verify."
    decisions log). The comment-free code style in the images is intentional — the "why" for
    every line lives *here*, not in the Dockerfiles.
 9. **Node 24 → next LTS**: when the active LTS moves and/or the toolchain demands it,
-   bump `node:24-alpine` in both Dockerfiles at once (both images build identical assets
+   bump `node:24` in both Dockerfiles at once (both images build identical assets
    today, keep it that way).
 10. **Composer skew guard**: both images must keep using the same `composer:2.10` base —
     the sync guarantee comes from that single source.

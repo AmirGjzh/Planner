@@ -21,19 +21,20 @@ file only covers the local development workflow.
 
 | Item | Value |
 |---|---|
-| Dev model | Clone → copy template → fill `.env` → `up -d --build` → `exec workspace sh` |
-| Orchestration | Docker Compose v2 (`compose.dev.yaml`), project name `planner-dev` |
+| Dev model | Clone → copy template → fill `.env` → `up -d --build` (deps self-install on start) → `exec workspace sh` |
+| Orchestration | Docker Compose v2 (`compose.dev.yaml`), project name `planner-development` |
 | App | Laravel 13.x + Livewire 4.x (see `composer.json`) |
 | Workspace image | `php:8.4-cli` (Debian/glibc) built from `docker/common/php-cli/Dockerfile` |
 | Composer image (build-only) | `composer:2.10` |
-| Node image (build-only) | `node:24-bookworm-slim` (same major as prod's `node:24-alpine`) |
+| Node image (build-only) | `node:24` (no suffix — exact tag prod builds with) |
 | MySQL image | `mysql:8.4` (same as prod) |
-| Containers | `planner-dev-workspace`, `planner-dev-mysql` |
-| Named volumes | `planner-dev_mysql-data` (DB only; workspace is stateless) |
-| Network | single user network `dev-network` → prefixed `planner-dev_dev-network` |
-| Host ports | `8000` (artisan serve), `5173` (Vite HMR) — MySQL has **no** host port |
-| PHP extensions | `pdo_mysql`, `pdo_sqlite`, `intl`, `mbstring`, `zip`, `bcmath`, `gd` |
-| Redis | not present (app drivers are MySQL/database-backed in dev) |
+| Redis image | `redis:8.10` (same as prod) |
+| Containers | `planner-development-workspace`, `planner-development-mysql`, `planner-development-redis` |
+| Named volumes | `planner-development_database` (DB only; workspace is stateless) |
+| Network | single user network `network` → prefixed `planner-development_network` |
+| Host ports | `8000` (artisan serve), `5173` (Vite HMR) — MySQL and Redis have **no** host port |
+| PHP extensions | `pdo_mysql`, `pdo_sqlite`, `intl`, `mbstring`, `zip`, `bcmath`, `gd`, `redis` |
+| Redis | present (`redis:8.10`, same image + `requirepass` as prod; sessions/cache drivers) |
 | Tests | Pest on SQLite `:memory:` (via `phpunit.xml`) — needs `pdo_sqlite` |
 | Restart policy | `unless-stopped` on all services |
 
@@ -47,15 +48,18 @@ workspace image (node/composer/php) verified working by the user.
 - **One container = one dev terminal with everything inside**: PHP CLI + Composer + Node
   (npm/npx). Run Laravel with `artisan serve`, Vite with `npm run dev`, migrations, tests
   and Tinker — all from `<project>/docker`-provided tools.
-- **No nginx, no php-fpm, no Redis in dev.** Production-service complexity is deferred.
+- **No nginx, no php-fpm in dev.** Production-service complexity is deferred. Redis *is*
+  present to mirror prod's session/cache stack (see below).
 - The project folder is **bind-mounted** `.` → `/var/www`, so every file you edit shows up
   in the container live (and vice versa). No image rebuild for app-code changes.
 - The container runs as **your host UID/GID** (default `1000:1000`), so files created in
   the container are owned by your host user — no permission fights on the mount.
 - MySQL is isolated inside the dev network (container name `mysql`), like prod. Dev DB
   data lives in its own volume and survives restarts.
-- The repo is the deliverable: a fresh machine needs a clone, the filled-in `.env`,
-  `composer install` + `npm install`, and the two dev servers.
+- The repo is the deliverable: a fresh machine needs a clone, the filled-in `.env`, and
+  `up -d --build` — the workspace entrypoint installs `composer`/`npm` deps at every
+  container start (deps live on the mount, not in the image), then you start the two
+  dev servers.
 
 ---
 
@@ -66,29 +70,34 @@ workspace image (node/composer/php) verified working by the user.
   ┌──────────────┬───────────────────────────────┐
   │  :8000  ◄────┘    :5173                      │
   ▼                                              │
- planner-dev-workspace ◄── bind mount ./:/var/www │
+ planner-development-workspace ◄── bind mount ./:/var/www │
  ┌─────────────────────┐                         │
  │ php:8.4-cli          │  artisan serve 0.0.0.0:8000
  │ + composer           │  Vite dev   0.0.0.0:5173
  │ + node / npm / npx   │  ──► mysql  (container DNS, :3306)
+ │ + redis (ext)        │  ──► redis  (container DNS, :6379)
  └──────────┬───────────┘
-            │ TCP:3306 (dev-network only — no host port)
+            │ TCP:3306, :6379 (network only — no host ports)
             ▼
- planner-dev-mysql (mysql:8.4, data in planner-dev_mysql-data)
+ planner-development-mysql (mysql:8.4, data in planner-development_database)
+ planner-development-redis (redis:8.10)
 ```
 
 Key facts:
 
 - Containers reach each other by **container name as DNS** inside the dev network:
-  `mysql` is the DB host (matches `DB_HOST=mysql` in `.env.development`).
-- **Only the workspace publishes host ports** (8000, 5173). MySQL is never exposed to the
-  host — no GUI access by default (see [Future Notes](#future-notes-desires-and-not-done)).
+  `mysql` is the DB host (matches `DB_HOST=mysql`) and `redis` is the cache/session host
+  (matches `REDIS_HOST=redis`) in `.env.development`.
+- **Only the workspace publishes host ports** (8000, 5173). MySQL and Redis are never
+  exposed to the host — no GUI access by default (see [Future Notes](#future-notes-desires-and-not-done)).
 - The workspace is **stateless**: all project files come from the bind mount; the image
   itself only carries the toolchain (~php + composer + node). `vendor/` and `node_modules/`
   live on the host and are shared through the mount.
 - `CMD ["sleep", "infinity"]` plus `tty: true` + `stdin_open: true` keep the workspace
-  alive so you can `exec` into it at any time. There is **no entrypoint** — you drive
-  everything manually (unlike the prod stack, which auto-setups on boot).
+  alive so you can `exec` into it at any time. The image's **init entrypoint** runs
+  `composer install` + `npm install` on every start (deps live on the bind mount), then
+  `exec "$@"` → `sleep infinity`. Dev stays interactive — everything else is manual,
+  unlike prod's auto-setup entrypoint.
 
 ---
 
@@ -102,6 +111,7 @@ Key facts:
 ├── docker/
 │   └── common/
 │       └── php-cli/Dockerfile        dev toolchain image (shared pattern dir)
+│       └── php-cli/entrypoint.sh     init: composer install + npm install on every start
 ├── vite.config.js                    dev server host / HMR / polling (see below)
 ├── composer.json                     `dev` / `test` / `setup` scripts
 ├── phpunit.xml                       test DB = sqlite `:memory:`
@@ -114,14 +124,14 @@ Key facts:
 
 ### `compose.dev.yaml`
 
-Single-file Compose v2 spec, project name `planner-dev`. The full file:
+Single-file Compose v2 spec, project name `planner-development`. The full file:
 
 ```yaml
-name: planner-dev
+name: planner-development
 
 services:
   workspace:
-    container_name: planner-dev-workspace
+    container_name: planner-development-workspace
     build:
       context: .
       dockerfile: ./docker/common/php-cli/Dockerfile
@@ -132,6 +142,8 @@ services:
     working_dir: /var/www
     env_file:
       - .env
+    environment:
+      APP_KEY: ${APP_KEY:?Set APP_KEY in .env}
     volumes:
       - .:/var/www
     ports:
@@ -143,57 +155,93 @@ services:
         max-size: "10m"
         max-file: "3"
     networks:
-      - dev-network
+      - network
     depends_on:
       mysql:
         condition: service_healthy
+      redis:
+        condition: service_healthy
 
   mysql:
-    container_name: planner-dev-mysql
+    container_name: planner-development-mysql
     image: mysql:8.4
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_USER: ${DB_USERNAME}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
     volumes:
-      - mysql-data:/var/lib/mysql
+      - database:/var/lib/mysql
     networks:
-      - dev-network
+      - network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root}"]
+      test: ["CMD", "mysql", "-uroot", "-p${MYSQL_ROOT_PASSWORD}", "-e", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  redis:
+    container_name: planner-development-redis
+    image: redis:8.10
+    restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+    command: ["sh", "-c", "exec redis-server --requirepass \"$$REDIS_PASSWORD\""]
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
 
 networks:
-  dev-network:
+  network:
 
 volumes:
-  mysql-data:
+  database:
 ```
 
 Notes:
 
 - `user: "${UID:-1000}:${GID:-1000}"` — the workspace runs as your uid/gid. On Linux,
   `UID`/`GID` are exported by most shells; if not, the fallback `1000:1000` is typical.
-- `depends_on: mysql: condition: service_healthy` — the workspace starts only after the
-  DB passes `mysqladmin ping`. DB credentials come from `.env` vars (defaults `root`,
-  fallback `-root` is never used when `.env` is filled).
-- No `entrypoint:` / `command:` — rely on `tty`/`sleep infinity`.
+- The secrets are required via `${VAR:?err}` — Compose aborts naming the missing one, same
+  contract as prod: the workspace enforces `APP_KEY`, mysql enforces `MYSQL_ROOT_PASSWORD`
+  /`DB_PASSWORD`, redis enforces `REDIS_PASSWORD`. `.env` is never committed; values live
+  only in the local file.
+- The workspace waits for **both** `mysql` and `redis` to pass their healthchecks.
+  Both are exec-form `CMD` (no shell): `mysql -uroot -p"${MYSQL_ROOT_PASSWORD}" -e
+  'SELECT 1'` — the password is interpolated by Compose at parse time — and `redis-cli
+  ping`, authed via `REDISCLI_AUTH` — the exact prod pattern.
+- **`MYSQL_PWD` is deliberately NOT set on mysql.** The image's first-boot bootstrap
+  connects to a temporary server whose `root` is still passwordless; a stray `MYSQL_PWD`
+  injects a password into every such connection and the entrypoint's own `ALTER USER` /
+  `CREATE USER` abort with `Access denied (using password: YES)`, leaving root empty and
+  the app user uncreated (half-initialized data dir). `MYSQL_ROOT_PASSWORD` is passed for
+  the *entrypoint*, never via the client's `MYSQL_PWD` auto-read.
+- No `entrypoint:` / `command:` override in compose — the workspace runs the image's init
+  entrypoint (below); `tty`/`sleep infinity` just keep it interactive.
 
 ### `docker/common/php-cli/Dockerfile`
 
 The entire dev toolchain in one **Debian-based** image. Full file:
 
 ```dockerfile
-FROM node:24-bookworm-slim AS node
+FROM node:24 AS node
 
 FROM composer:2.10 AS composer
 
@@ -222,6 +270,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gd \
     && apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+RUN pecl install redis && docker-php-ext-enable redis
+
 COPY --from=composer /usr/bin/composer /usr/local/bin/composer
 
 COPY --from=node /usr/local/bin/node /usr/local/bin/node
@@ -233,11 +283,16 @@ RUN ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
     && npm --version \
     && composer --version
 
-RUN mkdir -p /home/workspace && chown -R 1000:1000 /home/workspace
+RUN mkdir -p /home/workspace && chown -R 1000:1000 /home/workspace && php -m | grep -q redis
 
 ENV HOME=/home/workspace
 
 WORKDIR /var/www
+
+COPY ./docker/common/php-cli/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 CMD ["sleep", "infinity"]
 ```
@@ -246,24 +301,37 @@ Why it looks like this:
 
 - **Debian (`php:8.4-cli`), not Alpine.** Node's official Linux binaries are musl-linked
   in the alpine builds but glibc-linked in the Debian builds; they can't run in a glibc
-  PHP image. `node:24-bookworm-slim` is glibc and matches prod's Node 24. Going Alpine
-  would have forced *both* PHP and Node to Alpine (a bigger parity deviation for no gain).
+  PHP image. `node:24` is glibc and the **exact tag prod builds with** (all-Debian, no
+  suffix, repo-wide).
 - **Composer is a PHP phar** — copying `/usr/bin/composer` from `composer:2.10` is fully
   portable and avoids a second install method. Same image the prod stack builds with.
-- **Node + npm come from the `node:24-bookworm-slim` stage**, not a NodeSource script.
+- **Node + npm come from the `node:24` stage**, not a NodeSource script.
   The earlier draft ran the NodeSource install script (pulled in Python/pip cruft); the
   two-stage copy is smaller and version-pinned.
 - **`npm`/`npx` are symlinks** into the copied `npm` package on `/usr/local/bin`.
 - **`pdo_sqlite` + `libsqlite3-dev`** are required for Pest (`phpunit.xml` uses SQLite
   `:memory:`). Tests run inside this container; prod does *not* need pdo_sqlite.
-- **No Redis extension** — dev sessions/cache/queue run on MySQL/database drivers
-  (`SESSION_DRIVER=database`, `CACHE_STORE=database`). Add `pecl install redis` here the
-  day dev actually talks to Redis (see [Future Notes](#future-notes-desires-and-not-done)).
+- **`redis` extension via `pecl`** — the same line prod's builder image uses. Dev now runs
+  `SESSION_DRIVER=redis` / `CACHE_STORE=redis` (see `.env.development`), so the workspace can
+  talk to the dev Redis server.
+- **`curl` stays installed** — unlike prod (where we removed it; there it was only for the
+  healthcheck), here it's a live developer tool in the terminal.
 - **`HOME=/home/workspace`** (created and owned by `1000:1000`): npm/composer/git write
   their caches under `$HOME`. Without it the container tried `/.npm` (root-owned, EACCES —
   the exact failure seen during setup). Reading/npm/git caches now live in `/home/workspace`.
-- The version guards (`node --version`, `npm --version`, `composer --version`) run at
-  build time so a broken copy fails the build instead of surprising you at runtime.
+- The version guards (`node --version`, `npm --version`, `composer --version`, plus the
+  `php -m | grep -q redis` extension check) run at build time so a broken copy fails the
+  build instead of surprising you at runtime.
+- **The init entrypoint** runs `composer install` + `npm install` on *every* container
+  start, then `exec "$@"` (→ `sleep infinity`). Deps live on the bind mount, not in the
+  image, so this self-heals across clones and lockfile changes. Both commands are fast
+  no-ops when nothing changed, so the cost is a few seconds per boot. Runs as the compose
+  user (your uid), so `vendor/`/`node_modules/` stay owned by you.
+- **Tools are images, never installed** (repo-wide rule, see Decision #14): PHP is the
+  base image, composer + node/npm are build-stage copies, mysql/redis are services. The
+  only things installed in-image are PHP runtime extensions and base utilities with no
+  image equivalent (`curl`, `unzip`, `git`, `ca-certificates`). A future tool gets an
+  official image or a stage — never an apt-get in a container.
 
 ### `.env.development`
 
@@ -300,26 +368,40 @@ DB_USERNAME=planner
 DB_PASSWORD=
 MYSQL_ROOT_PASSWORD=
 
-SESSION_DRIVER=database
+SESSION_DRIVER=redis
+SESSION_CONNECTION=session
 SESSION_LIFETIME=120
 SESSION_ENCRYPT=false
 SESSION_PATH=/
 SESSION_DOMAIN=null
 SESSION_EXPIRE_ON_CLOSE=false
 
-CACHE_STORE=database
+CACHE_STORE=redis
+
+REDIS_CLIENT=phpredis
+REDIS_HOST=redis
+REDIS_PASSWORD=
+REDIS_PORT=6379
+REDIS_DB=0
+REDIS_CACHE_DB=1
+REDIS_SESSION_DB=2
+REDIS_CACHE_LOCK_CONNECTION=cache
 ```
 
 Only four things are blank and must be filled in `.env`:
-`APP_KEY`, `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD`. Everything else has a config default or
-is unused in dev.
+`APP_KEY`, `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `REDIS_PASSWORD`. Everything else has a
+config default or is unused in dev.
 
-- `DB_HOST=mysql` — inside the dev network, the DB is reachable by its container name.
-- `APP_URL=http://localhost:8000` — matches the artisan-serve port.
-- Dev friendly: `APP_ENV=local`, `APP_DEBUG=true`, `LOG_LEVEL=debug`.
-- Removed from stock Laravel: BROADCAST/QUEUE/FILESYSTEM/MEMCACHED/REDIS/MAIL/AWS/VITE —
-  each verified to have a sane config default or be unused in dev. Re-add a **REDIS**
-  group only if/when dev uses Redis.
+- `DB_HOST=mysql`, `REDIS_HOST=redis` — inside the dev network, service names are the
+  hostnames.
+- `SESSION_DRIVER=redis` / `CACHE_STORE=redis` — prod parity: dev exercises the *real*
+  session/cache stack (Redis server + `phpredis` ext), not the database/store fakes.
+- `SESSION_ENCRYPT=false` — the one deliberate divergence from prod's `true`, so dev tools
+  can read sessions while you debug. Prod encrypts.
+- Dev friendly: `APP_ENV=local`, `APP_DEBUG=true`, `LOG_LEVEL=debug`, and the SESSION/REDIS
+  group mirrors `.env.production` exactly.
+- Removed from stock Laravel: BROADCAST/QUEUE/FILESYSTEM/MEMCACHED/MAIL/AWS/VITE — each
+  verified to have a sane config default or be unused in dev.
 
 ### `vite.config.js`
 
@@ -342,13 +424,13 @@ These are the only container-specific bits — the plugins/inputs are unchanged.
 
 ### App-side wiring (read-only notes)
 
-- `composer.json` scripts relevant in dev: `composer dev` (concurrent: `artisan serve` +
-  `queue:listen` + `npm run dev`), `composer test` (calls `artisan test` = Pest).
-- **Gotcha:** the `dev` script's `php artisan serve` runs with Vite connected but binds
-  the default `127.0.0.1`, which is *not reachable* from the host through the 8000
-  port mapping. The runbook below therefore uses the explicit
-  `php artisan serve --host=0.0.0.0 --port=8000`. Fixing the script itself is deferred
-  (see [Future Notes](#future-notes-desires-and-not-done)).
+- `composer.json` scripts relevant in dev: `composer run dev` (concurrent: `artisan serve`
+  + `queue:listen` + `npm run dev`), `composer test` (calls `artisan test` = Pest).
+- **Why `--host=0.0.0.0`:** Docker forwards a published port to the container's *network
+  interface* (eth0), not its loopback. `php artisan serve`'s default `127.0.0.1` binds
+  only loopback, so the port mapping would reach nothing. The `dev` script passes
+  `--host=0.0.0.0 --port=8000` explicitly (fixed — it now works), and the runbook uses the
+  same explicit command. Vite needs no flag because `vite.config.js` forces `host: '0.0.0.0'`.
 - `phpunit.xml` uses `DB_CONNECTION=sqlite` + `DB_DATABASE=:memory:` — tests need no DB
   container and run anywhere with `pdo_sqlite`.
 
@@ -358,16 +440,20 @@ These are the only container-specific bits — the plugins/inputs are unchanged.
 
 | Compose/dev file value | Source in `.env` | Notes |
 |---|---|---|
-| `workspace.env_file` | entire `.env` | all variables (APP_*, DB_*, SESSION_*, CACHE_*) injected into the container |
-| `MYSQL_ROOT_PASSWORD` | `${MYSQL_ROOT_PASSWORD:-root}` | bake at first `up` → changing later needs the volume reset (see Troubleshooting) |
+| `workspace.env_file` | entire `.env` | all variables (APP_*, DB_*, SESSION_*, CACHE_*, REDIS_*) injected into the container |
+| `workspace.environment.APP_KEY` | `${APP_KEY:?}` | compose-level guard mirroring prod's php-fpm — workspace won't start without it |
+| `MYSQL_ROOT_PASSWORD` | `${MYSQL_ROOT_PASSWORD:?}` | required — bake at first `up`, changing later needs the volume reset (see Troubleshooting) |
 | `MYSQL_DATABASE` | `${DB_DATABASE}` | must equal `DB_DATABASE` from the workspace's `.env` |
 | `MYSQL_USER` | `${DB_USERNAME}` | ditto |
-| `MYSQL_PASSWORD` | `${DB_PASSWORD}` | ditto |
+| `MYSQL_PASSWORD` | `${DB_PASSWORD:?}` | ditto |
+| `REDIS_PASSWORD` | `${REDIS_PASSWORD:?}` | `requirepass` for the dev Redis |
+| `REDISCLI_AUTH` | `${REDIS_PASSWORD:?}` | redis-cli auth used by the healthcheck (same as prod) |
 | workspace port `8000` | — (static) | artisan serve |
 | workspace port `5173` | — (static) | Vite HMR |
 
-Rule of thumb: keep `DB_HOST=mysql`, `DB_PORT=3306`, and the four `DB_*`/`MYSQL_*` values
-in sync between the two services — Compose reads them from the *same* `.env`.
+Rule of thumb: keep `DB_HOST=mysql`, `DB_PORT=3306`, `REDIS_HOST=redis`, `REDIS_PORT=6379`
+and the four `DB_*`/`MYSQL_*`/`REDIS_*` credential values in sync between the two services —
+Compose reads them from the *same* `.env`.
 
 ---
 
@@ -377,28 +463,48 @@ in sync between the two services — Compose reads them from the *same* `.env`.
    goal "exec workspace sh → a terminal with everything"; avoids 3-4 tiny containers.
 2. **Debian base, not Alpine.** Node alpine (musl) cannot run in a glibc PHP image.
    Staying Debian for PHP keeps the closest parity with prod (`php:8.4-fpm` is also
-   Debian-based). Node 24 comes from the **glibc** `node:24-bookworm-slim` build.
+   Debian-based). Node 24 comes from the **glibc** `node:24` build — the exact tag prod
+   uses, no suffix.
 3. **Node via image stage, not NodeSource.** Smaller, pinned, no Python/pip baggage that
    the first draft's install script pulled in.
 4. **Two-stage copying (composer phar + node)** instead of multi-exec installers. If any
    copy breaks, the build-time version guards fail loudly.
 5. **No nginx/php-fpm in dev.** `artisan serve` is enough for local work. The prod stack's
    nginx/fpm (and its "assets built twice" dance) stay production-only.
-6. **No Redis in dev** (image or service). All dev drivers sit on MySQL/database
-   (`CACHE_STORE=database`, `SESSION_DRIVER=database`). Redis is prod-only until the app
-   actually uses it in a way that matters locally.
+6. **Redis in dev, for prod parity.** Same image (`redis:8.10`), same `requirepass` and
+   healthcheck pattern as prod. Dev now uses the real drivers — `SESSION_DRIVER=redis`
+   (`SESSION_CONNECTION=session`), `CACHE_STORE=redis` — and the `phpredis` extension in
+   the workspace image. **`SESSION_ENCRYPT=false` in dev only**, so sessions stay readable
+   for dev tools; prod keeps `true`.
 7. **MySQL 8.4 same as prod**, but with its own dev volume and **no host port** — the
-   database is only reachable from the workspace (matches prod's posture).
+   database is only reachable from the workspace (matches prod's posture). Same for Redis:
+   no host port in dev either.
 8. **Bind mount `./:/var/www`** — code changes are live; the image is a toolchain, not an
    app artifact. Rebuild only when the *toolchain* changes.
 9. **`user: ${UID:-1000}:${GID:-1000}` + `HOME=/home/workspace`** — cache dirs
    (`~/.npm`, `~/.composer`, `~/.git`) are writable and all container-created files belong
    to the host user. This fixed the real `EACCES /.npm` failure hit during setup.
-10. **`tty`/`stdin_open` + `CMD sleep infinity`, no entrypoint.** Dev is interactive and
-    manual; prod's auto-setup entrypoint has no place here.
+10. **`tty`/`stdin_open` + `CMD sleep infinity`, plus an init entrypoint.** Dev is
+    interactive and otherwise manual (unlike prod's auto-setup entrypoint), but the
+    workspace auto-runs `composer install` + `npm install` on every start — deps live on
+    the bind mount, not in the image — then `exec "$@"` lands on `sleep infinity`.
 11. **`pdo_sqlite` kept** so Pest (`sqlite :memory:`) works in the same container.
 12. **`.env.development` = template with blank secrets**, same contract as the prod
     template: real values only ever live in the git-ignored `.env`.
+13. **Prod-style cleanups carried over.** Exec-form `CMD` healthchecks with env/auth-passed
+     credentials (`-p${MYSQL_ROOT_PASSWORD}` / `REDISCLI_AUTH`), `${VAR:?err}` secret
+     enforcement (no `:-root` fallbacks), `start_period` on MySQL, and identical
+     logging/restart policies — dev is as close to prod as it can be without hurting the
+     developer. Note: mysql does **not** use `MYSQL_PWD`, because the mysql image's
+     first-boot bootstrap connects to a passwordless temp-server root and any `MYSQL_PWD`
+     in the environment makes those connections (and the whole init) fail.
+14. **Tools are images, never installed (repo-wide rule).** PHP comes from the `php:8.4-cli`
+    base image; composer and node/npm from `composer:2.10` / `node:24` build stages; mysql
+    and redis from their official service images. The only things installed into a
+    container are PHP runtime extensions and base utilities with no image equivalent
+    (`curl`, `unzip`, `git`, `ca-certificates` — the sanctioned exception, matching prod's
+    nginx `curl`). Any future tool must come from an official image (a service or a build
+    stage), never an in-container apt-get.
 
 ---
 
@@ -430,22 +536,24 @@ All compose commands run from the project root. They are Ctrl-safe to run on any
      Copy-Item .env.development .env
      ```
 
-4. **Fill in 3 things in `.env`** (everything else is already right for dev):
+4. **Fill in 4 things in `.env`** (everything else is already right for dev):
 
-   - `APP_KEY` — generate one. Either on the host:
+   - `APP_KEY` — **required before the first `up`**: compose refuses to start the workspace
+     without it (same guard as prod), so it must already exist in `.env` when you run
+     step 5. Generate it on the host (the value must start with `base64:`):
 
-     - **Mac / Linux:** `openssl rand -base64 32`
-     - **Windows** (PowerShell):
-       `[System.Convert]::ToBase64String([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))`
+      - **Mac / Linux:** `printf 'base64:%s\n' "$(openssl rand -base64 32)"`
+      - **Windows** (PowerShell):
+        `'base64:' + [System.Convert]::ToBase64String([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))`
 
-     …or, easiest, inside the container first time (see step 6), run
-     `php artisan key:generate` — it writes straight back into the bind-mounted `.env`.
+   - `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `REDIS_PASSWORD` — any passwords you like.
+     **Do this before the first `up`**: MySQL bakes the DB credentials when its data volume
+     is created (see Troubleshooting).
 
-   - `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD` — any passwords you like. **Do this before the
-     first `up`**: MySQL bakes them when its data volume is created (see Troubleshooting).
-
-5. **Build and start the dev stack.** First time is slow (pulls `php:8.4-cli`,
-   `node:24-bookworm-slim`, `composer:2.10`, `mysql:8.4`, installs extensions):
+5. **Build and start the dev stack.** First time is slow (pulls `php:8.4-cli`, `node:24`,
+   `composer:2.10`, `mysql:8.4`, `redis:8.10`, installs extensions). When the workspace
+   starts, its entrypoint installs `composer`/`npm` deps automatically (check
+   `docker compose -f compose.dev.yaml logs workspace`):
 
    ```bash
    docker compose -f compose.dev.yaml up -d --build
@@ -457,14 +565,10 @@ All compose commands run from the project root. They are Ctrl-safe to run on any
    docker compose -f compose.dev.yaml exec workspace sh
    ```
 
-7. **First time only** (vendor/ and node_modules/ don't exist yet):
+   `vendor/` and `node_modules/` were already created by the startup entrypoint, so no
+   manual install step is needed (they re-install themselves on every start).
 
-   ```sh
-   composer install
-   npm install
-   ```
-
-8. **Start the servers.** In the workspace terminal(s):
+7. **Start the servers.** In the workspace terminal(s):
 
    ```sh
    php artisan serve --host=0.0.0.0 --port=8000    # the app → http://localhost:8000
@@ -474,18 +578,20 @@ All compose commands run from the project root. They are Ctrl-safe to run on any
 
    (`--host=0.0.0.0` is required — `127.0.0.1` wouldn't be reachable from the host.)
 
-9. **First use of the database.**
+   Easier: `composer run dev` runs all three (server + queue worker + Vite) at once.
+
+8. **First use of the database.**
 
    ```sh
-   php artisan migrate            # after mysql is healthy (workspace waits for it)
+   php artisan migrate            # after mysql + redis are healthy (workspace waits for both)
    php artisan db:seed            # optional dev account, see Seeders
    ```
 
    Guest pages need no account, but to exercise the auth/task features register from the
    UI or use the seeder.
 
-10. **Check it works.** Browser → <http://localhost:8000>; also
-    <http://localhost:8000/up> should show `200`.
+9. **Check it works.** Browser → <http://localhost:8000>; also
+   <http://localhost:8000/up> should show `200`.
 
 That's the whole loop. From now on: `up -d` (or `start`), `exec workspace sh`, code.
 
@@ -503,7 +609,7 @@ All commands from the project root. They all keep your dev data safe.
 | `docker compose -f compose.dev.yaml up -d --build` | rebuild the toolchain image (after a Dockerfile change), then start |
 | `docker compose -f compose.dev.yaml down` | full stop, keeps the MySQL volume |
 | `docker compose -f compose.dev.yaml exec workspace sh` | your daily entry point |
-| `docker compose -f compose.dev.yaml logs -f workspace` | tail workspace logs (use `mysql` for the DB) |
+| `docker compose -f compose.dev.yaml logs -f workspace` | tail workspace logs (use `mysql` / `redis` for the others) |
 
 Only use `down` when you want a totally clean slate; it never deletes data. **Never run
 `docker compose -f compose.dev.yaml down -v`** — the `-v` wipes the MySQL dev volume.
@@ -535,9 +641,10 @@ When to rebuild (**only** when the toolchain changes — never for app code):
 ### Checking the stack
 
 ```bash
-docker compose -f compose.dev.yaml ps     # workspace + mysql: Up / running / healthy
+docker compose -f compose.dev.yaml ps     # workspace + mysql + redis: Up / running / healthy
 docker compose -f compose.dev.yaml exec workspace sh
 node --version && npm --version && composer --version && php -v
+php -m | grep redis                        # phpredis extension loaded
 curl -s http://localhost:8000/up           # expect 200 (artisan serve running)
 ```
 
@@ -547,29 +654,32 @@ curl -s http://localhost:8000/up           # expect 200 (artisan serve running)
 |---|---|
 | `npm: command not found` | image predates the node stage — run `up -d --build` |
 | npm sharp/npm `EACCES` on `/.npm` | `HOME` must be `/home/workspace` (already in image); verify with `echo $HOME` |
-| workspace exits immediately | almost always a blank `APP_KEY` — run `php artisan key:generate` in it, then `restart workspace` |
+| `up` aborts: `Set APP_KEY in .env` | compose enforces `APP_KEY` on the workspace (like prod) — fill a valid `base64:` key in `.env`, then `up` again |
+| workspace crash-loops on start | the init entrypoint aborts when `composer install`/`npm install` fail (network, broken lock) — `docker compose logs workspace` shows why; fix it. To get a shell past a failing install: `docker compose -f compose.dev.yaml run --rm --entrypoint sh workspace` |
 | `port ... already in use` (8000/5173) | something else owns one of the ports — free it or edit `ports:` in `compose.dev.yaml` |
-| mysql unhealthy; `Access denied for user 'planner'` | credentials baked at first volume init differ from current `.env` — dev data is disposable: `down`, `docker volume rm planner-dev_mysql-data`, then `up -d --build` and re-`migrate` |
+| mysql unhealthy; `Access denied for user 'planner'` | credentials baked at first volume init differ from current `.env` — dev data is disposable: `down`, `docker volume rm planner-development_database`, then `up -d --build` and re-`migrate` |
+| redis unhealthy; `NOAUTH` / `WRONGPASS` from the app | `REDIS_PASSWORD` in `.env` differs from the compose value passed at Redis start — make them match and recreate Redis (`up -d --force-recreate redis`) |
 | `The stream or file "..." could not be opened` storage | the DB didn't come up first run or `depends_on` health; check `docker compose ... ps` and `.env` `DB_HOST`/`DB_PORT` |
 | `artisan serve` runs but browser times out | forgot `--host=0.0.0.0` — that's the whole fix |
 | Vite not hot-reloading | `usePolling` is already on; ensure 5173 is free and you reach it via `localhost:5173` |
-| `app@... does not exist` tinker | run `composer install` once, then `php artisan package:discover` |
+| `app@... does not exist` tinker | restart the workspace (entrypoint re-runs `composer install` + `package:discover`), or run both manually |
 
 ---
 
 ## Future Notes, Desires, and Not-Done
 
-- **`composer dev` alias** currently runs `php artisan serve` without `--host=0.0.0.0`,
-  so it can't serve to the host. Either patch that script or keep using the explicit
-  command from the runbook (documented approach).
-- **Redis in dev**: add a `redis` service, a `REDIS_*` env group in `.env.development`,
-  and `pecl install redis` in the Dockerfile the day the app adopts Redis-backed queueing
-  (prod grew a persistence note for exactly this).
-- **MySQL on a host port** for a GUI client is possible but deliberately not done — no
-  host exposure, matching prod.
+- **`php artisan serve` without flags still binds `127.0.0.1`** (Laravel's default). The
+  `dev` script and the runbook both pass `--host=0.0.0.0`; making bare `php artisan serve`
+  auto-bind `0.0.0.0` would need overriding Laravel's built-in `serve` command — deferred
+  as unnecessary.
+- **Redis encryption is prod-only.** Dev keeps `SESSION_ENCRYPT=false` so dev tools can
+  read sessions; if that ever becomes a friction point, flip it on in `.env.development`
+  and both stacks behave identically.
+- **MySQL / Redis on a host port** for a GUI client is possible but deliberately not done —
+  no host exposure, matching prod.
 - **Friendly `planner` wrapper** (`planner up`, `planner down`, `planner dev`) covering
   both stacks is deferred; the docs use explicit `docker compose -f compose.*.yaml`.
 - **prod ↔ dev on the same host**: both stacks read the *same git-ignored `.env`*.
   Only one environment runs at a time — switching means re-copying the template
-  (`.env.production` or `.env.development`) and re-filling the few values. The mysql
+  (`.env.production` or `.env.development`) and re-filling the four secrets. The mysql
   data volumes are separate per stack, so nothing is ever cross-contaminated.

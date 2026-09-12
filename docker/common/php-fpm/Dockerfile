@@ -3,7 +3,6 @@ FROM composer:2.10 AS composer
 FROM php:8.4-fpm AS builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
     unzip \
     libonig-dev \
     libicu-dev \
@@ -32,12 +31,12 @@ COPY --from=composer /usr/bin/composer /usr/local/bin/composer
 RUN composer install --no-dev --no-scripts --optimize-autoloader --no-interaction --no-progress --prefer-dist \
     && php artisan package:discover --ansi
 
-FROM node:24-alpine AS frontend
+FROM node:24 AS frontend
 
 WORKDIR /var/www
 
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --no-audit --no-fund
 
 COPY --from=builder /var/www/vendor /var/www/vendor
 COPY . .

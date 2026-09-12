@@ -1,3 +1,5 @@
+name: planner
+
 services:
   php-fpm:
     container_name: planner-php-fpm
@@ -8,6 +10,8 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      APP_KEY: ${APP_KEY:?Set APP_KEY in .env}
     volumes:
       - storage:/var/www/storage
     logging:
@@ -48,7 +52,7 @@ services:
       php-fpm:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/up || exit 1"]
+      test: ["CMD", "curl", "-fs", "http://127.0.0.1/up"]
       interval: 30s
       timeout: 3s
       retries: 3
@@ -59,10 +63,10 @@ services:
     image: mysql:8.4
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_USER: ${DB_USERNAME}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
     logging:
       driver: json-file
       options:
@@ -73,17 +77,19 @@ services:
     networks:
       - network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root}"]
+      test: ["CMD", "mysql", "-uroot", "-p${MYSQL_ROOT_PASSWORD}", "-e", "SELECT 1"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
 
   redis:
     container_name: planner-redis
-    image: redis:8.10-alpine
+    image: redis:8.10
     restart: unless-stopped
     environment:
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
     command: ["sh", "-c", "exec redis-server --requirepass \"$$REDIS_PASSWORD\""]
     logging:
       driver: json-file
@@ -93,7 +99,7 @@ services:
     networks:
       - network
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping | grep -q PONG || exit 1"]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
