@@ -221,9 +221,16 @@ Do these steps once, in order:
    docker compose -f compose.dev.yaml exec workspace sh
    ```
 
-No manual install needed — on every container start the workspace automatically installs
-your project's libraries (`composer install` + `npm install`) itself. `vendor/` and
-`node_modules/` get created on the very first boot.
+6. **Install your project's libraries once** (they live on `vendor/` / `node_modules/`
+   in your project folder and persist between restarts):
+
+   ```sh
+   composer install
+   npm install
+   ```
+
+Nothing runs automatically — the container stays up and waits for you, and you start the
+servers yourself next.
 
 ### Start developing
 

@@ -1,25 +1,19 @@
-name: planner-development
+name: planner
 
 services:
-  workspace:
-    container_name: planner-development-workspace
+  php-fpm:
+    container_name: planner-php-fpm
     build:
-      context: .
-      dockerfile: ./docker/common/php-cli/Dockerfile
+      context: ..
+      dockerfile: ./docker/production/php-fpm/Dockerfile
+      target: production
     restart: unless-stopped
-    user: "${UID:-1000}:${GID:-1000}"
-    tty: true
-    stdin_open: true
-    working_dir: /var/www
     env_file:
       - .env
     environment:
       APP_KEY: ${APP_KEY:?Set APP_KEY in .env}
     volumes:
-      - .:/var/www
-    ports:
-      - "8000:8000"
-      - "5173:5173"
+      - storage:/var/www/storage
     logging:
       driver: json-file
       options:
@@ -32,9 +26,40 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit(@fsockopen('127.0.0.1', 9000) ? 0 : 1);"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 30s
+
+  nginx:
+    container_name: planner-nginx
+    build:
+      context: ..
+      dockerfile: ./docker/production/nginx/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - network
+    depends_on:
+      php-fpm:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://127.0.0.1/up"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
 
   mysql:
-    container_name: planner-development-mysql
+    container_name: planner-mysql
     image: mysql:8.4
     restart: unless-stopped
     environment:
@@ -59,7 +84,7 @@ services:
       start_period: 30s
 
   redis:
-    container_name: planner-development-redis
+    container_name: planner-redis
     image: redis:8.10
     restart: unless-stopped
     environment:
@@ -84,3 +109,4 @@ networks:
 
 volumes:
   database:
+  storage:

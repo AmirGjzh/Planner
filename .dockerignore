@@ -1,21 +1,27 @@
-/node_modules
-/vendor
-
 .git
-.gitattributes
-.gitignore
 
 .env
 .env.*
 
-.ai
-README.md
+# laravel app — never shipped into an image
+laravel/.env
+laravel/.env.*
+laravel/node_modules
+laravel/vendor
+laravel/tests
+laravel/scripts
+laravel/phpunit.xml
+laravel/public/build
+laravel/public/hot
+laravel/public/storage
+laravel/.ai
+laravel/README.md
+laravel/.gitignore
+laravel/.gitattributes
+laravel/.dockerignore
+laravel/.editorconfig
 
-/tests
-/scripts
-/phpunit.xml
-.editorconfig
-
+# editor / tooling cruft (any depth)
 .idea
 .vscode
 .zed

@@ -57,9 +57,8 @@ workspace image (node/composer/php) verified working by the user.
 - MySQL is isolated inside the dev network (container name `mysql`), like prod. Dev DB
   data lives in its own volume and survives restarts.
 - The repo is the deliverable: a fresh machine needs a clone, the filled-in `.env`, and
-  `up -d --build` — the workspace entrypoint installs `composer`/`npm` deps at every
-  container start (deps live on the mount, not in the image), then you start the two
-  dev servers.
+  `up -d --build`; you then install deps once (`composer install` / `npm install` inside
+  the workspace — nothing runs automatically, see below) and start the two dev servers.
 
 ---
 
@@ -94,10 +93,9 @@ Key facts:
   itself only carries the toolchain (~php + composer + node). `vendor/` and `node_modules/`
   live on the host and are shared through the mount.
 - `CMD ["sleep", "infinity"]` plus `tty: true` + `stdin_open: true` keep the workspace
-  alive so you can `exec` into it at any time. The image's **init entrypoint** runs
-  `composer install` + `npm install` on every start (deps live on the bind mount), then
-  `exec "$@"` → `sleep infinity`. Dev stays interactive — everything else is manual,
-  unlike prod's auto-setup entrypoint.
+  alive so you can `exec` into it at any time. There is **no entrypoint** — the image runs
+  only its `CMD`, so *nothing* runs automatically: no installs, no setup. You install deps
+  and run servers yourself, on the bind mount (which is what keeps them persistent).
 
 ---
 
@@ -111,7 +109,6 @@ Key facts:
 ├── docker/
 │   └── common/
 │       └── php-cli/Dockerfile        dev toolchain image (shared pattern dir)
-│       └── php-cli/entrypoint.sh     init: composer install + npm install on every start
 ├── vite.config.js                    dev server host / HMR / polling (see below)
 ├── composer.json                     `dev` / `test` / `setup` scripts
 ├── phpunit.xml                       test DB = sqlite `:memory:`
@@ -233,8 +230,9 @@ Notes:
   `CREATE USER` abort with `Access denied (using password: YES)`, leaving root empty and
   the app user uncreated (half-initialized data dir). `MYSQL_ROOT_PASSWORD` is passed for
   the *entrypoint*, never via the client's `MYSQL_PWD` auto-read.
-- No `entrypoint:` / `command:` override in compose — the workspace runs the image's init
-  entrypoint (below); `tty`/`sleep infinity` just keep it interactive.
+- No `entrypoint:` / `command:` override in compose — and **no `ENTRYPOINT` in the image at
+  all** (deliberately, see below). The workspace just sleeps; `tty`/`stdin_open` keep it
+  interactive, and you run everything yourself.
 
 ### `docker/common/php-cli/Dockerfile`
 
@@ -289,11 +287,6 @@ ENV HOME=/home/workspace
 
 WORKDIR /var/www
 
-COPY ./docker/common/php-cli/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
-
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-
 CMD ["sleep", "infinity"]
 ```
 
@@ -322,11 +315,12 @@ Why it looks like this:
 - The version guards (`node --version`, `npm --version`, `composer --version`, plus the
   `php -m | grep -q redis` extension check) run at build time so a broken copy fails the
   build instead of surprising you at runtime.
-- **The init entrypoint** runs `composer install` + `npm install` on *every* container
-  start, then `exec "$@"` (→ `sleep infinity`). Deps live on the bind mount, not in the
-  image, so this self-heals across clones and lockfile changes. Both commands are fast
-  no-ops when nothing changed, so the cost is a few seconds per boot. Runs as the compose
-  user (your uid), so `vendor/`/`node_modules/` stay owned by you.
+- **No entrypoint — nothing runs automatically.** The image ends at `CMD ["sleep",
+  "infinity"]` and no `ENTRYPOINT` is set, so starting the container does *nothing* beyond
+  keeping it alive. Installs, migrations, servers — all are manual (`composer install` +
+  `npm install` once, on the bind mount; they persist there). This is deliberate: with the
+  toolchain in the image and the app on the mount, there is nothing to bootstrap at boot,
+  and no way for a script to surprise you.
 - **Tools are images, never installed** (repo-wide rule, see Decision #14): PHP is the
   base image, composer + node/npm are build-stage copies, mysql/redis are services. The
   only things installed in-image are PHP runtime extensions and base utilities with no
@@ -484,10 +478,10 @@ Compose reads them from the *same* `.env`.
 9. **`user: ${UID:-1000}:${GID:-1000}` + `HOME=/home/workspace`** — cache dirs
    (`~/.npm`, `~/.composer`, `~/.git`) are writable and all container-created files belong
    to the host user. This fixed the real `EACCES /.npm` failure hit during setup.
-10. **`tty`/`stdin_open` + `CMD sleep infinity`, plus an init entrypoint.** Dev is
-    interactive and otherwise manual (unlike prod's auto-setup entrypoint), but the
-    workspace auto-runs `composer install` + `npm install` on every start — deps live on
-    the bind mount, not in the image — then `exec "$@"` lands on `sleep infinity`.
+10. **`tty`/`stdin_open` + `CMD sleep infinity`, no entrypoint.** Nothing runs at boot —
+     no auto-install, no setup (the rule we keep to). Deps are installed once, manually,
+     on the bind mount (`composer install` / `npm install`) and persist there; the image
+     itself is just the toolchain.
 11. **`pdo_sqlite` kept** so Pest (`sqlite :memory:`) works in the same container.
 12. **`.env.development` = template with blank secrets**, same contract as the prod
     template: real values only ever live in the git-ignored `.env`.
@@ -551,9 +545,8 @@ All compose commands run from the project root. They are Ctrl-safe to run on any
      is created (see Troubleshooting).
 
 5. **Build and start the dev stack.** First time is slow (pulls `php:8.4-cli`, `node:24`,
-   `composer:2.10`, `mysql:8.4`, `redis:8.10`, installs extensions). When the workspace
-   starts, its entrypoint installs `composer`/`npm` deps automatically (check
-   `docker compose -f compose.dev.yaml logs workspace`):
+   `composer:2.10`, `mysql:8.4`, `redis:8.10`, installs extensions). Nothing runs
+   automatically — the workspace just sleeps until you `exec` in:
 
    ```bash
    docker compose -f compose.dev.yaml up -d --build
@@ -565,8 +558,13 @@ All compose commands run from the project root. They are Ctrl-safe to run on any
    docker compose -f compose.dev.yaml exec workspace sh
    ```
 
-   `vendor/` and `node_modules/` were already created by the startup entrypoint, so no
-   manual install step is needed (they re-install themselves on every start).
+   Install the project's dependencies once (they live on the bind mount, so they persist
+   and only need re-installing when the lockfiles change):
+
+   ```sh
+   composer install
+   npm install
+   ```
 
 7. **Start the servers.** In the workspace terminal(s):
 
@@ -655,14 +653,15 @@ curl -s http://localhost:8000/up           # expect 200 (artisan serve running)
 | `npm: command not found` | image predates the node stage — run `up -d --build` |
 | npm sharp/npm `EACCES` on `/.npm` | `HOME` must be `/home/workspace` (already in image); verify with `echo $HOME` |
 | `up` aborts: `Set APP_KEY in .env` | compose enforces `APP_KEY` on the workspace (like prod) — fill a valid `base64:` key in `.env`, then `up` again |
-| workspace crash-loops on start | the init entrypoint aborts when `composer install`/`npm install` fail (network, broken lock) — `docker compose logs workspace` shows why; fix it. To get a shell past a failing install: `docker compose -f compose.dev.yaml run --rm --entrypoint sh workspace` |
+| fresh clone: `artisan`/`npm` say no such file | deps not installed yet — nothing auto-installs; run `composer install` + `npm install` in the workspace once |
+| `Composer detected issues in your platform` etc. on install | image/extension changed — rebuild the toolchain: `up -d --build` |
 | `port ... already in use` (8000/5173) | something else owns one of the ports — free it or edit `ports:` in `compose.dev.yaml` |
 | mysql unhealthy; `Access denied for user 'planner'` | credentials baked at first volume init differ from current `.env` — dev data is disposable: `down`, `docker volume rm planner-development_database`, then `up -d --build` and re-`migrate` |
 | redis unhealthy; `NOAUTH` / `WRONGPASS` from the app | `REDIS_PASSWORD` in `.env` differs from the compose value passed at Redis start — make them match and recreate Redis (`up -d --force-recreate redis`) |
 | `The stream or file "..." could not be opened` storage | the DB didn't come up first run or `depends_on` health; check `docker compose ... ps` and `.env` `DB_HOST`/`DB_PORT` |
 | `artisan serve` runs but browser times out | forgot `--host=0.0.0.0` — that's the whole fix |
 | Vite not hot-reloading | `usePolling` is already on; ensure 5173 is free and you reach it via `localhost:5173` |
-| `app@... does not exist` tinker | restart the workspace (entrypoint re-runs `composer install` + `package:discover`), or run both manually |
+| `app@... does not exist` tinker | run `composer install`, then `php artisan package:discover`, and restart tinker |
 
 ---
 

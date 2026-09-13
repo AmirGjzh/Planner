@@ -1,18 +1,18 @@
 FROM composer:2.10 AS composer
 
 WORKDIR /var/www
-COPY composer.json composer.lock ./
+COPY laravel/composer.json laravel/composer.lock ./
 RUN composer install --no-dev --no-scripts --optimize-autoloader --no-interaction --no-progress --prefer-dist
 
 FROM node:24 AS builder
 
 WORKDIR /var/www
 
-COPY package.json package-lock.json ./
+COPY laravel/package.json laravel/package-lock.json ./
 RUN npm ci --no-audit --no-fund
 
 COPY --from=composer /var/www/vendor /var/www/vendor
-COPY . .
+COPY laravel/ .
 
 RUN npm run build
 

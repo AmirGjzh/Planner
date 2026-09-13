@@ -24,7 +24,7 @@ RUN pecl install redis && docker-php-ext-enable redis
 
 WORKDIR /var/www
 
-COPY . /var/www
+COPY laravel/ /var/www
 
 COPY --from=composer /usr/bin/composer /usr/local/bin/composer
 
@@ -35,11 +35,11 @@ FROM node:24 AS frontend
 
 WORKDIR /var/www
 
-COPY package.json package-lock.json ./
+COPY laravel/package.json laravel/package-lock.json ./
 RUN npm ci --no-audit --no-fund
 
 COPY --from=builder /var/www/vendor /var/www/vendor
-COPY . .
+COPY laravel/ .
 
 RUN npm run build
 

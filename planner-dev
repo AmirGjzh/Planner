@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+dc=(docker compose -f "$ROOT/laravel/compose.development.yml")
+
+case "${1:-help}" in
+  up)
+    "${dc[@]}" up -d
+    ;;
+  down)
+    "${dc[@]}" down
+    ;;
+  start)
+    "${dc[@]}" start
+    ;;
+  stop)
+    "${dc[@]}" stop
+    ;;
+  build)
+    "${dc[@]}" build
+    ;;
+  ps)
+    "${dc[@]}" ps
+    ;;
+  shell)
+    "${dc[@]}" exec workspace sh
+    ;;
+  *)
+    echo "Usage: planner-dev <command>"
+    echo ""
+    echo "Commands:"
+    echo "  up         bring services up"
+    echo "  down       stop and remove containers"
+    echo "  start      start existing containers"
+    echo "  stop       stop containers"
+    echo "  build      build images only (does not start)"
+    echo "  ps         show running containers"
+    echo "  shell      open a terminal in the workspace container"
+    exit 1
+    ;;
+esac
