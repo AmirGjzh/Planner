@@ -1,7 +1,7 @@
 # Docker Production Setup
 
 > Snapshot documentation. Read this before touching anything under `docker/`,
-> `compose.prod.yaml`, `.dockerignore`, or the `.env.*` templates.
+> `laravel/compose.production.yml`, `.dockerignore`, or the `.env.*` templates.
 
 ## Purpose and Audience
 
@@ -19,7 +19,7 @@ It is **not** user documentation. The end user never sees this file.
 | Item | Value |
 |---|---|
 | Deployment model | Single host, LAN, plain HTTP, no domain, personal/small usage |
-| Orchestration | Docker Compose v2 (`compose.prod.yaml`) |
+| Orchestration | Docker Compose v2 (`laravel/compose.production.yml`) |
 | App | Laravel 13.x + Livewire 4.x (see `composer.json`) |
 | PHP-FPM image | `php:8.4-fpm`, multi-stage, runs as `www-data` |
 | Nginx image | `nginx:1.30` (running 1.30.4) |
@@ -34,7 +34,7 @@ It is **not** user documentation. The end user never sees this file.
 | Logging | `json-file`, max-size 10m, max-file 3, on all services |
 
 Runtime state at the time of writing: all 4 containers healthy, `/up` returns 200,
-`.env.production` values match the app's config defaults (verified in the audit).
+`laravel/.env.production` values match the app's config defaults (verified in the audit).
 
 ---
 
@@ -94,26 +94,30 @@ Key facts:
 ## Repository Layout (Docker Parts)
 
 ```
-/                      build context root
-├── compose.prod.yaml               prod stack definition
-├── .dockerignore                   whitelist what reaches the images
-├── .env.production                 committed template for prod (source of truth)
-├── .env.development                committed dev template (see development.md)
-├── .env                            real values, git-ignored, copied from a template
+/                                repo root (docker build context)
+├── planner                              commands: ./planner up, ps, build, ...
+├── planner-dev                          commands: ./planner-dev shell, up, build, ...
+├── .dockerignore                        build-context-effective ignore
 ├── docker/
-│   ├── common/
-│   │   └── php-fpm/Dockerfile      php-fpm image (shared pattern for fpm images)
+│   ├── development/
+│   │   └── php-cli/Dockerfile           dev image (see development.md)
 │   └── production/
-│       ├── nginx/
-│       │   ├── Dockerfile          nginx image
-│       │   └── conf.d/default.conf vhost
-│       └── php-fpm/
-│           └── entrypoint.sh       container entrypoint (guards + setup + exec)
-├── bootstrap/app.php               app-level HTTP config (trusted proxies, redirects)
-├── config/database.php             redis connections (default/cache/session)
-├── routes/web.php                  all routes + block(10,10)
-└── app/Providers/AppServiceProvider.php
-                                    Livewire update route, block(10,10)
+│       ├── php-fpm/
+│       │   ├── Dockerfile               php-fpm image
+│       │   └── entrypoint.sh            container entrypoint (guards + setup + exec)
+│       └── nginx/
+│           ├── Dockerfile               nginx image
+│           └── conf.d/default.conf      vhost
+├── laravel/                             app code + stack definitions
+│   ├── compose.production.yml           prod stack definition
+│   ├── .env.production                  committed prod template (source of truth)
+│   ├── .env.development                 committed dev template (see development.md)
+│   ├── .env                             real values, git-ignored, copied from a template
+│   ├── bootstrap/app.php                app-level HTTP config (trusted proxies, redirects)
+│   ├── config/database.php              redis connections (default/cache/session)
+│   ├── routes/web.php                   all routes + block(10,10)
+│   └── app/Providers/AppServiceProvider.php
+│                                        Livewire update route, block(10,10)
 ```
 
 Files marked APP-SIDE below are application changes made specifically for this
@@ -123,17 +127,19 @@ deployment model — they ship with the app, not the images.
 
 ## File-by-File
 
-### `compose.prod.yaml`
+### `laravel/compose.production.yml`
 
 Single-file Compose v2 spec. The full file:
 
 ```yaml
+name: planner
+
 services:
   php-fpm:
     container_name: planner-php-fpm
     build:
-      context: .
-      dockerfile: ./docker/common/php-fpm/Dockerfile
+      context: ..
+      dockerfile: ./docker/production/php-fpm/Dockerfile
       target: production
     restart: unless-stopped
     env_file:
@@ -164,7 +170,7 @@ services:
   nginx:
     container_name: planner-nginx
     build:
-      context: .
+      context: ..
       dockerfile: ./docker/production/nginx/Dockerfile
     restart: unless-stopped
     ports:
@@ -253,7 +259,7 @@ Rationale per decision (details in [Decisions Log](#decisions-log)):
 - **Volumes**: `database:/var/lib/mysql` is the real data. `storage:/var/www/storage` keeps
   runtime app storage (logs). Both are named volumes; in this project the volumes get the
   `planner_` prefix (`planner_database`, `planner_storage`) — the project name is declared
-  explicitly with `name: planner` at the top of `compose.prod.yaml`, so the prefix no
+  explicitly with `name: planner` at the top of `laravel/compose.production.yml`, so the prefix no
   longer depends on the checkout directory being named `planner`.
 - **No bind mounts**: the code lives inside the images (immutable artifact). Updating the
   app always means rebuilding. This is intentional — a fresh machine just builds from git.
@@ -266,7 +272,7 @@ Rationale per decision (details in [Decisions Log](#decisions-log)):
 - **`restart: unless-stopped`** — survives host reboots; someone can `docker stop` a
   service and Compose won't force it back until an explicit `start`.
 
-### `docker/common/php-fpm/Dockerfile`
+### `docker/production/php-fpm/Dockerfile`
 
 The php-fpm image. Multi-stage; four stages, each a disposable workshop:
 
@@ -464,7 +470,7 @@ Effects worth knowing:
   can write at runtime.
 - Verified side effect: the production build context is exactly the whitelisted file set.
 
-### `.env.production`
+### `laravel/.env.production`
 
 Committed template, source of truth for fresh deployments. Content (prod values already
 baked in; secrets are blank):
@@ -599,7 +605,7 @@ matter.
 
 #### `.gitignore`, `composer.json`, `storage/framework/views/.gitignore`
 
-- `.gitignore` un-ignores `.env.production` (it is committed; `.env`/`.env.backup` stay
+- `.gitignore` un-ignores `laravel/.env.production` (it is committed; `.env`/`.env.backup` stay
   ignored) and replaces the blanket `/storage/framework` ignore with per-directory
   `.gitignore` files — this keeps the storage skeleton in git (and therefore in the image,
   so the named volume auto-populates with www-data ownership). `storage/framework/views/
@@ -699,7 +705,7 @@ Chronological; every significant choice with its why + the alternative considere
 20. **`server_tokens off`, security headers, dotfile-deny, `/build` immutable cache,
     fastcgi niceties** — small, verified live, cheap hardening for an edge that could
     accidentally be exposed someday.
-21. **`.env.production` committed; `.env` ignored.** A fresh user copies the template.
+21. **`laravel/.env.production` committed; `.env` ignored.** A fresh user copies the template.
     The dev template and its `composer.json` wiring are documented in `development.md`.
 22. **`unzip` in the builder.** Needed to unpack Composer `--prefer-dist` dependency
     archives and PECL tarballs. The `curl` leftover from the removed Composer curl-installer
@@ -747,10 +753,10 @@ Prerequisites: Docker Engine with Compose v2 (Docker ≥ 24) and git.
 git clone <repo-url> planner
 cd planner
 
-cp .env.production .env          # source of truth template
+cp laravel/.env.production laravel/.env   # source of truth template
 ```
 
-Fill `.env` — four required values:
+Fill `laravel/.env` — four required values:
 
 ```bash
 APP_KEY=$(printf 'base64:%s' "$(openssl rand -base64 32)")  # 32-byte, base64: prefix — do NOT reuse from elsewhere
@@ -763,8 +769,9 @@ REDIS_PASSWORD=...                       # redis requirepass
 Then:
 
 ```bash
-docker compose -f compose.prod.yaml up -d --build
-docker compose -f compose.prod.yaml ps
+./planner up                            # builds on first run; or the raw form:
+docker compose -f laravel/compose.production.yml up -d --build
+./planner ps                            # or: docker compose -f laravel/compose.production.yml ps
 curl -s http://localhost/up              # expect 200 (Laravel health route)
 ```
 
@@ -775,11 +782,11 @@ Verification on first boot:
 
 ```bash
 # stack health
-docker compose -f compose.prod.yaml ps                    # all "healthy" (php-fpm/nginx) or "running"
+docker compose -f laravel/compose.production.yml ps                    # all "healthy" (php-fpm/nginx) or "running"
 # app is real on 80
 curl -I http://localhost                                   # nginx served, Server header has no nginx version
 # logs are sane
-docker compose -f compose.prod.yaml logs --tail=50 php-fpm # no ERRORS; migration ran
+docker compose -f laravel/compose.production.yml logs --tail=50 php-fpm # no ERRORS; migration ran
 ```
 
 If the migration failed, the php-fpm container will be restarting and `/up` won't answer —
@@ -791,16 +798,16 @@ see the startup note in Verification/Troubleshooting.
 
 | Task | Command |
 |---|---|
-| Status | `docker compose -f compose.prod.yaml ps` |
-| Logs (follow) | `docker compose -f compose.prod.yaml logs -f <service>` |
-| Apply app changes (after `git pull`) | `docker compose -f compose.prod.yaml up -d --build` |
-| Apply only env change | edit `.env` → `docker compose -f compose.prod.yaml up -d` (recreates affected containers; the entrypoint re-bakes config) |
-| Force recreate everything | `docker compose -f compose.prod.yaml up -d --force-recreate` |
-| Stop everything | `docker compose -f compose.prod.yaml down` (volumes survive) |
+| Status | `docker compose -f laravel/compose.production.yml ps` |
+| Logs (follow) | `docker compose -f laravel/compose.production.yml logs -f <service>` |
+| Apply app changes (after `git pull`) | `docker compose -f laravel/compose.production.yml up -d --build` |
+| Apply only env change | edit `.env` → `docker compose -f laravel/compose.production.yml up -d` (recreates affected containers; the entrypoint re-bakes config) |
+| Force recreate everything | `docker compose -f laravel/compose.production.yml up -d --force-recreate` |
+| Stop everything | `docker compose -f laravel/compose.production.yml down` (volumes survive) |
 | **Never** | `down -v` / `docker volume rm planner_database planner_storage` on a live install — this is the whole database |
 | Generate a fresh APP_KEY | on your own machine: `printf 'base64:%s\n' "$(openssl rand -base64 32)"`, then paste into `.env` (must start with `base64:`) |
-| Shell into a service | `docker compose -f compose.prod.yaml exec php-fpm sh` (runs as `www-data`) |
-| Manual DB backup (recommended, no automation yet) | `docker compose -f compose.prod.yaml exec mysql sh -c 'mysqldump -u planner -p"$MYSQL_PASSWORD" planner' > backup.sql` |
+| Shell into a service | `docker compose -f laravel/compose.production.yml exec php-fpm sh` (runs as `www-data`) |
+| Manual DB backup (recommended, no automation yet) | `docker compose -f laravel/compose.production.yml exec mysql sh -c 'mysqldump -u planner -p"$MYSQL_PASSWORD" planner' > backup.sql` |
 
 APP_KEY rotation procedure (rare; forces everyone to re-login):
 1. Generate a new key on your own machine: `printf 'base64:%s\n' "$(openssl rand -base64 32)"`.
@@ -824,7 +831,7 @@ config (which embeds env values) is rebuilt automatically and needs no manual
 |---|---|---|
 | `docker compose up` aborts "required variable … missing a value" | `.env` has blank `APP_KEY` / `DB_PASSWORD` / `MYSQL_ROOT_PASSWORD` / `REDIS_PASSWORD` | fill the named var in `.env` |
 | `php artisan key:generate` or `up` throws "Unsupported cipher or incorrect key length" | `APP_KEY` is bare base64 without `base64:` prefix | regenerate: `printf 'base64:%s\n' "$(openssl rand -base64 32)"`, paste into `.env`, `up -d --force-recreate php-fpm` |
-| `502 Bad Gateway` | is php-fpm healthy? | `docker compose -f compose.prod.yaml up -d php-fpm`; check `logs php-fpm` |
+| `502 Bad Gateway` | is php-fpm healthy? | `docker compose -f laravel/compose.production.yml up -d php-fpm`; check `logs php-fpm` |
 | `/up` 500 / "whoops" | php-fpm logs | app exception; check memory, APP_KEY validity |
 | Container restart-loop | `logs` shows migration error | mysql not ready (wait, `start_period` covers first boot) or DB credentials wrong |
 | MySQL won't accept new creds | volume already initialized | MySQL ignores env after init; fix the DB user instead (or recreate volume deliberately) |
@@ -880,7 +887,7 @@ update in this document is just "change the pins/files, rebuild, verify."
 
 ### Categories of update
 
-1. **App code / config changes** → `git pull && docker compose -f compose.prod.yaml
+1. **App code / config changes** → `git pull && docker compose -f laravel/compose.production.yml
    up -d --build && curl -s http://localhost/up` (expect 200) + one smoke login. Both
    images rebuild from the same context/locks, so no version skew.
 2. **Dependency bumps** (`composer.lock`, `package-lock.json`): bump them in dev
@@ -888,7 +895,7 @@ update in this document is just "change the pins/files, rebuild, verify."
    then rebuild. Never hand-edit locks in prod; never `up --build` with a dirty lock.
 3. **Framework upgrade** (e.g. Laravel 13.x → 14.x when released): treat like a
    dependency bump but ALSO re-check `bootstrap/app.php`/`config/database.php` against the
-   new skeleton and re-run the prod audit (config defaults vs `.env.production`).
+   new skeleton and re-run the prod audit (config defaults vs `laravel/.env.production`).
 4. **Base-image patch updates (free)**: our tags are MAJOR.MINOR, so a rebuild silently
    pulls the latest patch (php:8.4-fpm, nginx:1.30, mysql:8.4, redis:8.10,
    node:24). If a security advisory appears for a series, just `up -d --build` to
@@ -899,7 +906,7 @@ update in this document is just "change the pins/files, rebuild, verify."
    a Livewire interaction). Update the version table at the top of this doc and the
    [Decisions Log](#decisions-log).
 6. **Env surface changes**: any new/renamed env var the app reads must be added to
-   `.env.production` (the committed source of truth) AND mentioned in a new Decisions Log
+   `laravel/.env.production` (the committed source of truth) AND mentioned in a new Decisions Log
    row. Existing live installs need the same manual edit (copy from the template), then the
    recreate flow. If only the template changed, no rebuild is needed — but without updating
    live `.env` files nothing changes at runtime.
@@ -932,8 +939,8 @@ update in this document is just "change the pins/files, rebuild, verify."
 ### Anti-patterns to avoid
 
 - Bind-mounting code "just for prod host edits" — breaks the immutable-artifact model.
-- `docker compose` on the `compose.dev.yaml`/dev stack inside the production network.
-- Editing `.env.production` and assuming live installs see it (they only see their `.env`).
+- `docker compose` on the `laravel/compose.development.yml`/dev stack inside the production network.
+- Editing `laravel/.env.production` and assuming live installs see it (they only see their `.env`).
 - `up -d --build` while the working tree is dirty (unknown context → unknown image).
 
 ---
@@ -946,7 +953,7 @@ oversights:
 - **TLS/HTTPS**: no domain, LAN-local; serving plain HTTP. When TLS appears: nginx conf
   gains `listen 443` + cert lines + port `443:443` in compose, and
   `SESSION_SECURE_COOKIE=true` (or `null` behind a trusted TLS proxy like Cloudflare) in
-  `.env.production`.
+  `laravel/.env.production`.
 - **Automated backups**: none. The manual one-liner is in Day-to-Day Operations. Accepting
   the risk (personal LAN app, small data).
 - **Multi-instance scaling / load balancing / monitoring**: single host; healthchecks are

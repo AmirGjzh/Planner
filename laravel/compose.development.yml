@@ -11,8 +11,6 @@ services:
     tty: true
     stdin_open: true
     working_dir: /var/www
-    env_file:
-      - .env
     environment:
       APP_KEY: ${APP_KEY:?Set APP_KEY in .env}
     volumes:

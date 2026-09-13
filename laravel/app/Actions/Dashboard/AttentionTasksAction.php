@@ -15,7 +15,7 @@ final class AttentionTasksAction
         return $user->tasks()
             ->where('done', false)
             ->get()
-            ->filter(fn ($task) => $today->lte(Carbon::parse($task->task_date)->subDays($task->day_before_alarm)))
+            ->filter(fn ($task) => $today->gte(Carbon::parse($task->task_date)->subDays($task->day_before_alarm)))
             ->sortBy('task_date')
             ->values();
     }

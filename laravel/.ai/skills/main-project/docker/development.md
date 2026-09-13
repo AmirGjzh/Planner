@@ -1,7 +1,7 @@
 # Docker Development Setup
 
 > Snapshot documentation. Read this before touching anything under `docker/`,
-> `compose.dev.yaml`, or the `.env.*` templates.
+> `laravel/compose.development.yml`, or the `.env.*` templates.
 
 ## Purpose and Audience
 
@@ -22,9 +22,9 @@ file only covers the local development workflow.
 | Item | Value |
 |---|---|
 | Dev model | Clone → copy template → fill `.env` → `up -d --build` (deps self-install on start) → `exec workspace sh` |
-| Orchestration | Docker Compose v2 (`compose.dev.yaml`), project name `planner-development` |
+| Orchestration | Docker Compose v2 (`laravel/compose.development.yml`), project name `planner-development` |
 | App | Laravel 13.x + Livewire 4.x (see `composer.json`) |
-| Workspace image | `php:8.4-cli` (Debian/glibc) built from `docker/common/php-cli/Dockerfile` |
+| Workspace image | `php:8.4-cli` (Debian/glibc) built from `docker/development/php-cli/Dockerfile` |
 | Composer image (build-only) | `composer:2.10` |
 | Node image (build-only) | `node:24` (no suffix — exact tag prod builds with) |
 | MySQL image | `mysql:8.4` (same as prod) |
@@ -86,7 +86,7 @@ Key facts:
 
 - Containers reach each other by **container name as DNS** inside the dev network:
   `mysql` is the DB host (matches `DB_HOST=mysql`) and `redis` is the cache/session host
-  (matches `REDIS_HOST=redis`) in `.env.development`.
+  (matches `REDIS_HOST=redis`) in `laravel/.env.development`.
 - **Only the workspace publishes host ports** (8000, 5173). MySQL and Redis are never
   exposed to the host — no GUI access by default (see [Future Notes](#future-notes-desires-and-not-done)).
 - The workspace is **stateless**: all project files come from the bind mount; the image
@@ -102,24 +102,29 @@ Key facts:
 ## Repository Layout (Docker Parts)
 
 ```
-/                      build context root
-├── compose.dev.yaml                   dev stack definition
-├── .env.development                  committed dev template (source of truth)
-├── .env                              real values, git-ignored, copied from a template
+/                                repo root (docker build context)
+├── planner                              commands: ./planner up, ps, build, ...
+├── planner-dev                          commands: ./planner-dev shell, up, build, ...
 ├── docker/
-│   └── common/
-│       └── php-cli/Dockerfile        dev toolchain image (shared pattern dir)
-├── vite.config.js                    dev server host / HMR / polling (see below)
-├── composer.json                     `dev` / `test` / `setup` scripts
-├── phpunit.xml                       test DB = sqlite `:memory:`
-└── .ai/skills/main-project/docker/   production.md (prod) + this file
+│   ├── development/
+│   │   └── php-cli/Dockerfile           dev toolchain image
+│   └── production/                      prod images (see production.md)
+├── laravel/                             app code (bind-mounted into workspace)
+│   ├── compose.development.yml          dev stack definition
+│   ├── compose.production.yml           prod stack definition (see production.md)
+│   ├── .env.development                 committed dev template (source of truth)
+│   ├── .env                             real values, git-ignored, copied from a template
+│   ├── vite.config.js                   dev server host / HMR / polling (see below)
+│   ├── composer.json                    `dev` / `test` / `setup` scripts
+│   ├── phpunit.xml                      test DB = sqlite `:memory:`
+│   └── .ai/skills/main-project/docker/ production.md (prod) + this file
 ```
 
 ---
 
 ## File-by-File
 
-### `compose.dev.yaml`
+### `laravel/compose.development.yml`
 
 Single-file Compose v2 spec, project name `planner-development`. The full file:
 
@@ -130,8 +135,8 @@ services:
   workspace:
     container_name: planner-development-workspace
     build:
-      context: .
-      dockerfile: ./docker/common/php-cli/Dockerfile
+      context: ..
+      dockerfile: ./docker/development/php-cli/Dockerfile
     restart: unless-stopped
     user: "${UID:-1000}:${GID:-1000}"
     tty: true
@@ -234,7 +239,7 @@ Notes:
   all** (deliberately, see below). The workspace just sleeps; `tty`/`stdin_open` keep it
   interactive, and you run everything yourself.
 
-### `docker/common/php-cli/Dockerfile`
+### `docker/development/php-cli/Dockerfile`
 
 The entire dev toolchain in one **Debian-based** image. Full file:
 
@@ -305,7 +310,7 @@ Why it looks like this:
 - **`pdo_sqlite` + `libsqlite3-dev`** are required for Pest (`phpunit.xml` uses SQLite
   `:memory:`). Tests run inside this container; prod does *not* need pdo_sqlite.
 - **`redis` extension via `pecl`** — the same line prod's builder image uses. Dev now runs
-  `SESSION_DRIVER=redis` / `CACHE_STORE=redis` (see `.env.development`), so the workspace can
+  `SESSION_DRIVER=redis` / `CACHE_STORE=redis` (see `laravel/.env.development`), so the workspace can
   talk to the dev Redis server.
 - **`curl` stays installed** — unlike prod (where we removed it; there it was only for the
   healthcheck), here it's a live developer tool in the terminal.
@@ -327,7 +332,7 @@ Why it looks like this:
   image equivalent (`curl`, `unzip`, `git`, `ca-certificates`). A future tool gets an
   official image or a stage — never an apt-get in a container.
 
-### `.env.development`
+### `laravel/.env.development`
 
 Committed template — the dev source of truth. Deliberately mirrors the prod template's
 philosophy: real values live only in the git-ignored `.env`.
@@ -393,7 +398,7 @@ config default or is unused in dev.
 - `SESSION_ENCRYPT=false` — the one deliberate divergence from prod's `true`, so dev tools
   can read sessions while you debug. Prod encrypts.
 - Dev friendly: `APP_ENV=local`, `APP_DEBUG=true`, `LOG_LEVEL=debug`, and the SESSION/REDIS
-  group mirrors `.env.production` exactly.
+  group mirrors `laravel/.env.production` exactly.
 - Removed from stock Laravel: BROADCAST/QUEUE/FILESYSTEM/MEMCACHED/MAIL/AWS/VITE — each
   verified to have a sane config default or be unused in dev.
 
@@ -483,7 +488,7 @@ Compose reads them from the *same* `.env`.
      on the bind mount (`composer install` / `npm install`) and persist there; the image
      itself is just the toolchain.
 11. **`pdo_sqlite` kept** so Pest (`sqlite :memory:`) works in the same container.
-12. **`.env.development` = template with blank secrets**, same contract as the prod
+12. **`laravel/.env.development` = template with blank secrets**, same contract as the prod
     template: real values only ever live in the git-ignored `.env`.
 13. **Prod-style cleanups carried over.** Exec-form `CMD` healthchecks with env/auth-passed
      credentials (`-p${MYSQL_ROOT_PASSWORD}` / `REDISCLI_AUTH`), `${VAR:?err}` secret
@@ -521,19 +526,19 @@ All compose commands run from the project root. They are Ctrl-safe to run on any
    - **Mac / Linux:**
 
      ```bash
-     cp .env.development .env
+     cp laravel/.env.development laravel/.env
      ```
 
    - **Windows** (PowerShell):
 
      ```powershell
-     Copy-Item .env.development .env
+     Copy-Item laravel/.env.development laravel/.env
      ```
 
-4. **Fill in 4 things in `.env`** (everything else is already right for dev):
+4. **Fill in 4 things in `laravel/.env`** (everything else is already right for dev):
 
    - `APP_KEY` — **required before the first `up`**: compose refuses to start the workspace
-     without it (same guard as prod), so it must already exist in `.env` when you run
+     without it (same guard as prod), so it must already exist in `laravel/.env` when you run
      step 5. Generate it on the host (the value must start with `base64:`):
 
       - **Mac / Linux:** `printf 'base64:%s\n' "$(openssl rand -base64 32)"`
@@ -549,13 +554,14 @@ All compose commands run from the project root. They are Ctrl-safe to run on any
    automatically — the workspace just sleeps until you `exec` in:
 
    ```bash
-   docker compose -f compose.dev.yaml up -d --build
+   ./planner-dev up        # or the raw form:
+   docker compose -f laravel/compose.development.yml up -d --build
    ```
 
 6. **Open a terminal inside the workspace.** Run this once now and every future session:
 
    ```bash
-   docker compose -f compose.dev.yaml exec workspace sh
+   docker compose -f laravel/compose.development.yml exec workspace sh
    ```
 
    Install the project's dependencies once (they live on the bind mount, so they persist
@@ -601,16 +607,16 @@ All commands from the project root. They all keep your dev data safe.
 
 | Command | What it does |
 |---|---|
-| `docker compose -f compose.dev.yaml start` | bring the stack back up where it was |
-| `docker compose -f compose.dev.yaml stop` | pause dev (frees resources) |
-| `docker compose -f compose.dev.yaml up -d` | plain start with the current image |
-| `docker compose -f compose.dev.yaml up -d --build` | rebuild the toolchain image (after a Dockerfile change), then start |
-| `docker compose -f compose.dev.yaml down` | full stop, keeps the MySQL volume |
-| `docker compose -f compose.dev.yaml exec workspace sh` | your daily entry point |
-| `docker compose -f compose.dev.yaml logs -f workspace` | tail workspace logs (use `mysql` / `redis` for the others) |
+| `docker compose -f laravel/compose.development.yml start` | bring the stack back up where it was |
+| `docker compose -f laravel/compose.development.yml stop` | pause dev (frees resources) |
+| `docker compose -f laravel/compose.development.yml up -d` | plain start with the current image |
+| `docker compose -f laravel/compose.development.yml up -d --build` | rebuild the toolchain image (after a Dockerfile change), then start |
+| `docker compose -f laravel/compose.development.yml down` | full stop, keeps the MySQL volume |
+| `docker compose -f laravel/compose.development.yml exec workspace sh` | your daily entry point |
+| `docker compose -f laravel/compose.development.yml logs -f workspace` | tail workspace logs (use `mysql` / `redis` for the others) |
 
 Only use `down` when you want a totally clean slate; it never deletes data. **Never run
-`docker compose -f compose.dev.yaml down -v`** — the `-v` wipes the MySQL dev volume.
+`docker compose -f laravel/compose.development.yml down -v`** — the `-v` wipes the MySQL dev volume.
 
 Inside the workspace daily loop:
 
@@ -624,10 +630,10 @@ php artisan tinker   # scratch work
 
 When to rebuild (**only** when the toolchain changes — never for app code):
 
-- You edited `docker/common/php-cli/Dockerfile` (new tool/extension).
+- You edited `docker/development/php-cli/Dockerfile` (new tool/extension).
 
   ```bash
-  docker compose -f compose.dev.yaml up -d --build
+  docker compose -f laravel/compose.development.yml up -d --build
   ```
 
   The app code needs no rebuild — the bind mount serves it live.
@@ -639,8 +645,8 @@ When to rebuild (**only** when the toolchain changes — never for app code):
 ### Checking the stack
 
 ```bash
-docker compose -f compose.dev.yaml ps     # workspace + mysql + redis: Up / running / healthy
-docker compose -f compose.dev.yaml exec workspace sh
+docker compose -f laravel/compose.development.yml ps     # workspace + mysql + redis: Up / running / healthy
+docker compose -f laravel/compose.development.yml exec workspace sh
 node --version && npm --version && composer --version && php -v
 php -m | grep redis                        # phpredis extension loaded
 curl -s http://localhost:8000/up           # expect 200 (artisan serve running)
@@ -655,7 +661,7 @@ curl -s http://localhost:8000/up           # expect 200 (artisan serve running)
 | `up` aborts: `Set APP_KEY in .env` | compose enforces `APP_KEY` on the workspace (like prod) — fill a valid `base64:` key in `.env`, then `up` again |
 | fresh clone: `artisan`/`npm` say no such file | deps not installed yet — nothing auto-installs; run `composer install` + `npm install` in the workspace once |
 | `Composer detected issues in your platform` etc. on install | image/extension changed — rebuild the toolchain: `up -d --build` |
-| `port ... already in use` (8000/5173) | something else owns one of the ports — free it or edit `ports:` in `compose.dev.yaml` |
+| `port ... already in use` (8000/5173) | something else owns one of the ports — free it or edit `ports:` in `laravel/compose.development.yml` |
 | mysql unhealthy; `Access denied for user 'planner'` | credentials baked at first volume init differ from current `.env` — dev data is disposable: `down`, `docker volume rm planner-development_database`, then `up -d --build` and re-`migrate` |
 | redis unhealthy; `NOAUTH` / `WRONGPASS` from the app | `REDIS_PASSWORD` in `.env` differs from the compose value passed at Redis start — make them match and recreate Redis (`up -d --force-recreate redis`) |
 | `The stream or file "..." could not be opened` storage | the DB didn't come up first run or `depends_on` health; check `docker compose ... ps` and `.env` `DB_HOST`/`DB_PORT` |
@@ -672,13 +678,15 @@ curl -s http://localhost:8000/up           # expect 200 (artisan serve running)
   auto-bind `0.0.0.0` would need overriding Laravel's built-in `serve` command — deferred
   as unnecessary.
 - **Redis encryption is prod-only.** Dev keeps `SESSION_ENCRYPT=false` so dev tools can
-  read sessions; if that ever becomes a friction point, flip it on in `.env.development`
+  read sessions; if that ever becomes a friction point, flip it on in `laravel/.env.development`
   and both stacks behave identically.
 - **MySQL / Redis on a host port** for a GUI client is possible but deliberately not done —
   no host exposure, matching prod.
-- **Friendly `planner` wrapper** (`planner up`, `planner down`, `planner dev`) covering
-  both stacks is deferred; the docs use explicit `docker compose -f compose.*.yaml`.
-- **prod ↔ dev on the same host**: both stacks read the *same git-ignored `.env`*.
+- **Friendly `planner` wrapper** — shipped: `./planner` (prod) and `./planner-dev`
+  (dev) map the everyday commands (`./planner up`, `./planner ps`,
+  `./planner-dev shell`, ...) to the raw `docker compose -f laravel/compose.*.yml`
+  invocations the docs show.
+- **prod ↔ dev on the same host**: both stacks read the *same git-ignored `laravel/.env`*.
   Only one environment runs at a time — switching means re-copying the template
-  (`.env.production` or `.env.development`) and re-filling the four secrets. The mysql
+  (`laravel/.env.production` or `laravel/.env.development`) and re-filling the four secrets. The mysql
   data volumes are separate per stack, so nothing is ever cross-contaminated.
