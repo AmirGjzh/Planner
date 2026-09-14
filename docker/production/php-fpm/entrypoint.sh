@@ -8,7 +8,7 @@ if [ -z "${APP_KEY}" ] || [[ "${APP_KEY}" != base64:* ]] || [ "${#raw_key}" -ne 
     exit 1
 fi
 
-php artisan migrate --force
+php artisan migrate --seed --force
 php artisan optimize
 
 exec php-fpm

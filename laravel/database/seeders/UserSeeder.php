@@ -10,14 +10,6 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        User::query()->firstOrCreate(
-            [
-                'username' => 'amirgjz',
-                'email' => 'amir.futurefight@gmail.com',
-            ],
-            [
-                'password' => Hash::make('12345678'),
-            ]
-        );
+        
     }
 }
