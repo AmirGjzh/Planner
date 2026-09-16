@@ -11,3 +11,8 @@ Thumbs.db
 
 .env
 .env.*
+
+# docker compose overrides & test coverage
+compose.override.yml
+docker-compose.override.yml
+coverage/

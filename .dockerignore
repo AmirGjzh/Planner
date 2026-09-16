@@ -1,28 +1,50 @@
+# ---- Version control / CI ----
 .git
+.gitignore
+.github
 
+# ---- Root tooling & docs (not COPYed into any image) ----
+planner
+planner-dev
+README.md
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# ---- Environment & secrets (never ship) ----
 .env
 .env.*
-
-# laravel app — never shipped into an image
 laravel/.env
 laravel/.env.*
+
+# ---- Laravel app: generated, dev-only, or secrets (never in an image) ----
+laravel/auth.json
+laravel/.ai
+laravel/.agents
+laravel/.editorconfig
+laravel/.gitattributes
+laravel/.gitignore
+laravel/.npmrc
 laravel/node_modules
-laravel/bootstrap/cache/*.php
 laravel/vendor
-laravel/tests
-laravel/scripts
+laravel/bootstrap/cache/*.php
+laravel/compose.development.yml
+laravel/compose.production.yml
+laravel/AGENTS.md
+laravel/boost.json
+laravel/opencode.json
+laravel/skills-lock.json
 laravel/phpunit.xml
 laravel/public/build
+laravel/public/fonts-manifest.dev.json
 laravel/public/hot
 laravel/public/storage
-laravel/.ai
-laravel/README.md
-laravel/.gitignore
-laravel/.gitattributes
-laravel/.dockerignore
-laravel/.editorconfig
+laravel/resources/**/*.test.php
+laravel/scripts
+laravel/storage/pail
+laravel/tests
 
-# editor / tooling cruft (any depth)
+# ---- Editor / OS / tooling cruft (any depth) ----
 .idea
 .vscode
 .zed
@@ -37,7 +59,3 @@ _ide_helper_models.php
 .DS_Store
 Thumbs.db
 *.log
-
-docker-compose.yml
-Dockerfile
-.dockerignore
