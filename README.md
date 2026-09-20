@@ -4,6 +4,11 @@ A personal task planner that keeps you in control of your day. Assign each task 
 
 > Built with Laravel 13, Livewire 4, and Tailwind CSS — everything runs in Docker, so you don't need PHP or Node installed locally.
 
+## 📸 Screenshots
+
+![Planner — desktop](laravel/resources/images/screenshots/screenshot-1.png)
+![Planner — mobile](laravel/resources/images/screenshots/screenshot-2.png)
+
 ## ✨ Features
 
 - **Workload-aware days** — each day shows its total estimated time, color-coded Light → Very heavy, so a day's load is always one glance away.
@@ -13,11 +18,6 @@ A personal task planner that keeps you in control of your day. Assign each task 
 - **Performance reports** — completion rate, estimated time, plan progress, and a per-day workload chart for any period.
 - **Persian & English** — switch anytime; Persian brings the Jalali calendar, Persian digits, and full RTL layout.
 - **8 color themes** — swap anytime from your profile.
-
-## 📸 Screenshots
-
-![Planner — desktop](laravel/resources/images/screenshots/screenshot-1.png)
-![Planner — mobile](laravel/resources/images/screenshots/screenshot-2.png)
 
 ## 🚀 Getting Started
 
