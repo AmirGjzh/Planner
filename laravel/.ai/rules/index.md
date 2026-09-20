@@ -14,6 +14,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Actions/Dashboard/** | .ai/rules/dashboard.md |
 | app/Livewire/**, resources/views/pages/**, database/factories/** | .ai/rules/factories.md |
 | tests/Feature/Actions/** | .ai/rules/feature-actions.md |
+| resources/views/pages/**, resources/views/components/** (island pattern) | .ai/rules/island.md |
 | lang/** | .ai/rules/lang.md |
 | .ai/skills/main-project/**.md | .ai/rules/main-project.md |
 | database/migrations/** | .ai/rules/migrations.md |

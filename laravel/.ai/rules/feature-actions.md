@@ -5,5 +5,12 @@ paths:
 
 # Feature Actions
 
-## Action tests co-located under tests/Feature/Actions mirroring app/Actions
-Each Action class gets a feature test at tests/Feature/Actions/<Domain>/<XxxAction>Test.php mirroring app/Actions/<Domain>. They exercise the real Action via `app(XxxAction::class)->execute(...)` (no mocking of the Action or its collaborators). Side-effect logging is asserted with `Log::spy()` + `Mockery::on(fn ($ctx) => ...)` `shouldHaveReceived`. Rate-limited actions clear `RateLimiter::clear('prefix:key')` in a `beforeEach`.
+How Action feature tests are organized and written.
+
+## Mirror app/Actions under tests/Feature/Actions
+
+Each Action gets a feature test at `tests/Feature/Actions/<Domain>/<XxxAction>Test.php`, mirroring the `app/Actions/<Domain>` tree.
+
+- Exercise the real Action: `app(XxxAction::class)->execute(...)` — never mock the Action or its collaborators.
+- Assert side-effect logging with `Log::spy()` + `Mockery::on(fn ($ctx) => ...)` + `shouldHaveReceived`.
+- Clear rate-limit buckets in `beforeEach` (`RateLimiter::clear('prefix:key')`) for rate-limited actions.

@@ -14,7 +14,7 @@ As a user, I want to create a new account with a username, email, and password s
 
 ### UC-03 – View and Edit Profile
 
-As a user, I want to view and edit my profile information (name, date of birth, country, gender) so that I can keep my account details up to date.
+As a user, I want to view and edit my profile information (name, date of birth, country, gender, UI language, and color theme) so that I can keep my account details up to date.
 
 ### UC-04 – Delete Account
 
@@ -42,11 +42,7 @@ As a user, I want to view a specific plan and see all tasks assigned to it so th
 
 #### Plan Progress
 
-As a user, I want to see the progress of a plan based on how many of its tasks are completed so that I can track how close I am to finishing a project.
-
-#### Plan Progress Tracking
-
-As a user, I want to see real-time plan progress updates as I mark tasks done so that I always know the current status.
+As a user, I want to see the progress of a plan as a percentage (completed/total tasks) and watch it update in real time as I mark tasks done or not done, so that I always know how close I am to finishing a project.
 
 ### UC-08 – Manage Tasks
 
@@ -107,9 +103,17 @@ As a user, I want to select a time range and see my performance — tasks create
 - The first version must remain as simple as possible in terms of UI and features.
 - More advanced features (e.g., advanced notification settings, subscription plans) will be added in later phases.
 
+### Localization & Personalization
+
+- The UI ships in two languages: English and Persian (fa).
+- Persian mode renders with the Jalali calendar, Persian digits, and a full RTL layout.
+- Users pick a language and one of 8 color themes from their profile.
+
 ## 1.3 – Acceptance Criteria
 
 The acceptance criteria are grouped into the 11 use cases (UC-01 … UC-11), in topological order.
+
+> **Rate limiting:** write and auth actions are rate-limited per-Action with the key shapes in `.ai/rules/actions.md`. This applies to UC-01, 02, 03 (profile update), 06, 07, and 08; UC-04 (account delete) and UC-05 (logout) are exempt.
 
 ### UC-01 – Login
 
@@ -213,11 +217,7 @@ The acceptance criteria are grouped into the 11 use cases (UC-01 … UC-11), in 
 **Given** a plan has tasks with some marked as done,
 **When** the user views the plan list or plan details,
 **Then** the progress is displayed as a percentage (completed tasks / total tasks × 100).
-
-#### Plan Progress Tracking
-
-**Given** the user marks a task in a plan as done or not done,
-**When** the status changes,
+**And** when the user marks a task in the plan as done or not done,
 **Then** the plan progress is recalculated and updated in the UI immediately.
 
 ### UC-08 – Manage Tasks

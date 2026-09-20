@@ -183,67 +183,70 @@ This section defines the conventions and patterns to follow during implementatio
 
 ```
 app/
-├── Actions/          # Single-purpose operations (one class = one action)
-
-├── Enums/            # Backed enums for fixed value sets
-
-├── Exceptions/       # Domain-specific exception classes
-
+├── Actions/           # Domain actions, grouped by domain
+│   ├── Auth/          #   Login, Register, Logout, DeleteAccount
+│   ├── Category/
+│   ├── Dashboard/     #   WeeklyWorkloadAction, AttentionTasksAction
+│   ├── Plan/
+│   ├── Profile/
+│   ├── Reports/       #   ReportsAction
+│   └── Task/
+├── Enums/             # Backed enums: XxxResult, TaskPriority, UserGender, WorkloadLevel
 ├── Http/
-│   ├── Controllers/  # Thin controllers (if any)
-
-│   └── Livewire/     # Full-page and nested Livewire components
-
-├── Models/           # Eloquent models
-
-├── Services/         # Business logic grouped by domain concern
-
-└── View/             # View composers or presenters (if needed)
-
+│   └── Controllers/   # Base Controller.php only (no route controllers — Livewire pages)
+├── Livewire/
+│   └── Concerns/      # HasUser trait (shared, applies users.locale via boot())
+├── Models/            # Eloquent models
+├── Policies/          # CategoryPolicy, PlanPolicy, TaskPolicy (auto-discovered)
+├── Support/           # Jalali, Minutes, PersianNumber, Reicon helpers
+└── Providers/
 ```
+
+Full pages are Livewire 4 multi-file components under `resources/views/pages/⚡<name>/` (not `app/Livewire`); nested `mine` UI components are anonymous Blade under `resources/views/components/mine/`.
 
 ### Layer Separation Principle
 
 The system follows a simple layered architecture:
 
 ```
-Livewire Component (UI state + user interaction)
+Livewire page (UI state + user interaction)
        ↓
-Service / Action (business logic)
+Action (business logic — final class, execute())
        ↓
 Model (data access via Eloquent)
 ```
 
 **Rules:**
-- **Livewire components** should be thin — handle UI state, validation, and delegate to Services or Actions. No raw Eloquent queries in components.
-- **Services** own business logic for a domain area (e.g., Task, Category, Plan, Workload). Can group related operations.
-- **Actions** are single-purpose classes for operations with side effects (e.g., deleting a plan checks for assigned tasks before deletion). Use when an operation does more than one thing.
-- **Models** handle data access only — no business logic beyond scopes and accessors.
+- **Livewire pages** handle UI state, validation, and user interaction; they delegate domain logic to Actions. Search/filter queries and validation stay in the page; anything with side effects or authorization goes through an Action.
+- **Actions** are the single domain layer: one `final class` per operation with a single public `execute()` (or domain-named) method, `LoggerInterface` as the only injected dependency, and an `XxxResult` enum for every outcome. No service layer, no repositories, no DTOs, no events/queued jobs (see `.ai/rules/actions.md`).
+- **Models** handle data access only — fillable via `#[Fillable]`, casts via `casts()` (see `.ai/rules/models.md`).
 
 ### Pattern Decisions
 
 | Pattern | Decision | When to Apply |
 |---------|----------|---------------|
-| **Service Layer** | Use | Group related business logic. One service per domain area (e.g., `TaskService`, `WorkloadService`). |
-| **Action Classes** | Use | Extract any operation that triggers side effects (e.g., deleting a category checks for assigned tasks first). |
+| **Action Classes** | Use (only) | Every operation with a side effect is an Action — never a service method. |
+| **Service Layer** | Not used | Actions replace services; the term "module" in Phase-2 maps to an `app/Actions/<Domain>/` folder. |
+| **Read-only query actions** | Use | UC-09/10/11 are query-only Actions (`WeeklyWorkloadAction`, `AttentionTasksAction`, `ReportsAction`) invoked from page `#[Computed]` methods. |
 | **Backed Enums** | Use | Already in place for fixed value sets. Extend as new value sets appear. |
-| **Repository** | Defer | Start with Eloquent scopes. Only extract repositories if query logic becomes unmanageable. |
-| **Form Request** | Defer | Livewire components handle validation natively via `rules()` and `$this->validate()`. |
-| **View Composer** | Defer | Format data directly in Livewire component properties. |
+| **Repository** | Defer | Not used — query/filter logic stays as inline Eloquent builder chains in Actions. |
+| **Form Request** | Defer | Livewire pages validate natively via `rules()` and `$this->validate()`. |
+| **View Composer** | Defer | Format data directly in Livewire page properties/helpers. |
 
 ### Naming Conventions
 
 | Layer | Naming Pattern | Example |
 |-------|---------------|---------|
-| Service | `{Domain}Service` | `TaskService`, `WorkloadService` |
 | Action | `{Verb}{Noun}Action` | `CreateTaskAction`, `ToggleTaskDoneAction` |
-| Livewire (full-page) | `{View}Page` | `TodayTasksPage`, `PlanListPage` |
-| Livewire (nested) | `{ComponentName}` | `TaskCard`, `FilterBar` |
-| Exception | `{Description}Exception` | `CategoryHasTasksException` |
+| Action (result) | `{Verb}{Noun}Result` (enum) | `CreateTaskResult::Created` |
+| Livewire (full page) | `pages::<name>` SFC | `resources/views/pages/⚡tasks/` |
+| Livewire (concern) | `{Domain}` trait | `HasUser` |
+| Policy | `{Model}Policy` | `TaskPolicy` |
+| Support helper | `{Domain}` class | `Jalali`, `PersianNumber` |
 
-### Service Boundaries (Planned)
+### Service Boundaries
 
-Every use case maps to one module/service area. These areas are defined as a map of responsibilities and will be fleshed out during implementation.
+Every use case maps to one `app/Actions/<Domain>/` folder. There is no separate service layer — these boundaries are what the Actions implement.
 
 | UC | Use Case | Module / Service | Responsibilities |
 |----|----------|------------------|------------------|
@@ -261,10 +264,9 @@ Every use case maps to one module/service area. These areas are defined as a map
 
 > **Note:** UC-09, UC-10, and UC-11 are implemented as read-only query actions (`WeeklyWorkloadAction`, `AttentionTasksAction`, `ReportsAction`), invoked from page `#[Computed]` methods. No service layer is required for read-only aggregations.
 
-### When to Create an Action vs. a Service Method
+### When to Create an Action
 
-- **Service method** — when the operation is straightforward and belongs clearly to one domain (e.g., `TaskService::update()`).
-- **Action class** — when the operation has significant side effects or crosses domain boundaries (e.g., `DeletePlanAction` checks for tasks and blocks deletion if any exist).
+Every operation with a side effect or an authorization boundary is an Action (write once, follow the shape). Read-only aggregation also becomes an Action when it needs its own outcome/visibility (UC-09/10/11). There is no service-method alternative — create the Action and route it from the page component.
 
 ---
 
@@ -277,19 +279,13 @@ This section defines the conventions for handling errors and logging. Actual exc
 | Type | How It Is Raised | Example |
 |------|-----------------|---------|
 | **Validation error** | Livewire `$this->validate()` | Missing title, past date |
-| **Authorization failure** | `$this->authorize()` or `Gate` | Editing another user's task |
-| **Domain exception** | Custom exception class | Deleting a category that still has tasks |
+| **Authorization failure** | `abort_unless($user->can(...), 403)` inside Actions | Editing another user's task |
+| **Domain outcome** | `XxxResult` enum returned from an Action | Delete blocked because the plan still has tasks |
 | **System error** | PHP or Laravel exception | Database connection lost |
 
-### Domain Exception Convention
+### Domain Outcome Convention
 
-Create a custom exception class when a business rule is violated and the user needs a specific message:
-
-| Exception | When Thrown |
-|-----------|-------------|
-| `CategoryHasTasksException` | Attempting to delete a category that still has tasks |
-
-Add more as new rules emerge during implementation.
+Expected business-rule failures are **not** exceptions — Actions return an `XxxResult` enum covering every outcome (success, failure, rate-limited) and the page reacts to the result. `app/Exceptions` holds Laravel's defaults; no custom domain exception classes. Delete-protection is enforced by policies (`$user->can('delete', $category)`) and the DB `restrictOnDelete` constraint, then reported through the Action's result enum.
 
 ### Errors per Use Case
 
@@ -311,8 +307,8 @@ Add more as new rules emerge during implementation.
 
 | Layer | How to Handle |
 |-------|---------------|
-| **Livewire Component** | Catch domain exceptions → show user-friendly message via `session()->flash()` or `$this->addError()`. For validation → automatic per-field messages. |
-| **Service / Action** | Return result enums for all outcomes (success, failure, rate-limited). Do not throw exceptions for expected failures. |
+| **Livewire Page** | Act on the Action's `XxxResult` enum → show a user-friendly message via `session()->flash('toast', ...)` / `$this->dispatch('toast', ...)`; validation → automatic per-field messages. |
+| **Action** | Return result enums for all outcomes (success, failure, rate-limited). Do not throw exceptions for expected failures. |
 
 ### Logging Conventions
 
@@ -322,9 +318,9 @@ Add more as new rules emerge during implementation.
 | `warning` | Failed attempts (validation failures, unauthorized access) |
 | `error` | Unexpected system errors, database failures, service exceptions |
 
-- Use `Log::info()`, `Log::warning()`, `Log::error()` directly in Services or Actions.
-- Do not log in Livewire components — delegate to the Service or Action layer.
-- Local development uses stack logging; production can use daily files.
+- Use `Log::info()`, `Log::warning()`, `Log::error()` inside Actions (via the injected `LoggerInterface`).
+- Do not log in Livewire pages — delegate to the Action layer.
+- Local development uses stack logging; production uses daily files.
 
 ### Error Visibility for Users
 
@@ -332,5 +328,5 @@ Add more as new rules emerge during implementation.
 |------------|-----------|
 | Validation error | Per-field message (Livewire handles this) |
 | Authorization failure | "You are not authorized to perform this action." |
-| Domain exception (e.g., category has tasks) | User-friendly explanation: "This category still has tasks. Reassign or delete them first." |
+| Delete blocked (category/plan has tasks) | User-friendly explanation: "This category still has tasks. Reassign or delete them first." |
 | Unexpected system error | "Something went wrong. Please try again." |

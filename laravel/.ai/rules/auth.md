@@ -5,5 +5,23 @@ paths:
 
 # Auth
 
-## Auth forms email strictness + logout returns void
-UC-02/UC-05 audit decisions: (1) both auth forms use `email` => ['required','email:rfc'] (login.php and register.php) — keep them aligned strict. (2) Register's mount() has no toast re-dispatch (no flow redirects to /register with a toast) — don't re-add it. (3) Username+email both taken always reports "username taken" (checked first) and simultaneous duplicate attempts count against the same IP bucket — both deliberate enumeration protection, keep. (4) Logout uses LogoutUserAction which returns void (no result enum) — logouts can't fail, don't re-add a single-case result enum.
+Audit decisions for the auth actions (UC-02 register / UC-05 logout).
+
+## Keep the auth forms strict
+
+- Both `login.php` and `register.php` validate email with `['required', 'email:rfc']` — keep them aligned.
+
+## Register has no toast re-dispatch on mount
+
+No flow redirects to `/register` with a toast; `mount()` re-dispatching one was dead code and was removed. Don't re-add it.
+
+## Enumeration protection on register is deliberate
+
+- When both username and email are already taken, the error always reports "username taken" (checked first).
+- Simultaneous duplicate attempts share the same IP-rate-limit bucket.
+
+Both are intentional; keep them.
+
+## Logout returns void
+
+`LogoutUserAction::execute()` returns `void` (no result enum) — a logout can't fail. Don't re-add a single-case result enum.

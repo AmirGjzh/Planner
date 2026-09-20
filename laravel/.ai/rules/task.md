@@ -5,5 +5,9 @@ paths:
 
 # Task
 
-## Task search case-insensitive; no title normalization
-UC-08 audit decision (mirrors UC-06/07): Task title search must be case-insensitive and collation-independent - use whereRaw('LOWER(title) LIKE ?', [Str::lower('%'.$term.'%')]) in the Livewire page. Task title normalization is intentionally NOT applied (tasks have no per-user uniqueness requirement, unlike category/plan names).
+Audit decision for task CRUD (UC-08), partially mirroring the category rules (UC-06).
+
+## Task search is case-insensitive; titles are not normalized
+
+- Search: `whereRaw('LOWER(title) LIKE ?', [Str::lower('%'.$term.'%')])` in the Livewire page.
+- Titles are intentionally **not** normalized — tasks have no per-user uniqueness requirement (unlike category/plan names), so casing is kept as entered.

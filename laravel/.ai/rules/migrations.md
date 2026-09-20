@@ -5,5 +5,10 @@ paths:
 
 # Migrations
 
-## Enums stored as DB enum columns plus PHP enum cast
-Store enums as DB `enum()` columns whose values match the PHP enum case values (`->enum('priority', ['low','medium','high'])`), and cast them in the model to the enum class (`'priority' => TaskPriority::class`). Keep a `default()` on the column and match model/DB values exactly.
+Column conventions for migrations.
+
+## Store enums as DB enum columns plus PHP enum casts
+
+- DB column: `->enum('priority', ['low', 'medium', 'high'])` — values must match the PHP enum case values.
+- Model cast: `'priority' => TaskPriority::class`.
+- Keep a `default()` on the column and match model/DB values exactly.

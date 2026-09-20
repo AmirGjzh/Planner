@@ -1,10 +1,10 @@
 # Phase 2 – Conceptual Domain Design
 
-## 1. Domain Entities
+## 2.1 Domain Entities
 
 We have four main entities in the system.
 
-### 1.1 User
+### 2.1.1 User
 
 Represents each user of the system.
 
@@ -12,7 +12,7 @@ Role in the system:
 - Owner of their own tasks, categories, and plans
 - Responsible for authentication, profile management, and personal settings
 
-### 1.2 Category
+### 2.1.2 Category
 
 Represents task groupings created by a user.
 
@@ -20,7 +20,7 @@ Role in the system:
 - Organizes tasks into logical groups (e.g., Work, University, Personal, Fitness)
 - Each user has their own categories; categories are not shared between users
 
-### 1.3 Task
+### 2.1.3 Task
 
 Represents an individual piece of work assigned to a specific day on the calendar.
 
@@ -30,7 +30,7 @@ Role in the system:
 - Used in performance reports and attention lists
 - Optionally belongs to a plan for project-level grouping
 
-### 1.4 Plan
+### 2.1.4 Plan
 
 Represents a higher-level grouping of tasks under a common goal or project.
 
@@ -39,7 +39,7 @@ Role in the system:
 - Provides progress tracking based on task completion
 - Each user has their own plans; plans are not shared between users
 
-## 2. Relationships Between Entities
+## 2.2 Relationships Between Entities
 
 ### User – Task
 
@@ -73,13 +73,13 @@ A Plan can contain multiple Tasks. Each Task belongs to zero or one Plan (option
 
 Note: Category and Plan have no direct relationship. They are independent organizational dimensions. Category classifies tasks by type or subject, while Plan groups tasks under a project or goal.
 
-## 3. Use Cases & Modules
+## 2.3 Use Cases & Modules
 
 A Use Case represents a complete scenario of interaction between a user and the system. Below they are written in a structured, step-by-step manner, ordered by dependency (topological order).
 
 Each use case is implemented by a dedicated module (listed under "Module"). Modules communicate through service classes; a View / Presentation layer renders them via Laravel Blade + Livewire. Overdue detection is provided by the Task Management module (status + filter) and counted by the Reporting module.
 
-### 3.1 UC-01 – Login
+### 2.3.1 UC-01 – Login
 
 **Module:** Authentication Module — user registration, login, logout, password management, and session handling. Depends on the User model and Laravel's built-in Auth system. Used by all other modules (the user must be authenticated).
 
@@ -95,7 +95,7 @@ Main Flow:
    - If successful: the user is logged in and redirected to the Dashboard.
    - If unsuccessful: an error message is shown and the user can try again.
 
-### 3.2 UC-02 – Register
+### 2.3.2 UC-02 – Register
 
 **Module:** Authentication Module.
 
@@ -116,7 +116,7 @@ Main Flow:
    - A success or welcome message is shown
    - The user is redirected to the Login page
 
-### 3.3 UC-03 – View and Edit Profile
+### 2.3.3 UC-03 – View and Edit Profile
 
 **Module:** Profile Module — read and update profile information. Depends on the User model.
 
@@ -128,10 +128,11 @@ Main Flow:
 1. The logged-in user clicks Profile from the navigation bar.
 2. The system displays current profile information.
 3. The user may edit fields such as: first name, last name, date of birth, country, gender.
-4. The user clicks Save.
-5. The system validates and stores the updated information and shows a success message.
+4. The user may also choose a UI language (fa/en) and one of the 8 color themes.
+5. The user clicks Save.
+6. The system validates and stores the updated information and shows a success message.
 
-### 3.4 UC-04 – Delete Account
+### 2.3.4 UC-04 – Delete Account
 
 **Module:** Account Module — verifies the password, obfuscates credentials, and soft-deletes the account. Depends on the User model.
 
@@ -150,7 +151,7 @@ Main Flow:
    - Related data is soft-deleted or hard-deleted as configured
 7. The user is logged out, sees a success toast ("Account deleted"), and is redirected to the homepage.
 
-### 3.5 UC-05 – Logout
+### 2.3.5 UC-05 – Logout
 
 **Module:** Authentication Module.
 
@@ -164,7 +165,7 @@ Main Flow:
 3. The user is redirected to the homepage or login page.
 4. The navigation bar again shows Login and Register options.
 
-### 3.6 UC-06 – Manage Categories
+### 2.3.6 UC-06 – Manage Categories
 
 **Module:** Category Management Module — create, read, update, delete categories, and enforce restrict-on-delete when a category has tasks. Depends on the User and Task models. Interacts with Task Management (tasks reference categories).
 
@@ -187,7 +188,7 @@ Actor: Logged-in user
 1. Deletion is prevented if the category still has tasks assigned (restrict on delete).
 2. User must reassign or delete all tasks in the category before it can be deleted.
 
-### 3.7 UC-07 – Manage Plans
+### 2.3.7 UC-07 – Manage Plans
 
 **Module:** Plan Management Module — create, read, update, delete plans, calculate plan progress (% completed), and prevent deletion when a plan has tasks. Depends on the User and Task models. Interacts with Task Management (tasks reference plans).
 
@@ -204,7 +205,7 @@ Main Flow:
 6. The user can view all tasks assigned to a plan.
 7. When a task in a plan is marked as done or not done, the plan progress is recalculated and updated.
 
-### 3.8 UC-08 – Manage Tasks
+### 2.3.8 UC-08 – Manage Tasks
 
 **Module:** Task Management Module — create, read, update, delete tasks, toggle task status (Done / Not Done), filter and sort tasks, and assign or remove a task from a plan. Depends on the User, Category, and Plan models. Interacts with Category Management, Plan Management, and the Workload Module. Also provides overdue detection (task_date < today and not done).
 
@@ -221,7 +222,7 @@ Main Flow:
 6. The user can view a single day or a custom date range, and filter by category, plan, status, or priority.
 7. The user can sort the list by date, priority, or estimated time.
 
-### 3.9 UC-09 – Daily Workload
+### 2.3.9 UC-09 – Daily Workload
 
 **Module:** Workload Module — calculate total estimated minutes per day for a user, map the total to a workload level and message, and recalculate when tasks are created, updated, or deleted. Depends on the Task model. Interacts with Task Management (triggered by task changes) and the View layer (provides workload data).
 
@@ -231,10 +232,10 @@ Description: The system calculates and displays the total estimated time of all 
 
 Main Flow:
 1. The user opens the dashboard.
-2. The system sums the estimated minutes of all tasks for each day of the current week (Sunday–Saturday), including completed tasks.
+2. The system sums the estimated minutes of all tasks for each day of the current week (Sunday–Saturday for en, Saturday–Friday for fa), including completed tasks.
 3. Each day is displayed as hours and minutes with a workload alert based on thresholds (No tasks / Light ≤120 min / Moderate ≤240 min / Heavy ≤360 min / Very Heavy >360 min).
 
-### 3.10 UC-10 – Tasks Needing Attention
+### 2.3.10 UC-10 – Tasks Needing Attention
 
 **Module:** Attention Module — detect tasks that are overdue or within their notification window (`task_date - day_before_alarm <= today`) and not done, then provide the attention list. Depends on the Task model. Interacts with Task Management (date/task changes affect attention).
 
@@ -249,7 +250,7 @@ Main Flow:
 
 Future versions may send these notifications via email.
 
-### 3.11 UC-11 – Reports
+### 2.3.11 UC-11 – Reports
 
 **Module:** Reporting Module — generate performance reports for a given date range, aggregating tasks (total, completed, completion rate, estimated time), plans (total, completed), and a per-day workload chart. Depends on the Task and Plan models. Interacts with the View layer (display results in stat cards and a bar chart).
 
@@ -267,11 +268,11 @@ Main Flow:
    - Per-day completed vs. remaining estimated minutes
 4. The results are shown as stat cards and a per-day workload chart.
 
-## 4. Conceptual Domain Model
+## 2.4 Conceptual Domain Model
 
 At this level we define only the core attributes, not database types.
 
-### 4.1 User
+### 2.4.1 User
 
 Conceptual fields:
 - User ID
@@ -283,12 +284,14 @@ Conceptual fields:
 - Date of Birth
 - Country
 - Gender
+- Theme (one of the 8 color themes)
+- Language (fa / en)
 - Account Creation Date
 - Account Status (Active / Deleted / Suspended)
 
 Some fields may be optional in implementation.
 
-### 4.2 Category
+### 2.4.2 Category
 
 Conceptual fields:
 - Category ID
@@ -296,7 +299,7 @@ Conceptual fields:
 - Owner User (reference to User)
 - (Optional in future) category color or icon
 
-### 4.3 Task
+### 2.4.3 Task
 
 Conceptual fields:
 - Task ID
@@ -313,7 +316,7 @@ Conceptual fields:
 - Creation date
 - Last update date
 
-### 4.4 Plan
+### 2.4.4 Plan
 
 Conceptual fields:
 - Plan ID

@@ -39,6 +39,7 @@ The MVP is organized into exactly 11 use cases (UC-01 … UC-11). Each part belo
 
 - View profile information (name, date of birth, country, gender)
 - Edit and save profile fields
+- Choose a UI language (fa/en) and a color theme
 
 ### UC-04 – Delete Account
 
@@ -58,7 +59,7 @@ The MVP is organized into exactly 11 use cases (UC-01 … UC-11). Each part belo
 ### UC-07 – Manage Plans
 
 - Create plans to group related tasks under a common goal or project
-- Assign a name and optional description to each plan
+- Assign a name, optional description, and a start/end date range to each plan
 - Assign tasks to a plan (optional — tasks can exist without a plan)
 - View all tasks within a plan
 - Track plan progress based on completed vs. total tasks

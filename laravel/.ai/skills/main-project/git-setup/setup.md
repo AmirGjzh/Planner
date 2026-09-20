@@ -2,8 +2,8 @@
 
 This project uses two GitHub repositories:
 
-* **Public Repository** → `origin`
-* **Private Repository** → `private`
+* **Public Repository** → `origin` → `github.com/AmirGjzh/Planner`
+* **Private Repository** → `private` → `github.com/AmirGjzh/Planner-Pink-World` (branch `main` → `pink-world`)
 
 Both repositories are used in the same local project.
 
@@ -37,9 +37,11 @@ private  → Private Repository
 
 ### 3. Get the Private Branch
 
+`private/main` tracks exactly one branch: `pink-world`.
+
 ```bash
 git fetch private
-git switch -c <PRIVATE_BRANCH> --track private/<PRIVATE_BRANCH>
+git switch -c pink-world --track private/pink-world
 ```
 
 The project is now ready.
@@ -64,10 +66,10 @@ git push origin
 
 ### Private Changes
 
-Work on `private-branch`:
+Work on `pink-world`:
 
 ```bash
-git switch <PRIVATE_BRANCH>
+git switch pink-world
 ```
 
 After making changes:
@@ -86,7 +88,7 @@ When `main` has new changes and the private branch needs them:
 git switch main
 git pull origin
 
-git switch <PRIVATE_BRANCH>
+git switch pink-world
 git merge main
 git push private
 ```
@@ -96,5 +98,5 @@ git push private
 * `origin` is the **Public Repository**.
 * `private` is the **Private Repository**.
 * Public changes should be made on `main`.
-* Private-only changes should be made on `private-branch`.
+* Private-only changes should be made on `pink-world`.
 * Be careful not to run `git push origin` while working on private-only changes.

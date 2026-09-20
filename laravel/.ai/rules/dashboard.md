@@ -5,5 +5,17 @@ paths:
 
 # Dashboard
 
-## Keep locale week starts consistent across dashboard/reports
-WeeklyWorkloadAction, reports presets, and their tests all assume the week starts Saturday in fa (Carbon::SATURDAY / Jalali::weekBounds) and Sunday in en. If either side shifts, the dashboard grid and the "This week" report preset silently disagree. Also: WorkloadLevel enum is a pure domain mapping (constants + forMinutes only); all labels live as __() closures in the dashboard blade.
+Rules and invariants for the dashboard domain (`WeeklyWorkloadAction`, attention list, etc.).
+
+## Week start must stay locale-consistent across dashboard and reports
+
+`WeeklyWorkloadAction`, the report presets, and their tests all assume a locale-aware week:
+
+- **en:** Sunday (`Carbon::SUNDAY` / week starts Sunday).
+- **fa:** Saturday (`Carbon::SATURDAY` / `Jalali::weekBounds`).
+
+If either side shifts, the dashboard grid and the "This week" report preset silently disagree.
+
+## WorkloadLevel is pure domain; labels live in Blade
+
+`WorkloadLevel` enum is domain-only: constants plus `forMinutes()`. All human labels are `__()` closures in the dashboard Blade, not in the enum.
