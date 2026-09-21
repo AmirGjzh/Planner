@@ -22,6 +22,6 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Models/** | .ai/rules/models.md |
 | resources/views/pages/**, resources/views/pages/**/*.test.php | .ai/rules/pages.md |
 | app/Actions/Plan/** | .ai/rules/plan.md |
-| resources/views/components/mine/{select,datepicker,input}/** | .ai/rules/selectdatepickerinput.md |
+| resources/views/components/mine/{select,datepicker,input}/** | .ai/rules/select-datepicker-input.md |
 | app/Actions/Task/** | .ai/rules/task.md |
 | tests/**, tests/**/*.test.php | .ai/rules/tests.md |

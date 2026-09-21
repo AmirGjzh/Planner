@@ -77,7 +77,7 @@ Note: Category and Plan have no direct relationship. They are independent organi
 
 A Use Case represents a complete scenario of interaction between a user and the system. Below they are written in a structured, step-by-step manner, ordered by dependency (topological order).
 
-Each use case is implemented by a dedicated module (listed under "Module"). Modules communicate through service classes; a View / Presentation layer renders them via Laravel Blade + Livewire. Overdue detection is provided by the Task Management module (status + filter) and counted by the Reporting module.
+Each use case is implemented by a dedicated module (listed under "Module"). Each module maps to an `app/Actions/<Domain>/` folder — modules communicate through those Action classes (see Phase-3). A View / Presentation layer renders them via Laravel Blade + Livewire. Overdue detection is provided by the Task Management module (status + filter) and counted by the Reporting module.
 
 ### 2.3.1 UC-01 – Login
 

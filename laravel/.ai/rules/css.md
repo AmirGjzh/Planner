@@ -3,7 +3,7 @@ paths:
   - resources/css/mine.css
 ---
 
-# Css
+# CSS
 
 Rules for `resources/css/mine.css` (custom `@utility` definitions).
 

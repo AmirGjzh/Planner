@@ -4,7 +4,7 @@ paths:
   - 'resources/views/components/**'
 ---
 
-# Islands
+# Island
 
 Rules for the Alpine-driven filter/search/sort island pattern (page boost, used in UC-06/07/08).
 

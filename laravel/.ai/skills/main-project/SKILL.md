@@ -59,15 +59,13 @@ Pair it with the project rules in `.ai/rules/` (see the mandatory ritual in the 
 
 ## Key Decisions
 
-- **Plan CRUD before Task CRUD** (topological dependency).
+Project-wide decisions that must not regress; per-UC scope decisions live in `phases/Phase-4.md` under each UC's Key decisions.
+
+- **Build order is topological:** Plan CRUD (UC-07) before Task CRUD (UC-08); Reports (UC-11) last.
 - **UC specs** live in Phase-2 (design-time); delivered scope + durable decisions in Phase-4; the dated per-UC implementation journal was moved to git history.
-- **UC-08 Manage Tasks** includes toggle-done, date-range filtering, and filter/sort.
-- **UC-09 Daily Workload** lives on the dashboard as a weekly grid and **includes** completed tasks.
-- **UC-10 "Tasks Needing Attention"** = overdue + alarm-window-started, **excludes** done tasks.
-- **Reports (UC-11)** are the last use case; all docs are structured into 11 UC-aligned parts.
-- **Locale-aware week:** en starts Sunday, fa starts Saturday (Jalali); enforced across the dashboard grid and report presets (see `rules/dashboard.md`, `rules/tests.md`).
+- **Locale-aware week:** en starts Sunday, fa starts Saturday (Jalali); enforced across the dashboard grid and report presets (see `.ai/rules/dashboard.md`, `.ai/rules/tests.md`).
 - **Per-user language preference:** `users.locale` (fa/en) set on the profile page (UC-03); the shared `HasUser` trait's `boot()` applies it app-wide on every Livewire request. Guest pages use the app/.env locale; only auth boundaries set the locale explicitly.
-- **Rate limiting is action-level**, keys via `Str::transliterate('kebab-prefix:identifier')`, guest vs authenticated shapes; cleared on success (see `rules/actions.md`).
+- **Rate limiting is action-level**, keys via `Str::transliterate('kebab-prefix:identifier')`, guest vs authenticated shapes; cleared on success (see `.ai/rules/actions.md`).
 - **Soft-delete only for User** with credential obfuscation (`deleted-user-{id}`); other entities use restrict-on-delete.
 - **Ownership enforced in Actions, not Livewire** — frontend-agnostic defense in depth.
 
