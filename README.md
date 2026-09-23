@@ -17,7 +17,7 @@ A personal task planner that keeps you in control of your day. Assign each task 
 - **Day & range views** — browse a single day or any custom date range, with search, combined filters, and sorting.
 - **Performance reports** — completion rate, estimated time, plan progress, and a per-day workload chart for any period.
 - **Persian & English** — switch anytime; Persian brings the Jalali calendar, Persian digits, and full RTL layout.
-- **8 color themes** — swap anytime from your profile.
+- **Color themes** — swap anytime from your profile.
 
 ## 🚀 Getting Started
 
@@ -36,7 +36,7 @@ You only need **Docker with Docker Compose** (any recent version) and **Git** �
    cp laravel/.env.production laravel/.env
    ```
 
-3. Fill in 4 required values in `laravel/.env` (leave everything else as-is). If any of them is missing, the start command stops right away and tells you which one:
+3. Fill in the required values in `laravel/.env` (leave everything else as-is). If any of them is missing, the start command stops right away and tells you which one:
    - `APP_KEY` — the security key: `base64:` followed by a 32-byte key (44 characters). Generate one with:
      ```bash
      printf 'base64:%s\n' "$(openssl rand -base64 32)"
@@ -56,7 +56,7 @@ That's it.
    ```bash
    ./planner ps
    ```
-   You should see 4 items — `php-fpm`, `nginx`, `mysql`, `redis` — all `Up` / `running` / `healthy`.
+   You should see `php-fpm`, `nginx`, `mysql`, `redis` — all `Up` / `running` / `healthy`.
 
 2. Open **http://localhost** — the app should load.
 3. Register an account and log in.
@@ -110,7 +110,7 @@ Development also runs in Docker — one container has PHP, Composer, and Node al
    cp laravel/.env.development laravel/.env
    ```
 
-3. Fill in the same 4 required values as production (`APP_KEY`, `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `REDIS_PASSWORD`) — set `APP_KEY` before the first start, the container won't run without it.
+3. Fill in the same required values as production (`APP_KEY`, `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `REDIS_PASSWORD`) — set `APP_KEY` before the first start, the container won't run without it.
 
 4. Start the dev setup (first run is slow, same reason as before):
    ```bash

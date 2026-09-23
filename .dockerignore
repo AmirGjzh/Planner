@@ -35,6 +35,7 @@ laravel/boost.json
 laravel/opencode.json
 laravel/skills-lock.json
 laravel/phpunit.xml
+laravel/pint.json
 laravel/public/build
 laravel/public/fonts-manifest.dev.json
 laravel/public/hot

@@ -1,6 +1,6 @@
 ---
 paths:
-  - '.ai/skills/main-project/**.md'
+  - '.ai/skills/main-project/**/*.md'
 ---
 
 # Main Project
@@ -14,5 +14,4 @@ Rules for maintaining the project docs themselves (`.ai/`).
 
 ## Known product decisions to respect
 
-- User UI language is `users.locale`, applied by `HasUser::boot()`.
 - The older Sahebi/Dokhmali choose-account login flow was removed — do not re-add it.

@@ -25,6 +25,9 @@ case "${1:-help}" in
   shell)
     "${dc[@]}" exec workspace sh
     ;;
+  logs)
+    "${dc[@]}" logs -f "${@:2}"
+    ;;
   *)
     echo "Usage: planner-dev <command>"
     echo ""
@@ -35,6 +38,7 @@ case "${1:-help}" in
     echo "  stop       stop containers"
     echo "  build      build images only (does not start)"
     echo "  ps         show running containers"
+    echo "  logs [svc] follow logs (all services, or just one)"
     echo "  shell      open a terminal in the workspace container"
     exit 1
     ;;

@@ -1,4 +1,4 @@
-# Docker Overview (shared conventions)
+# Docker Shared Conventions
 
 Applies to both the development and production stacks. Read this first — `development.md`
 and `production.md` reference it instead of repeating it.
@@ -25,12 +25,12 @@ Service names are the DNS hostnames inside the shared user network (`DB_HOST=mys
 
 - Real values live only in the git-ignored `laravel/.env`, copied from a committed template
   (`laravel/.env.development` or `laravel/.env.production`). The templates commit real
-  non-secret values and leave only the four secrets blank: `APP_KEY`, `DB_PASSWORD`,
+  non-secret values and leave only the secrets blank: `APP_KEY`, `DB_PASSWORD`,
   `MYSQL_ROOT_PASSWORD`, `REDIS_PASSWORD`.
 - **`APP_KEY` must be `base64:` + a 32-byte key** (AES-256-CBC). Generate with
   `printf 'base64:%s\n' "$(openssl rand -base64 32)"`. Dev enforces it via compose
   interpolation guard; prod additionally validates the exact format in `entrypoint.sh`.
-- All four secrets are enforced at the compose level with `${VAR:?msg}` — Compose aborts
+- All secrets are enforced at the compose level with `${VAR:?msg}` — Compose aborts
   immediately naming the missing one. Never use `:-root` / `:-` style fallbacks for secrets.
 - **Never set `MYSQL_PWD`.** The mysql image's first-boot bootstrap connects to a temporary
   passwordless server; a stray `MYSQL_PWD` injects a password into every such connection
@@ -56,8 +56,9 @@ Service names are the DNS hostnames inside the shared user network (`DB_HOST=mys
 Repo-root scripts map everyday commands onto the raw compose invocations:
 
 ```bash
-./planner up           # = docker compose -f laravel/compose.production.yml up -d --build
+./planner up           # = docker compose -f laravel/compose.production.yml up -d
 ./planner ps
+./planner logs [svc]   # = ... logs -f (all services, or one)
 ./planner-dev shell    # = ... exec workspace sh (dev)
 ./planner-dev up
 ```

@@ -22,6 +22,9 @@ case "${1:-help}" in
   ps)
     "${dc[@]}" ps
     ;;
+  logs)
+    "${dc[@]}" logs -f "${@:2}"
+    ;;
   *)
     echo "Usage: planner <command>"
     echo ""
@@ -32,6 +35,7 @@ case "${1:-help}" in
     echo "  stop       stop containers"
     echo "  build      build images only (does not start)"
     echo "  ps         show running containers"
+    echo "  logs [svc] follow logs (all services, or just one)"
     echo ""
     echo "Update flow: planner build && planner up"
     exit 1

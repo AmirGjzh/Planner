@@ -3,7 +3,7 @@
 > Reference documentation. Read this before touching anything under `docker/`,
 > `laravel/compose.production.yml`, `.dockerignore`, or the `.env.*` templates. Shared
 > conventions (secrets, healthchecks, wrappers, the seeding decision) live in
-> `docker/overview.md`.
+> `docker/shared-conventions.md`.
 
 ## Purpose and Audience
 
@@ -27,7 +27,7 @@ domain. nginx + php-fpm + MySQL + Redis via Docker Compose. Not user documentati
 
 ## Target Deployment Model
 
-- All four services on one Docker host; nothing exposed to the public internet.
+- All services on one Docker host; nothing exposed to the public internet.
 - No HTTPS/CDN/domain — TLS deliberately deferred (see Explicitly Deferred).
 - The repo is the artifact: fresh machine = clone + filled `.env` + `up --build`, then it
   runs forever. **No bind mounts** — code lives inside the images (immutable), so updating
@@ -60,7 +60,7 @@ domain. nginx + php-fpm + MySQL + Redis via Docker Compose. Not user documentati
 ```
 /
 ├── planner / planner-dev           command wrappers
-├── .dockerignore                   61-line build-context filter (with comments)
+├── .dockerignore                   build-context filter (with comments)
 ├── docker/production/
 │   ├── php-fpm/Dockerfile + entrypoint.sh
 │   └── nginx/Dockerfile + conf.d/default.conf
@@ -78,7 +78,7 @@ domain. nginx + php-fpm + MySQL + Redis via Docker Compose. Not user documentati
 
 ### `laravel/compose.production.yml`
 
-112-line single-file Compose v2 spec.
+Single-file Compose v2 spec.
 
 - **php-fpm**: built with `target: production`; `env_file: .env` (full environment);
   `APP_KEY: ${APP_KEY:?Set APP_KEY in .env}` guard; `storage:/var/www/storage` volume;
@@ -90,20 +90,22 @@ domain. nginx + php-fpm + MySQL + Redis via Docker Compose. Not user documentati
   `mysqladmin ping`) with `start_period: 30s`; data in the `database` volume.
 - **redis**: `requirepass` via `REDIS_PASSWORD`, healthcheck `redis-cli ping` via
   `REDISCLI_AUTH`, no volume (ephemeral — losing sessions/cache just forces a re-login).
-- All four secrets enforced via `${VAR:?msg}` — Compose aborts naming the missing one. Never
-  `MYSQL_PWD` (breaks first-boot init; see overview).
+- All secrets enforced via `${VAR:?msg}` — Compose aborts naming the missing one. Never
+  `MYSQL_PWD` (breaks first-boot init; see shared-conventions).
 - Explicit `name: planner` keeps volume prefix stable regardless of checkout directory.
 - Logging capped (the app is chatty: `LOG_LEVEL=info`, access logs) so unbounded Docker logs
   can't fill the disk.
 
 ### `docker/production/php-fpm/Dockerfile`
 
-76-line multi-stage image. Stages:
+Multi-stage image. Stages:
 
 1. `composer:2.10 AS composer` — pinned Composer binary (also reused by nginx's build).
 2. `php:8.4-fpm AS builder` — compiles extensions (`pdo_mysql intl mbstring zip bcmath gd` +
-   pecl `redis`), `composer install --no-dev --no-scripts --optimize-autoloader` +
-   `package:discover`. Discarded after artifacts are extracted.
+   pecl `redis`), layer-cached `composer install --no-dev --no-scripts
+   --optimize-autoloader` (only `composer.*` copied first, so app edits don't bust the
+   dependency layer), then the full source + `package:discover`. Discarded after artifacts
+   are extracted.
 3. `node:24 AS frontend` — `npm ci --no-audit --no-fund`, copies `vendor/` from builder (so
    Vite can resolve the Livewire ESM import), `npm run build`.
 4. `php:8.4-fpm AS production` — re-installs the `-dev` system packages (their runtime names
@@ -116,15 +118,17 @@ domain. nginx + php-fpm + MySQL + Redis via Docker Compose. Not user documentati
 
 ### `docker/production/nginx/Dockerfile`
 
-31 lines: `composer:2.10` + `node:24` stages build `vendor/` and assets; runtime is
+`composer:2.10` + `node:24` stages build `vendor/` and assets; runtime is
 `nginx:1.30` with the vhost, built `public/` tree, and `curl` (apt — used only by the
 healthcheck; the Debian nginx image has no `wget`).
 
 ### `docker/production/nginx/conf.d/default.conf`
 
-57-line single vhost. Facts worth knowing:
+Single vhost. Facts worth knowing:
 
 - `listen 80`, `server_name _`, `root /var/www/public`, `server_tokens off` (no version leak).
+- `client_max_body_size 10m` — above nginx's 1 MB default so modest uploads don't get an
+  early 413 (PHP's own upload limits still apply).
 - gzip on (level 6, min 1024) for text/JSON/JS/CSS/SVG/fonts — Vite output is not
   precompressed.
 - Security headers (`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`,
@@ -141,13 +145,13 @@ healthcheck; the Debian nginx image has no `wget`).
 
 ### `docker/production/php-fpm/entrypoint.sh`
 
-13-line entrypoint: validates `APP_KEY` (`base64:` prefix, decodes to exactly 32 bytes for
+Entrypoint: validates `APP_KEY` (`base64:` prefix, decodes to exactly 32 bytes for
 AES-256-CBC), then `php artisan migrate --seed --force` and `php artisan optimize`, then
 `exec php-fpm` (pid 1 = php-fpm; signals work).
 
 - The key guard catches the common mistake of pasting a bare `openssl rand -base64 32`
   output without the `base64:` prefix. It only reports the problem — fix is on the host.
-- **Seeds on every boot** — see the seeding decision in `overview.md`. `UserSeeder` is a
+- **Seeds on every boot** — see the seeding decision in `shared-conventions.md`. `UserSeeder` is a
   no-op today, but this line must be revisited before that ever creates real users
   (a known-credential dev seed must not reach production).
 - `migrate --force` is idempotent; `optimize` bakes config/routes/views, which is why
@@ -155,7 +159,7 @@ AES-256-CBC), then `php artisan migrate --seed --force` and `php artisan optimiz
 
 ### `.dockerignore`
 
-61-line build-context filter (with comments; source of truth in the file). Effects:
+Build-context filter (with comments; source of truth in the file). Effects:
 
 - **Never** ships `.env` / `.env.*` into any image — secrets arrive only via `env_file`.
 - `.ai/` (this skill tree), `tests/`, `scripts/` stay in the repo but never touch a
@@ -165,7 +169,7 @@ AES-256-CBC), then `php artisan migrate --seed --force` and `php artisan optimiz
 
 ### `laravel/.env.production`
 
-Committed template, source of truth (46 lines). Prod values baked in; only the four secrets
+Committed template, source of truth. Prod values baked in; only the secrets
 blank. Highlights:
 
 - `APP_ENV=production`, `APP_LOCALE=fa`, `APP_THEME=ocean`, `APP_DEBUG=false`,
@@ -189,7 +193,7 @@ These ship with the app; `docker/` alone is not enough.
   `redirectUsersTo('/dashboard')`.
 - **`config/database.php`**: a third redis connection `session` (DB 2) — key-space isolation
   from cache (DB 1) and default (DB 0) on the single Redis instance.
-- **Route blocking** in `routes/web.php` + `AppServiceProvider::boot()`: ever route and the
+- **Route blocking** in `routes/web.php` + `AppServiceProvider::boot()`: every route and the
   Livewire update endpoint carry `->block(10, 10)` (10s timeout, 10s lock) — overlapping
   duplicate requests for the same session wait instead of double-writing. The Livewire update
   route is redeclared with the same `block` because the default one is registered by
@@ -212,7 +216,7 @@ These ship with the app; `docker/` alone is not enough.
 
 `$$` escapes a literal `$` from Compose interpolation so the container expands it at runtime
 (redis command); plain `${VAR}` is interpolated at parse time (mysql healthcheck). No
-`MYSQL_PWD` anywhere (see overview).
+`MYSQL_PWD` anywhere (see shared-conventions).
 
 ## Decisions Log
 
@@ -239,7 +243,7 @@ file-by-file sections above; this is the one-line record.
 9. **`trustProxies('*')`** — behind our only proxy (nginx sets `X-Forwarded-*`). Rejected a
    proxy IP list: the host's Docker bridge IP varies.
 10. **Entrypoint guards `APP_KEY`, runs `migrate --seed --force` + `optimize` on every boot
-    ** — see overview for the seeding caveat.
+    ** — see shared-conventions for the seeding caveat.
 11. **Dedicated redis `session` connection (DB 2)** — key-space isolation from cache/default.
 12. **Single named network, only nginx publishes a port** — MySQL/Redis unreachable by
     accident.
@@ -249,7 +253,7 @@ file-by-file sections above; this is the one-line record.
     **healthcheck chain** mysql/redis → php-fpm → nginx + `/up`.
 15. **Static container names + `server_name _`** — predictable, small-scale, not swarm.
 16. **Small hardening**: `server_tokens off`, security headers, dotfile-deny, `/build`
-    immutable cache.
+    immutable cache, `client_max_body_size` above nginx's 1 MB default.
 17. **`laravel/.env.production` committed; `.env` ignored.**
 18. **`unzip` in the builder** (`--prefer-dist` + PECL tarballs); `curl` removed from the
     builder apt (leftover from the old composer curl-installer).
@@ -267,6 +271,9 @@ file-by-file sections above; this is the one-line record.
 24. **Healthchecks real, not just "alive"** — mysql `SELECT 1` (not `mysqladmin ping` which
     passes on failed auth), nginx `curl -fs /up`, redis `ping` via `REDISCLI_AUTH`, php-fpm
     TCP 9000; all exec-form, no shell.
+25. **Layer-cached `composer install`** — only `composer.json`/`composer.lock` precede the
+    install so app-code edits don't invalidate dependency layers; `package:discover` runs
+    after the full source copy.
 
 ## Deployment Runbook (fresh machine, golden path)
 
@@ -277,7 +284,7 @@ git clone <repo-url> planner && cd planner
 cp laravel/.env.production laravel/.env
 ```
 
-Fill the four secrets in `laravel/.env`:
+Fill the secrets in `laravel/.env`:
 
 ```bash
 APP_KEY=$(printf 'base64:%s' "$(openssl rand -base64 32)")   # never reuse from elsewhere
@@ -301,7 +308,7 @@ won't answer.
 
 | Task | Command |
 |---|---|
-| Status / logs | `docker compose -f laravel/compose.production.yml ps` / `logs -f <service>` |
+| Status / logs | `./planner ps` / `./planner logs [service]` |
 | Apply app changes (after `git pull`) | `up -d --build` |
 | Apply only env change | edit `.env` → `up -d` (entrypoint re-bakes config via `optimize`) |
 | Force recreate everything | `up -d --force-recreate` |
@@ -347,8 +354,8 @@ Healthcheck definitions (for diagnosis):
 
 ## Docker Hygiene on This Host
 
-Expected state: ~10-11 images (4 project/prod + build bases pulled on demand), 2 named
-volumes, 0 dangling images. Rules forever:
+Expected state: project images plus build bases pulled on demand, the `database` and
+`storage` volumes, no dangling images. Rules forever:
 
 - **Never** `docker system prune -a --volumes`, `docker volume prune`, or `down -v` on a live
   install — those delete `planner_database` / `planner_storage`.
@@ -363,8 +370,8 @@ Structural truth: **the images are immutable**; the repo defines the deployment.
 
 - App/config changes → `git pull && up -d --build && curl -s http://localhost/up` + smoke
   login. Both images rebuild from the same context/locks (no version skew).
-- Dependency bumps (`composer.lock` / `package-lock.json`): bump in dev, commit the two
-  lockfiles, rebuild. Never hand-edit locks in prod; never `up --build` dirty.
+- Dependency bumps (`composer.lock` / `package-lock.json`): bump in dev, commit
+  both lockfiles, rebuild. Never hand-edit locks in prod; never `up --build` dirty.
 - Framework upgrade: treat like a dependency bump but re-check `bootstrap/app.php` /
   `config/database.php` against the new skeleton and re-run the config-defaults audit.
 - Base-image patch updates: free via rebuild (all tags are MAJOR.MINOR). Minor updates:

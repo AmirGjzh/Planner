@@ -2,7 +2,7 @@
 
 > Reference documentation. Read this before touching anything under `docker/`,
 > `laravel/compose.development.yml`, or the `.env.*` templates. Shared conventions
-> (secrets, healthchecks, wrappers) live in `docker/overview.md`.
+> (secrets, healthchecks, wrappers) live in `docker/shared-conventions.md`.
 
 ## Purpose and Audience
 
@@ -52,14 +52,14 @@ planner-development-redis (redis:8.10)
 ```
 
 Service names are DNS: `DB_HOST=mysql`, `REDIS_HOST=redis`. Only the workspace publishes
-host ports. Secrets arrive by compose interpolation, not `MYSQL_PWD` (see overview).
+host ports. Secrets arrive by compose interpolation, not `MYSQL_PWD` (see shared-conventions).
 
 ## Repository Layout (Docker Parts)
 
 ```
 /
-├── planner / planner-dev           command wrappers (see overview)
-├── .dockerignore                   61-line build-context filter (with comments)
+├── planner / planner-dev           command wrappers (see shared-conventions)
+├── .dockerignore                   build-context filter (with comments)
 ├── docker/development/php-cli/     Dockerfile (dev toolchain image)
 ├── docker/production/              prod images (see production.md)
 └── laravel/
@@ -68,14 +68,14 @@ host ports. Secrets arrive by compose interpolation, not `MYSQL_PWD` (see overvi
     ├── .env.development            committed dev template (source of truth)
     ├── .env                        real values, git-ignored
     ├── vite.config.js              container-specific Vite settings
-    └── .ai/skills/main-project/docker/  development.md + production.md + overview.md
+    └── .ai/skills/main-project/docker/  development.md + production.md + shared-conventions.md
 ```
 
 ## File-by-File
 
 ### `laravel/compose.development.yml`
 
-84-line single-file Compose v2 spec. Facts:
+Single-file Compose v2 spec. Facts:
 
 - **workspace**: no `env_file` — Laravel reads the bind-mounted `laravel/.env` directly.
   Only `APP_KEY` is enforced via compose `${APP_KEY:?Set APP_KEY in .env}` (must already be
@@ -91,7 +91,7 @@ host ports. Secrets arrive by compose interpolation, not `MYSQL_PWD` (see overvi
 
 ### `docker/development/php-cli/Dockerfile`
 
-48-line multi-stage toolchain image. Structure:
+Multi-stage toolchain image. Structure:
 
 - `FROM node:24 AS node`, `FROM composer:2.10 AS composer`, `FROM php:8.4-cli`.
 - apt installs only runtime deps: `libonig-dev libicu-dev libzip-dev libpng-dev libjpeg-dev
@@ -110,7 +110,7 @@ host ports. Secrets arrive by compose interpolation, not `MYSQL_PWD` (see overvi
 
 ### `laravel/.env.development`
 
-Committed template (46 lines). Real values live only in the git-ignored `.env`. Notable
+Committed template. Real values live only in the git-ignored `.env`. Notable
 defaults:
 
 - `APP_ENV=local`, `APP_DEBUG=true`, `LOG_LEVEL=debug`.
@@ -120,11 +120,11 @@ defaults:
   sessions while debugging.
 - Removed from stock Laravel: BROADCAST/QUEUE/FILESYSTEM/MEMCACHED/MAIL/AWS/VITE (each has a
   sane default or is unused).
-- Only four blanks to fill: `APP_KEY`, `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `REDIS_PASSWORD`.
+- Only these blanks to fill: `APP_KEY`, `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `REDIS_PASSWORD`.
 
 ### `vite.config.js`
 
-Three container-specific settings: `server.host: '0.0.0.0'` (reachable via the host port
+Container-specific settings: `server.host: '0.0.0.0'` (reachable via the host port
 —— Docker forwards to eth0, not loopback), `hmr.host: 'localhost'`, and
 `watch.usePolling: true` (reliable file-watching on the bind mount). Nothing else changes.
 
@@ -153,7 +153,7 @@ Keep the credential values in sync between compose interpolation and the workspa
 2. `git clone <repo-url> planner && cd planner`.
 3. Copy the template: `cp laravel/.env.development laravel/.env` (macOS/Linux) or
    `Copy-Item laravel/.env.development laravel/.env` (PowerShell).
-4. Fill the four blanks in `laravel/.env`. `APP_KEY` **must exist before the first `up`**
+4. Fill the blanks in `laravel/.env`. `APP_KEY` **must exist before the first `up`**
    (compose enforces it). Generate on the host:
    `printf 'base64:%s\n' "$(openssl rand -base64 32)"` (Windows: build the same from
    `[System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32)`).
@@ -179,7 +179,7 @@ All from the project root. `down` never deletes data.
 | Plain up | `./planner-dev up` |
 | Rebuild toolchain only | `docker compose -f laravel/compose.development.yml up -d --build` (only when the Dockerfile changes — reload app code for free via bind mount) |
 | Shell | `./planner-dev shell` |
-| Logs | `docker compose -f laravel/compose.development.yml logs -f <service>` |
+| Logs | `./planner-dev logs [service]` |
 
 **Never** `down -v` — it wipes the MySQL dev volume.
 

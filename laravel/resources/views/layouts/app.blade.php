@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() == 'fa' ? 'rtl' : 'ltr' }}">
-
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>{{ $title ?? config('app.name') }}</title>
 
@@ -13,10 +12,9 @@
     @livewireStyles
 </head>
 
-<body class="min-h-dvh flex flex-col mine-page-bg font-sans">
+<body class="mine-page-bg flex min-h-dvh flex-col font-sans">
     <x-mine.header />
     {{ $slot }}
     <x-mine.toast />
 </body>
-
 </html>

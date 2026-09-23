@@ -24,12 +24,12 @@ RUN pecl install redis && docker-php-ext-enable redis
 
 WORKDIR /var/www
 
-COPY laravel/ /var/www
-
 COPY --from=composer /usr/bin/composer /usr/local/bin/composer
+COPY laravel/composer.json laravel/composer.lock ./
+RUN composer install --no-dev --no-scripts --optimize-autoloader --no-interaction --no-progress --prefer-dist
 
-RUN composer install --no-dev --no-scripts --optimize-autoloader --no-interaction --no-progress --prefer-dist \
-    && php artisan package:discover --ansi
+COPY laravel/ .
+RUN php artisan package:discover --ansi
 
 FROM node:24 AS frontend
 
@@ -46,6 +46,7 @@ RUN npm run build
 FROM php:8.4-fpm AS production
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    libonig-dev \
     libicu-dev \
     libzip-dev \
     libpng-dev \

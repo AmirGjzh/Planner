@@ -6,7 +6,7 @@ paths:
 
 # Island
 
-Rules for the Alpine-driven filter/search/sort island pattern (page boost, used in UC-06/07/08).
+Rules for the Alpine-driven filter/search/sort island pattern (page-level rendering boost, used in UC-06/07/08).
 
 ## Build the filter/search/sort region as an `@island`
 
@@ -15,6 +15,7 @@ Rules for the Alpine-driven filter/search/sort island pattern (page boost, used 
 - Add `always: true` so CRUD actions (parent renders) also refresh the island.
 - **Modals must live OUTSIDE the island.** Wrap the list/sort/search in the island — not the modal conditionals.
 - Loading feedback: keep the real grid mounted and dim it (`wire:loading.delay.short.class="opacity-40"`) while a centered spinner overlays it (`wire:loading.delay.short` on an `absolute inset-0` wrapper). The container keeps its exact height so pagination doesn't jump. Don't swap a skeleton into the grid.
+- Persist filter/sort/search state on the page with `#[Url]` and call `resetPage()` whenever filters change — deep links and the back button stay correct.
 
 ## Pitfalls that silently break islands
 

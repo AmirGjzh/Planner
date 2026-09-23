@@ -5,7 +5,7 @@
 ])
 
 @php
-$active = $active || ($route && request()->routeIs($route));
+    $active = $active || ($route && request()->routeIs($route));
 @endphp
 
 <a
@@ -15,9 +15,9 @@ $active = $active || ($route && request()->routeIs($route));
     {{ $active ? 'aria-current="page"' : '' }}
 >
     <p @class([
-        "pt-1" => app()->isLocale('en'),
-        "pt-0.5" => app()->isLocale('fa'),
-        "text-sm font-medium"
+        'pt-1' => app()->isLocale('en'),
+        'pt-0.5' => app()->isLocale('fa'),
+        'text-sm font-medium',
     ])>
         {{ $slot }}
     </p>

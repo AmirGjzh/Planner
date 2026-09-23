@@ -1,6 +1,7 @@
 ---
 paths:
   - 'app/Actions/Dashboard/**'
+  - app/Enums/WorkloadLevel.php
 ---
 
 # Dashboard

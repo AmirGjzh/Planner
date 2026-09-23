@@ -3,19 +3,19 @@
 ])
 
 @if ($as === 'button')
-
-<button
-    type="button"
-    x-ref="trigger"
-    @mouseenter="show()"
-    @mouseleave="hide(150)"
-    @click.stop="toggle()"
-    @keydown.enter.prevent="toggle()"
-    @keydown.space.prevent="toggle()"
-    :aria-expanded="open"
-    aria-haspopup="menu"
-    {{ $attributes->merge([
-        'class' => '
+    <button
+        type="button"
+        x-ref="trigger"
+        @mouseenter="show()"
+        @mouseleave="hide(150)"
+        @click.stop="toggle()"
+        @keydown.enter.prevent="toggle()"
+        @keydown.space.prevent="toggle()"
+        :aria-expanded="open"
+        aria-haspopup="menu"
+        {{
+            $attributes->merge([
+                'class' => '
             inline-flex
             items-center
             justify-center
@@ -26,27 +26,28 @@
             transition-all
             duration-200
             ease-out
-        ',
-    ]) }}
->
-    {{ $slot }}
-</button>
+            ',
+            ])
+        }}
+    >
+        {{ $slot }}
+    </button>
 
 @else
-
-<div
-    x-ref="trigger"
-    @mouseenter="show()"
-    @mouseleave="hide(150)"
-    @click.stop="toggle()"
-    @keydown.enter.prevent="toggle()"
-    @keydown.space.prevent="toggle()"
-    tabindex="0"
-    role="button"
-    :aria-expanded="open"
-    aria-haspopup="menu"
-    {{ $attributes->merge([
-        'class' => '
+    <div
+        x-ref="trigger"
+        @mouseenter="show()"
+        @mouseleave="hide(150)"
+        @click.stop="toggle()"
+        @keydown.enter.prevent="toggle()"
+        @keydown.space.prevent="toggle()"
+        tabindex="0"
+        role="button"
+        :aria-expanded="open"
+        aria-haspopup="menu"
+        {{
+            $attributes->merge([
+                'class' => '
             inline-flex
             items-center
             justify-center
@@ -60,10 +61,11 @@
             ease-out
             flex-shrink-0
             whitespace-nowrap
-        ',
-    ]) }}
->
-    {{ $slot }}
-</div>
+            ',
+            ])
+        }}
+    >
+        {{ $slot }}
+    </div>
 
 @endif

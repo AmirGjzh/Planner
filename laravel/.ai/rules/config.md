@@ -9,7 +9,7 @@ Rules for `config/themes.php`.
 
 ## themes.php returns the full theme list; resolution lives in the component
 
-- `config('themes.name')` — flat array of all 8 themes: `ocean, forest, magic, safrron, amber, chocolate, gol-goli, midnight`.
+- `config('themes.name')` — flat array of theme slugs; the current list lives in `config/themes.php`, not here.
 - `config('themes.vars')` — map keyed by theme (`['ocean' => [...], ...]`), each element the theme's JSON minus its `name` key.
 - **No fallback/env-resolution logic in config/themes.php.** `name` is used (a) as the allowed-value list for validation (`Rule::in(config('themes.name'))`) and (b) to drive the theme dropdown in `profile.php`.
 

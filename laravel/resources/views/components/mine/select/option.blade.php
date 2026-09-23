@@ -21,7 +21,7 @@
     data-search="{{ $searchLabel }}"
     x-on:click="select($el.dataset.value, $el.dataset.label)"
     x-on:keydown="handleOptionKeydown($event)"
-    x-show="!search || $el.dataset.search.toLowerCase().includes(search.toLowerCase())"
+    x-show="! search || $el.dataset.search.toLowerCase().includes(search.toLowerCase())"
     :data-selected="state === $el.dataset.value ? 'true' : 'false'"
     :class="{
         'bg-(--mine-select-selected-bg)': state === $el.dataset.value,
@@ -34,20 +34,18 @@
         $height => $height !== 'h-12',
         'opacity-50 cursor-not-allowed' => $disabled,
     ])
-    @if($disabled) aria-disabled="true" @endif
+    @if ($disabled) aria-disabled="true" @endif
 >
     <div
         :class="state === $el.closest('[role=option]').dataset.value ? 'opacity-100 scale-100' : 'opacity-0 scale-75'"
         @class([
-            "mr-3" => app()->isLocale('en'),
-            "ml-3" => app()->isLocale('fa'),
-            "size-4 shrink-0 transition-all duration-200"
+            'mr-3' => app()->isLocale('en'),
+            'ml-3' => app()->isLocale('fa'),
+            'size-4 shrink-0 transition-all duration-200',
         ])
     >
         <x-mine.icon name="Check" size="16" weight="filled" />
     </div>
 
-    <span class="pt-1">
-        {{ $slot }}
-    </span>
+    <span class="pt-1"> {{ $slot }} </span>
 </li>

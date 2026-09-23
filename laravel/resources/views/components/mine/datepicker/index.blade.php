@@ -53,7 +53,7 @@
                 if (this.open) return
                 if (this.mode === 'single' && this.state) {
                     const d = new Date(this.state + 'T00:00:00')
-                    if (!isNaN(d.getTime())) {
+                    if (! isNaN(d.getTime())) {
                         this.anchor = this.fa
                             ? Jalali.toGregorian(Jalali.getPersian(d).year, Jalali.getPersian(d).month, 1)
                             : new Date(d.getFullYear(), d.getMonth(), 1)
@@ -61,7 +61,7 @@
                 }
                 if (this.mode === 'range' && this.state?.start) {
                     const d = new Date(this.state.start + 'T00:00:00')
-                    if (!isNaN(d.getTime())) {
+                    if (! isNaN(d.getTime())) {
                         this.anchor = this.fa
                             ? Jalali.toGregorian(Jalali.getPersian(d).year, Jalali.getPersian(d).month, 1)
                             : new Date(d.getFullYear(), d.getMonth(), 1)
@@ -250,7 +250,7 @@
                 }
                 this.close()
             } else if (this.mode === 'range') {
-                if (!this.state?.start || (this.state.start && this.state.end)) {
+                if (! this.state?.start || (this.state.start && this.state.end)) {
                     this.state = { start: cell.iso, end: null }
                 } else {
                     let start = this.state.start
@@ -269,21 +269,21 @@
         },
 
         get hasState() {
-            if (!this.state) return false
+            if (! this.state) return false
             if (typeof this.state === 'string') return this.state !== ''
             if (typeof this.state === 'object') return !!(this.state.start || this.state.end)
             return false
         },
 
         get triggerLabel() {
-            if (!this.hasState) return this.mode === 'range' ? (this.fa ? this.t.select_range : 'Select a range') : (this.fa ? this.t.select_date : 'Select a date')
+            if (! this.hasState) return this.mode === 'range' ? (this.fa ? this.t.select_range : 'Select a range') : (this.fa ? this.t.select_date : 'Select a date')
             if (this.mode === 'single') return this.formatDate(this.state)
             if (this.mode === 'range') return this.formatRange(this.state?.start, this.state?.end)
             return this.fa ? this.t.select_date : 'Select a date'
         },
 
         formatDate(iso) {
-            if (!iso) return null
+            if (! iso) return null
             const date = new Date(iso + 'T00:00:00')
             if (isNaN(date.getTime())) return null
             const today = new Date()
@@ -301,9 +301,9 @@
         },
 
         formatRange(startISO, endISO) {
-            if (!startISO) return this.fa ? this.t.select_range : 'Select a range'
+            if (! startISO) return this.fa ? this.t.select_range : 'Select a range'
             const startDate = new Date(startISO + 'T00:00:00')
-            if (!endISO) return this.formatDate(startISO)
+            if (! endISO) return this.formatDate(startISO)
             const endDate = new Date(endISO + 'T00:00:00')
             if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return this.fa ? this.t.select_range : 'Select a range'
 
@@ -337,7 +337,7 @@
         },
 
         toggle() {
-            this.open = !this.open
+            this.open = ! this.open
         },
 
         close() {
@@ -352,10 +352,8 @@
     data-slot="datepicker"
     {{ $attributes->class(['w-full']) }}
 >
-    @if($label)
-        <label class="mb-2 block text-sm font-medium mine-text-primary">
-            {{ $label }}
-        </label>
+    @if ($label)
+        <label class="mine-text-primary mb-2 block text-sm font-medium"> {{ $label }} </label>
     @endif
 
     <div class="relative">
@@ -369,38 +367,47 @@
             @class([
                 'group flex items-center justify-between w-full px-4 rounded-xl border-2 transition-all duration-200 ease-out cursor-pointer',
                 $height => true,
-                'bg-(--mine-input-bg)' => !$hasError,
+                'bg-(--mine-input-bg)' => ! $hasError,
                 'bg-(--mine-input-error-bg)' => $hasError,
-                'border-(--mine-input-border)' => !$hasError,
+                'border-(--mine-input-border)' => ! $hasError,
                 'border-(--mine-input-error-border)' => $hasError,
-                'data-open:border-(--mine-input-border-focus) focus-visible:border-(--mine-input-border-focus)' => !$hasError,
+                'data-open:border-(--mine-input-border-focus) focus-visible:border-(--mine-input-border-focus)' => ! $hasError,
                 'data-open:border-(--mine-input-error-border) focus-visible:border-(--mine-input-error-border)' => $hasError,
-                'data-open:ring-4 data-open:ring-(--mine-input-ring-focus)' => !$hasError,
+                'data-open:ring-4 data-open:ring-(--mine-input-ring-focus)' => ! $hasError,
                 'data-open:ring-4 data-open:ring-(--mine-input-error-ring)' => $hasError,
-                'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-(--mine-input-ring-focus)' => !$hasError,
+                'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-(--mine-input-ring-focus)' => ! $hasError,
                 'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-(--mine-input-error-ring)' => $hasError,
             ])
         >
-            @if($leftIcon)
-                <x-mine.icon :name="$leftIcon" size="20" weight="filled" @class([
-                    "mr-2" => app()->isLocale('en'),
-                    "ml-2" => app()->isLocale('fa'),
-                    "size-5 shrink-0",
-                    'text-(--mine-input-icon)' => !$hasError,
-                    'text-(--mine-input-error-icon)' => $hasError,
-                    'group-data-open:text-(--mine-input-border-focus)' => !$hasError,
-                    'group-data-open:text-(--mine-input-error-border)' => $hasError,
-                ]) />
-            @elseif($showIcon)
-                <x-mine.icon name="calendar" variant="mini" @class([
-                    "mr-2" => app()->isLocale('en'),
-                    "ml-2" => app()->isLocale('fa'),
-                    "size-5 shrink-0",
-                    'text-(--mine-input-icon)' => !$hasError,
-                    'text-(--mine-input-error-icon)' => $hasError,
-                    'group-data-open:text-(--mine-input-border-focus)' => !$hasError,
-                    'group-data-open:text-(--mine-input-error-border)' => $hasError,
-                ]) />
+            @if ($leftIcon)
+                <x-mine.icon
+                    :name="$leftIcon"
+                    size="20"
+                    weight="filled"
+                    @class([
+                        'mr-2' => app()->isLocale('en'),
+                        'ml-2' => app()->isLocale('fa'),
+                        'size-5 shrink-0',
+                        'text-(--mine-input-icon)' => ! $hasError,
+                        'text-(--mine-input-error-icon)' => $hasError,
+                        'group-data-open:text-(--mine-input-border-focus)' => ! $hasError,
+                        'group-data-open:text-(--mine-input-error-border)' => $hasError,
+                    ])
+                />
+            @elseif ($showIcon)
+                <x-mine.icon
+                    name="calendar"
+                    variant="mini"
+                    @class([
+                        'mr-2' => app()->isLocale('en'),
+                        'ml-2' => app()->isLocale('fa'),
+                        'size-5 shrink-0',
+                        'text-(--mine-input-icon)' => ! $hasError,
+                        'text-(--mine-input-error-icon)' => $hasError,
+                        'group-data-open:text-(--mine-input-border-focus)' => ! $hasError,
+                        'group-data-open:text-(--mine-input-error-border)' => $hasError,
+                    ])
+                />
             @endif
 
             <span
@@ -409,15 +416,23 @@
                 :class="hasState ? 'mine-text-primary' : 'text-(--mine-input-placeholder)'"
             ></span>
 
-            <div :class="open ? 'rotate-180' : ''" @class([
-                "-mr-1" => app()->isLocale('en'),
-                "-ml-1" => app()->isLocale('fa'),
-                "shrink-0 transition-transform duration-200"
-            ])>
-                <x-mine.icon name="ChevronExpandY" size="16" weight="filled" @class([
-                    'text-(--mine-input-icon)' => !$hasError,
-                    'text-(--mine-input-error-icon)' => $hasError,
-                ]) />
+            <div
+                :class="open ? 'rotate-180' : ''"
+                @class([
+                    '-mr-1' => app()->isLocale('en'),
+                    '-ml-1' => app()->isLocale('fa'),
+                    'shrink-0 transition-transform duration-200',
+                ])
+            >
+                <x-mine.icon
+                    name="ChevronExpandY"
+                    size="16"
+                    weight="filled"
+                    @class([
+                        'text-(--mine-input-icon)' => ! $hasError,
+                        'text-(--mine-input-error-icon)' => $hasError,
+                    ])
+                />
             </div>
         </button>
 
@@ -432,11 +447,11 @@
             class="absolute {{ $positionClasses }} z-50 bg-(--mine-input-bg) rounded-xl border-2 border-(--mine-input-border) shadow-lg p-4"
             x-cloak
         >
-            <div class="flex items-center justify-between mb-2">
+            <div class="mb-2 flex items-center justify-between">
                 <button
                     type="button"
                     x-on:click="prevMonth()"
-                    class="p-1.5 rounded-lg mine-btn-icon transition-colors duration-200 mine-text-secondary focus-visible:outline-none"
+                    class="mine-btn-icon mine-text-secondary rounded-lg p-1.5 transition-colors duration-200 focus-visible:outline-none"
                 >
                     <x-mine.icon name="Angle{{ app()->isLocale('en') ? 'Left' : 'Right' }}" weight="filled" size="16" />
                 </button>
@@ -447,7 +462,10 @@
                             <template x-for="(m, i) in months" :key="i">
                                 <button
                                     type="button"
-                                    @click="setMonth(i); open = false"
+                                    @click="
+                                        setMonth(i);
+                                        open = false;
+                                    "
                                     :class="currentMonthIndex === i
                                         ? 'bg-(--mine-select-selected-bg) text-(--mine-select-selected-text) font-medium'
                                         : 'hover:bg-(--mine-select-bg-hover) mine-text-primary'"
@@ -458,8 +476,8 @@
                             </template>
                         </x-mine.datepicker.select>
                     </template>
-                    <template x-if="!selectableMonths">
-                        <span class="text-sm font-semibold mine-text-primary" x-text="monthName"></span>
+                    <template x-if="! selectableMonths">
+                        <span class="mine-text-primary text-sm font-semibold" x-text="monthName"></span>
                     </template>
 
                     <template x-if="selectableYears">
@@ -467,7 +485,10 @@
                             <template x-for="y in years" :key="y.value">
                                 <button
                                     type="button"
-                                    @click="setYear(y.value); open = false"
+                                    @click="
+                                        setYear(y.value);
+                                        open = false;
+                                    "
                                     :class="currentYear === y.value
                                         ? 'bg-(--mine-select-selected-bg) text-(--mine-select-selected-text) font-medium'
                                         : 'hover:bg-(--mine-select-bg-hover) mine-text-primary'"
@@ -478,56 +499,62 @@
                             </template>
                         </x-mine.datepicker.select>
                     </template>
-                    <template x-if="!selectableYears">
-                        <span class="text-sm font-medium mine-text-secondary" x-text="yearLabel"></span>
+                    <template x-if="! selectableYears">
+                        <span class="mine-text-secondary text-sm font-medium" x-text="yearLabel"></span>
                     </template>
                 </div>
 
                 <button
                     type="button"
                     x-on:click="nextMonth()"
-                    class="p-1.5 rounded-lg mine-btn-icon transition-colors duration-200 mine-text-secondary focus-visible:outline-none"
+                    class="mine-btn-icon mine-text-secondary rounded-lg p-1.5 transition-colors duration-200 focus-visible:outline-none"
                 >
                     <x-mine.icon name="Angle{{ app()->isLocale('fa') ? 'Left' : 'Right' }}" weight="filled" size="16" />
                 </button>
             </div>
 
-            <div class="grid justify-items-center grid-cols-7 mb-6">
+            <div class="mb-6 grid grid-cols-7 justify-items-center">
                 <template x-for="day in dayLabels" :key="day">
-                    <div class="flex items-center justify-center h-8">
-                        <span class="text-xs font-medium mine-text-secondary" x-text="day"></span>
+                    <div class="flex h-8 items-center justify-center">
+                        <span class="mine-text-secondary text-xs font-medium" x-text="day"></span>
                     </div>
                 </template>
             </div>
 
-            <div class="grid justify-items-center grid-cols-7">
+            <div class="grid grid-cols-7 justify-items-center">
                 <template x-for="cell in cells" :key="cell.key">
                     <div>
                         <template x-if="cell.blank">
-                            <div class="flex items-center justify-center h-11 w-11 mx-auto"></div>
+                            <div class="mx-auto flex h-11 w-11 items-center justify-center"></div>
                         </template>
-                        <template x-if="!cell.blank">
+                        <template x-if="! cell.blank">
                             <button
                                 type="button"
                                 x-on:click="selectDay(cell)"
                                 :class="{
-                                    'bg-(--mine-datepicker-pill-bg) text-(--mine-datepicker-pill-text) hover:bg-(--mine-datepicker-pill-bg-hover) shadow-sm font-semibold relative z-40': cell.isRangeStart || cell.isRangeEnd,
-                                    'hover:bg-(--mine-datepicker-day-bg-hover) mine-text-primary relative': !cell.isSelected && !cell.isInRange,
-                                    'text-(--mine-datepicker-day-dim-text) relative': !cell.isInMonth && !cell.isSelected && !cell.isInRange,
-                                    'bg-(--mine-datepicker-day-selected-bg) text-(--mine-datepicker-day-selected-text) hover:bg-(--mine-datepicker-day-selected-bg-hover) shadow-sm font-semibold relative z-40': cell.isSelected && !cell.isRangeStart && !cell.isRangeEnd
+                                    'bg-(--mine-datepicker-pill-bg) text-(--mine-datepicker-pill-text) hover:bg-(--mine-datepicker-pill-bg-hover) shadow-sm font-semibold relative z-40':
+                                        cell.isRangeStart || cell.isRangeEnd,
+                                    'hover:bg-(--mine-datepicker-day-bg-hover) mine-text-primary relative':
+                                        ! cell.isSelected && ! cell.isInRange,
+                                    'text-(--mine-datepicker-day-dim-text) relative':
+                                        ! cell.isInMonth && ! cell.isSelected && ! cell.isInRange,
+                                    'bg-(--mine-datepicker-day-selected-bg) text-(--mine-datepicker-day-selected-text) hover:bg-(--mine-datepicker-day-selected-bg-hover) shadow-sm font-semibold relative z-40':
+                                        cell.isSelected && ! cell.isRangeStart && ! cell.isRangeEnd,
                                 }"
-                                class="flex items-center justify-center h-11 w-11 hover:cursor-pointer mx-auto rounded-lg text-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--mine-datepicker-day-ring-focus)"
+                                class="mx-auto flex h-11 w-11 items-center justify-center rounded-lg text-sm transition-colors duration-200 hover:cursor-pointer focus-visible:ring-2 focus-visible:ring-(--mine-datepicker-day-ring-focus) focus-visible:outline-none"
                             >
                                 <span
-                                    class="flex items-center justify-center w-full"
-                                    :class="cell.isInRange && !cell.isRangeStart && !cell.isRangeEnd
-                                        ? 'relative z-30 h-9 bg-(--mine-datepicker-pill-between-bg) text-(--mine-datepicker-pill-between-text) ' + (cell.col === 0 ? 'rounded-s-lg' : cell.col === 6 ? 'rounded-e-lg' : 'rounded-none')
+                                    class="flex w-full items-center justify-center"
+                                    :class="cell.isInRange && ! cell.isRangeStart && ! cell.isRangeEnd
+                                        ? 'relative z-30 h-9 bg-(--mine-datepicker-pill-between-bg) text-(--mine-datepicker-pill-between-text) ' +
+                                          (cell.col === 0
+                                              ? 'rounded-s-lg'
+                                              : cell.col === 6
+                                                ? 'rounded-e-lg'
+                                                : 'rounded-none')
                                         : ''"
                                 >
-                                    <span
-                                        class="pt-1"
-                                        x-text="cell.dayText"
-                                    ></span>
+                                    <span class="pt-1" x-text="cell.dayText"></span>
                                 </span>
                             </button>
                         </template>
@@ -537,7 +564,7 @@
         </div>
     </div>
 
-    @if($name)
+    @if ($name)
         <x-mine.input.error :name="$name" />
     @endif
 </div>

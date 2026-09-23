@@ -167,7 +167,7 @@
                 this.state = this.state === cell.iso ? null : cell.iso
                 this.commit()
             } else if (this.mode === 'range') {
-                if (!this.state?.start || (this.state.start && this.state.end)) {
+                if (! this.state?.start || (this.state.start && this.state.end)) {
                     this.state = { start: cell.iso, end: null }
                 } else {
                     let start = this.state.start
@@ -192,7 +192,7 @@
         },
 
         get hasState() {
-            if (!this.state) return false
+            if (! this.state) return false
             if (typeof this.state === 'string') return this.state !== ''
             if (typeof this.state === 'object') return !!(this.state.start || this.state.end)
             return false
@@ -202,59 +202,68 @@
     {{ $attributes->merge(['class' => 'w-full']) }}
 >
     <div @class(['p-4', 'mine-card' => $card])>
-        <div class="flex items-center justify-between mb-2">
+        <div class="mb-2 flex items-center justify-between">
             <button
                 type="button"
                 x-on:click="prevMonth()"
-                class="p-1.5 rounded-lg mine-btn-icon transition-colors duration-200 mine-text-secondary focus-visible:outline-none"
+                class="mine-btn-icon mine-text-secondary rounded-lg p-1.5 transition-colors duration-200 focus-visible:outline-none"
             >
                 <x-mine.icon name="Angle{{ app()->isLocale('en') ? 'Left' : 'Right' }}" weight="filled" size="16" />
             </button>
 
             <div class="flex items-center gap-3">
-                <span class="text-sm font-semibold mine-text-primary" x-text="monthName"></span>
-                <span class="text-sm font-medium mine-text-secondary" x-text="yearLabel"></span>
+                <span class="mine-text-primary text-sm font-semibold" x-text="monthName"></span>
+                <span class="mine-text-secondary text-sm font-medium" x-text="yearLabel"></span>
             </div>
 
             <button
                 type="button"
                 x-on:click="nextMonth()"
-                class="p-1.5 rounded-lg mine-btn-icon transition-colors duration-200 mine-text-secondary focus-visible:outline-none"
+                class="mine-btn-icon mine-text-secondary rounded-lg p-1.5 transition-colors duration-200 focus-visible:outline-none"
             >
                 <x-mine.icon name="Angle{{ app()->isLocale('fa') ? 'Left' : 'Right' }}" weight="filled" size="16" />
             </button>
         </div>
 
-        <div class="grid justify-items-center grid-cols-7 mb-6">
+        <div class="mb-6 grid grid-cols-7 justify-items-center">
             <template x-for="day in dayLabels" :key="day">
-                <div class="flex items-center justify-center h-8">
-                    <span class="text-xs font-medium mine-text-secondary" x-text="day"></span>
+                <div class="flex h-8 items-center justify-center">
+                    <span class="mine-text-secondary text-xs font-medium" x-text="day"></span>
                 </div>
             </template>
         </div>
 
-        <div class="grid justify-items-center grid-cols-7">
+        <div class="grid grid-cols-7 justify-items-center">
             <template x-for="cell in cells" :key="cell.key">
                 <div>
                     <template x-if="cell.blank">
-                        <div class="flex items-center justify-center h-11 w-11 mx-auto"></div>
+                        <div class="mx-auto flex h-11 w-11 items-center justify-center"></div>
                     </template>
-                    <template x-if="!cell.blank">
+                    <template x-if="! cell.blank">
                         <button
                             type="button"
                             x-on:click="selectDay(cell)"
                             :class="{
-                                'bg-(--mine-datepicker-pill-bg) text-(--mine-datepicker-pill-text) hover:bg-(--mine-datepicker-pill-bg-hover) shadow-sm font-semibold relative z-40': cell.isRangeStart || cell.isRangeEnd,
-                                'hover:bg-(--mine-datepicker-day-bg-hover) mine-text-primary relative': !cell.isSelected && !cell.isInRange,
-                                'text-(--mine-datepicker-day-dim-text) relative': !cell.isInMonth && !cell.isSelected && !cell.isInRange,
-                                'bg-(--mine-datepicker-day-selected-bg) text-(--mine-datepicker-day-selected-text) hover:bg-(--mine-datepicker-day-selected-bg-hover) shadow-sm font-semibold relative z-40': cell.isSelected && !cell.isRangeStart && !cell.isRangeEnd
+                                'bg-(--mine-datepicker-pill-bg) text-(--mine-datepicker-pill-text) hover:bg-(--mine-datepicker-pill-bg-hover) shadow-sm font-semibold relative z-40':
+                                    cell.isRangeStart || cell.isRangeEnd,
+                                'hover:bg-(--mine-datepicker-day-bg-hover) mine-text-primary relative':
+                                    ! cell.isSelected && ! cell.isInRange,
+                                'text-(--mine-datepicker-day-dim-text) relative':
+                                    ! cell.isInMonth && ! cell.isSelected && ! cell.isInRange,
+                                'bg-(--mine-datepicker-day-selected-bg) text-(--mine-datepicker-day-selected-text) hover:bg-(--mine-datepicker-day-selected-bg-hover) shadow-sm font-semibold relative z-40':
+                                    cell.isSelected && ! cell.isRangeStart && ! cell.isRangeEnd,
                             }"
-                            class="flex items-center justify-center h-11 w-11 hover:cursor-pointer mx-auto rounded-lg text-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--mine-datepicker-day-ring-focus)"
+                            class="mx-auto flex h-11 w-11 items-center justify-center rounded-lg text-sm transition-colors duration-200 hover:cursor-pointer focus-visible:ring-2 focus-visible:ring-(--mine-datepicker-day-ring-focus) focus-visible:outline-none"
                         >
                             <span
-                                class="flex items-center justify-center w-full"
-                                :class="cell.isInRange && !cell.isRangeStart && !cell.isRangeEnd
-                                    ? 'relative z-30 h-9 bg-(--mine-datepicker-pill-between-bg) text-(--mine-datepicker-pill-between-text) ' + (cell.col === 0 ? 'rounded-s-lg' : cell.col === 6 ? 'rounded-e-lg' : 'rounded-none')
+                                class="flex w-full items-center justify-center"
+                                :class="cell.isInRange && ! cell.isRangeStart && ! cell.isRangeEnd
+                                    ? 'relative z-30 h-9 bg-(--mine-datepicker-pill-between-bg) text-(--mine-datepicker-pill-between-text) ' +
+                                      (cell.col === 0
+                                          ? 'rounded-s-lg'
+                                          : cell.col === 6
+                                            ? 'rounded-e-lg'
+                                            : 'rounded-none')
                                     : ''"
                             >
                                 <span class="pt-1" x-text="cell.dayText"></span>
@@ -265,10 +274,8 @@
             </template>
         </div>
 
-        <div class="mt-3 flex justify-center w-full">
-            <x-mine.button class="mine-btn-primary h-10! text-sm!"
-                type="button"
-                x-on:click="reset()">
+        <div class="mt-3 flex w-full justify-center">
+            <x-mine.button class="mine-btn-primary h-10! text-sm!" type="button" x-on:click="reset()">
                 {{ __('Reset') }}
             </x-mine.button>
         </div>

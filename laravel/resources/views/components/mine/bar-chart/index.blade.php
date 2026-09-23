@@ -70,7 +70,7 @@
                             $lastVisible = $visibleIndexes === [] ? null : $visibleIndexes[count($visibleIndexes) - 1];
                         @endphp
                         <div
-                            class="flex items-end shrink-0"
+                            class="flex shrink-0 items-end"
                             style="height: {{ $height }}px; width: {{ $barWidth }}px"
                             title="{{ implode(', ', $titleParts) }}"
                         >
@@ -101,9 +101,7 @@
                             class="absolute {{ $startClass }} end-0 border-t border-dashed border-(--mine-card-border)"
                             style="bottom: {{ $line['offset'] }}px"
                         >
-                            <span
-                                class="absolute -top-2.5 end-full me-2 text-end text-[10px] font-medium mine-text-secondary whitespace-nowrap"
-                            >
+                            <span class="mine-text-secondary absolute end-full -top-2.5 me-2 text-end text-[10px] font-medium whitespace-nowrap">
                                 {{ $line['label'] }}
                             </span>
                         </div>
@@ -114,7 +112,7 @@
             <div class="flex gap-3 {{ $gutterClass }} pe-2">
                 @foreach ($items as $item)
                     <div class="shrink-0 text-center" style="width: {{ $barWidth }}px">
-                        <span class="text-[11px] font-medium mine-text-secondary whitespace-nowrap">
+                        <span class="mine-text-secondary text-[11px] font-medium whitespace-nowrap">
                             {{ $item[$labelKey] ?? '' }}
                         </span>
                     </div>

@@ -31,7 +31,7 @@
             return this.selected.includes(String(value))
         },
         toggleSelect(value) {
-            if (!this.multiple) return
+            if (! this.multiple) return
             if (value === null || value === undefined) return
             value = String(value)
             const index = this.selected.indexOf(value)
@@ -51,7 +51,7 @@
         show() {
             if (this.triggerMode !== 'hover') return
             this.cancelHide()
-            if (this.group && !this.open) {
+            if (this.group && ! this.open) {
                 window.dispatchEvent(new CustomEvent('close-dropdowns-'+this.group))
             }
             this.open = true
@@ -73,10 +73,10 @@
                 this.show()
                 return
             }
-            if (this.group && !this.open) {
+            if (this.group && ! this.open) {
                 window.dispatchEvent(new CustomEvent('close-dropdowns-'+this.group))
             }
-            this.open = !this.open
+            this.open = ! this.open
         },
         close() {
             this.cancelHide()

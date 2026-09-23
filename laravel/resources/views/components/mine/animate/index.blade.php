@@ -27,7 +27,10 @@
             }).observe(el, { attributes: true, attributeFilter: ['class'] });
         }
     }"
-    x-intersect.once.margin.50px="revealed = true; $el.classList.add('mine-animate-visible')"
+    x-intersect.once.margin.50px="
+        revealed = true;
+        $el.classList.add('mine-animate-visible');
+    "
     {{ $attributes->merge(['class' => 'mine-animate']) }}
 >
     {{ $slot }}

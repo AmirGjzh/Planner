@@ -23,7 +23,7 @@ The Admin role is mainly limited to soft deletion and data management.
 
 ## 0.3 – MVP Scope (11 Use Cases)
 
-The MVP is organized into exactly 11 use cases (UC-01 … UC-11). Each part below maps 1:1 to a UC spec in Phase-2.
+The MVP is organized by use case (UC-01 … UC-11). Each part below maps 1:1 to a UC spec in Phase-2.
 
 ### UC-01 – Login
 

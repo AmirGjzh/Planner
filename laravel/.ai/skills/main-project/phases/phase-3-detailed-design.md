@@ -1,6 +1,6 @@
 # Phase 3 – Detailed Design
 
-Phase 3 covers three areas of design:
+Phase 3 covers these areas of design:
 
 1. **Logical Data Model** — Tables, columns, keys, constraints, enums, factories, seeders
 2. **Architecture Principles and Patterns** — Conventions and patterns to follow during implementation
@@ -12,7 +12,7 @@ Phase 3 covers three areas of design:
 
 ### Overview
 
-The database layer consists of 4 models, 4 migrations, 2 enums, 4 factories, and 1 seeder. All entities are user-scoped — each user owns their own tasks, categories, and plans.
+The database layer consists of models, migrations, enums, factories, and a seeder. All entities are user-scoped — each user owns their own tasks, categories, and plans.
 
 ### Entity Summary
 
@@ -70,7 +70,7 @@ Plan (0..1) ——— (0..N) Task
 - **Accessors:** `fullName()` — trimmed `"{firstname} {lastname}"`; `initials()` — multibyte-safe ZWNJ-separated initials from firstname+lastname (falls back to username)
 - **Relationships:** `plans()` (HasMany), `tasks()` (HasMany), `categories()` (HasMany)
 - **Soft deletes:** Yes (only entity with this)
-- **Locale note:** `locale` (`fa`/`en`) selects the UI language and is read by the shared `HasUser` trait `boot()`; `theme` selects the CSS variable set resolved by `mine/theme-vars`. See `.ai/rules/factories.md` and `.ai/rules/config.md`.
+- **Locale note:** `locale` (`fa`/`en`) selects the UI language and is read by the shared `HasUser` trait `boot()`; `theme` selects the CSS variable set resolved by `mine/theme-vars`. See `.ai/rules/pages.md` and `.ai/rules/config.md`.
 
 #### `categories`
 

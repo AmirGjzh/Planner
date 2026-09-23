@@ -190,15 +190,13 @@
     x-on:keydown.home.prevent="focusFirst()"
     x-on:keydown.end.prevent="focusLast()"
     x-on:keydown.escape.prevent="close()"
-    @if($disabled) aria-disabled="true" @endif
-    @if($invalid) aria-invalid="true" @endif
+    @if ($disabled) aria-disabled="true" @endif
+    @if ($invalid) aria-invalid="true" @endif
     role="listbox"
     {{ $attributes->class(['relative w-full']) }}
 >
     @if ($label)
-        <label class="mb-2 block text-sm font-medium mine-text-primary">
-            {{ $label }}
-        </label>
+        <label class="mine-text-primary mb-2 block text-sm font-medium"> {{ $label }} </label>
     @endif
 
     @if ($name)
@@ -220,27 +218,24 @@
             class="absolute {{ $positionClasses }} z-50 bg-(--mine-input-bg) rounded-xl border-2 border-(--mine-input-border) shadow-lg"
         >
             @if ($searchable)
-                <div class="flex items-center gap-2 px-4 py-2 border-b border-(--mine-input-border)">
-                    <x-mine.icon name="Magnifier" weight="filled" size="20" class="text-(--mine-input-icon) shrink-0" />
+                <div class="flex items-center gap-2 border-b border-(--mine-input-border) px-4 py-2">
+                    <x-mine.icon name="Magnifier" weight="filled" size="20" class="shrink-0 text-(--mine-input-icon)" />
                     <input
                         x-model="search"
                         data-select-search
                         type="text"
                         placeholder="{{ __('Search...') }}"
-                        class="w-full h-8 bg-transparent text-sm mine-text-primary placeholder:text-(--mine-input-placeholder) focus:outline-none focus-visible:outline-none"
+                        class="mine-text-primary h-8 w-full bg-transparent text-sm placeholder:text-(--mine-input-placeholder) focus:outline-none focus-visible:outline-none"
                     />
                 </div>
             @endif
 
-            <ul
-                class="max-h-60 overflow-y-auto mine-scrollbar p-1"
-                role="listbox"
-            >
+            <ul class="mine-scrollbar max-h-60 overflow-y-auto p-1" role="listbox">
                 {{ $slot }}
 
                 <li
                     x-show="isOpen && search !== '' && resultsCount === 0"
-                    class="flex items-center justify-center h-14 text-sm mine-text-secondary"
+                    class="mine-text-secondary flex h-14 items-center justify-center text-sm"
                 >
                     {{ __('No results found') }}
                 </li>

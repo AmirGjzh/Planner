@@ -2,7 +2,7 @@
 
 ## 2.1 Domain Entities
 
-We have four main entities in the system.
+We have these main entities in the system.
 
 ### 2.1.1 User
 
@@ -128,7 +128,7 @@ Main Flow:
 1. The logged-in user clicks Profile from the navigation bar.
 2. The system displays current profile information.
 3. The user may edit fields such as: first name, last name, date of birth, country, gender.
-4. The user may also choose a UI language (fa/en) and one of the 8 color themes.
+4. The user may also choose a UI language (fa/en) and a color theme.
 5. The user clicks Save.
 6. The system validates and stores the updated information and shows a success message.
 
@@ -284,7 +284,7 @@ Conceptual fields:
 - Date of Birth
 - Country
 - Gender
-- Theme (one of the 8 color themes)
+- Theme (one of the configured color themes)
 - Language (fa / en)
 - Account Creation Date
 - Account Status (Active / Deleted / Suspended)

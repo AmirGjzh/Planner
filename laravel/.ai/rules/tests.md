@@ -2,6 +2,7 @@
 paths:
   - 'tests/**'
   - 'tests/**/*.test.php'
+  - 'database/factories/**'
 ---
 
 # Tests
@@ -10,7 +11,7 @@ How tests are written (Pest), including the Persian-behavior rules.
 
 ## Write tests with Pest `it()` + `expect()`, LazilyRefreshDatabase
 
-- All tests are Pest `it('desc', function () {})` closures using the `expect()` expectation API (181 `it()`, zero PHPUnit classes).
+- All tests are Pest `it('desc', function () {})` closures using the `expect()` expectation API — no PHPUnit classes.
 - DB reset is centrally wired in `tests/Pest.php` via `pest()->use(LazilyRefreshDatabase::class)->in('Feature', 'Unit', '../resources/views')` — test files declare no trait.
 - Use factories for the principal subject user, and build owned records via relationship `->create()` (never real fixture/seed calls).
 - Actions are tested by real integration: `app(XxxAction::class)->execute(...)` against the in-memory SQLite DB.

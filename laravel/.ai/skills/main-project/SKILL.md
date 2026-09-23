@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-A Laravel 13 + Livewire 4 task planner. Users manage tasks, categories, and plans with date-range views, search/filter/sort, a tasks-needing-attention dashboard with a daily workload grid, and performance reports. All 11 use cases are delivered, with Persian/English support and 8 color themes.
+A Laravel 13 + Livewire 4 task planner. Users manage tasks, categories, and plans with date-range views, search/filter/sort, a tasks-needing-attention dashboard with a daily workload grid, and performance reports. All use cases are delivered, with Persian/English support and swappable color themes.
 
 ## When to use this skill
 
@@ -41,26 +41,26 @@ Pair it with the project rules in `.ai/rules/` (see the mandatory ritual in the 
 ## Implementation Status
 
 - **Completed:** UC-01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11
-- Working/verified state is summarized per use case in `phases/Phase-4.md`.
+- Working/verified state is summarized per use case in `phases/phase-4-implementation.md`.
 
 ## Docs Map
 
 | Path | Contents |
 | --- | --- |
-| `phases/Phase-0.md` | Vision & scope |
-| `phases/Phase-1.md` | Requirements (11 UCs, NFRs, acceptance criteria, MoSCoW) |
-| `phases/Phase-2.md` | Conceptual domain design + per-UC flows |
-| `phases/Phase-3.md` | Data model & architecture (schema, patterns, error/logging policy) |
-| `phases/Phase-4.md` | Implementation process (build/test/refactor/doc/accept) + delivered scope |
-| `docker/overview.md` | Shared docker conventions (healthchecks, env contract, wrappers) |
+| `phases/phase-0-vision-scope.md` | Vision & scope |
+| `phases/phase-1-requirements.md` | Requirements (UCs, NFRs, acceptance criteria, MoSCoW) |
+| `phases/phase-2-domain-design.md` | Conceptual domain design + per-UC flows |
+| `phases/phase-3-detailed-design.md` | Data model & architecture (schema, patterns, error/logging policy) |
+| `phases/phase-4-implementation.md` | Implementation process (build/test/refactor/doc/accept) + delivered scope |
+| `docker/shared-conventions.md` | Shared docker conventions (healthchecks, env contract, wrappers) |
 | `docker/development.md` | Dev workspace stack, runbook, troubleshooting |
 | `docker/production.md` | Prod nginx/php-fpm/mysql/redis stack, runbook, troubleshooting |
-| `git-setup/setup.md` | Two-remote git workflow (public `origin` / private `private`) |
-| `agentic/development.md` | Agentic environment: Boost install, opencode MCP bridge, skills via skills.sh, project rules |
+| `git-setup/workflow.md` | Two-remote git workflow (public `origin` / private `private`) |
+| `agentic/setup.md` | Agentic environment: Boost install, opencode MCP bridge, skills via skills.sh, project rules |
 
 ## Key Decisions
 
-Project-wide decisions that must not regress; per-UC scope decisions live in `phases/Phase-4.md` under each UC's Key decisions.
+Project-wide decisions that must not regress; per-UC scope decisions live in `phases/phase-4-implementation.md` under each UC's Key decisions.
 
 - **Build order is topological:** Plan CRUD (UC-07) before Task CRUD (UC-08); Reports (UC-11) last.
 - **UC specs** live in Phase-2 (design-time); delivered scope + durable decisions in Phase-4; the dated per-UC implementation journal was moved to git history.

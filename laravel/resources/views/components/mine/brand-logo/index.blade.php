@@ -20,7 +20,7 @@
     }
 @endphp
 
-@if($paths)
+@if ($paths)
     <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 1419 281"

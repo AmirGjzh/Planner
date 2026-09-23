@@ -2,6 +2,7 @@
 paths:
   - 'resources/views/pages/**'
   - 'resources/views/pages/**/*.test.php'
+  - 'app/Livewire/**'
 ---
 
 # Pages
@@ -23,6 +24,12 @@ Wire pages to routes with `Route::livewire('/path', 'pages::<name>')`. Do not bu
 Authenticated pages use `App\Livewire\Concerns\HasUser` (a `#[Computed] user()` returning `User::findOrFail(auth()->id())`) instead of resolving the user inline. The trait's `boot()` also calls `app()->setLocale($this->user->locale)`, so every page renders in the user's saved language on every Livewire request (initial + rehydration). Mounted pages pull the session `toast` and `$this->dispatch('toast', ...$toast)`.
 
 Guest pages (home/login/register) have no `HasUser` and use the app/.env locale; `login()`/logout/profile-delete set the locale explicitly only at those auth boundaries where no `HasUser` page has rendered yet.
+
+## Toast contract
+
+- Mutations that stay on the page dispatch directly: `$this->dispatch('toast', variant: ..., title: ...)` — `success|info`, 3000ms, bottom-center.
+- Flows that redirect flash `session('toast')`; the destination page's `mount()` re-dispatches it (login, home, profile). Only pages expected to receive a flash implement the re-dispatch — register deliberately has none (see `.ai/rules/auth.md`).
+- Pull the flash once in `mount()` and dispatch with `...$toast`.
 
 ## Co-locate page tests next to pages, ref `pages::<name>`
 

@@ -3,13 +3,13 @@
 ])
 
 @php
-$placements = [
-    'bottom-start' => 'left-0 top-full mt-0 origin-top-left',
-    'bottom-end' => 'right-0 top-full mt-0 origin-top-right',
-    'top-start' => 'left-0 bottom-full mb-0 origin-bottom-left',
-    'top-end' => 'right-0 bottom-full mb-0 origin-bottom-right',
-];
-$position = $placements[$placement] ?? $placements['bottom-end'];
+    $placements = [
+        'bottom-start' => 'left-0 top-full mt-0 origin-top-left',
+        'bottom-end' => 'right-0 top-full mt-0 origin-top-right',
+        'top-start' => 'left-0 bottom-full mb-0 origin-bottom-left',
+        'top-end' => 'right-0 bottom-full mb-0 origin-bottom-right',
+    ];
+    $position = $placements[$placement] ?? $placements['bottom-end'];
 @endphp
 
 <div
@@ -27,20 +27,22 @@ $position = $placements[$placement] ?? $placements['bottom-end'];
     @keydown.up.prevent="focusPrev()"
     @keydown.home.prevent="focusFirst()"
     @keydown.end.prevent="focusLast()"
-    {{ $attributes->merge([
-        'class' => '
-            absolute
-            z-50
-            min-w-full w-max '.
+    {{
+        $attributes->merge([
+            'class' => '
+        absolute
+        z-50
+        min-w-full w-max '.
             $position.
             ' bg-(--mine-dropdown-bg)
-            rounded-xl
-            border-2
-            border-(--mine-dropdown-border)
-            shadow-lg
-            p-1
+        rounded-xl
+        border-2
+        border-(--mine-dropdown-border)
+        shadow-lg
+        p-1
         ',
-    ]) }}
+        ])
+    }}
 >
     {{ $slot }}
 </div>

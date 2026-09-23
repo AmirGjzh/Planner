@@ -4,10 +4,12 @@
     'size' => 24,
 ])
 
-{!! \App\Support\Reicon::svg(
-    $name,
-    $weight,
-    $size,
-    trim((string) $attributes->get('class')),
-    $attributes->except('class')->getAttributes(),
-) !!}
+{!!
+    \App\Support\Reicon::svg(
+        $name,
+        $weight,
+        $size,
+        trim((string) $attributes->get('class')),
+        $attributes->except('class')->getAttributes(),
+    )
+!!}

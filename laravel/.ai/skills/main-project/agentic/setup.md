@@ -14,7 +14,7 @@ How this project's AI-agent environment is set up: Laravel Boost, the OpenCode M
 
 ## Laravel Boost
 
-[Boost](https://github.com/laravel/boost) is Laravel's agent toolkit: AI guidelines, agent skills, and an MCP server with app absumption tools plus a >17,000-document Laravel search API.
+[Boost](https://github.com/laravel/boost) is Laravel's agent toolkit: AI guidelines, agent skills, and an MCP server with app introspection tools plus a >17,000-document Laravel search API.
 
 ### Install (one-time)
 

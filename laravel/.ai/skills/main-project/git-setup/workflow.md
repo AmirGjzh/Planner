@@ -1,4 +1,4 @@
-# Project Setup
+# Two-Remote Git Workflow
 
 This project uses two GitHub repositories:
 

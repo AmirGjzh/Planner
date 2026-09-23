@@ -2,7 +2,7 @@
 
 ## 1.1 – User Stories
 
-The stories below are grouped into the 11 use cases (UC-01 … UC-11), in topological order.
+The stories below are grouped by use case (UC-01 … UC-11), in topological order.
 
 ### UC-01 – Login
 
@@ -107,11 +107,11 @@ As a user, I want to select a time range and see my performance — tasks create
 
 - The UI ships in two languages: English and Persian (fa).
 - Persian mode renders with the Jalali calendar, Persian digits, and a full RTL layout.
-- Users pick a language and one of 8 color themes from their profile.
+- Users pick a language and a color theme from their profile.
 
 ## 1.3 – Acceptance Criteria
 
-The acceptance criteria are grouped into the 11 use cases (UC-01 … UC-11), in topological order.
+The acceptance criteria are grouped by use case (UC-01 … UC-11), in topological order.
 
 > **Rate limiting:** write and auth actions are rate-limited per-Action with the key shapes in `.ai/rules/actions.md`. This applies to UC-01, 02, 03 (profile update), 06, 07, and 08; UC-04 (account delete) and UC-05 (logout) are exempt.
 

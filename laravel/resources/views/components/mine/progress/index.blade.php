@@ -6,12 +6,12 @@
 
 @php
     $percent = min(100, max(0, $total > 0 ? ($progress / $total) * 100 : 0));
-    $trackVar = match($variant) {
+    $trackVar = match ($variant) {
         'gray' => '--mine-progress-gray-track',
         'danger' => '--mine-progress-danger-track',
         default => '--mine-progress-track',
     };
-    $fillVar = match($variant) {
+    $fillVar = match ($variant) {
         'gray' => '--mine-progress-gray-fill',
         'danger' => '--mine-progress-danger-fill',
         default => '--mine-progress-fill',

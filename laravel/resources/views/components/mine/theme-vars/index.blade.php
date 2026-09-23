@@ -3,11 +3,11 @@
 @endphp
 
 @if ($vars)
-<style>
-    :root {
-@foreach ($vars as $key => $value)
+    <style>
+        :root {
+            @foreach ($vars as $key => $value)
         --{{ $key }}: {{ $value }};
 @endforeach
-    }
-</style>
+        }
+    </style>
 @endif

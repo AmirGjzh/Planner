@@ -34,23 +34,19 @@
     $style = $variants[$variant];
 @endphp
 
-<div
-    {{ $attributes->class([
+<div {{
+    $attributes->class([
         'flex gap-3 rounded-xl border-2 p-4',
         $style['container'],
-    ]) }}
->
+    ])
+}}>
     <div class="{{ $style['icon-color'] }}">
         <x-mine.icon name="{{ $style['icon'] }}" size="24" />
     </div>
     <div class="pt-0.5">
-        @if($title)
-            <h3 class="text-sm font-bold {{ $style['title'] }}">
-                {{ $title }}
-            </h3>
+        @if ($title)
+            <h3 class="text-sm font-bold {{ $style['title'] }}">{{ $title }}</h3>
         @endif
-        <div class="mt-1 font-medium text-sm mine-text-secondary">
-            {{ $slot }}
-        </div>
+        <div class="mine-text-secondary mt-1 text-sm font-medium">{{ $slot }}</div>
     </div>
 </div>

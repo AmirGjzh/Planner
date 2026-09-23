@@ -13,19 +13,16 @@
 @endphp
 
 @if ($vertical)
-
     @if ($label)
         <div
-            class="flex flex-col items-center self-stretch mx-2 gap-2 w-6 transition-colors duration-300"
+            class="mx-2 flex w-6 flex-col items-center gap-2 self-stretch transition-colors duration-300"
             role="separator"
             aria-orientation="vertical"
             aria-label="{{ $label }}"
         >
             <div class="flex-1 w-px {{ $barClass }}" aria-hidden="true"></div>
 
-            <span class="text-sm font-medium mine-text-secondary whitespace-nowrap select-none">
-                {{ $label }}
-            </span>
+            <span class="mine-text-secondary text-sm font-medium whitespace-nowrap select-none"> {{ $label }} </span>
 
             <div class="flex-1 w-px {{ $barClass }}" aria-hidden="true"></div>
         </div>
@@ -37,29 +34,23 @@
         ></div>
     @endif
 
-@elseif($label)
+@elseif ($label)
+    <div
+        class="flex h-6 w-full items-center gap-4"
+        transition-colors
+        duration-200
+        role="separator"
+        aria-orientation="horizontal"
+        aria-label="{{ $label }}"
+    >
+        <div class="flex-1 h-px {{ $barClass }}" aria-hidden="true"></div>
 
-<div
-    class="flex items-center w-full gap-4 h-6" transition-colors duration-200
-    role="separator"
-    aria-orientation="horizontal"
-    aria-label="{{ $label }}"
->
-    <div class="flex-1 h-px {{ $barClass }}" aria-hidden="true"></div>
+        <span class="mine-text-secondary text-sm font-medium whitespace-nowrap select-none"> {{ $label }} </span>
 
-    <span class="text-sm font-medium mine-text-secondary whitespace-nowrap select-none">
-        {{ $label }}
-    </span>
-
-    <div class="flex-1 h-px {{ $barClass }}" aria-hidden="true"></div>
-</div>
+        <div class="flex-1 h-px {{ $barClass }}" aria-hidden="true"></div>
+    </div>
 
 @else
-
-<div
-    class="mine-separator w-full h-px {{ $barClass }}"
-    role="separator"
-    aria-orientation="horizontal"
-></div>
+    <div class="mine-separator w-full h-px {{ $barClass }}" role="separator" aria-orientation="horizontal"></div>
 
 @endif

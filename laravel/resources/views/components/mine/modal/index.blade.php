@@ -10,27 +10,27 @@
 ])
 
 @php
-$modalId = $id ?? 'modal-'.uniqid();
+    $modalId = $id ?? 'modal-'.uniqid();
 
-$widthClass = match ($width) {
-    'xs' => 'max-w-xs',
-    'sm' => 'max-w-sm',
-    'md' => 'max-w-md',
-    'lg' => 'max-w-lg',
-    'xl' => 'max-w-xl',
-    '2xl' => 'max-w-2xl',
-    '3xl' => 'max-w-3xl',
-    '4xl' => 'max-w-4xl',
-    '5xl' => 'max-w-5xl',
-    '6xl' => 'max-w-6xl',
-    '7xl' => 'max-w-7xl',
-    default => 'max-w-lg',
-};
+    $widthClass = match ($width) {
+        'xs' => 'max-w-xs',
+        'sm' => 'max-w-sm',
+        'md' => 'max-w-md',
+        'lg' => 'max-w-lg',
+        'xl' => 'max-w-xl',
+        '2xl' => 'max-w-2xl',
+        '3xl' => 'max-w-3xl',
+        '4xl' => 'max-w-4xl',
+        '5xl' => 'max-w-5xl',
+        '6xl' => 'max-w-6xl',
+        '7xl' => 'max-w-7xl',
+        default => 'max-w-lg',
+    };
 
-$positionClass = match ($position) {
-    'top' => 'items-start pt-16',
-    default => 'items-center',
-};
+    $positionClass = match ($position) {
+        'top' => 'items-start pt-16',
+        default => 'items-center',
+    };
 @endphp
 
 <div
@@ -82,12 +82,7 @@ $positionClass = match ($position) {
     {{ $attributes->merge(['class' => 'inline-block overscroll-contain']) }}
 >
     <template x-teleport="body">
-        <div
-            x-show="isOpen"
-            class="fixed inset-0 z-100 overflow-y-auto"
-            role="dialog"
-            aria-modal="true"
-        >
+        <div x-show="isOpen" class="fixed inset-0 z-100 overflow-y-auto" role="dialog" aria-modal="true">
             <div
                 x-show="isOpen"
                 x-transition:enter="transition ease-out duration-300"
