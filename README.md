@@ -25,42 +25,44 @@ You only need **Docker with Docker Compose** (any recent version) and **Git** �
 
 ### Set it up
 
-1. Clone the project:
-   ```bash
-   git clone <your-repo-url> planner
-   cd planner
-   ```
+**1. Clone the project**
 
-2. Copy the production settings template:
-   ```bash
-   cp laravel/.env.production laravel/.env
-   ```
+```bash
+git clone <your-repo-url> planner
+cd planner
+```
 
-3. Fill in the required values in `laravel/.env` (leave everything else as-is). If any of them is missing, the start command stops right away and tells you which one:
-   - `APP_KEY` — the security key: `base64:` followed by a 32-byte key (44 characters). Generate one with:
-     ```bash
-     printf 'base64:%s\n' "$(openssl rand -base64 32)"
-     ```
-   - `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `REDIS_PASSWORD` — any passwords you like.
+**2. Create your settings file**
 
-4. Start it up (the first run is slower — everything needs to download and build):
-   ```bash
-   ./planner up
-   ```
+```bash
+cp laravel/.env.production laravel/.env
+```
 
-That's it.
+**3. Add the secrets** — open `laravel/.env` and fill these (leave everything else as-is). If any is missing, the start command stops immediately and tells you which one:
+
+- `APP_KEY` — the security key. Generate one with:
+
+  ```bash
+  printf 'base64:%s\n' "$(openssl rand -base64 32)"
+  ```
+
+- `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `REDIS_PASSWORD` — invent any passwords you like.
+
+**4. Start it up**
+
+```bash
+./planner up
+```
+
+> [!TIP]
+> The first run is slower than usual — Docker downloads base images and builds the app. Later starts are fast.
 
 ### Make sure it's healthy
 
-1. Check the services:
-   ```bash
-   ./planner ps
-   ```
-   You should see `php-fpm`, `nginx`, `mysql`, `redis` — all `Up` / `running` / `healthy`.
-
-2. Open **http://localhost** — the app should load.
-3. Register an account and log in.
-4. Bonus check: **http://localhost/up** should return `200`.
+- `./planner ps` — every service (`php-fpm`, `nginx`, `mysql`, `redis`) is `Up` / `running` / `healthy`
+- **http://localhost** loads the app
+- You can register an account and log in
+- **http://localhost/up** returns `200`
 
 ## ▶️ Usage
 
@@ -75,23 +77,27 @@ That's it.
 | `./planner start` | Turns the app back on, right where it was | After you paused it with `stop` |
 | `./planner stop` | Pauses the app and frees resources | Long breaks — starts back up fast |
 | `./planner up` | Starts the app from the already-built version | A plain start, e.g. after `down` |
-| `./planner build && ./planner up` | Builds the newest code, then starts it | After every update |
 | `./planner down` | Stops everything and removes temporary stuff | A clean slate; `up` brings it back |
+| `./planner build && ./planner up` | Builds the newest code, then starts it | After every update |
 
-A few things worth keeping in mind:
+**A few things worth keeping in mind:**
 
 - `start` / `stop` are your everyday pair. `down` / `up` are the rare, "cold" pair.
 - `up` alone never pulls in new code — that's what `build` is for. Run `build` first after every update.
-- **Never** run `./planner down -v` — the `-v` deletes your saved data.
 - After your computer restarts, the app comes back up by itself.
 - Run `./planner` with no arguments to see the full command list anytime.
 
 **Updating:**
+
 ```bash
 git pull
 ./planner build && ./planner up
 ```
-Then just repeat the health check above — your data stays untouched.
+
+Then repeat the health check above — your data stays untouched.
+
+> [!WARNING]
+> Never run `./planner down -v` — the `-v` deletes your saved data.
 
 ## 🧑‍💻 Developing This App
 
@@ -99,62 +105,79 @@ Development also runs in Docker — one container has PHP, Composer, and Node al
 
 ### Set it up
 
-1. Clone the project (same as above):
-   ```bash
-   git clone <your-repo-url> planner
-   cd planner
-   ```
+**1. Clone the project** (same as above)
 
-2. Copy the dev settings template:
-   ```bash
-   cp laravel/.env.development laravel/.env
-   ```
+```bash
+git clone <your-repo-url> planner
+cd planner
+```
 
-3. Fill in the same required values as production (`APP_KEY`, `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `REDIS_PASSWORD`) — set `APP_KEY` before the first start, the container won't run without it.
+**2. Create your settings file**
 
-4. Start the dev setup (first run is slow, same reason as before):
-   ```bash
-   ./planner-dev up
-   ```
+```bash
+cp laravel/.env.development laravel/.env
+```
 
-5. Open a terminal inside the container:
-   ```bash
-   ./planner-dev shell
-   ```
+**3. Add the same secrets** as production (`APP_KEY`, `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `REDIS_PASSWORD`) — set `APP_KEY` before the first start; the container won't run without it.
 
-6. Install the dependencies once (they live in `vendor/` / `node_modules/` and persist between restarts):
-   ```bash
-   composer install
-   npm install
-   ```
+**4. Start the dev containers**
 
-Nothing starts automatically after this — the container just waits for you to start the servers yourself.
+```bash
+./planner-dev up
+```
+
+**5. Open a shell inside the container**
+
+```bash
+./planner-dev shell
+```
+
+**6. Install the dependencies** — run these once per fresh clone, inside that shell (they land in `vendor/` and `node_modules/` on the shared folder, so they persist between restarts):
+
+```bash
+composer install
+npm install
+```
+
+**7. Optional — AI tooling setup** (also inside the shell)
+
+```bash
+php artisan boost:install
+```
+
+This repo ships [Laravel Boost](https://laravel.com/docs/boost) as a dev dependency; run this if you use AI coding agents with the project. Skip it otherwise.
+
+> [!NOTE]
+> If a fresh clone ever needs more one-time installs (new packages, extra tooling), they'll be listed right here in this step.
+
+Nothing starts automatically after this — the container is waiting for you to start the servers yourself.
 
 ### Start developing
 
-The quick way: `composer run dev` starts the app server, the queue worker, and Vite all at once. Or, one at a time:
+The easy way — one command starts the app server, the queue worker, and Vite together:
 
-1. Start the app server (`--host=0.0.0.0` is required — Docker forwards ports to the container's network interface, so a server bound to `127.0.0.1` is invisible from your browser):
-   ```bash
-   php artisan serve --host=0.0.0.0 --port=8000
-   ```
+```bash
+composer run dev
+```
 
-2. Optionally start the front-end live-reload tool (Vite already binds `0.0.0.0`, no flag needed):
-   ```bash
-   npm run dev
-   ```
+Then open **http://localhost:8000** and register an account to try the real features. (**http://localhost:8000/up** should return `200`.)
 
-3. Open **http://localhost:8000** and register an account to try the real features.
-4. Bonus check: **http://localhost:8000/up** should return `200`.
+Prefer running things one at a time? Use a second terminal inside the container (`./planner-dev shell`):
+
+```bash
+php artisan serve --host=0.0.0.0 --port=8000   # the 0.0.0.0 is required inside Docker
+npm run dev                                     # optional — Vite live reload (already binds 0.0.0.0)
+```
 
 ### Day-to-day
 
 ```bash
 ./planner-dev up
 ./planner-dev shell
+composer run dev
 ```
 
-Then run the two servers above. Edit code, refresh the browser — changes show up instantly, no rebuild needed. After a database change, run `php artisan migrate` inside the container. Run the tests anytime with `php artisan test` — they're fast and don't even touch the database.
+Edit code, refresh the browser — changes show up instantly, no rebuild needed. After a database change, run `php artisan migrate` inside the container. Run the tests anytime with `php artisan test` — they're fast and don't even touch the database.
 
 **Stop, start, and reset** — same safety rules as production:
 
@@ -163,11 +186,14 @@ Then run the two servers above. Edit code, refresh the browser — changes show 
 | `./planner-dev start` | Turns dev back on, right where it was | After you paused it with `stop` |
 | `./planner-dev stop` | Pauses dev and frees resources | Long breaks |
 | `./planner-dev up` | Starts dev from the already-built setup | A plain start — e.g. after `down` |
-| `./planner-dev build && ./planner-dev up` | Rebuilds the tool container, then starts | Only after a setup change (rare) |
 | `./planner-dev down` | Stops everything and removes temporary stuff | A clean slate; `up` brings it back |
+| `./planner-dev build && ./planner-dev up` | Rebuilds the tool container, then starts | Only after a setup change (rare) |
 | `./planner-dev shell` | Opens a terminal in the workspace container | Your daily entry point |
 
-**Never** run `./planner-dev down -v` — the `-v` deletes your database. Run `./planner-dev` with no arguments to see the full list anytime.
+Run `./planner-dev` with no arguments to see the full list anytime.
+
+> [!WARNING]
+> Never run `./planner-dev down -v` — the `-v` deletes your database.
 
 ### One settings file for both
 
