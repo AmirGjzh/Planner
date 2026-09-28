@@ -73,16 +73,16 @@ new class extends Component
             ->select(['id', 'name', 'description', 'start_date', 'finish_date', 'done', 'user_id', 'created_at'])
             ->where('user_id', auth()->id())
             ->when($this->search, fn ($q) => $q->whereRaw('LOWER(name) LIKE ?', [Str::lower('%'.$this->search.'%')]))
-            ->when($this->range_filter['start'] ?? null, fn ($q) => $q->whereDate('finish_date', '>=', $this->range_filter['start']))
-            ->when($this->range_filter['end'] ?? null, fn ($q) => $q->whereDate('start_date', '<=', $this->range_filter['end']))
+            ->when($this->range_filter['start'] ?? null, fn ($q) => $q->where('finish_date', '>=', $this->range_filter['start']))
+            ->when($this->range_filter['end'] ?? null, fn ($q) => $q->where('start_date', '<=', $this->range_filter['end']))
             ->withCount([
                 'tasks',
                 'tasks as tasks_done_count' => fn ($q) => $q->where('done', true),
             ])
             ->withSum('tasks', 'estimated_minutes')
-            ->when($this->status_filter === 'active', fn ($q) => $q->where('done', false)->whereDate('finish_date', '>=', now()))
+            ->when($this->status_filter === 'active', fn ($q) => $q->where('done', false)->where('finish_date', '>=', now()->toDateString()))
             ->when($this->status_filter === 'completed', fn ($q) => $q->where('done', true))
-            ->when($this->status_filter === 'overdue', fn ($q) => $q->where('done', false)->whereDate('finish_date', '<', now()))
+            ->when($this->status_filter === 'overdue', fn ($q) => $q->where('done', false)->where('finish_date', '<', now()->toDateString()))
             ->when($this->sort === 'name', fn ($q) => $q->orderBy('name'))
             ->when($this->sort === 'deadline', fn ($q) => $q->orderBy('finish_date')->orderBy('id'))
             ->when($this->sort === 'latest', fn ($q) => $q->latest())

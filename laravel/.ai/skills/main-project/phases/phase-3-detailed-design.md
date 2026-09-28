@@ -41,6 +41,8 @@ Plan (0..1) ——— (0..N) Task
 | `plan_id` on `tasks` | `restrictOnDelete` | Cannot delete a plan that still has tasks |
 | `category_id` on `tasks` | `restrictOnDelete` | Cannot delete a category that still has tasks |
 
+**Index strategy:** every query is user-scoped first, so hot-path indexes are composites led by `user_id` (`tasks(user_id, task_date)` for workload/reports/date ranges, `tasks(user_id, done)` for the attention list/status filters) and the per-user unique composites `categories/plans(user_id, name)` — which also serve the `user_id` foreign keys, so no separate single-column `user_id` indexes exist. All columns are defined before indexes, and indexes before the FK constraints that rely on them (see `.ai/rules/migrations.md`).
+
 ### Tables and Columns
 
 #### `users`
@@ -55,9 +57,9 @@ Plan (0..1) ——— (0..N) Task
 | `lastname` | `string` | Nullable |
 | `birthday` | `date` | Nullable |
 | `country` | `string` | Nullable |
-| `gender` | `enum('male', 'female')` | Nullable |
-| `locale` | `enum('en', 'fa')` | Not null, default `fa` (stored as lowercase string, not cast) |
-| `theme` | `enum('ocean','magic','forest','chocolate','amber','safrron','midnight','gol-goli')` | Not null, default `ocean` (stored as string, not cast) |
+| `gender` | `string` | Nullable; values enforced by the `UserGender` enum cast |
+| `locale` | `string` | Not null, default `fa` (validated `in:['fa','en']`, not cast) |
+| `theme` | `string` | Not null, default `ocean` (validated against `config('themes.name')`, not cast) |
 | `deleted_at` | `timestamp` | Soft delete |
 | `email_verified_at` | `timestamp` | Nullable |
 | `remember_token` | `string` | Nullable |
@@ -77,7 +79,7 @@ Plan (0..1) ——— (0..N) Task
 | Column | Type | Constraints |
 |--------|------|-------------|
 | `id` | `bigint unsigned` | Primary key, auto-increment |
-| `name` | `string` | Unique, not null |
+| `name` | `string` | Not null, unique together with `user_id` |
 | `user_id` | `bigint unsigned` | Foreign key → `users.id`, cascade on delete |
 | `created_at` / `updated_at` | `timestamp` | Auto-managed |
 
@@ -92,11 +94,11 @@ Plan (0..1) ——— (0..N) Task
 | `id` | `bigint unsigned` | Primary key, auto-increment |
 | `title` | `string` | Not null |
 | `description` | `text` | Nullable |
-| `task_date` | `date` | Not null, indexed |
-| `estimated_minutes` | `integer` | Not null |
-| `priority` | `enum('low', 'medium', 'high')` | Default `'medium'` |
+| `task_date` | `date` | Not null, in composite index `(user_id, task_date)` |
+| `estimated_minutes` | `unsigned integer` | Not null |
+| `priority` | `string` | Default `'medium'`, values enforced by the `TaskPriority` enum cast |
 | `done` | `boolean` | Default `false` |
-| `day_before_alarm` | `integer` | Default `0` |
+| `day_before_alarm` | `unsigned small integer` | Default `0` |
 | `user_id` | `bigint unsigned` | Foreign key → `users.id`, cascade on delete |
 | `plan_id` | `bigint unsigned` | Foreign key → `plans.id`, restrict on delete, nullable |
 | `category_id` | `bigint unsigned` | Foreign key → `categories.id`, restrict on delete |
@@ -112,7 +114,7 @@ Plan (0..1) ——— (0..N) Task
 | Column | Type | Constraints |
 |--------|------|-------------|
 | `id` | `bigint unsigned` | Primary key, auto-increment |
-| `name` | `string` | Unique, not null |
+| `name` | `string` | Not null, unique together with `user_id` |
 | `description` | `text` | Nullable |
 | `start_date` | `date` | Not null |
 | `finish_date` | `date` | Not null |

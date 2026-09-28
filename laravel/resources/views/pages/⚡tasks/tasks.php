@@ -14,6 +14,7 @@ use App\Models\Category;
 use App\Models\Plan;
 use App\Models\Task;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -129,11 +130,11 @@ new class extends Component
             ->with('category:id,name', 'plan:id,name')
             ->where('user_id', $userId)
             ->when($this->search, fn ($q) => $q->whereRaw('LOWER(title) LIKE ?', [Str::lower('%'.$this->search.'%')]))
-            ->when($this->range_filter['start'] ?? null, fn ($q) => $q->whereDate('task_date', '>=', $this->range_filter['start']))
-            ->when($this->range_filter['end'] ?? null, fn ($q) => $q->whereDate('task_date', '<=', $this->range_filter['end']))
-            ->when($this->status_filter === 'active', fn ($q) => $q->where('done', false)->whereDate('task_date', '>=', $today))
+            ->when($this->range_filter['start'] ?? null, fn ($q) => $q->where('task_date', '>=', $this->range_filter['start']))
+            ->when($this->range_filter['end'] ?? null, fn ($q) => $q->where('task_date', '<=', $this->range_filter['end']))
+            ->when($this->status_filter === 'active', fn ($q) => $q->where('done', false)->where('task_date', '>=', $today->toDateString()))
             ->when($this->status_filter === 'completed', fn ($q) => $q->where('done', true))
-            ->when($this->status_filter === 'overdue', fn ($q) => $q->where('done', false)->whereDate('task_date', '<', $today))
+            ->when($this->status_filter === 'overdue', fn ($q) => $q->where('done', false)->where('task_date', '<', $today->toDateString()))
             ->when($this->category_filter, fn ($q) => $q->whereIn('category_id', $this->category_filter))
             ->when($this->plan_filter, fn ($q) => $q->whereIn('plan_id', $this->plan_filter))
             ->when($this->sort === 'date', fn ($q) => $q->orderBy('task_date'))
@@ -456,7 +457,7 @@ new class extends Component
             'add_date' => ['required', 'date_format:Y-m-d'],
             'add_estimated_minutes' => ['required', 'integer', 'min:1', 'max:1440'],
             'add_alarm_days' => ['required', 'integer', 'min:0', 'max:365'],
-            'add_priority' => ['required', 'string', 'in:low,medium,high'],
+            'add_priority' => ['required', Rule::enum(TaskPriority::class)],
             'add_category_id' => ['required', 'integer'],
             'add_plan_id' => ['nullable', 'integer'],
             'edit_title' => ['required', 'string', 'max:255'],
@@ -464,7 +465,7 @@ new class extends Component
             'edit_date' => ['required', 'date_format:Y-m-d'],
             'edit_estimated_minutes' => ['required', 'integer', 'min:1', 'max:1440'],
             'edit_alarm_days' => ['required', 'integer', 'min:0', 'max:365'],
-            'edit_priority' => ['required', 'string', 'in:low,medium,high'],
+            'edit_priority' => ['required', Rule::enum(TaskPriority::class)],
             'edit_category_id' => ['required', 'integer'],
             'edit_plan_id' => ['nullable', 'integer'],
         ];

@@ -23,8 +23,8 @@ final class ReportsAction
             ->first();
 
         $plans = $user->plans()
-            ->whereDate('start_date', '<=', $end)
-            ->whereDate('finish_date', '>=', $start)
+            ->where('start_date', '<=', $end)
+            ->where('finish_date', '>=', $start)
             ->selectRaw('
                 COUNT(*) as total,
                 COALESCE(SUM(CASE WHEN done = 1 THEN 1 ELSE 0 END), 0) as completed

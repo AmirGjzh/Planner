@@ -16,17 +16,20 @@ return new class extends Migration
             $table->string('title');
             $table->text('description')->nullable();
             $table->date('task_date');
-            $table->integer('estimated_minutes');
-            $table->enum('priority', ['low', 'medium', 'high'])->default('medium');
+            $table->unsignedInteger('estimated_minutes');
+            $table->string('priority')->default('medium');
             $table->boolean('done')->default(false);
-            $table->integer('day_before_alarm')->default(0);
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->index('user_id');
-            $table->foreignId('plan_id')->nullable()->constrained()->restrictOnDelete();
+            $table->unsignedSmallInteger('day_before_alarm')->default(0);
+            $table->foreignId('user_id');
+            $table->foreignId('plan_id')->nullable();
+            $table->foreignId('category_id');
+            $table->index(['user_id', 'task_date']);
+            $table->index(['user_id', 'done']);
             $table->index('plan_id');
-            $table->foreignId('category_id')->constrained()->restrictOnDelete();
             $table->index('category_id');
-            $table->index('task_date');
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
+            $table->foreign('plan_id')->references('id')->on('plans')->restrictOnDelete();
+            $table->foreign('category_id')->references('id')->on('categories')->restrictOnDelete();
             $table->timestamps();
         });
     }

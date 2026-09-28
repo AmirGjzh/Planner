@@ -1,11 +1,12 @@
 ---
 paths:
   - 'app/Actions/**'
+  - 'resources/views/pages/**'
 ---
 
 # Actions
 
-Rules for the domain-layer Action classes in `app/Actions/**`.
+Rules for the domain-layer Action classes in `app/Actions/**`. The "Indexed date filters" rule also applies to the query chains that live in Livewire pages.
 
 ## Rate-limit keys: `kebab-prefix:identifier`
 
@@ -40,3 +41,7 @@ All query/filter logic stays as Eloquent builder chains inside the Action.
 - Params: primitives and—when IP rate-limiting applies—a `Request`. Only injected dependency: `LoggerInterface` (constructor property promotion).
 - Returns plain values or `XxxResult` enums.
 - The project has no `app/Events`, no `dispatch()`/`ShouldQueue`/listeners, and no DTO/data classes — route results through the owning page Livewire component, never through events or queued jobs.
+
+## Indexed date filters
+
+Compare DATE columns with plain `where()`, never `whereDate()` — the grammar compiles it to `date(\`col\`) op ?`, which wraps the column in a function and makes composite indexes unusable. All task/plan date columns are already type DATE, so `where('task_date', '>=', $start)` is equivalent. Pass date-only values: `now()->toDateString()` / `$today->toDateString()` — `whereDate` used to truncate the Carbon value for you, and a raw `now()` carries a time component that would exclude same-day rows.

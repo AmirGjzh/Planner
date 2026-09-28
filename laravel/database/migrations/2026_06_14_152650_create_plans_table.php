@@ -18,9 +18,9 @@ return new class extends Migration
             $table->date('start_date');
             $table->date('finish_date');
             $table->boolean('done')->default(false);
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->index('user_id');
+            $table->foreignId('user_id');
             $table->unique(['user_id', 'name']);
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }
