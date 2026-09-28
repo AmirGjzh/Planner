@@ -6,6 +6,7 @@ use App\Enums\DeleteAccountResult;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -51,6 +52,7 @@ final class DeleteAccountAction
         Auth::logout();
         session()->invalidate();
         session()->regenerateToken();
+        Cookie::queue(Cookie::forget('session_hint'));
 
         $user->forceFill([
             'email' => 'deleted-user-'.$userId,

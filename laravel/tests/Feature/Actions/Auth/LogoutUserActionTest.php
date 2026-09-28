@@ -4,6 +4,7 @@ use App\Actions\Auth\LogoutUserAction;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Log;
 
 it('returns success and logs out the authenticated user', function () {
@@ -61,4 +62,21 @@ it('logs the logout event', function () {
         ->with('User logged out.', Mockery::on(
             fn (array $context) => $context['user_id'] === $user->id
         ));
+});
+
+it('forgets the session hint cookie on logout', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $request = Request::create('/logout', 'POST', server: ['REMOTE_ADDR' => '127.0.0.1']);
+    $request->setLaravelSession(app('session')->driver());
+
+    app(LogoutUserAction::class)->execute($request);
+
+    $queued = collect(Cookie::getQueuedCookies())
+        ->first(fn ($cookie) => $cookie->getName() === 'session_hint');
+
+    expect($queued)->not->toBeNull()
+        ->and($queued->getValue())->toBeNull()
+        ->and($queued->getExpiresTime())->toBeLessThan(time());
 });

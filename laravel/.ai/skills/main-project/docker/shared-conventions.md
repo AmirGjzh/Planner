@@ -14,10 +14,11 @@ and `production.md` reference it instead of repeating it.
 | Web | none (artisan serve) | — | `planner-nginx` (`nginx:1.30`) |
 | MySQL | `mysql:8.4` (official) | no host port, own volume | `planner-mysql` |
 | Redis | `redis:8.10` (official) | no host port | `planner-redis` |
+| Mail | `axllent/mailpit:v1.27` (SMTP capture + web UI) | `planner-development-mailpit` (UI :8025) | `planner-mailpit` (UI :8025) |
 | Build tools | `composer:2.10` + `node:24` (stages, never installed in-image) | both stacks | both stacks |
 
 Service names are the DNS hostnames inside the shared user network (`DB_HOST=mysql`,
-`REDIS_HOST=redis`). Compose project names are hard-coded in the compose files
+`REDIS_HOST=redis`, `MAIL_HOST=mailpit`). Compose project names are hard-coded in the compose files
 (`planner-development` / `planner`), so volume prefixes (`planner-development_`,
 `planner_`) do not depend on the checkout directory.
 
@@ -45,7 +46,9 @@ Service names are the DNS hostnames inside the shared user network (`DB_HOST=mys
 - All healthchecks are **exec-form** `CMD` (no shell): mysql does a real `mysql ... -e
   'SELECT 1'` round-trip (not `mysqladmin ping`, which passes even on failed auth), redis
   uses `redis-cli ping` (authed via `REDISCLI_AUTH`), php-fpm opens TCP 9000 via
-  `php -r fsockopen`, nginx hits `curl -fs http://127.0.0.1/up`.
+  `php -r fsockopen`, nginx hits `curl -fs http://127.0.0.1/up`. Mailpit is the one
+  exception in bookkeeping, not in form: its image ships a built-in exec-form
+  `HEALTHCHECK CMD ["/mailpit", "readyz"]`, so neither compose file declares one.
 - Boot order via `depends_on: condition: service_healthy`: mysql + redis → app → nginx
   (prod). Services do not start until dependencies pass health checks; mysql has
   `start_period: 30s` for slow first-boot init.

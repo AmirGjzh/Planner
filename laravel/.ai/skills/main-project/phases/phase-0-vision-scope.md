@@ -29,6 +29,7 @@ The MVP is organized by use case (UC-01 … UC-11). Each part below maps 1:1 to 
 
 - Sign in with email and password
 - Invalid credentials produce a clear error message
+- Recover a forgotten password via an emailed reset link
 
 ### UC-02 – Register
 

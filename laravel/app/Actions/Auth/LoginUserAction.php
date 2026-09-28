@@ -5,6 +5,7 @@ namespace App\Actions\Auth;
 use App\Enums\LoginResult;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Psr\Log\LoggerInterface;
@@ -18,6 +19,8 @@ final class LoginUserAction
     private const int MAX_ATTEMPTS = 5;
 
     private const int DECAY_SECONDS = 60;
+
+    private const int SESSION_HINT_MINUTES = 43200;
 
     public function execute(
         string $email,
@@ -48,6 +51,7 @@ final class LoginUserAction
         }
         RateLimiter::clear($rate_limit_key);
         session()->regenerate();
+        Cookie::queue('session_hint', '1', self::SESSION_HINT_MINUTES);
         $this->logger->info('User logged in.', [
             'user_id' => Auth::id(),
             'ip' => $request->ip(),

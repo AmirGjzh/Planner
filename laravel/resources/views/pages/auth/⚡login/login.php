@@ -2,6 +2,7 @@
 
 use App\Actions\Auth\LoginUserAction;
 use App\Enums\LoginResult;
+use Illuminate\Support\Facades\Cookie;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -19,6 +20,16 @@ new #[Layout('layouts::auth')] class extends Component
     {
         if ($toast = session()->pull('toast')) {
             $this->dispatch('toast', ...$toast);
+        }
+
+        if (request()->cookie('session_hint')) {
+            $this->dispatch('toast',
+                title: __('Your session has expired. Please sign in again.'),
+                variant: 'info',
+                duration: 6000,
+                position: 'bottom-center'
+            );
+            Cookie::queue(Cookie::forget('session_hint'));
         }
     }
 
@@ -48,6 +59,12 @@ new #[Layout('layouts::auth')] class extends Component
                 'duration' => 6000,
                 'position' => 'bottom-center',
             ]);
+
+            $intended = session()->pull('url.intended');
+
+            if ($intended) {
+                return $this->redirect($intended);
+            }
 
             return $this->redirectRoute('dashboard');
         }

@@ -29,4 +29,6 @@ Route::middleware(['guest'])->group(function () {
     Route::livewire('/', 'pages::home')->name('home')->block(10, 10);
     Route::livewire('/login', 'pages::auth.login')->name('login')->block(10, 10);
     Route::livewire('/register', 'pages::auth.register')->name('register')->block(10, 10);
+    Route::livewire('/forgot-password', 'pages::auth.forgot-password')->name('password.request')->block(10, 10);
+    Route::livewire('/reset-password', 'pages::auth.reset-password')->name('password.reset')->block(10, 10);
 });

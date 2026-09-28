@@ -18,6 +18,10 @@ new class extends Component
 
     public function mount(): void
     {
+        if ($toast = session()->pull('toast')) {
+            $this->dispatch('toast', ...$toast);
+        }
+
         $this->range_filter = $this->presetRange('this_week');
     }
 

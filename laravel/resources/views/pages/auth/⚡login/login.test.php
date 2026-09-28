@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Livewire;
 
@@ -12,6 +13,11 @@ it('renders successfully', function () {
     Livewire::test('pages::auth.login')
         ->assertStatus(200)
         ->assertSee('Welcome back');
+});
+
+it('links to the forgot-password page', function () {
+    Livewire::test('pages::auth.login')
+        ->assertSee(route('password.request'));
 });
 
 it('re-dispatches a flashed session toast on mount', function () {
@@ -169,4 +175,37 @@ it('blocks login for a soft-deleted account', function () {
         ->call('login')
         ->assertSet('login_error', 'invalid');
     $this->assertGuest();
+});
+
+it('redirects to the originally requested page after signing in', function () {
+    User::factory()->create([
+        'email' => 'amir@example.com',
+        'password' => 'password',
+    ]);
+    session()->put('url.intended', url('/tasks'));
+
+    Livewire::test('pages::auth.login')
+        ->set('email', 'amir@example.com')
+        ->set('password', 'password')
+        ->call('login')
+        ->assertRedirect(url('/tasks'));
+});
+
+it('consumes the session hint cookie and shows an expired-session toast', function () {
+    Livewire::withCookies(['session_hint' => '1'])
+        ->test('pages::auth.login')
+        ->assertDispatched('toast',
+            title: 'Your session has expired. Please sign in again.',
+            variant: 'info',
+        );
+
+    $queued = collect(Cookie::getQueuedCookies())
+        ->first(fn ($cookie) => $cookie->getName() === 'session_hint');
+
+    expect($queued)->not->toBeNull();
+});
+
+it('shows no expired-session toast without the hint cookie', function () {
+    Livewire::test('pages::auth.login')
+        ->assertNotDispatched('toast');
 });

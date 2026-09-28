@@ -96,6 +96,10 @@ new class extends Component
 
     public function mount(): void
     {
+        if ($toast = session()->pull('toast')) {
+            $this->dispatch('toast', ...$toast);
+        }
+
         $this->add_date = now()->format('Y-m-d');
 
         $this->range_filter = [

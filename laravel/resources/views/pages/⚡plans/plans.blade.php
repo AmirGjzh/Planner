@@ -107,8 +107,13 @@
                             'sm:pl-4!' => app()->isLocale('fa'),
                             'w-full md:w-auto mine-btn-primary flex items-center justify-center gap-2 h-11 px-3.5 rounded-xl cursor-pointer select-none',
                         ])>
-                            <x-mine.icon name="Filter" @class([
-                            ]) weight="filled" size="16" />
+                            <x-mine.icon
+                                name="Filter"
+                                @class([
+                                ])
+                                weight="filled"
+                                size="16"
+                            />
                             <p @class([
                                 'pt-1' => app()->isLocale('en'),
                                 'text-sm font-medium',
@@ -147,8 +152,13 @@
                             'sm:pl-4!' => app()->isLocale('fa'),
                             'w-full mine-btn-primary flex items-center justify-center gap-2 h-11 px-3.5 rounded-xl cursor-pointer select-none',
                         ])>
-                            <x-mine.icon name="Calendar" @class([
-                            ]) weight="filled" size="16" />
+                            <x-mine.icon
+                                name="Calendar"
+                                @class([
+                                ])
+                                weight="filled"
+                                size="16"
+                            />
                             <p @class([
                                 'pt-1' => app()->isLocale('en'),
                                 'text-sm font-medium',
@@ -550,20 +560,14 @@
 
             @if ($add_error === 'already_exists')
                 <div class="mb-4">
-                    <x-mine.alert
-                        variant="danger"
-                        title="{{ __('Duplicate plan!') }}"
-                    >
+                    <x-mine.alert variant="danger" title="{{ __('Duplicate plan!') }}">
                         {{ __('You have a plan with this name.') }}</x-mine.alert>
                 </div>
             @endif
 
             @if ($add_error === 'rate_limited')
                 <div class="mb-4">
-                    <x-mine.alert
-                        variant="warning"
-                        title="{{ __('Too many add-plan attempts!') }}"
-                    >
+                    <x-mine.alert variant="warning" title="{{ __('Too many add-plan attempts!') }}">
                         {{ __('Try again in a minute.') }}</x-mine.alert>
                 </div>
             @endif
@@ -631,20 +635,14 @@
 
             @if ($edit_error === 'already_exists')
                 <div class="mb-4">
-                    <x-mine.alert
-                        variant="danger"
-                        title="{{ __('Duplicate plan!') }}"
-                    >
+                    <x-mine.alert variant="danger" title="{{ __('Duplicate plan!') }}">
                         {{ __('You have a plan with this name.') }}</x-mine.alert>
                 </div>
             @endif
 
             @if ($edit_error === 'rate_limited')
                 <div class="mb-4">
-                    <x-mine.alert
-                        variant="warning"
-                        title="{{ __('Too many edit-plan attempts!') }}"
-                    >
+                    <x-mine.alert variant="warning" title="{{ __('Too many edit-plan attempts!') }}">
                         {{ __('Try again in a minute.') }}</x-mine.alert>
                 </div>
             @endif
@@ -712,18 +710,12 @@
 
             @if ($delete_error === 'has_tasks')
                 <div class="mb-4">
-                    <x-mine.alert
-                        variant="danger"
-                        title="{{ __('Cannot delete plan!') }}"
-                    >
+                    <x-mine.alert variant="danger" title="{{ __('Cannot delete plan!') }}">
                         {{ __('This plan has tasks, reassign or delete them first.') }}</x-mine.alert>
                 </div>
             @else
                 <div class="mb-4">
-                    <x-mine.alert
-                        variant="warning"
-                        title="{{ __('Are you sure?') }}"
-                    >
+                    <x-mine.alert variant="warning" title="{{ __('Are you sure?') }}">
                         {{ __('This action cannot be undone.') }}</x-mine.alert>
                 </div>
             @endif
@@ -766,18 +758,12 @@
 
             @if ($complete_error === 'has_undone_tasks')
                 <div class="mb-4">
-                    <x-mine.alert
-                        variant="danger"
-                        title="{{ __('Cannot complete plan!') }}"
-                    >
+                    <x-mine.alert variant="danger" title="{{ __('Cannot complete plan!') }}">
                         {{ __('This plan still has unfinished tasks, complete or remove them first.') }}</x-mine.alert>
                 </div>
             @else
                 <div class="mb-4">
-                    <x-mine.alert
-                        variant="warning"
-                        title="{{ __('Are you sure?') }}"
-                    >
+                    <x-mine.alert variant="warning" title="{{ __('Are you sure?') }}">
                         {{ __('This will mark the plan as completed.') }}</x-mine.alert>
                 </div>
             @endif
@@ -819,10 +805,7 @@
             </div>
 
             <div class="mb-4">
-                <x-mine.alert
-                    variant="warning"
-                    title="{{ __('Are you sure?') }}"
-                >
+                <x-mine.alert variant="warning" title="{{ __('Are you sure?') }}">
                     {{ __('This plan will be moved back to active.') }}</x-mine.alert>
             </div>
 

@@ -252,7 +252,7 @@ Every use case maps to one `app/Actions/<Domain>/` folder. There is no separate 
 
 | UC | Use Case | Module / Service | Responsibilities |
 |----|----------|------------------|------------------|
-| 01 | Login | Authentication (`LoginUserAction`) | Verify credentials, start session, rate-limit attempts |
+| 01 | Login | Authentication (`LoginUserAction`, `ForgotPasswordAction`, `ResetPasswordAction`) | Verify credentials, send/reset password links, session-hint + intended-URL handling, rate-limit attempts |
 | 02 | Register | Authentication (`RegisterUserAction`) | Create account, enforce unique username/email |
 | 03 | View and Edit Profile | Profile (`UpdateProfileAction`) | Read/update profile fields, rate-limit updates |
 | 04 | Delete Account | Account (`DeleteAccountAction`) | Verify password, obfuscate credentials, soft-delete |

@@ -26,7 +26,7 @@ Pair it with the project rules in `.ai/rules/` (see the mandatory ritual in the 
 
 | # | UC | Description |
 |---|-----|-------------|
-| 01 | Login | Email + password authentication |
+| 01 | Login | Email + password authentication and password recovery |
 | 02 | Register | Username, email, password with validation |
 | 03 | View and Edit Profile | View and update personal info |
 | 04 | Delete Account | Soft-delete with password confirmation |

@@ -59,7 +59,7 @@ cp laravel/.env.production laravel/.env
 
 ### Make sure it's healthy
 
-- `./planner ps` — every service (`php-fpm`, `nginx`, `mysql`, `redis`) is `Up` / `running` / `healthy`
+- `./planner ps` — every service (`php-fpm`, `nginx`, `mysql`, `redis`, `mailpit`) is `Up` / `running` / `healthy`
 - **http://localhost** loads the app
 - You can register an account and log in
 - **http://localhost/up** returns `200`
@@ -69,6 +69,7 @@ cp laravel/.env.production laravel/.env
 - Open **http://localhost**, log in, and use it day to day.
 - Other devices on your network work too — use your computer's IP instead of `localhost` (e.g. `http://192.168.1.20`).
 - Your data is safe — updating, restarting, or rebuilding never deletes it.
+- Emails the app sends land in Mailpit — browse them at **http://localhost:8025**.
 
 **Stop, start, and reset** — every command below keeps your data safe:
 
@@ -160,7 +161,7 @@ The easy way — one command starts the app server, the queue worker, and Vite t
 composer run dev
 ```
 
-Then open **http://localhost:8000** and register an account to try the real features. (**http://localhost:8000/up** should return `200`.)
+Then open **http://localhost:8000** and register an account to try the real features. (**http://localhost:8000/up** should return `200`.) Any email the app sends (e.g. a password reset) lands in Mailpit — browse it at **http://localhost:8025**.
 
 Prefer running things one at a time? Use a second terminal inside the container (`./planner-dev shell`):
 

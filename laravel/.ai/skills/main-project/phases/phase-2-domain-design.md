@@ -85,15 +85,22 @@ Each use case is implemented by a dedicated module (listed under "Module"). Each
 
 Actor: User (guest who is not logged in)
 
-Description: The user logs into the system and reaches the authenticated dashboard.
+Description: The user logs into the system — recovering a forgotten password by email when needed — and reaches the authenticated dashboard.
 
 Main Flow:
 1. The user opens the website.
 2. If not logged in, the user is redirected to the Login page, or clicks the Login button on the homepage.
 3. The user enters their email and password.
 4. The system validates the credentials:
-   - If successful: the user is logged in and redirected to the Dashboard.
+   - If successful: the user is logged in and redirected to the Dashboard — or to the page originally requested when an auth guard redirected them to login first. A session that ended without logout is announced by an info toast on the Login page.
    - If unsuccessful: an error message is shown and the user can try again.
+
+Password recovery flow:
+1. The user opens the forgot-password page from the Login page and submits their email.
+2. The system answers with the same generic confirmation whether or not the account exists; when it exists, a reset link is emailed (SMTP to the Mailpit service).
+3. The emailed link opens the reset-password page.
+4. The user sets a new confirmed password; the old one is replaced, the remember token is rotated, and the user returns to the Login page with a success toast.
+5. Invalid or expired links show a single generic error with a request-new-link path.
 
 ### 2.3.2 UC-02 – Register
 

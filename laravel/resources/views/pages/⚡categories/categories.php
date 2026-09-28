@@ -38,6 +38,13 @@ new class extends Component
     #[Url]
     public string $sort = 'latest';
 
+    public function mount(): void
+    {
+        if ($toast = session()->pull('toast')) {
+            $this->dispatch('toast', ...$toast);
+        }
+    }
+
     #[Computed]
     public function categories()
     {

@@ -4,6 +4,7 @@ namespace App\Actions\Auth;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use Psr\Log\LoggerInterface;
 
 final class LogoutUserAction
@@ -18,6 +19,7 @@ final class LogoutUserAction
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+        Cookie::queue(Cookie::forget('session_hint'));
         $this->logger->info('User logged out.', [
             'user_id' => $userId,
             'ip' => $request->ip(),

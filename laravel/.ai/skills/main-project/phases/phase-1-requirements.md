@@ -7,6 +7,8 @@ The stories below are grouped by use case (UC-01 … UC-11), in topological orde
 ### UC-01 – Login
 
 As a user, I want to log into the system with my email and password so that I can access my tasks and plans.
+As a user, I want to recover a forgotten password by email so that I can regain access on my own.
+As a user, I want to land on the page I originally requested after signing in, and to be told when my session has expired.
 
 ### UC-02 – Register
 
@@ -119,8 +121,18 @@ The acceptance criteria are grouped by use case (UC-01 … UC-11), in topologica
 
 **Given** the user is on the login page,
 **When** they enter valid email and password and submit,
-**Then** they are authenticated and redirected to the dashboard.
+**Then** they are authenticated and redirected to the dashboard — or to the page they originally requested when an auth guard sent them to login first.
 **And** if credentials are invalid, an error message is shown.
+
+**Given** the user forgot their password,
+**When** they submit their email on the forgot-password page,
+**Then** the same generic confirmation is shown whether or not the account exists, and a reset link is emailed when it does.
+**And** the emailed link opens the reset-password page, where a new password (confirmed, minimum 8, different from the current one) replaces the old one and the remember token is rotated.
+**Then** they are returned to the login page with a success toast, while invalid or expired links show a single generic error with a request-new-link path.
+
+**Given** the user's session expired without an explicit logout,
+**When** they visit the login page,
+**Then** an info toast tells them the session expired, shown once (session-hint cookie).
 
 ### UC-02 – Register
 

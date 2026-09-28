@@ -16,10 +16,10 @@ How tests are written (Pest), including the Persian-behavior rules.
 - Use factories for the principal subject user, and build owned records via relationship `->create()` (never real fixture/seed calls).
 - Actions are tested by real integration: `app(XxxAction::class)->execute(...)` against the in-memory SQLite DB.
 
-## Test Persian behavior via the factory locale; inline `setLocale` only for bare Action tests
+## Test Persian behavior via the factory locale; inline `setLocale` only for bare Action / render tests
 
 - **Livewire page-component tests:** set the fa locale through the user, not inline — `$user = User::factory()->create(['locale' => 'fa'])`, and let `HasUser::boot()` apply it. Do **not** call `app()->setLocale('fa')` at the top of a page-test closure: the factory defaults `locale='en'` for determinism and the page reads the locale from the user.
-- **Pure Action tests** (no Livewire boot, e.g. `WeeklyWorkloadActionTest`) that exercise a locale-aware action/helper directly: inline `app()->setLocale('fa')` at the top of the `it(...)` closure is correct and must stay — never in `beforeEach`, which is reserved for `RateLimiter::clear`.
+- **Bare tests** (no Livewire boot): pure Action tests exercising a locale-aware action/helper (e.g. `WeeklyWorkloadActionTest`) and view/notification renders (e.g. `resources/views/mail/reset-password.test.php`) take inline `app()->setLocale('fa')` at the top of the `it(...)` closure — correct and must stay; never in `beforeEach`, which is reserved for `RateLimiter::clear`.
 - Assert Jalali output via `App\Support\Jalali::format(...)` and Persian literals.
 - Week base changes by locale: `now()->startOfWeek(Carbon::SUNDAY)` for en, `Carbon::SATURDAY` for fa.
 - Build dates relative to `now()` (`subDays`/`addDays`/`startOfWeek`/`yesterday`); avoid hardcoded calendar dates.

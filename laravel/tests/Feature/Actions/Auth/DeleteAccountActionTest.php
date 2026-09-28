@@ -5,6 +5,7 @@ use App\Enums\DeleteAccountResult;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 
@@ -30,6 +31,22 @@ it('returns success and soft-deletes the user with correct password', function (
         ->and($user->find($user->id))->toBeNull();
 
     $this->assertSoftDeleted($user);
+});
+
+it('forgets the session hint cookie on account deletion', function () {
+    $user = User::factory()->create([
+        'password' => 'correct_password',
+    ]);
+    $this->actingAs($user);
+
+    app(DeleteAccountAction::class)
+        ->execute($user, 'correct_password', deleteAccountRequest());
+
+    $queued = collect(Cookie::getQueuedCookies())
+        ->first(fn ($cookie) => $cookie->getName() === 'session_hint');
+
+    expect($queued)->not->toBeNull()
+        ->and($queued->getValue())->toBeNull();
 });
 
 it('obfuscates email and username after deletion', function () {

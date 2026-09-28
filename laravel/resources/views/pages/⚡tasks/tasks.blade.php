@@ -106,8 +106,13 @@
                             'sm:pl-4!' => app()->isLocale('fa'),
                             'w-full md:w-auto mine-btn-primary flex items-center justify-center gap-2 h-11 px-3.5 rounded-xl cursor-pointer select-none',
                         ])>
-                            <x-mine.icon name="Filter" @class([
-                            ]) weight="filled" size="16" />
+                            <x-mine.icon
+                                name="Filter"
+                                @class([
+                                ])
+                                weight="filled"
+                                size="16"
+                            />
                             <p @class([
                                 'pt-1' => app()->isLocale('en'),
                                 'text-sm font-medium',
@@ -148,8 +153,13 @@
                             'sm:pl-4!' => app()->isLocale('fa'),
                             'w-full md:w-auto mine-btn-primary flex items-center justify-center gap-2 h-11 px-3.5 rounded-xl cursor-pointer select-none',
                         ])>
-                            <x-mine.icon name="Filter" @class([
-                            ]) weight="filled" size="16" />
+                            <x-mine.icon
+                                name="Filter"
+                                @class([
+                                ])
+                                weight="filled"
+                                size="16"
+                            />
                             <p @class([
                                 'pt-1' => app()->isLocale('en'),
                                 'text-sm font-medium hidden sm:block',
@@ -194,8 +204,13 @@
                             'sm:pl-4!' => app()->isLocale('fa'),
                             'w-full mine-btn-primary flex items-center justify-center gap-2 h-11 px-3.5 rounded-xl cursor-pointer select-none',
                         ])>
-                            <x-mine.icon name="Folder" @class([
-                            ]) weight="filled" size="16" />
+                            <x-mine.icon
+                                name="Folder"
+                                @class([
+                                ])
+                                weight="filled"
+                                size="16"
+                            />
                             <p @class([
                                 'pt-1' => app()->isLocale('en'),
                                 'text-sm font-medium hidden sm:block',
@@ -233,8 +248,13 @@
                             'sm:pl-4!' => app()->isLocale('fa'),
                             'w-full mine-btn-primary flex items-center justify-center gap-2 h-11 px-3.5 rounded-xl cursor-pointer select-none',
                         ])>
-                            <x-mine.icon name="Bullseye" @class([
-                            ]) weight="filled" size="16" />
+                            <x-mine.icon
+                                name="Bullseye"
+                                @class([
+                                ])
+                                weight="filled"
+                                size="16"
+                            />
                             <p @class([
                                 'pt-1' => app()->isLocale('en'),
                                 'text-sm font-medium hidden sm:block',
@@ -272,8 +292,13 @@
                             'sm:pl-4!' => app()->isLocale('fa'),
                             'w-full mine-btn-primary flex items-center justify-center gap-2 h-11 px-3.5 rounded-xl cursor-pointer select-none',
                         ])>
-                            <x-mine.icon name="Calendar" @class([
-                            ]) weight="filled" size="16" />
+                            <x-mine.icon
+                                name="Calendar"
+                                @class([
+                                ])
+                                weight="filled"
+                                size="16"
+                            />
                             <p @class([
                                 'pt-1' => app()->isLocale('en'),
                                 'text-sm font-medium hidden sm:block',
@@ -621,30 +646,21 @@
 
             @if ($add_error === 'rate_limited')
                 <div class="mb-4">
-                    <x-mine.alert
-                        variant="warning"
-                        title="{{ __('Too many create-task attempts!') }}"
-                    >
+                    <x-mine.alert variant="warning" title="{{ __('Too many create-task attempts!') }}">
                         {{ __('Try again in a minute.') }}</x-mine.alert>
                 </div>
             @endif
 
             @if ($add_error === 'invalid_category')
                 <div class="mb-4">
-                    <x-mine.alert
-                        variant="danger"
-                        title="{{ __('Invalid category!') }}"
-                    >
+                    <x-mine.alert variant="danger" title="{{ __('Invalid category!') }}">
                         {{ __('Please choose a valid category.') }}</x-mine.alert>
                 </div>
             @endif
 
             @if ($add_error === 'invalid_plan')
                 <div class="mb-4">
-                    <x-mine.alert
-                        variant="danger"
-                        title="{{ __('Invalid plan!') }}"
-                    >
+                    <x-mine.alert variant="danger" title="{{ __('Invalid plan!') }}">
                         {{ __('Please choose a valid plan.') }}</x-mine.alert>
                 </div>
             @endif
@@ -763,30 +779,21 @@
 
             @if ($edit_error === 'rate_limited')
                 <div class="mb-4">
-                    <x-mine.alert
-                        variant="warning"
-                        title="{{ __('Too many edit-task attempts!') }}"
-                    >
+                    <x-mine.alert variant="warning" title="{{ __('Too many edit-task attempts!') }}">
                         {{ __('Try again in a minute.') }}</x-mine.alert>
                 </div>
             @endif
 
             @if ($edit_error === 'invalid_category')
                 <div class="mb-4">
-                    <x-mine.alert
-                        variant="danger"
-                        title="{{ __('Invalid category!') }}"
-                    >
+                    <x-mine.alert variant="danger" title="{{ __('Invalid category!') }}">
                         {{ __('Please choose a valid category.') }}</x-mine.alert>
                 </div>
             @endif
 
             @if ($edit_error === 'invalid_plan')
                 <div class="mb-4">
-                    <x-mine.alert
-                        variant="danger"
-                        title="{{ __('Invalid plan!') }}"
-                    >
+                    <x-mine.alert variant="danger" title="{{ __('Invalid plan!') }}">
                         {{ __('Please choose a valid plan.') }}</x-mine.alert>
                 </div>
             @endif
@@ -904,10 +911,7 @@
             </div>
 
             <div class="mb-4">
-                <x-mine.alert
-                    variant="warning"
-                    title="{{ __('Are you sure?') }}"
-                >
+                <x-mine.alert variant="warning" title="{{ __('Are you sure?') }}">
                     {{ __('This action cannot be undone.') }}</x-mine.alert>
             </div>
 
@@ -949,18 +953,12 @@
 
             @if ($complete_error === 'rate_limited')
                 <div class="mb-4">
-                    <x-mine.alert
-                        variant="warning"
-                        title="{{ __('Too many complete-task attempts!') }}"
-                    >
+                    <x-mine.alert variant="warning" title="{{ __('Too many complete-task attempts!') }}">
                         {{ __('Try again in a minute.') }}</x-mine.alert>
                 </div>
             @else
                 <div class="mb-4">
-                    <x-mine.alert
-                        variant="warning"
-                        title="{{ __('Are you sure?') }}"
-                    >
+                    <x-mine.alert variant="warning" title="{{ __('Are you sure?') }}">
                         {{ __('This will mark the task as completed.') }}</x-mine.alert>
                 </div>
             @endif
@@ -1003,18 +1001,12 @@
 
             @if ($reopen_error === 'rate_limited')
                 <div class="mb-4">
-                    <x-mine.alert
-                        variant="warning"
-                        title="{{ __('Too many re-active-task attempts!') }}"
-                    >
+                    <x-mine.alert variant="warning" title="{{ __('Too many re-active-task attempts!') }}">
                         {{ __('Try again in a minute.') }}</x-mine.alert>
                 </div>
             @else
                 <div class="mb-4">
-                    <x-mine.alert
-                        variant="warning"
-                        title="{{ __('Are you sure?') }}"
-                    >
+                    <x-mine.alert variant="warning" title="{{ __('Are you sure?') }}">
                         {{ __('This task will be moved back to active.') }}</x-mine.alert>
                 </div>
             @endif

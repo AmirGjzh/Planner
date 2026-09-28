@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\UserGender;
+use App\Notifications\ResetPasswordNotification;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -65,6 +66,16 @@ class User extends Authenticatable
         $second = mb_strtoupper(mb_substr((string) $this->username, 1, 1));
 
         return $second === '' ? $first : $first."\u{200C}".$second;
+    }
+
+    /**
+     * Send the password reset notification.
+     *
+     * @param  string  $token
+     */
+    public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
     }
 
     /**

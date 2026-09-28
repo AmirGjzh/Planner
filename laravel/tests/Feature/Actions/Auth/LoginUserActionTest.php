@@ -4,6 +4,7 @@ use App\Actions\Auth\LoginUserAction;
 use App\Enums\LoginResult;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 
@@ -82,6 +83,31 @@ it('trims surrounding whitespace and lowercases the email before authenticating'
         ->execute('  AmIr@Example.com  ', 'password', true, loginRequest());
     expect($result)->toBe(LoginResult::Success);
     $this->assertAuthenticated();
+});
+
+it('queues the session hint cookie on success', function () {
+    User::factory()->create(['email' => 'amir@example.com', 'password' => 'password']);
+
+    app(LoginUserAction::class)
+        ->execute('amir@example.com', 'password', false, loginRequest());
+
+    $queued = collect(Cookie::getQueuedCookies())
+        ->first(fn ($cookie) => $cookie->getName() === 'session_hint');
+
+    expect($queued)->not->toBeNull()
+        ->and($queued->getValue())->toBe('1');
+});
+
+it('does not queue the session hint cookie on failure', function () {
+    User::factory()->create(['email' => 'amir@example.com', 'password' => 'password']);
+
+    app(LoginUserAction::class)
+        ->execute('amir@example.com', 'wrong-password', false, loginRequest());
+
+    $queued = collect(Cookie::getQueuedCookies())
+        ->first(fn ($cookie) => $cookie->getName() === 'session_hint');
+
+    expect($queued)->toBeNull();
 });
 
 it('blocks login for a soft-deleted user', function () {

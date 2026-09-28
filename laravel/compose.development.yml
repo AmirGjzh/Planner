@@ -77,6 +77,20 @@ services:
       timeout: 5s
       retries: 5
 
+  mailpit:
+    container_name: planner-development-mailpit
+    image: axllent/mailpit:v1.27
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - network
+
 networks:
   network:
 
