@@ -2,11 +2,12 @@
 paths:
   - bootstrap/app.php
   - config/database.php
+  - config/queue.php
 ---
 
 # App Wiring
 
-Rules for `bootstrap/app.php` and `config/database.php` (production-critical plumbing).
+Rules for `bootstrap/app.php`, `config/database.php`, and `config/queue.php` (production-critical plumbing).
 
 ## bootstrap/app.php: proxies and redirects are deliberate
 
@@ -19,3 +20,8 @@ Rules for `bootstrap/app.php` and `config/database.php` (production-critical plu
 - Three redis connections: `default` (DB 0), `cache` (DB 1), `session` (DB 2) — key-space isolation on the single Redis instance.
 - `SESSION_DRIVER` uses the dedicated `session` connection; `Route::block()` locks on the cache-lock redis connection (`REDIS_CACHE_LOCK_CONNECTION`), never the session connection.
 - Never collapse sessions onto `default`/`cache` — flushing cache would nuke sessions and lock/block behavior would drift.
+
+## config/queue.php: redis-backed, sync under test
+
+- `QUEUE_CONNECTION=redis` in both `.env.*` templates — jobs live on the `default` redis connection (DB 0, isolated from cache/session), and the prod `queue` worker service (`compose.production.yml`) is the only consumer.
+- Failed jobs land in the `failed_jobs` table (`database-uuids` driver); phpunit forces `QUEUE_CONNECTION=sync`, so tests execute jobs inline and never touch redis.

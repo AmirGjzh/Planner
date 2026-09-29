@@ -11,4 +11,4 @@ fi
 php artisan migrate --seed --force
 php artisan optimize
 
-exec php-fpm
+exec "$@"

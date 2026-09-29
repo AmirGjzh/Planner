@@ -52,7 +52,7 @@ final class DeleteAccountAction
         Auth::logout();
         session()->invalidate();
         session()->regenerateToken();
-        Cookie::queue(Cookie::forget('session_hint'));
+        Cookie::queue(Cookie::forget(LoginUserAction::SESSION_HINT));
 
         $user->forceFill([
             'email' => 'deleted-user-'.$userId,

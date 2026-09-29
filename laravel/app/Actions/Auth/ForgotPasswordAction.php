@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Psr\Log\LoggerInterface;
+use Throwable;
 
 final class ForgotPasswordAction
 {
@@ -36,14 +37,25 @@ final class ForgotPasswordAction
 
         RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
 
-        $status = Password::sendResetLink(['email' => $email]);
+        try {
+            $status = Password::sendResetLink(['email' => $email]);
+        } catch (Throwable $e) {
+            $this->logger->error('Password reset link could not be sent.', [
+                'email' => $email,
+                'ip' => $request->ip(),
+                'exception' => $e::class,
+                'message' => $e->getMessage(),
+            ]);
 
-        if ($status === Password::ResetLinkSent) {
+            return SendResetLinkResult::Sent;
+        }
+
+        if ($status === Password::RESET_LINK_SENT) {
             $this->logger->info('Password reset link sent.', [
                 'email' => $email,
                 'ip' => $request->ip(),
             ]);
-        } elseif ($status === Password::ResetThrottled) {
+        } elseif ($status === Password::RESET_THROTTLED) {
             $this->logger->info('Password reset link throttled, a token was recently created.', [
                 'email' => $email,
                 'ip' => $request->ip(),

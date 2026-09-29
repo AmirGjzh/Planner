@@ -16,11 +16,13 @@ final class LoginUserAction
         private readonly LoggerInterface $logger,
     ) {}
 
+    public const string SESSION_HINT = 'session_hint';
+
     private const int MAX_ATTEMPTS = 5;
 
     private const int DECAY_SECONDS = 60;
 
-    private const int SESSION_HINT_MINUTES = 43200;
+    private const int SESSION_HINT_MINUTES = 30 * 24 * 60;
 
     public function execute(
         string $email,
@@ -51,7 +53,7 @@ final class LoginUserAction
         }
         RateLimiter::clear($rate_limit_key);
         session()->regenerate();
-        Cookie::queue('session_hint', '1', self::SESSION_HINT_MINUTES);
+        Cookie::queue(self::SESSION_HINT, '1', self::SESSION_HINT_MINUTES);
         $this->logger->info('User logged in.', [
             'user_id' => Auth::id(),
             'ip' => $request->ip(),

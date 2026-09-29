@@ -99,6 +99,32 @@ it('allows a new request after one minute', function () {
     expect($result)->toBe(SendResetLinkResult::Sent);
 });
 
+it('returns sent and logs an error when the mail transport fails', function () {
+    Log::spy();
+    config(['mail.default' => 'missing-transport']);
+    User::factory()->create(['email' => 'amir@example.com']);
+
+    $result = app(ForgotPasswordAction::class)
+        ->execute('amir@example.com', forgotPasswordRequest());
+
+    expect($result)->toBe(SendResetLinkResult::Sent);
+    Log::shouldHaveReceived('error')
+        ->with('Password reset link could not be sent.', Mockery::on(fn (array $context) => $context['email'] === 'amir@example.com' && isset($context['exception'], $context['message'])));
+});
+
+it('returns sent and logs an error when the queue rejects the notification', function () {
+    Log::spy();
+    config(['queue.default' => 'missing-queue']);
+    User::factory()->create(['email' => 'amir@example.com']);
+
+    $result = app(ForgotPasswordAction::class)
+        ->execute('amir@example.com', forgotPasswordRequest());
+
+    expect($result)->toBe(SendResetLinkResult::Sent);
+    Log::shouldHaveReceived('error')
+        ->with('Password reset link could not be sent.', Mockery::on(fn (array $context) => $context['email'] === 'amir@example.com'));
+});
+
 it('logs sent, unknown, and rate-limited outcomes', function () {
     Log::spy();
     Notification::fake();

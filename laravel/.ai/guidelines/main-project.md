@@ -18,11 +18,11 @@ Planner is a personal task-planner web app: tasks, categories, and plans with a 
 | Livewire | 4 — full pages are multi-file SFCs in `resources/views/pages/⚡*/`; routed via `Route::livewire('/path', 'pages::<name>')` |
 | Tailwind | 4 — CSS-first (`@import "tailwindcss"`, `@theme`), no `tailwind.config.js` |
 | Testing | Pest 4 — `it()` + `expect()`, in-memory SQLite (`:memory:`), LazilyRefreshDatabase wired in `tests/Pest.php` |
-| Data | MySQL + Redis (both in Docker; sessions/cache on Redis) |
+| Data | MySQL + Redis (both in Docker; sessions/cache/queue on Redis) |
 
 ## Architecture (what to preserve)
 
-- **Actions** are the domain layer: `final class`, one public entry method (`execute()`, or domain-named like `ReportsAction::summary()`), primitives/`Request` params, `LoggerInterface` as the only injected dependency, `XxxResult` enums as return types. No repositories, no DTOs, no events/queued jobs.
+- **Actions** are the domain layer: `final class`, one public entry method (`execute()`, or domain-named like `ReportsAction::summary()`), primitives/`Request` params, `LoggerInterface` as the only injected dependency, `XxxResult` enums as return types. No repositories, no DTOs, no events; queued jobs only as fire-and-forget side effects (see `.ai/rules/actions.md`).
 - **Authorization lives in Actions**: `abort_unless($user->can(...), 403)` — never `$this->authorize()` or `@can`. Policies auto-discover from `app/Policies`.
 - **Rate limiting is per-action** with `Str::transliterate('kebab-prefix:identifier')` keys; cleared on success; `available_in` logged for outcomes. Follow the exact key shapes in the rules.
 - **UI language is per-user**: the shared `HasUser` trait's `boot()` runs `app()->setLocale($this->user->locale)` on every Livewire request (initial + rehydration). Guest pages use the app locale; only auth boundaries set the locale explicitly.

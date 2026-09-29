@@ -59,7 +59,7 @@ cp laravel/.env.production laravel/.env
 
 ### Make sure it's healthy
 
-- `./planner ps` — every service (`php-fpm`, `nginx`, `mysql`, `redis`, `mailpit`) is `Up` / `running` / `healthy`
+- `./planner ps` — every service (`php-fpm`, `queue`, `nginx`, `mysql`, `redis`, `mailpit`) is `Up` / `running` / `healthy`
 - **http://localhost** loads the app
 - You can register an account and log in
 - **http://localhost/up** returns `200`

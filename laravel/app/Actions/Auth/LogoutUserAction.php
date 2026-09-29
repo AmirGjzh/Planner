@@ -19,7 +19,7 @@ final class LogoutUserAction
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        Cookie::queue(Cookie::forget('session_hint'));
+        Cookie::queue(Cookie::forget(LoginUserAction::SESSION_HINT));
         $this->logger->info('User logged out.', [
             'user_id' => $userId,
             'ip' => $request->ip(),

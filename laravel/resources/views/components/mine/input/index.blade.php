@@ -40,10 +40,12 @@
             'focus-within:border-[var(--mine-input-border-focus)] focus-within:ring-4 focus-within:ring-[var(--mine-input-ring-focus)]' => ! $errors->has($name),
             'focus-within:border-[var(--mine-input-error-border)] focus-within:ring-[var(--mine-input-error-ring)] focus-within:ring-4' => $errors->has($name),
         ])
-        @if ($errors->has($name)) style="
-            --mine-input-autofill-bg: var(--mine-input-error-bg);
-            --mine-input-placeholder: var(--mine-input-error-placeholder);
-        " @endif
+        @if ($errors->has($name))
+            style="
+                --mine-input-autofill-bg: var(--mine-input-error-bg);
+                --mine-input-placeholder: var(--mine-input-error-placeholder);
+            "
+        @endif
     >
         @if ($leftIcon)
             <div @class([

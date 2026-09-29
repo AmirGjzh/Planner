@@ -2,6 +2,9 @@
 
 use App\Models\User;
 use App\Notifications\ResetPasswordNotification;
+use Illuminate\Notifications\SendQueuedNotifications;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Queue;
 
 it('renders the themed reset mail with the emailed url', function () {
     $user = User::factory()->create(['email' => 'amir@example.com', 'theme' => 'ocean']);
@@ -32,4 +35,24 @@ it('renders the Persian copy with rtl direction', function () {
         ->toContain('dir="rtl"')
         ->toContain('بازنشانی رمز عبور')
         ->toContain('تا 60 دقیقه');
+});
+
+it('sends the notification in the user saved locale', function () {
+    $user = User::factory()->create(['email' => 'amir@example.com', 'locale' => 'fa']);
+
+    $user->notify(new ResetPasswordNotification('token-123'));
+
+    $message = Mail::mailer()->getSymfonyTransport()->messages()->last()->getOriginalMessage();
+
+    expect($message->getSubject())->toBe('بازنشانی رمز عبور')
+        ->and($message->getHtmlBody())->toContain('dir="rtl"');
+});
+
+it('queues the reset notification for background delivery', function () {
+    Queue::fake();
+    $user = User::factory()->create(['email' => 'amir@example.com']);
+
+    $user->notify(new ResetPasswordNotification('token-123'));
+
+    Queue::assertPushed(SendQueuedNotifications::class);
 });

@@ -11,9 +11,10 @@ and `production.md` reference it instead of repeating it.
 | Service | Image / source | Dev | Prod |
 |---|---|---|---|
 | App runtime | dev `php:8.4-cli` (workspace) / prod `php:8.4-fpm` | `planner-development-workspace` | `planner-php-fpm` |
+| Queue worker | consumes the redis queue | `queue:listen` inside the workspace (`composer run dev`) | `planner-queue` (same image as php-fpm, `queue:work`) |
 | Web | none (artisan serve) | — | `planner-nginx` (`nginx:1.30`) |
 | MySQL | `mysql:8.4` (official) | no host port, own volume | `planner-mysql` |
-| Redis | `redis:8.10` (official) | no host port | `planner-redis` |
+| Redis | `redis:8.10` (official, `--appendonly yes` + volume) | no host port | `planner-redis` |
 | Mail | `axllent/mailpit:v1.27` (SMTP capture + web UI) | `planner-development-mailpit` (UI :8025) | `planner-mailpit` (UI :8025) |
 | Build tools | `composer:2.10` + `node:24` (stages, never installed in-image) | both stacks | both stacks |
 
@@ -49,9 +50,11 @@ Service names are the DNS hostnames inside the shared user network (`DB_HOST=mys
   `php -r fsockopen`, nginx hits `curl -fs http://127.0.0.1/up`. Mailpit is the one
   exception in bookkeeping, not in form: its image ships a built-in exec-form
   `HEALTHCHECK CMD ["/mailpit", "readyz"]`, so neither compose file declares one.
-- Boot order via `depends_on: condition: service_healthy`: mysql + redis → app → nginx
-  (prod). Services do not start until dependencies pass health checks; mysql has
-  `start_period: 30s` for slow first-boot init.
+- Boot order via `depends_on: condition: service_healthy`: mysql + redis → app → nginx +
+  queue (prod). Services do not start until dependencies pass health checks; mysql has
+  `start_period: 30s` for slow first-boot init. The queue worker has no port and no
+  healthcheck (mailpit precedent) — it is ordered after healthy php-fpm so boot-time
+  `migrate --seed` never races.
 - Every service: `restart: unless-stopped` and `logging: json-file, max-size 10m, max-file 3`.
 
 ## `planner` / `planner-dev` wrappers

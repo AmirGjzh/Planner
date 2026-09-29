@@ -26,4 +26,4 @@ Before planning or editing, find the row whose globs match the file's path and r
 | resources/views/components/mine/{select,datepicker,input}/** | .ai/rules/select-datepicker-input.md |
 | app/Actions/Task/** | .ai/rules/task.md |
 | tests/**, tests/**/*.test.php, database/factories/** | .ai/rules/tests.md |
-| bootstrap/app.php, config/database.php | .ai/rules/wiring.md |
+| bootstrap/app.php, config/database.php, config/queue.php | .ai/rules/wiring.md |

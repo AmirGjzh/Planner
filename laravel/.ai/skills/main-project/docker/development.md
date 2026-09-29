@@ -17,7 +17,7 @@ Describes the local development stack: one workspace container with the full PHP
 | Workspace image | `php:8.4-cli` (Debian/glibc) built from `docker/development/php-cli/Dockerfile` |
 | Build stages | `composer:2.10`, `node:24` (toolchain; never installed in-image) |
 | Services | `planner-development-workspace` + `-mysql` + `-redis` + `-mailpit` |
-| Volumes | `database` only (workspace is stateless) |
+| Volumes | `database` + `redis` (appendonly; workspace is stateless) |
 | Host ports | `8000` (artisan serve), `5173` (Vite HMR), `8025` (Mailpit UI) — MySQL/Redis/SMTP expose none |
 | PHP extensions | `pdo_mysql, pdo_sqlite, intl, mbstring, zip, bcmath, gd, redis` |
 | Tests | Pest on SQLite `:memory:` — `pdo_sqlite` is required |
@@ -26,7 +26,7 @@ Describes the local development stack: one workspace container with the full PHP
 ## Target Dev Model
 
 - One terminal with everything: `artisan serve`, Vite, migrations, tests, Tinker.
-- No nginx/php-fpm in dev; Redis *is* present for session/cache prod parity.
+- No nginx/php-fpm in dev; Redis *is* present for session/cache/queue prod parity.
 - Repo bind-mounts `./` → `/var/www`; app-code changes never need a rebuild.
 - Container runs as host UID/GID (`user: ${UID:-1000}:${GID:-1000}`), `HOME=/home/workspace`
   — caches writable, no permission fights, files owned by the host user.
@@ -87,7 +87,8 @@ Single-file Compose v2 spec. Facts:
 - **mysql**: `mysql:8.4`, `MYSQL_ROOT_PASSWORD`/`DB_PASSWORD` required via `${VAR:?}`, data in
   the `database` volume, exec-form healthcheck `mysql -uroot -p"${MYSQL_ROOT_PASSWORD}" -e
   'SELECT 1'` with `start_period: 30s`. **Never set `MYSQL_PWD`** (breaks first-boot init).
-- **redis**: `redis:8.10`, `requirepass` via `REDIS_PASSWORD`, healthcheck `redis-cli ping`
+- **redis**: `redis:8.10`, `requirepass` via `REDIS_PASSWORD`, `--appendonly yes` with a
+  `redis:/data` volume (jobs in flight survive `down`/`up`), healthcheck `redis-cli ping`
   authed through `REDISCLI_AUTH`.
 - **mailpit**: `axllent/mailpit:v1.27`, publishes only the web UI (`8025:8025`); SMTP 1025
   stays internal (other containers reach `mailpit:1025`). No compose healthcheck — the
@@ -122,13 +123,13 @@ defaults:
 
 - `APP_ENV=local`, `APP_DEBUG=true`, `LOG_LEVEL=debug`.
 - `DB_HOST=mysql`, `REDIS_HOST=redis` (service names as hostnames).
-- `SESSION_DRIVER=redis` / `CACHE_STORE=redis` — prod parity through the real Redis stack.
+- `SESSION_DRIVER=redis` / `CACHE_STORE=redis` / `QUEUE_CONNECTION=redis` — prod parity through the real Redis stack.
 - `SESSION_ENCRYPT=false` — the one deliberate divergence from prod, so dev tools can read
   sessions while debugging.
 - `MAIL_MAILER=smtp` / `MAIL_HOST=mailpit` / `MAIL_PORT=1025` /
   `MAIL_FROM_ADDRESS=no-reply@planner.local` — every mail is captured by the mailpit
   service and read in its UI at `http://localhost:8025`; nothing ever leaves the host.
-- Removed from stock Laravel: BROADCAST/QUEUE/FILESYSTEM/MEMCACHED/AWS/VITE (each has a
+- Removed from stock Laravel: BROADCAST/FILESYSTEM/MEMCACHED/AWS/VITE (each has a
   sane default or is unused).
 - Only these blanks to fill: `APP_KEY`, `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `REDIS_PASSWORD`.
 
@@ -140,10 +141,11 @@ Container-specific settings: `server.host: '0.0.0.0'` (reachable via the host po
 
 ### App-side wiring (read-only)
 
-- `composer.json`: `composer run dev` (concurrent `artisan serve` + `queue:listen` +
-  `npm run dev`), `composer test`.
-- `phpunit.xml`: `DB_CONNECTION=sqlite` + `DB_DATABASE=:memory:` — tests run with no DB
-  container, anywhere with `pdo_sqlite`.
+- `composer.json`: `composer run dev` (concurrent `artisan serve` + `queue:listen` — the
+  dev consumer for the redis queue — + `npm run dev`), `composer test`.
+- `phpunit.xml`: `DB_CONNECTION=sqlite` + `DB_DATABASE=:memory:` and `QUEUE_CONNECTION=sync`
+  + `MAIL_MAILER=array` — tests run with no DB container and execute jobs/notifications
+  inline, anywhere with `pdo_sqlite`.
 
 ## Environment Variables: Host → Container
 
@@ -219,7 +221,7 @@ docker compose -f laravel/compose.development.yml ps   # workspace + mysql + red
 | port 8000/5173 already in use | free the port or edit `ports:` in the compose file |
 | mysql unhealthy / `Access denied for user 'planner'` | baked creds differ from current `.env` — dev data is disposable: `down`, `docker volume rm planner-development_database`, `up -d --build`, re-`migrate` |
 | redis `NOAUTH` / `WRONGPASS` | `.env` `REDIS_PASSWORD` mismatch — make it match and `up -d --force-recreate redis` |
-| password-reset mail never appears | mailpit down or `MAIL_HOST` wrong — `./planner-dev up`, `logs mailpit`, UI at `http://localhost:8025` |
+| password-reset mail never appears | queue worker not running (`composer run dev` includes `queue:listen`) or mailpit down / `MAIL_HOST` wrong — start the dev script, `./planner-dev up`, `logs mailpit`, UI at `http://localhost:8025` |
 | `artisan serve` runs but browser times out | forgot `--host=0.0.0.0` |
 | Vite not hot-reloading | `usePolling` is on; ensure 5173 is free and reach via `localhost:5173` |
 | tinker `app@... does not exist` | run `composer install`, then `php artisan package:discover`, restart tinker |

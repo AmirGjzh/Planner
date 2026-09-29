@@ -62,7 +62,7 @@ final class ResetPasswordAction
             }
         );
 
-        if ($status !== Password::PasswordReset) {
+        if ($status !== Password::PASSWORD_RESET) {
             $this->logger->warning('Password reset failed, invalid or expired link.', [
                 'email' => $email,
                 'ip' => $request->ip(),

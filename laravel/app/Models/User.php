@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\UserGender;
 use App\Notifications\ResetPasswordNotification;
 use Database\Factories\UserFactory;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -29,7 +30,7 @@ use Illuminate\Notifications\Notifiable;
     'password',
     'remember_token',
 ])]
-class User extends Authenticatable
+class User extends Authenticatable implements HasLocalePreference
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, SoftDeletes;
@@ -66,6 +67,11 @@ class User extends Authenticatable
         $second = mb_strtoupper(mb_substr((string) $this->username, 1, 1));
 
         return $second === '' ? $first : $first."\u{200C}".$second;
+    }
+
+    public function preferredLocale(): string
+    {
+        return $this->locale;
     }
 
     /**

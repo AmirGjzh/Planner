@@ -16,20 +16,20 @@ new #[Layout('layouts::auth')] class extends Component
 
     public ?string $login_error = null;
 
-    public function mount()
+    public function mount(): void
     {
         if ($toast = session()->pull('toast')) {
             $this->dispatch('toast', ...$toast);
         }
 
-        if (request()->cookie('session_hint')) {
+        if (request()->cookie(LoginUserAction::SESSION_HINT)) {
             $this->dispatch('toast',
                 title: __('Your session has expired. Please sign in again.'),
                 variant: 'info',
                 duration: 6000,
                 position: 'bottom-center'
             );
-            Cookie::queue(Cookie::forget('session_hint'));
+            Cookie::queue(Cookie::forget(LoginUserAction::SESSION_HINT));
         }
     }
 

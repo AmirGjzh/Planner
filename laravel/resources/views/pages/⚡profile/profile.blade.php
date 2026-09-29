@@ -160,10 +160,7 @@
                         leftIcon="Sun"
                     >
                         @foreach (config('themes.name') as $name)
-                            <x-mine.select.option
-                                wire:key="{{ $name }}"
-                                value="{{ $name }}"
-                            >
+                            <x-mine.select.option wire:key="{{ $name }}" value="{{ $name }}">
                                 {{ __(ucfirst($name)) }}</x-mine.select.option>
                         @endforeach
                     </x-mine.select>
@@ -187,10 +184,7 @@
                         leftIcon="Earth"
                     >
                         @foreach ($this->countries as $code => $name)
-                            <x-mine.select.option
-                                wire:key="{{ $code }}"
-                                value="{{ $code }}"
-                            >
+                            <x-mine.select.option wire:key="{{ $code }}" value="{{ $code }}">
                                 {{ $name }}</x-mine.select.option>
                         @endforeach
                     </x-mine.select>

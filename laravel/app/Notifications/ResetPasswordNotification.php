@@ -3,10 +3,14 @@
 namespace App\Notifications;
 
 use Illuminate\Auth\Notifications\ResetPassword as BaseResetPassword;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 
-final class ResetPasswordNotification extends BaseResetPassword
+final class ResetPasswordNotification extends BaseResetPassword implements ShouldQueue
 {
+    use Queueable;
+
     /**
      * Build the mail representation on the project's own template, colored
      * with the receiving user's theme variables.
@@ -16,7 +20,7 @@ final class ResetPasswordNotification extends BaseResetPassword
     public function toMail($notifiable): MailMessage
     {
         $url = $this->resetUrl($notifiable);
-        $theme = $notifiable->theme ?? env('APP_THEME', 'forest');
+        $theme = $notifiable->theme;
 
         return (new MailMessage)
             ->subject(__('Reset your password'))

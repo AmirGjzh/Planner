@@ -220,7 +220,7 @@ Model (data access via Eloquent)
 
 **Rules:**
 - **Livewire pages** handle UI state, validation, and user interaction; they delegate domain logic to Actions. Search/filter queries and validation stay in the page; anything with side effects or authorization goes through an Action.
-- **Actions** are the single domain layer: one `final class` per operation with a single public `execute()` (or domain-named) method, `LoggerInterface` as the only injected dependency, and an `XxxResult` enum for every outcome. No service layer, no repositories, no DTOs, no events/queued jobs (see `.ai/rules/actions.md`).
+- **Actions** are the single domain layer: one `final class` per operation with a single public `execute()` (or domain-named) method, `LoggerInterface` as the only injected dependency, and an `XxxResult` enum for every outcome. No service layer, no repositories, no DTOs, no events; queued jobs only as fire-and-forget side effects (see `.ai/rules/actions.md`).
 - **Models** handle data access only — fillable via `#[Fillable]`, casts via `casts()` (see `.ai/rules/models.md`).
 
 ### Pattern Decisions

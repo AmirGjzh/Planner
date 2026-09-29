@@ -8,7 +8,8 @@
 ## Purpose and Audience
 
 Describes the production deployment: a single Linux host on a private LAN, plain HTTP, no
-domain. nginx + php-fpm + MySQL + Redis via Docker Compose. Not user documentation.
+domain. nginx + php-fpm + a queue worker + MySQL + Redis via Docker Compose. Not user
+documentation.
 
 ## Current Status (snapshot)
 
@@ -18,10 +19,10 @@ domain. nginx + php-fpm + MySQL + Redis via Docker Compose. Not user documentati
 | Orchestration | Docker Compose v2 (`laravel/compose.production.yml`), project `planner` |
 | php-fpm image | `php:8.4-fpm`, multi-stage (see Dockerfile), runs as `www-data` |
 | nginx image | `nginx:1.30`, serves `/var/www/public` + proxies PHP |
-| MySQL / Redis | `mysql:8.4` (own volume) / `redis:8.10` (ephemeral) |
+| MySQL / Redis | `mysql:8.4` (own volume) / `redis:8.10` (appendonly volume) |
 | Build-only | `composer:2.10`, `node:24` |
-| Containers | `planner-php-fpm`, `planner-nginx`, `planner-mysql`, `planner-redis`, `planner-mailpit` |
-| Volumes | `planner_database`, `planner_storage` |
+| Containers | `planner-php-fpm`, `planner-queue`, `planner-nginx`, `planner-mysql`, `planner-redis`, `planner-mailpit` |
+| Volumes | `planner_database`, `planner_storage`, `planner_redis` |
 | Host ports | `80:80` (nginx), `8025:8025` (Mailpit UI) |
 | Restart / logging | `unless-stopped`; `json-file` capped 10m × 3 |
 
@@ -43,7 +44,8 @@ domain. nginx + php-fpm + MySQL + Redis via Docker Compose. Not user documentati
              |  fastcgi_pass php-fpm:9000
              v
    planner-php-fpm        runs the app; entrypoint runs setup each boot, then php-fpm
-        |  mysql:8.4 (data in volume)     | redis:8.10 (sessions/cache, ephemeral)
+   planner-queue          same image; entrypoint, then queue:work (consumes redis jobs)
+        |  mysql:8.4 (data in volume)     | redis:8.10 (sessions/cache/jobs, appendonly)
         v                                  v
    planner-mysql                        planner-redis        planner-mailpit (SMTP :1025, UI :8025)
 ```
@@ -53,8 +55,8 @@ domain. nginx + php-fpm + MySQL + Redis via Docker Compose. Not user documentati
 - nginx serves assets from its own baked `public/build`; php-fpm renders `@vite` from its own
   copy. **Assets are built twice** (once per image) with identical pins/lockfiles so the
   output matches.
-- Boot chain (healthchecks): mysql + redis → php-fpm → nginx. Mailpit is deliberately
-  outside the chain — mail capture must never gate the app.
+- Boot chain (healthchecks): mysql + redis → php-fpm → nginx + queue. Mailpit is
+  deliberately outside the chain — mail capture must never gate the app.
 
 ## Repository Layout (Docker Parts)
 
@@ -84,13 +86,18 @@ Single-file Compose v2 spec.
 - **php-fpm**: built with `target: production`; `env_file: .env` (full environment);
   `APP_KEY: ${APP_KEY:?Set APP_KEY in .env}` guard; `storage:/var/www/storage` volume;
   healthcheck `php -r 'exit(@fsockopen(...9000) ? 0 : 1)'`.
+- **queue**: same image (`target: production`) with `command: php artisan queue:work
+  --tries=3 --sleep=1`; same `env_file`/`APP_KEY` guard/`storage` volume/logging as
+  php-fpm; `depends_on: php-fpm` healthy (boot-time `migrate --seed` never races). No port
+  → no healthcheck (mailpit precedent).
 - **nginx**: built from the nginx Dockerfile; `80:80`; healthcheck `curl -fs
   http://127.0.0.1/up`; depends on healthy php-fpm.
 - **mysql**: `MYSQL_ROOT_PASSWORD`/`DB_PASSWORD` required via `${VAR:?}`, DB/user from
   `DB_DATABASE`/`DB_USERNAME`; real-auth healthcheck (`mysql -e 'SELECT 1'`, never
   `mysqladmin ping`) with `start_period: 30s`; data in the `database` volume.
 - **redis**: `requirepass` via `REDIS_PASSWORD`, healthcheck `redis-cli ping` via
-  `REDISCLI_AUTH`, no volume (ephemeral — losing sessions/cache just forces a re-login).
+  `REDISCLI_AUTH`; `--appendonly yes` with a `redis:/data` volume — sessions/cache/jobs
+  survive restarts (persistence was the recorded precondition for the redis-backed queue).
 - **mailpit**: `axllent/mailpit:v1.27`, publishes only the web UI (`8025:8025`); SMTP 1025
   stays internal (`mailpit:1025` from php-fpm). No compose healthcheck — the image ships a
   built-in exec-form `HEALTHCHECK ["/mailpit", "readyz"]`. Not in any `depends_on` chain
@@ -152,15 +159,17 @@ Single vhost. Facts worth knowing:
 
 Entrypoint: validates `APP_KEY` (`base64:` prefix, decodes to exactly 32 bytes for
 AES-256-CBC), then `php artisan migrate --seed --force` and `php artisan optimize`, then
-`exec php-fpm` (pid 1 = php-fpm; signals work).
+`exec "$@"` — the image `CMD` decides the process (`php-fpm` for the web service, the
+`queue` service overrides it with `queue:work`); pid 1 receives it, signals work.
 
 - The key guard catches the common mistake of pasting a bare `openssl rand -base64 32`
   output without the `base64:` prefix. It only reports the problem — fix is on the host.
 - **Seeds on every boot** — see the seeding decision in `shared-conventions.md`. `UserSeeder` is a
   no-op today, but this line must be revisited before that ever creates real users
-  (a known-credential dev seed must not reach production).
+  (a known-credential dev seed must not reach production). The queue service starts only
+  after healthy php-fpm, so the two boots never migrate concurrently.
 - `migrate --force` is idempotent; `optimize` bakes config/routes/views, which is why
-  "edit `.env`, recreate php-fpm" is sufficient for env changes.
+  "edit `.env`, recreate php-fpm + queue" is sufficient for env changes.
 
 ### `.dockerignore`
 
@@ -184,6 +193,8 @@ blank. Highlights:
   cookie; the 120-minute server-side lifetime stays the real limit), `SESSION_SECURE_COOKIE`
   unset (plain HTTP).
 - `CACHE_STORE=redis`; `REDIS_CACHE_LOCK_CONNECTION=cache`.
+- `QUEUE_CONNECTION=redis` — jobs on the `default` redis connection (DB 0); the `queue`
+  service is the consumer (`ResetPasswordNotification` is the first queued job).
 - `LOG_LEVEL=info`, `BCRYPT_ROUNDS=12` (explicit default).
 - `MAIL_MAILER=smtp` / `MAIL_HOST=mailpit` / `MAIL_PORT=1025` /
   `MAIL_FROM_ADDRESS=no-reply@planner.local` — every mail is captured by the mailpit
@@ -211,12 +222,15 @@ These ship with the app; `docker/` alone is not enough.
   `laravel/.env.production` (committed) and replaces the blanket `/storage/framework` ignore
   with per-directory `.gitignore` files — keeps the storage skeleton in git → in the image →
   the named volume auto-populates with `www-data` ownership.
+- **`config/queue.php` + `ResetPasswordNotification`**: redis-backed queue (env-driven
+  connection, tests force `sync`); the notification implements `ShouldQueue` so password-reset
+  mail is delivered by the worker, with terminal failures recorded in `failed_jobs`.
 
 ## Environment Variables: Host → Container
 
 | Compose value | Host `.env` key | Purpose |
 |---|---|---|
-| `env_file: .env` (php-fpm) | (all) | full app env (`DB_*`, `REDIS_*`, `SESSION_*`, `APP_KEY`, `MAIL_*`, ...) |
+| `env_file: .env` (php-fpm, queue) | (all) | full app env (`DB_*`, `REDIS_*`, `SESSION_*`, `QUEUE_*`, `APP_KEY`, `MAIL_*`, ...) |
 | mysql `MYSQL_*` | `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD:?`, `MYSQL_ROOT_PASSWORD:?` | DB/user creation (first init only) |
 | redis `REDIS_PASSWORD` + `$$REDIS_PASSWORD` in command | `REDIS_PASSWORD:?` | `requirepass` |
 | `REDISCLI_AUTH` | `REDIS_PASSWORD:?` | healthcheck auth |
@@ -288,6 +302,13 @@ file-by-file sections above; this is the one-line record.
     the app sends over SMTP to `mailpit:1025`, everything is read in the UI on 8025. No
     compose healthcheck (the image ships `/mailpit readyz`), no `depends_on` (mail capture
     never blocks boot), no volume (disposable).
+27. **Redis persistence (`--appendonly yes` + `planner_redis` volume), both stacks** — the
+    recorded precondition for a redis-backed queue: jobs in flight must survive restarts.
+    Supersedes row 5's no-volume stance (sessions/cache persisting too is harmless).
+28. **`queue` worker service** (same `production` image as php-fpm, `queue:work --tries=3
+    --sleep=1`, ordered after healthy php-fpm) — a queue with no consumer silently piles up,
+    which is worse than sync. `entrypoint.sh` ends `exec "$@"` so the image `CMD` decides the
+    process; the php-fpm service is byte-identical to before.
 
 ## Deployment Runbook (fresh machine, golden path)
 
@@ -328,12 +349,12 @@ won't answer.
 | Force recreate everything | `up -d --force-recreate` |
 | Stop everything | `down` (volumes survive) |
 | **Never** | `down -v` / `docker volume rm planner_database planner_storage` — that's the whole database |
-| Fresh APP_KEY | on your machine: `printf 'base64:%s\n' "$(openssl rand -base64 32)"`, then `.env`, recreate php-fpm |
+| Fresh APP_KEY | on your machine: `printf 'base64:%s\n' "$(openssl rand -base64 32)"`, then `.env`, recreate php-fpm + queue |
 | Shell into a service | `exec php-fpm sh` (runs as `www-data`) |
 | Manual DB backup (no automation yet) | `exec mysql sh -c 'mysqldump -u planner -p"$MYSQL_PASSWORD" planner' > backup.sql` |
 
 APP_KEY rotation (rare; forces re-login): generate, edit `.env` → `up -d --force-recreate
-php-fpm nginx`, verify `/up` and a fresh login.
+php-fpm queue nginx`, verify `/up` and a fresh login.
 
 ### Env-change workflow (why it works)
 
@@ -346,13 +367,14 @@ So: change `.env` → recreate the container that needs it. php-fpm's entrypoint
 | Symptom | Check | Fix |
 |---|---|---|
 | `up` aborts "required variable … missing a value" | `.env` has a blank secret | fill the named var |
-| "Unsupported cipher or incorrect key length" | `APP_KEY` missing the `base64:` prefix | regenerate + `up -d --force-recreate php-fpm` |
+| "Unsupported cipher or incorrect key length" | `APP_KEY` missing the `base64:` prefix | regenerate + `up -d --force-recreate php-fpm queue` |
 | `502 Bad Gateway` | is php-fpm healthy? | `up -d php-fpm`; check `logs php-fpm` |
 | `/up` 500 / "whoops" | php-fpm logs | app exception; check memory, APP_KEY validity |
 | Container restart-loop | `logs` shows migration error | mysql not ready (wait; `start_period` covers first boot) or DB creds wrong |
 | MySQL won't accept new creds | volume already initialized | fix the DB user instead (or recreate volume deliberately) |
 | Redis NOAUTH errors | `.env` `REDIS_PASSWORD` vs container env | edit `.env`, recreate redis + php-fpm |
-| Everything healthy but login fails | session store | `exec redis redis-cli -a "$REDIS_PASSWORD" FLUSHALL` (nukes sessions+cache; data intact) |
+| Everything healthy but login fails | session store | `exec redis redis-cli -a "$REDIS_PASSWORD" FLUSHALL` (nukes sessions+cache+jobs — queued mail is lost, users just re-request; row data intact) |
+| Queued mail never arrives | `./planner logs queue` + `failed_jobs` table | worker down → `up -d queue`; job exhausted retries → inspect the `failed_jobs` row |
 | Port 80 busy on host | `ss -ltnp` | stop the other process, or map another port in compose |
 
 Healthcheck definitions (for diagnosis):
@@ -365,15 +387,16 @@ Healthcheck definitions (for diagnosis):
 | redis | `redis-cli ping` (auth via `REDISCLI_AUTH`) | 10s / 5s / 5 |
 | mailpit | image built-in `["/mailpit", "readyz"]` (no compose stanza) | image default 15s / — / 3, start-period 10s |
 
-`depends_on: condition: service_healthy` orders them: mysql+redis → php-fpm → nginx.
+`depends_on: condition: service_healthy` orders them: mysql+redis → php-fpm → nginx + queue
+(the queue has no healthcheck — no port; it is ordered after healthy php-fpm).
 
 ## Docker Hygiene on This Host
 
-Expected state: project images plus build bases pulled on demand, the `database` and
-`storage` volumes, no dangling images. Rules forever:
+Expected state: project images plus build bases pulled on demand, the `database`,
+`storage`, and `redis` volumes, no dangling images. Rules forever:
 
 - **Never** `docker system prune -a --volumes`, `docker volume prune`, or `down -v` on a live
-  install — those delete `planner_database` / `planner_storage`.
+  install — those delete `planner_database` / `planner_storage` / `planner_redis`.
 - Safe weekly-ish hygiene: `docker system prune -f` (dangling images) and `docker builder
   prune -f`.
 - Build bases are ephemeral — deleting them is fine; the next `up --build` re-pulls.
@@ -394,9 +417,9 @@ Structural truth: **the images are immutable**; the repo defines the deployment.
   version table and decisions log.
 - Env surface changes: add to `laravel/.env.production` + a new decisions-log row; live
   installs need the same manual edit + recreate flow.
-- Adding infrastructure (queue worker, scheduler, scale-out): copy the established pattern
-  (composer stage + worker image, `depends_on`/health, logging/restart model, named volume +
-  persistence *before* any Redis-backed queue — Redis has no volume today). Out of current
+- Adding infrastructure (scheduler, scale-out): copy the queue-worker pattern (same app
+  image + `command` override, ordered after healthy php-fpm, shared logging/restart model).
+  Redis already has the persistence a Redis-backed queue requires — keep it. Out of current
   scope unless a feature requires it.
 - Editing `docker/`: keep `.dockerignore`, `.env.*` templates, both Dockerfiles and
   `default.conf` coherent across the two images; rebuild + health-verify; update this doc.
@@ -420,4 +443,4 @@ Recorded so future-me knows these were conscious decisions, not oversights:
   only oversight.
 - **Rate limiting beyond Laravel's defaults** (the `block()` work is about write races and
   session lock, not abuse).
-- **CDN / compression pre-bake / Redis persistence**: unnecessary or contrary to size.
+- **CDN / compression pre-bake**: unnecessary or contrary to size.
