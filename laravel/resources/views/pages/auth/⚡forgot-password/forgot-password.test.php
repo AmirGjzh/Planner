@@ -30,6 +30,20 @@ it('validates email format', function () {
         ->assertHasErrors(['email' => ['email']]);
 });
 
+it('trims the email before validating', function () {
+    Notification::fake();
+    $user = User::factory()->create(['email' => 'amir@example.com']);
+
+    Livewire::test('pages::auth.forgot-password')
+        ->set('email', '  amir@example.com  ')
+        ->call('send')
+        ->assertHasNoErrors()
+        ->assertSet('sent', true)
+        ->assertSet('send_error', null);
+
+    Notification::assertSentTo($user, ResetPasswordNotification::class);
+});
+
 it('shows the sent state for an existing user', function () {
     Notification::fake();
     $user = User::factory()->create(['email' => 'amir@example.com']);

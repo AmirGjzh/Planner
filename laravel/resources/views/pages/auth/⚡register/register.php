@@ -21,6 +21,7 @@ new #[Layout('layouts::auth')] class extends Component
     {
         $this->register_error = null;
 
+        $this->email = trim($this->email);
         $credentials = $this->validate();
         $result = $register_user_action->execute(
             $credentials['username'],

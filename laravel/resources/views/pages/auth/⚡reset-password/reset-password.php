@@ -22,7 +22,7 @@ new #[Layout('layouts::auth')] class extends Component
 
     public function mount(): void
     {
-        if ($this->token === '') {
+        if ($this->token === '' || ! filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
             $this->reset_error = 'invalid_link';
         }
     }

@@ -50,6 +50,19 @@ it('validates email format', function () {
         ->assertHasErrors(['email' => ['email']]);
 });
 
+it('trims the email before validating', function () {
+    Livewire::test('pages::auth.register')
+        ->set('username', 'amir_user')
+        ->set('email', '  amir@example.com  ')
+        ->set('password', 'password123')
+        ->set('password_confirmation', 'password123')
+        ->call('register')
+        ->assertHasNoErrors()
+        ->assertRedirect(route('login'));
+
+    expect(User::firstWhere('email', 'amir@example.com'))->not->toBeNull();
+});
+
 it('validates password confirmation', function () {
     Livewire::test('pages::auth.register')
         ->set('username', 'amir_user')

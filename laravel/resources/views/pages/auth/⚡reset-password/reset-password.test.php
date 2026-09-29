@@ -27,6 +27,13 @@ it('shows the invalid-link state without a token', function () {
         ->assertDontSee('resetPassword', false);
 });
 
+it('shows the invalid-link state when the link carries no email', function () {
+    Livewire::withQueryParams(['token' => 'abc123'])
+        ->test('pages::auth.reset-password')
+        ->assertSet('reset_error', 'invalid_link')
+        ->assertDontSee('resetPassword', false);
+});
+
 it('validates required fields', function () {
     Livewire::withQueryParams(['token' => 'abc123', 'email' => 'amir@example.com'])
         ->test('pages::auth.reset-password')
@@ -104,7 +111,8 @@ it('shows an invalid-link error for a wrong token', function () {
         ->call('resetPassword')
         ->assertSet('reset_error', 'invalid_link')
         ->assertSet('password', '')
-        ->assertSee('Link invalid or expired!');
+        ->assertSee('Link invalid or expired!')
+        ->assertDontSee('resetPassword', false);
 
     expect(Hash::check('old-password', $user->fresh()->password))->toBeTrue();
 });

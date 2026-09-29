@@ -24,6 +24,7 @@ new #[Layout('layouts::auth')] class extends Component
     {
         $this->send_error = null;
 
+        $this->email = trim($this->email);
         $credentials = $this->validate();
 
         $result = $forgot_password_action->execute($credentials['email'], request());

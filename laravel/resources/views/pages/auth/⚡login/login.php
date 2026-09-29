@@ -37,6 +37,7 @@ new #[Layout('layouts::auth')] class extends Component
     {
         $this->login_error = null;
 
+        $this->email = trim($this->email);
         $credentials = $this->validate();
         $result = $login_user_action->execute(
             $credentials['email'],

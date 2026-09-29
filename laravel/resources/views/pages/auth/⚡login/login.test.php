@@ -54,6 +54,21 @@ it('validates email format', function () {
     $this->assertGuest();
 });
 
+it('trims the email before validating', function () {
+    $user = User::factory()->create([
+        'email' => 'amir@example.com',
+        'password' => 'password',
+    ]);
+
+    Livewire::test('pages::auth.login')
+        ->set('email', '  amir@example.com  ')
+        ->set('password', 'password')
+        ->call('login')
+        ->assertHasNoErrors()
+        ->assertRedirect(route('dashboard'));
+    $this->assertAuthenticatedAs($user);
+});
+
 it('rejects an oversized password', function () {
     Livewire::test('pages::auth.login')
         ->set('email', 'amir@example.com')

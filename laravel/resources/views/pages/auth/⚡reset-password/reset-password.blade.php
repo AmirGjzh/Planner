@@ -42,7 +42,7 @@
             </div>
         @endif
 
-        @if ($token)
+        @if ($token && $reset_error !== 'invalid_link')
             <form wire:submit="resetPassword" class="flex flex-col">
                 <div class="mb-4">
                     <x-mine.input
