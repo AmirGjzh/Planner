@@ -62,13 +62,14 @@ Plan (0..1) ——— (0..N) Task
 | `theme` | `string` | Not null, default `ocean` (validated against `config('themes.name')`, not cast) |
 | `deleted_at` | `timestamp` | Soft delete |
 | `email_verified_at` | `timestamp` | Nullable |
+| `password_changed_at` | `timestamp` | Nullable; stamped when the password changes (drives session eviction) |
 | `remember_token` | `string` | Nullable |
 | `created_at` / `updated_at` | `timestamp` | Auto-managed |
 
 **Model details:**
 - `#[Fillable]`: `username`, `email`, `password`, `firstname`, `lastname`, `birthday`, `country`, `gender`, `locale`, `theme`
 - `#[Hidden]`: `password`, `remember_token`
-- **Casts:** `email_verified_at` → `datetime`, `birthday` → `date:Y-m-d`, `gender` → `UserGender` enum, `password` → `hashed`
+- **Casts:** `email_verified_at` → `datetime`, `password_changed_at` → `datetime`, `birthday` → `date:Y-m-d`, `gender` → `UserGender` enum, `password` → `hashed`
 - **Accessors:** `fullName()` — trimmed `"{firstname} {lastname}"`; `initials()` — multibyte-safe ZWNJ-separated initials from firstname+lastname (falls back to username)
 - **Relationships:** `plans()` (HasMany), `tasks()` (HasMany), `categories()` (HasMany)
 - **Soft deletes:** Yes (only entity with this)
@@ -252,7 +253,7 @@ Every use case maps to one `app/Actions/<Domain>/` folder. There is no separate 
 
 | UC | Use Case | Module / Service | Responsibilities |
 |----|----------|------------------|------------------|
-| 01 | Login | Authentication (`LoginUserAction`, `ForgotPasswordAction`, `ResetPasswordAction`) | Verify credentials, send/reset password links, session-hint + intended-URL handling, rate-limit attempts |
+| 01 | Login | Authentication (`LoginUserAction`, `ForgotPasswordAction`, `ResetPasswordAction`) | Verify credentials, send/reset password links, session-hint + intended-URL handling, password-change session eviction, rate-limit attempts |
 | 02 | Register | Authentication (`RegisterUserAction`) | Create account, enforce unique username/email |
 | 03 | View and Edit Profile | Profile (`UpdateProfileAction`) | Read/update profile fields, rate-limit updates |
 | 04 | Delete Account | Account (`DeleteAccountAction`) | Verify password, obfuscate credentials, soft-delete |

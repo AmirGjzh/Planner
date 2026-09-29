@@ -15,9 +15,11 @@
     "Sign-in failed!": "ورود انجام نشد!",
     "The email or password you entered is incorrect.": "ایمیل یا رمز عبوری که وارد کردی درست نیست.",
     "Your session has expired. Please sign in again.": "نشستت تموم شده. لطفاً دوباره وارد شو.",
+    "Your password was changed, sign in again": "رمز عبورت عوض شده، دوباره وارد شو",
     "Email is required.": "ایمیلتو وارد کن.",
     "Enter a valid email.": "یه ایمیل معتبر وارد کن.",
     "Password is required.": "رمز عبورتو وارد کن.",
+    "Use at most 256 characters.": "حداکثر ۲۵۶ کاراکتر وارد کن.",
     "You're signed in": "وارد شدی",
     "OR": "یا",
 

@@ -187,7 +187,9 @@ Committed template, source of truth. Prod values baked in; only the secrets
 blank. Highlights:
 
 - `APP_ENV=production`, `APP_LOCALE=fa`, `APP_THEME=ocean`, `APP_DEBUG=false`,
-  `APP_URL=http://localhost`.
+  `APP_URL=http://localhost` — the reset-email link is rooted here, so keep this as
+  the URL you actually open the app with (`localhost` is right while Mailpit is read
+  on the server itself; a deployment changes this one line).
 - `SESSION_DRIVER=redis` on the dedicated `session` connection (DB 2, added in
   `config/database.php`), `SESSION_ENCRYPT=true`, `SESSION_EXPIRE_ON_CLOSE=false` (persistent
   cookie; the 120-minute server-side lifetime stays the real limit), `SESSION_SECURE_COOKIE`
@@ -309,6 +311,10 @@ file-by-file sections above; this is the one-line record.
     --sleep=1`, ordered after healthy php-fpm) — a queue with no consumer silently piles up,
     which is worse than sync. `entrypoint.sh` ends `exec "$@"` so the image `CMD` decides the
     process; the php-fpm service is byte-identical to before.
+29. **Mailpit UI left unauthenticated on 8025** — re-reviewed during the UC-1 step-3
+    security pass and deliberately skipped again: it is a temporary capture tool, not
+    part of later production. Row 12's `MP_UI_AUTH`/loopback revisit stands if the
+    stack ever serves anyone beyond this machine.
 
 ## Deployment Runbook (fresh machine, golden path)
 

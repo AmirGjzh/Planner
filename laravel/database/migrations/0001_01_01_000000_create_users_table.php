@@ -25,6 +25,7 @@ return new class extends Migration
             $table->string('theme')->default('ocean');
             $table->softDeletes();
             $table->timestamp('email_verified_at')->nullable();
+            $table->timestamp('password_changed_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

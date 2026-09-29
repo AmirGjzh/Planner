@@ -54,6 +54,15 @@ it('validates email format', function () {
     $this->assertGuest();
 });
 
+it('rejects an oversized password', function () {
+    Livewire::test('pages::auth.login')
+        ->set('email', 'amir@example.com')
+        ->set('password', str_repeat('a', 257))
+        ->call('login')
+        ->assertHasErrors(['password' => ['max']]);
+    $this->assertGuest();
+});
+
 it('shows a login error for wrong credentials', function () {
     User::factory()->create([
         'email' => 'amir@example.com',

@@ -27,3 +27,7 @@ Column and index conventions for migrations.
 ## Columns → indexes → foreign keys, in that order
 
 Define all columns first, then `index()`/`unique()`, then split `foreignId()` + `foreign()->references()` for the FKs. This way MySQL resolves FK indexing against our indexes instead of auto-creating a stray `*_foreign` index — verify with `database-schema` after `migrate:fresh` (a stray auto-index means the order was broken).
+
+## Fold pre-deployment schema changes into the owning migration
+
+While there is no deployment story yet (fresh installs and disposable dev volumes), new columns go into the migration that already owns the table — `password_changed_at` lives inside `0001_01_01_000000_create_users_table.php`, not a dated add-on file. Align databases that already ran the migration with an additive `Schema::table` (tinker) — never `migrate:fresh` on shared dev data. Revisit this preference once a real deployment exists: upgrade paths then need additive files.

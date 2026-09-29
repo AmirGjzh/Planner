@@ -57,6 +57,7 @@ final class ResetPasswordAction
             function (User $user, string $password) {
                 $user->forceFill([
                     'password' => $password,
+                    'password_changed_at' => now(),
                 ])->setRememberToken(Str::random(60));
                 $user->save();
             }

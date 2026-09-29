@@ -13,7 +13,8 @@ Rules for `bootstrap/app.php`, `config/database.php`, and `config/queue.php` (pr
 
 - `trustProxies(at: '*')` — nginx is the only proxy in front and sets `X-Forwarded-*` for every request; a proxy IP list was rejected (Docker bridge IP varies).
 - `redirectGuestsTo('/login')`, `redirectUsersTo('/dashboard')`.
-- Keep both; don't narrow the trusted proxy set without re-checking the compose topology.
+- `ExpireSessionsOnPasswordChange` is appended to the `web` group — session freshness against `password_changed_at` must cover every authenticated surface (pages *and* the Livewire update route), not selected routes; don't move it to route-level middleware.
+- Keep the proxy/redirect setup; don't narrow the trusted proxy set without re-checking the compose topology.
 
 ## config/database.php: the session connection stays isolated
 

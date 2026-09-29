@@ -48,6 +48,15 @@ it('validates password length and confirmation', function () {
         ]);
 });
 
+it('rejects an oversized password', function () {
+    Livewire::withQueryParams(['token' => 'abc123', 'email' => 'amir@example.com'])
+        ->test('pages::auth.reset-password')
+        ->set('password', str_repeat('a', 257))
+        ->set('password_confirmation', str_repeat('a', 257))
+        ->call('resetPassword')
+        ->assertHasErrors(['password' => ['max']]);
+});
+
 it('treats an invalid email as an invalid link', function () {
     Livewire::withQueryParams(['token' => 'abc123', 'email' => 'bad-email'])
         ->test('pages::auth.reset-password')

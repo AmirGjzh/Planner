@@ -76,7 +76,7 @@ new #[Layout('layouts::auth')] class extends Component
     {
         return [
             'email' => ['required', 'email:rfc'],
-            'password' => ['required'],
+            'password' => ['required', 'max:256'],
         ];
     }
 
@@ -86,6 +86,7 @@ new #[Layout('layouts::auth')] class extends Component
             'email.required' => __('Email is required.'),
             'email.email' => __('Enter a valid email.'),
             'password.required' => __('Password is required.'),
+            'password.max' => __('Use at most 256 characters.'),
         ];
     }
 };

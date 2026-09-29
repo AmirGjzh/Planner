@@ -93,6 +93,7 @@ class User extends Authenticatable implements HasLocalePreference
     {
         return [
             'email_verified_at' => 'datetime',
+            'password_changed_at' => 'datetime',
             'birthday' => 'date:Y-m-d',
             'gender' => UserGender::class,
             'password' => 'hashed',

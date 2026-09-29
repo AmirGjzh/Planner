@@ -53,6 +53,7 @@ final class LoginUserAction
         }
         RateLimiter::clear($rate_limit_key);
         session()->regenerate();
+        session()->regenerateToken();
         Cookie::queue(self::SESSION_HINT, '1', self::SESSION_HINT_MINUTES);
         $this->logger->info('User logged in.', [
             'user_id' => Auth::id(),

@@ -6,7 +6,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | --- | --- |
 | app/Actions/**, resources/views/pages/** | .ai/rules/actions.md |
 | resources/views/components/mine/animate/** | .ai/rules/animate.md |
-| app/Actions/Auth/**, app/Notifications/**, resources/views/mail/** | .ai/rules/auth.md |
+| app/Actions/Auth/**, app/Http/Middleware/**, app/Notifications/**, resources/views/mail/** | .ai/rules/auth.md |
 | app/Actions/Category/** | .ai/rules/category.md |
 | resources/views/components/** | .ai/rules/components.md |
 | config/themes.php | .ai/rules/config.md |

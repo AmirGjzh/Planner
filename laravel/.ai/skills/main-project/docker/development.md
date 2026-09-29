@@ -129,6 +129,9 @@ defaults:
 - `MAIL_MAILER=smtp` / `MAIL_HOST=mailpit` / `MAIL_PORT=1025` /
   `MAIL_FROM_ADDRESS=no-reply@planner.local` — every mail is captured by the mailpit
   service and read in its UI at `http://localhost:8025`; nothing ever leaves the host.
+- `APP_URL=http://localhost:8000` — reset-email links root here (never the request host),
+  so they stay clickable from the Mailpit UI on this machine even when the app is browsed
+  through another hostname.
 - Removed from stock Laravel: BROADCAST/FILESYSTEM/MEMCACHED/AWS/VITE (each has a
   sane default or is unused).
 - Only these blanks to fill: `APP_KEY`, `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `REDIS_PASSWORD`.

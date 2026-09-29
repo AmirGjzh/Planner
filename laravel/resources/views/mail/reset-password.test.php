@@ -56,3 +56,11 @@ it('queues the reset notification for background delivery', function () {
 
     Queue::assertPushed(SendQueuedNotifications::class);
 });
+
+it('roots the reset link at APP_URL instead of the request host', function () {
+    $user = User::factory()->create(['email' => 'amir@example.com']);
+    $mail = (new ResetPasswordNotification('token-123'))->toMail($user);
+
+    expect($mail->actionUrl)
+        ->toStartWith(rtrim(config('app.url'), '/').'/reset-password');
+});

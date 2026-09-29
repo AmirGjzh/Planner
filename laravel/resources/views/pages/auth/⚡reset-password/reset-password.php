@@ -76,7 +76,7 @@ new #[Layout('layouts::auth')] class extends Component
     protected function rules(): array
     {
         return [
-            'password' => ['required', 'confirmed', 'min:8'],
+            'password' => ['required', 'confirmed', 'min:8', 'max:256'],
             'password_confirmation' => ['required'],
         ];
     }
@@ -87,6 +87,7 @@ new #[Layout('layouts::auth')] class extends Component
             'password.required' => __('Password is required.'),
             'password.confirmed' => __('The passwords don\'t match.'),
             'password.min' => __('Use at least 8 characters.'),
+            'password.max' => __('Use at most 256 characters.'),
             'password_confirmation.required' => __('Confirm your password.'),
         ];
     }
