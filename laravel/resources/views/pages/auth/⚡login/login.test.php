@@ -54,6 +54,88 @@ it('validates email format', function () {
     $this->assertGuest();
 });
 
+it('focuses the first invalid field when validation fails', function () {
+    Livewire::test('pages::auth.login')
+        ->call('login')
+        ->assertHasErrors(['email' => ['required']])
+        ->assertDispatched('focus-first-error');
+});
+
+it('wires invalid fields to their error messages', function () {
+    Livewire::test('pages::auth.login')
+        ->set('email', 'bad-email')
+        ->set('password', 'password')
+        ->call('login')
+        ->assertHasErrors(['email' => ['email']])
+        ->assertSee('aria-invalid="true"', false)
+        ->assertSee('aria-describedby="email-error"', false)
+        ->assertSee('id="email-error"', false);
+});
+
+it('renders the email field with semantic input attributes', function () {
+    Livewire::test('pages::auth.login')
+        ->assertSee('type="email"', false)
+        ->assertSee('spellcheck="false"', false)
+        ->assertSee('novalidate', false);
+});
+
+it('labels the password visibility toggle', function () {
+    Livewire::test('pages::auth.login')
+        ->assertSee('aria-label="Show password"', false)
+        ->assertSee(':aria-pressed="show"', false);
+});
+
+it('renders the heading and inputs at the settled type scale', function () {
+    Livewire::test('pages::auth.login')
+        ->assertSee('text-xl', false)
+        ->assertSee('tracking-tight', false)
+        ->assertSee('text-base', false)
+        ->assertSee('placeholder:text-medium', false);
+});
+
+it('shows the email field placeholder label', function () {
+    Livewire::test('pages::auth.login')
+        ->assertSee(__('Your email'));
+});
+
+it('spaces the form with a uniform gap and comfortable targets', function () {
+    Livewire::test('pages::auth.login')
+        ->assertSee('flex flex-col gap-4', false)
+        ->assertSee('p-6 sm:p-8', false)
+        ->assertSee('px-4 py-8 sm:px-6', false)
+        ->assertSee('gap-2 py-1', false)
+        ->assertDontSee('mb-5', false);
+});
+
+it('animates only explicit CSS properties', function () {
+    Livewire::test('pages::auth.login')
+        ->assertDontSee('transition-all', false);
+});
+
+it('dims the submit button while it is busy', function () {
+    Livewire::test('pages::auth.login')
+        ->assertSee('disabled:opacity-60', false)
+        ->assertSee('disabled:cursor-wait', false);
+});
+
+it('fades alerts in with a short entrance animation', function () {
+    User::factory()->create([
+        'email' => 'amir@example.com',
+        'password' => 'password',
+    ]);
+
+    Livewire::test('pages::auth.login')
+        ->set('email', 'amir@example.com')
+        ->set('password', 'wrong-password')
+        ->call('login')
+        ->assertSee('mine-alert-enter', false);
+});
+
+it('keeps entrance motion quick', function () {
+    Livewire::test('pages::auth.login')
+        ->assertSee("transitionDuration = '350ms'", false);
+});
+
 it('trims the email before validating', function () {
     $user = User::factory()->create([
         'email' => 'amir@example.com',
@@ -65,6 +147,7 @@ it('trims the email before validating', function () {
         ->set('password', 'password')
         ->call('login')
         ->assertHasNoErrors()
+        ->assertNotDispatched('focus-first-error')
         ->assertRedirect(route('dashboard'));
     $this->assertAuthenticatedAs($user);
 });
@@ -88,7 +171,9 @@ it('shows a login error for wrong credentials', function () {
         ->set('password', 'wrong-password')
         ->call('login')
         ->assertSet('login_error', 'invalid')
-        ->assertSet('password', '');
+        ->assertSet('password', '')
+        ->assertSee('role="alert"', false)
+        ->assertSee('Check your email and password, then try again.');
     $this->assertGuest();
 });
 

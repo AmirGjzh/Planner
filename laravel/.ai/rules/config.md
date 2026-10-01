@@ -11,12 +11,13 @@ Rules for `config/themes.php`.
 
 - `config('themes.name')` — flat array of theme slugs; the current list lives in `config/themes.php`, not here.
 - `config('themes.vars')` — map keyed by theme (`['ocean' => [...], ...]`), each element the theme's JSON minus its `name` key.
-- **No fallback/env-resolution logic in config/themes.php.** `name` is used (a) as the allowed-value list for validation (`Rule::in(config('themes.name'))`) and (b) to drive the theme dropdown in `profile.php`.
+- `config('themes.default')` — the fallback theme slug, read from `env('APP_THEME', 'forest')` **inside the config file** so `config:cache` bakes it; never call `env()` at runtime (views/actions included) — it returns `null` once config is cached.
+- `name` is used (a) as the allowed-value list for validation (`Rule::in(config('themes.name'))`) and (b) to drive the theme dropdown in `profile.php`.
 
 The active theme per request resolves at the component level in `resources/views/components/mine/theme-vars/index.blade.php`:
 
 ```php
-config('themes.vars')[auth()->user()?->theme ?? env('APP_THEME', 'forest')]
+config('themes.vars')[auth()->user()?->theme ?? config('themes.default')]
 ```
 
 - Keep that fallback pointing at a present theme file (`forest`).

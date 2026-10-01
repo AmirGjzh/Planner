@@ -31,7 +31,7 @@
     <div
         @if ($type === 'password') x-data="{ show: false }" @endif
         @class([
-            'group flex w-full items-center overflow-hidden rounded-xl border-2 transition-all duration-200 ease-out',
+            'group flex w-full items-center overflow-hidden rounded-xl border-2 transition-[border-color,background-color,box-shadow] duration-200 ease-out',
             $height => true,
             'bg-[var(--mine-input-bg)]' => ! $errors->has($name),
             'bg-[var(--mine-input-error-bg)]' => $errors->has($name),
@@ -66,6 +66,10 @@
             name="{{ $name }}"
             @if ($type === 'password') :type="show ? 'text' : 'password'" @else type="{{ $type }}" @endif
             placeholder="{{ $placeholder }}"
+            @if ($errors->has($name))
+                aria-invalid="true"
+                aria-describedby="{{ $name }}-error"
+            @endif
             {{
                 $attributes->except('class')->merge([
                     'class' => (app()->isLocale('en') ? 'pt-1 ' : 'pt-1 placeholder:mb-1 ').
@@ -74,9 +78,10 @@
                 bg-transparent
                 px-4
                 text-sm
+                font-medium
                 mine-text-primary
+                placeholder:text-medium
                 placeholder:text-[var(--mine-input-placeholder)]
-                placeholder:text-sm
                 outline-none',
                 ])
             }}
@@ -85,6 +90,8 @@
         @if ($type === 'password')
             <button
                 type="button"
+                aria-label="{{ __('Show password') }}"
+                :aria-pressed="show"
                 @click="show = ! show"
                 @class([
                     'pr-4' => app()->isLocale('en'),

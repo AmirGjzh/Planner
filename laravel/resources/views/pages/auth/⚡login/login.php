@@ -3,10 +3,11 @@
 use App\Actions\Auth\LoginUserAction;
 use App\Enums\LoginResult;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-new #[Layout('layouts::auth')] class extends Component
+new #[Layout('layouts::auth', ['title' => 'Sign in'])] class extends Component
 {
     public string $email = '';
 
@@ -38,7 +39,15 @@ new #[Layout('layouts::auth')] class extends Component
         $this->login_error = null;
 
         $this->email = trim($this->email);
-        $credentials = $this->validate();
+
+        try {
+            $credentials = $this->validate();
+        } catch (ValidationException $exception) {
+            $this->dispatch('focus-first-error');
+
+            throw $exception;
+        }
+
         $result = $login_user_action->execute(
             $credentials['email'],
             $credentials['password'],

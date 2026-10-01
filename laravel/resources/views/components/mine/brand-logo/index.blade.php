@@ -25,7 +25,6 @@
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 1419 281"
         width="{{ $width }}"
-        role="img"
-        {{ $attributes->class(['mine-logo']) }}
+        {{ $attributes->merge(['role' => 'img', 'aria-label' => config('app.name')])->class(['mine-logo']) }}
     >{!! $paths !!}</svg>
 @endif

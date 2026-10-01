@@ -31,6 +31,24 @@ Guest pages (home/login/register/forgot-password/reset-password) have no `HasUse
 - Flows that redirect flash `session('toast')`; the destination page's `mount()` re-dispatches it. Every page that can receive a flash implements the re-dispatch (login, home, dashboard, profile, tasks, plans, categories, reports) — register deliberately has none (see `.ai/rules/auth.md`).
 - Pull the flash once in `mount()` and dispatch with `...$toast`.
 
+## Forms fail focus on the first invalid field
+
+Auth forms carry `novalidate` (the browser's native bubbles for `type="email"` are unlocalized and can block submit) and dispatch the focus themselves:
+
+- Wrap `$this->validate()` in `try { ... } catch (ValidationException) { $this->dispatch('focus-first-error'); throw; }` — dispatch before rethrowing so the event ships with the same request.
+- The layout listens with `<x-slot name="scripts">` → `Alpine.data('focusFirstError', ...)` bound `@window.focus-first-error`, focusing `[aria-invalid="true"]` (first match, then `.focus()`).
+- Never rely on the browser's own focus for invalid fields on these pages.
+
+Auth form rhythm is one formula: fields separated by the form's `gap-4`, and the submit button wrapped in `mt-2` so it sits 24px below the last field — single-field forms use the same formula, not a bigger gap. Auth headings are `text-xl tracking-tight`; links are `text-sm font-medium` except inside alerts, where an inline link stays `font-bold` for visibility (deliberate).
+
+Variable user-supplied text always ships with an overflow guard — an email is an unbreakable token that overflows a card instead of wrapping. At the tail of a line, put `truncate` on the paragraph; mid-sentence, interpolate it as `<span class="inline-block max-w-full truncate align-bottom">` via `{!! __('…') !!}` with `e($email)` (the translation string is ours; the value is escaped) and pin both the classes and the escaping in a test.
+
+## Page titles compose in the layout, from a plain string
+
+- Pages pass a title as a plain string via `#[Layout('layouts::auth', ['title' => 'Sign in'])]` — layout args must be PHP constant expressions, so no `__()`/`route()` calls in the attribute.
+- The layout renders `{{ ($title ?? null) ? __($title).' — '.config('app.name') : config('app.name') }}` and translates at render time, so the title follows the page locale.
+- Both layouts (`layouts::app`, `layouts::auth`) own the `— {{ config('app.name') }}` suffix; pages must not repeat the app name.
+
 ## Co-locate page tests next to pages, ref `pages::<name>`
 
 - Live at `resources/views/pages/<page>/*.test.php` (e.g. `⚡dashboard/dashboard.test.php`).

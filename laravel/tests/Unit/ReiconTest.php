@@ -54,6 +54,30 @@ it('returns null for a null name', function () {
     expect(Reicon::svg(null))->toBeNull();
 });
 
+it('hides icons from assistive technology by default', function () {
+    $anyName = array_key_first(reiconTestIcons()) ?? null;
+
+    if ($anyName === null) {
+        $this->markTestSkipped('No icon is exported.');
+    }
+
+    expect(Reicon::svg($anyName))->toContain('aria-hidden="true"');
+});
+
+it('keeps caller-provided aria attributes instead of hiding the icon', function () {
+    $anyName = array_key_first(reiconTestIcons()) ?? null;
+
+    if ($anyName === null) {
+        $this->markTestSkipped('No icon is exported.');
+    }
+
+    $svg = Reicon::svg($anyName, 'outline', 24, '', ['aria-label' => 'Close']);
+
+    expect($svg)
+        ->toContain('aria-label="Close"')
+        ->not->toContain('aria-hidden');
+});
+
 it('applies size, class and extra attributes', function () {
     $outlineName = array_key_first(array_filter(
         reiconTestIcons(),

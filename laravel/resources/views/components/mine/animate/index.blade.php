@@ -7,7 +7,7 @@
 
 @php
     $delayVal = $delay ? (int) $delay : 0;
-    $durationVal = $duration ? (int) $duration : 500;
+    $durationVal = $duration ? (int) $duration : 350;
     $staggerVal = $stagger ? (int) $stagger : 0;
 @endphp
 

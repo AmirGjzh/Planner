@@ -6,6 +6,16 @@ it('allows guests to visit the forgot-password page', function () {
     $this->get('/forgot-password')->assertSuccessful();
 });
 
+it('gives the forgot-password page a unique title', function () {
+    $this->get('/forgot-password')
+        ->assertSee('<title>'.__('Reset your password').' — '.config('app.name').'</title>', false);
+});
+
+it('gives the reset-password page a unique title', function () {
+    $this->get('/reset-password?token=abc123&email=amir@example.com')
+        ->assertSee('<title>'.__('Choose a new password').' — '.config('app.name').'</title>', false);
+});
+
 it('redirects authenticated users away from the forgot-password page', function () {
     $user = User::factory()->create();
 

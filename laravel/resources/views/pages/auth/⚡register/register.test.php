@@ -14,6 +14,23 @@ it('renders successfully', function () {
         ->assertSee('Welcome to Planner');
 });
 
+it('renders the heading at the settled type scale', function () {
+    Livewire::test('pages::auth.register')
+        ->assertSee('text-xl', false)
+        ->assertSee('tracking-tight', false)
+        ->assertDontSee('text-2xl', false);
+});
+
+it('spaces the form with a uniform gap and comfortable targets', function () {
+    Livewire::test('pages::auth.register')
+        ->assertSee('flex flex-col gap-4', false)
+        ->assertSee('p-6 sm:p-8', false)
+        ->assertSee('px-4 py-8 sm:px-6', false)
+        ->assertSee('mt-4', false)
+        ->assertSee('inline-flex items-center py-1', false)
+        ->assertDontSee('mb-8', false);
+});
+
 it('validates required fields', function () {
     Livewire::test('pages::auth.register')
         ->call('register')
@@ -48,6 +65,20 @@ it('validates email format', function () {
         ->set('password_confirmation', 'password123')
         ->call('register')
         ->assertHasErrors(['email' => ['email']]);
+});
+
+it('focuses the first invalid field when validation fails', function () {
+    Livewire::test('pages::auth.register')
+        ->call('register')
+        ->assertHasErrors(['username' => ['required']])
+        ->assertDispatched('focus-first-error');
+});
+
+it('renders the email field with semantic input attributes', function () {
+    Livewire::test('pages::auth.register')
+        ->assertSee('type="email"', false)
+        ->assertSee('spellcheck="false"', false)
+        ->assertSee('novalidate', false);
 });
 
 it('trims the email before validating', function () {

@@ -4,7 +4,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>{{ $title ?? config('app.name') }}</title>
+    <link
+        rel="preload"
+        as="font"
+        type="font/woff2"
+        crossorigin
+        href="{{ \Illuminate\Support\Facades\Vite::asset('resources/fonts/Vazirmatn-Regular.woff2') }}"
+    />
+
+    <title>{{ ($title ?? null) ? __($title).' — '.config('app.name') : config('app.name') }}</title>
 
     @livewireScriptConfig
     <x-mine.theme-vars />

@@ -23,5 +23,6 @@ foreach ($themes as $theme) {
 
 return [
     'name' => $themes,
+    'default' => env('APP_THEME', 'forest'),
     'vars' => $vars,
 ];

@@ -17,6 +17,23 @@ it('renders successfully', function () {
         ->assertSee('Reset your password');
 });
 
+it('renders the heading at the settled type scale', function () {
+    Livewire::test('pages::auth.forgot-password')
+        ->assertSee('text-xl', false)
+        ->assertSee('tracking-tight', false)
+        ->assertDontSee('text-2xl', false);
+});
+
+it('spaces the form with a uniform gap and comfortable targets', function () {
+    Livewire::test('pages::auth.forgot-password')
+        ->assertSee('flex flex-col gap-4', false)
+        ->assertSee('p-6 sm:p-8', false)
+        ->assertSee('px-4 py-8 sm:px-6', false)
+        ->assertSee('mt-4', false)
+        ->assertSee('inline-flex items-center py-1', false)
+        ->assertDontSee('mb-4', false);
+});
+
 it('validates required fields', function () {
     Livewire::test('pages::auth.forgot-password')
         ->call('send')
@@ -28,6 +45,20 @@ it('validates email format', function () {
         ->set('email', 'bad-email')
         ->call('send')
         ->assertHasErrors(['email' => ['email']]);
+});
+
+it('focuses the first invalid field when validation fails', function () {
+    Livewire::test('pages::auth.forgot-password')
+        ->call('send')
+        ->assertHasErrors(['email' => ['required']])
+        ->assertDispatched('focus-first-error');
+});
+
+it('renders the email field with semantic input attributes', function () {
+    Livewire::test('pages::auth.forgot-password')
+        ->assertSee('type="email"', false)
+        ->assertSee('spellcheck="false"', false)
+        ->assertSee('novalidate', false);
 });
 
 it('trims the email before validating', function () {
@@ -80,6 +111,23 @@ it('shows the sent state while the broker throttles without a second email', fun
         ->assertSet('sent', true);
 
     Notification::assertNothingSent();
+});
+
+it('truncates a long email in the sent-state sentence', function () {
+    $long = str_repeat('a', 250).'@example.com';
+
+    Livewire::test('pages::auth.forgot-password')
+        ->set('email', $long)
+        ->set('sent', true)
+        ->assertSee('inline-block max-w-full truncate', false)
+        ->assertSee($long);
+});
+
+it('escapes the email in the sent-state sentence', function () {
+    Livewire::test('pages::auth.forgot-password')
+        ->set('email', '<b>x</b>')
+        ->set('sent', true)
+        ->assertSee('<b>x</b>');
 });
 
 it('restarts back to the form', function () {

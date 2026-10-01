@@ -1,13 +1,13 @@
-<div class="mine-page-bg flex min-h-dvh items-center justify-center px-6 py-4">
-    <x-mine.animate as="div" delay="100" class="mine-card flex w-full max-w-120 flex-col justify-center p-6">
-        <h1 class="mine-text-primary mb-2 text-center text-xl font-semibold">{{ __('Choose a new password') }}</h1>
+<div class="mine-page-bg flex min-h-dvh items-center justify-center px-4 py-8 sm:px-6">
+    <x-mine.animate as="div" delay="100" class="mine-card flex w-full max-w-120 flex-col justify-center p-6 sm:p-8">
+        <h1 class="mine-text-primary mb-2 text-center text-xl font-semibold tracking-tight">
+            {{ __('Choose a new password') }}
+        </h1>
 
         @if ($email !== '')
-            <div class="mb-6">
-                <x-mine.alert variant="info" title="{{ __('Enter and confirm your new password') }}">
-                    {{ __('Resetting password for :email', ['email' => $email]) }}
-                </x-mine.alert>
-            </div>
+            <p class="mine-text-secondary mb-6 truncate text-center text-sm font-medium">
+                {{ __('Resetting password for :email', ['email' => $email]) }}
+            </p>
         @else
             <p class="mine-text-secondary mb-6 text-center text-sm font-medium">
                 {{ __('Enter and confirm your new password') }}
@@ -28,7 +28,7 @@
                     <a
                         wire:navigate.hover
                         href="{{ route('password.request') }}"
-                        class="mine-text-link font-medium"
+                        class="mine-text-link inline-flex items-center py-1 font-bold"
                     >{{ __('Request a new link') }}</a>
                 </x-mine.alert>
             </div>
@@ -43,50 +43,54 @@
         @endif
 
         @if ($token && $reset_error !== 'invalid_link')
-            <form wire:submit="resetPassword" class="flex flex-col">
-                <div class="mb-4">
-                    <x-mine.input
-                        wire:model="password"
-                        type="password"
-                        label="{{ __('Password') }}"
-                        placeholder="{{ __('Your password') }}"
-                        leftIcon="Lock"
-                        height="h-12"
-                        autocomplete="new-password"
-                    >
-                    </x-mine.input>
-                </div>
+            <form
+                wire:submit="resetPassword"
+                novalidate
+                class="flex flex-col gap-4"
+                x-data
+                x-on:focus-first-error.window="
+                    $nextTick(() => $el.querySelector('[aria-invalid=&quot;true&quot;]')?.focus())
+                "
+            >
+                <x-mine.input
+                    wire:model="password"
+                    type="password"
+                    label="{{ __('Password') }}"
+                    placeholder="{{ __('Your password') }}"
+                    leftIcon="Lock"
+                    height="h-12"
+                    autocomplete="new-password"
+                >
+                </x-mine.input>
 
-                <div class="mb-8">
-                    <x-mine.input
-                        wire:model="password_confirmation"
-                        type="password"
-                        label="{{ __('Confirm password') }}"
-                        placeholder="{{ __('Your password again') }}"
-                        leftIcon="Lock"
-                        height="h-12"
-                        autocomplete="new-password"
-                    >
-                    </x-mine.input>
-                </div>
+                <x-mine.input
+                    wire:model="password_confirmation"
+                    type="password"
+                    label="{{ __('Confirm password') }}"
+                    placeholder="{{ __('Your password again') }}"
+                    leftIcon="Lock"
+                    height="h-12"
+                    autocomplete="new-password"
+                >
+                </x-mine.input>
 
-                <div class="mb-4">
+                <div class="mt-2">
                     <x-mine.button wire:target="resetPassword" type="submit" height="h-12">
                         {{ __('Reset password') }}</x-mine.button>
                 </div>
             </form>
         @endif
 
-        <div class="mb-2 px-6">
+        <div class="mt-4">
             <x-mine.separator label="{{ __('OR') }}"></x-mine.separator>
         </div>
 
-        <div class="flex justify-center gap-2">
+        <div class="mt-2 flex items-center justify-center gap-2">
             <p class="mine-text-primary text-sm font-medium">{{ __('Remember your password?') }}</p>
             <a
                 wire:navigate.hover
                 href="{{ route('login') }}"
-                class="mine-text-link text-sm font-medium"
+                class="mine-text-link inline-flex items-center py-1 text-sm font-medium"
             >{{ __('Sign in') }}</a>
         </div>
     </x-mine.animate>

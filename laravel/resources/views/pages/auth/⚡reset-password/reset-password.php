@@ -2,11 +2,12 @@
 
 use App\Actions\Auth\ResetPasswordAction;
 use App\Enums\ResetPasswordResult;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
-new #[Layout('layouts::auth')] class extends Component
+new #[Layout('layouts::auth', ['title' => 'Choose a new password'])] class extends Component
 {
     #[Url]
     public string $token = '';
@@ -43,7 +44,13 @@ new #[Layout('layouts::auth')] class extends Component
             return;
         }
 
-        $credentials = $this->validate();
+        try {
+            $credentials = $this->validate();
+        } catch (ValidationException $exception) {
+            $this->dispatch('focus-first-error');
+
+            throw $exception;
+        }
 
         $result = $reset_password_action->execute(
             $this->email,

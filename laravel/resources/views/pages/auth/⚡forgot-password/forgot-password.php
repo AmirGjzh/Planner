@@ -2,11 +2,12 @@
 
 use App\Actions\Auth\ForgotPasswordAction;
 use App\Enums\SendResetLinkResult;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-new #[Layout('layouts::auth')] class extends Component
+new #[Layout('layouts::auth', ['title' => 'Reset your password'])] class extends Component
 {
     public string $email = '';
 
@@ -25,7 +26,14 @@ new #[Layout('layouts::auth')] class extends Component
         $this->send_error = null;
 
         $this->email = trim($this->email);
-        $credentials = $this->validate();
+
+        try {
+            $credentials = $this->validate();
+        } catch (ValidationException $exception) {
+            $this->dispatch('focus-first-error');
+
+            throw $exception;
+        }
 
         $result = $forgot_password_action->execute($credentials['email'], request());
 

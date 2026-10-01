@@ -53,9 +53,15 @@ class Reicon
         $size = (int) $size;
         $classAttr = $class !== '' ? ' class="reicon '.e($class).'"' : ' class="reicon"';
         $extra = '';
+        $hasAria = false;
 
         foreach ($attrs as $attr => $value) {
+            $hasAria = $hasAria || str_starts_with($attr, 'aria-');
             $extra .= ' '.$attr.'="'.e((string) $value).'"';
+        }
+
+        if (! $hasAria) {
+            $extra = ' aria-hidden="true"'.$extra;
         }
 
         return sprintf(

@@ -1,10 +1,13 @@
 @php
-    $vars = config('themes.vars')[auth()->user()?->theme ?? env('APP_THEME', 'forest')];
+    $vars = config('themes.vars')[auth()->user()?->theme ?? config('themes.default')];
+    $colorScheme = $vars['color-scheme'] ?? 'light';
+    unset($vars['color-scheme']);
 @endphp
 
 @if ($vars)
     <style>
         :root {
+            color-scheme: {{ $colorScheme }};
             @foreach ($vars as $key => $value)
         --{{ $key }}: {{ $value }};
 @endforeach

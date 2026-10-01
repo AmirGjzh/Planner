@@ -2,10 +2,11 @@
 
 use App\Actions\Auth\RegisterUserAction;
 use App\Enums\RegisterResult;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-new #[Layout('layouts::auth')] class extends Component
+new #[Layout('layouts::auth', ['title' => 'Create your account'])] class extends Component
 {
     public string $username = '';
 
@@ -22,7 +23,15 @@ new #[Layout('layouts::auth')] class extends Component
         $this->register_error = null;
 
         $this->email = trim($this->email);
-        $credentials = $this->validate();
+
+        try {
+            $credentials = $this->validate();
+        } catch (ValidationException $exception) {
+            $this->dispatch('focus-first-error');
+
+            throw $exception;
+        }
+
         $result = $register_user_action->execute(
             $credentials['username'],
             $credentials['email'],

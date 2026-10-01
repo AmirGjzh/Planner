@@ -23,3 +23,7 @@ How tests are written (Pest), including the Persian-behavior rules.
 - Assert Jalali output via `App\Support\Jalali::format(...)` and Persian literals.
 - Week base changes by locale: `now()->startOfWeek(Carbon::SUNDAY)` for en, `Carbon::SATURDAY` for fa.
 - Build dates relative to `now()` (`subDays`/`addDays`/`startOfWeek`/`yesterday`); avoid hardcoded calendar dates.
+
+## Head content needs an HTTP test, not `Livewire::test`
+
+`Livewire::test()` renders only the component view, never the layout's `<head>` — title, font preload, and other head assertions must go through a feature HTTP test (`$this->get('/login')->assertSee('rel="preload"', false)`), e.g. in `tests/Feature/Auth/`.

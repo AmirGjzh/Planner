@@ -20,13 +20,13 @@
 
 @utility mine-text-secondary-accent {
     @apply text-(--mine-text-secondary-accent);
-    @apply transition-all duration-200 ease-out;
+    @apply transition-colors duration-200 ease-out;
     @apply hover:text-(--mine-btn-secondary-bg-hover);
 }
 
 @utility mine-text-link {
     @apply text-(--mine-text-link);
-    @apply transition-all duration-200 ease-out;
+    @apply transition-[color,box-shadow] duration-200 ease-out;
     @apply hover:text-(--mine-text-link-hover);
     @apply focus-visible:outline-none;
     @apply focus-visible:ring-2;
@@ -37,7 +37,7 @@
 @utility mine-btn-primary {
     @apply bg-(--mine-btn-primary-bg);
     @apply text-(--mine-btn-primary-text);
-    @apply transition-all duration-200 ease-out;
+    @apply transition-[background-color,transform,box-shadow] duration-200 ease-out;
     @apply hover:bg-(--mine-btn-primary-bg-hover);
     @apply hover:-translate-y-px;
     @apply active:translate-y-0;
@@ -50,7 +50,7 @@
 @utility mine-btn-danger {
     @apply bg-(--mine-btn-danger-bg);
     @apply text-(--mine-btn-danger-text);
-    @apply transition-all duration-200 ease-out;
+    @apply transition-[background-color,transform,box-shadow] duration-200 ease-out;
     @apply hover:bg-(--mine-btn-danger-bg-hover);
     @apply active:scale-[.98];
     @apply focus-visible:outline-none;
@@ -61,7 +61,7 @@
 @utility mine-btn-ghost {
     @apply bg-(--mine-btn-ghost-bg);
     @apply text-(--mine-btn-ghost-text);
-    @apply transition-all duration-200 ease-out;
+    @apply transition-[background-color,transform,box-shadow] duration-200 ease-out;
     @apply hover:bg-(--mine-btn-ghost-bg-hover);
     @apply active:scale-[.98];
     @apply focus-visible:outline-none;
@@ -72,7 +72,7 @@
 @utility mine-btn-secondary {
     @apply bg-(--mine-btn-secondary-bg);
     @apply text-(--mine-btn-secondary-text);
-    @apply transition-all duration-200 ease-out;
+    @apply transition-[background-color,transform,box-shadow] duration-200 ease-out;
     @apply hover:bg-(--mine-btn-secondary-bg-hover);
     @apply hover:-translate-y-px;
     @apply active:translate-y-0;
@@ -87,7 +87,7 @@
     @apply text-(--mine-btn-primary-bg);
     @apply border-2;
     @apply border-(--mine-btn-primary-bg);
-    @apply transition-all duration-200 ease-out;
+    @apply transition-[background-color,color,border-color,transform,box-shadow] duration-200 ease-out;
     @apply hover:bg-(--mine-btn-primary-bg);
     @apply hover:text-(--mine-btn-primary-text);
     @apply hover:border-transparent;
@@ -102,7 +102,7 @@
     @apply text-(--mine-btn-danger-bg);
     @apply border-2;
     @apply border-(--mine-btn-danger-bg);
-    @apply transition-all duration-200 ease-out;
+    @apply transition-[background-color,color,border-color,transform,box-shadow] duration-200 ease-out;
     @apply hover:bg-(--mine-btn-danger-bg);
     @apply hover:text-(--mine-btn-danger-text);
     @apply hover:border-transparent;
@@ -117,7 +117,7 @@
     @apply text-(--mine-btn-secondary-bg);
     @apply border-2;
     @apply border-(--mine-btn-secondary-bg);
-    @apply transition-all duration-200 ease-out;
+    @apply transition-[background-color,color,border-color,transform,box-shadow] duration-200 ease-out;
     @apply hover:bg-(--mine-btn-secondary-bg);
     @apply hover:text-(--mine-btn-secondary-text);
     @apply hover:border-transparent;
@@ -131,7 +131,7 @@
     @apply rounded-xl;
     @apply text-sm font-medium;
     @apply border-2;
-    @apply transition-all duration-200 ease-out;
+    @apply transition-[background-color,box-shadow] duration-200 ease-out;
     @apply focus-visible:outline-none;
     @apply focus-visible:ring-4;
     @apply border-(--mine-pagination-border);
@@ -160,7 +160,7 @@
     @apply hover:bg-(--mine-card-bg-hover);
     @apply active:translate-y-0;
     @apply active:scale-[.992];
-    @apply transition-all duration-200 ease-out;
+    @apply transition-[transform,border-color,background-color,box-shadow] duration-200 ease-out;
 
     &:hover {
         box-shadow:
@@ -254,6 +254,17 @@
     animation: mine-toast-out 0.22s ease-in both;
 }
 
+.mine-alert-enter {
+    animation: mine-alert-in 0.18s ease-out both;
+}
+
+@keyframes mine-alert-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+}
+
 @keyframes mine-toast-in {
     from {
         opacity: 0;
@@ -276,7 +287,7 @@
 @utility mine-animate-visible {
     opacity: 1 !important;
     transform: none !important;
-    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+    transition: opacity 0.35s ease-out, transform 0.35s ease-out;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -284,5 +295,9 @@
         opacity: 1 !important;
         transform: none !important;
         transition: none !important;
+    }
+
+    .mine-alert-enter {
+        animation: none !important;
     }
 }

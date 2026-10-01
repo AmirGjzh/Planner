@@ -39,6 +39,8 @@
         'cursor-pointer',
         'select-none',
         'whitespace-nowrap',
+        'disabled:opacity-60',
+        'disabled:cursor-wait',
         'focus-visible:outline-none',
         '[&>[data-loading=true]:first-child]:flex' => true,
         '[&>[data-loading=true]:first-child~*]:invisible' => true,

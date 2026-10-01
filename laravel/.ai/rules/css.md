@@ -15,3 +15,8 @@ The animated card wrapper (`mine-animate`) sits on the same element as `mine-car
 - Avoid `will-change`.
 
 Tailwind v4 emits `@utility` rules not in source order (`.mine-animate` lands after `.mine-animate-visible` in the output), so `mine-animate-visible` needs `!important` on both `opacity: 1` and `transform: none` to reliably win.
+
+## Animate explicit properties, never `transition-all`
+
+- Every `transition-…` in mine.css and the auth-facing components (input, checkbox, button, alert) lists the properties it animates (e.g. `transition-colors transition-[box-shadow,transform]`, `transition duration-200`) — `transition-all` also animates layout properties and repaints on unrelated DOM changes. The remaining mine components (dropdown, select, datepicker, header, textarea, progress) still use `transition-all`; convert them opportunistically.
+- Reduced motion is handled by neutralization: the `@media (prefers-reduced-motion: reduce)` block kills `.mine-alert-enter` and the card reveal's transition — motion never ships enabled to those users.

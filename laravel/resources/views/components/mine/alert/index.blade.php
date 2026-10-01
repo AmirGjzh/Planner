@@ -32,11 +32,12 @@
     ];
 
     $style = $variants[$variant];
+    $role = in_array($variant, ['danger', 'warning'], true) ? 'alert' : 'status';
 @endphp
 
 <div {{
-    $attributes->class([
-        'flex gap-3 rounded-xl border-2 p-4',
+    $attributes->merge(['role' => $role])->class([
+        'mine-alert-enter flex gap-3 rounded-xl border-2 p-4',
         $style['container'],
     ])
 }}>

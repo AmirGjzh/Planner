@@ -37,8 +37,6 @@
 @elseif ($label)
     <div
         class="flex h-6 w-full items-center gap-4"
-        transition-colors
-        duration-200
         role="separator"
         aria-orientation="horizontal"
         aria-label="{{ $label }}"
