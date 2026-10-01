@@ -9,20 +9,6 @@
     'height' => 'h-11',
 ])
 
-<style>
-    .mine-input input::-ms-reveal,
-    .mine-input input::-ms-clear {
-        display: none;
-    }
-    .mine-input input:-webkit-autofill,
-    .mine-input input:-webkit-autofill:hover,
-    .mine-input input:-webkit-autofill:focus {
-        -webkit-box-shadow: 0 0 0 1000px var(--mine-input-autofill-bg, var(--mine-input-bg)) inset !important;
-        -webkit-text-fill-color: var(--mine-text-primary) !important;
-        caret-color: var(--mine-text-primary) !important;
-    }
-</style>
-
 <div class="mine-input w-full">
     @if ($label)
         <x-mine.input.label :for="$name" :required="$required"> {{ $label }} </x-mine.input.label>

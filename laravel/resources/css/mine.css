@@ -301,3 +301,16 @@
         animation: none !important;
     }
 }
+
+.mine-input input::-ms-reveal,
+.mine-input input::-ms-clear {
+    display: none;
+}
+
+.mine-input input:-webkit-autofill,
+.mine-input input:-webkit-autofill:hover,
+.mine-input input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px var(--mine-input-autofill-bg, var(--mine-input-bg)) inset !important;
+    -webkit-text-fill-color: var(--mine-text-primary) !important;
+    caret-color: var(--mine-text-primary) !important;
+}

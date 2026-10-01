@@ -21,7 +21,7 @@ Wire pages to routes with `Route::livewire('/path', 'pages::<name>')`. Do not bu
 
 ## Pages share the user via the `HasUser` trait
 
-Authenticated pages use `App\Livewire\Concerns\HasUser` (a `#[Computed] user()` returning `User::findOrFail(auth()->id())`) instead of resolving the user inline. The trait's `boot()` also calls `app()->setLocale($this->user->locale)`, so every page renders in the user's saved language on every Livewire request (initial + rehydration). Mounted pages pull the session `toast` and `$this->dispatch('toast', ...$toast)`.
+Authenticated pages use `App\Livewire\Concerns\HasUser` (a `#[Computed] user()` returning the already-resolved guard user — `auth()->user() ?? abort(403)`, never a second `findOrFail` that re-SELECTs what the guard loaded) instead of resolving the user inline. The trait's `boot()` also calls `app()->setLocale($this->user->locale)`, so every page renders in the user's saved language on every Livewire request (initial + rehydration). Mounted pages pull the session `toast` and `$this->dispatch('toast', ...$toast)`.
 
 Guest pages (home/login/register/forgot-password/reset-password) have no `HasUser` and use the app/.env locale; `login()`/logout/profile-delete set the locale explicitly only at those auth boundaries where no `HasUser` page has rendered yet.
 

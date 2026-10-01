@@ -258,6 +258,10 @@ it('allows profile updates again after one minute', function () {
             ->call('editProfile');
     }
 
+    // The failed updates left the shared guard instance dirty in this single-app test run;
+    // reload the row the way each real request would.
+    $user->refresh();
+
     $this->travel(61)->seconds();
 
     Livewire::actingAs($user)

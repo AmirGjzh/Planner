@@ -2,8 +2,6 @@
 
 namespace App\Support;
 
-use Illuminate\Support\Facades\File;
-
 class Reicon
 {
     private static ?array $icons = null;
@@ -13,10 +11,7 @@ class Reicon
      */
     private static function icons(): array
     {
-        return self::$icons ??= json_decode(
-            File::get(app_path('Support/reicon-icons.json')),
-            true
-        );
+        return self::$icons ??= require app_path('Support/reicon-icons.php');
     }
 
     /**

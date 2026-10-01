@@ -6,6 +6,12 @@ it('allows guests to visit login page', function () {
     $this->get('/login')->assertSuccessful();
 });
 
+it('renders login for guests without database queries', function () {
+    $this->expectsDatabaseQueryCount(0);
+
+    $this->get('/login')->assertSuccessful();
+});
+
 it('gives the login page a unique title', function () {
     $this->get('/login')
         ->assertSee('<title>'.__('Sign in').' — '.config('app.name').'</title>', false);

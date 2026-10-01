@@ -14,6 +14,12 @@ The brand logo is rendered inline by `<x-mine.brand-logo>` (never as `<img>`), w
 
 Do not point at `resources/images/logo.svg` via `<img>` — it had a hardcoded `#173B67` fill that cannot react to theme changes.
 
+The favicon is the deliberate exception: `public/favicon.svg` is a cropped copy of `resources/images/logo.svg` with its hardcoded `#173B67` fill, linked from both layouts — browser chrome does not follow the page theme, and there is no empty `.ico` fallback.
+
+## Toast state lives in the JS bundle
+
+The toast's Alpine factory is registered as `Alpine.data('mineToast', …)` in `resources/js/app.js`; the component passes its `position`/`duration` props as factory arguments (`x-data="mineToast(@js($position), @js($duration))"`). Keep the maps and methods out of an inline `x-data` — inline factories re-serialize the whole toast implementation into every HTML response.
+
 ## Nested UI components are anonymous Blade, not Livewire
 
 - Nested components are anonymous Blade only, under `resources/views/components/mine/` — the `x-mine.*` tag auto-resolves there with no PHP class.

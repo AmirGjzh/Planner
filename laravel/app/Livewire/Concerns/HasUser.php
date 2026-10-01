@@ -15,6 +15,6 @@ trait HasUser
     #[Computed]
     public function user(): User
     {
-        return User::query()->findOrFail(auth()->id() ?? abort(403));
+        return auth()->user() ?? abort(403);
     }
 }

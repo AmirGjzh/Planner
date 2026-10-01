@@ -5,10 +5,7 @@ use Illuminate\Support\Facades\Blade;
 
 function reiconTestIcons(): array
 {
-    return json_decode(
-        (string) file_get_contents(app_path('Support/reicon-icons.json')),
-        true,
-    ) ?? [];
+    return require app_path('Support/reicon-icons.php');
 }
 
 it('renders an outline svg for a known icon', function () {
