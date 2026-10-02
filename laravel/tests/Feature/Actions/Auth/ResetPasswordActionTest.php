@@ -39,7 +39,9 @@ it('resets the password and rotates the remember token', function () {
         ->and(Hash::check('brand-new-password', $user->password))->toBeTrue()
         ->and(Hash::check('old-password', $user->password))->toBeFalse()
         ->and($user->remember_token)->not->toBe('old-remember-token')
-        ->and(strlen((string) $user->remember_token))->toBe(60);
+        ->and(strlen((string) $user->remember_token))->toBe(60)
+        ->and($user->password_changed_at)->not->toBeNull()
+        ->and(DB::table('password_reset_tokens')->where('email', 'amir@example.com')->exists())->toBeFalse();
 });
 
 it('returns invalid link for a wrong token', function () {
@@ -147,6 +149,10 @@ it('logs successful and failed resets', function () {
     Log::spy();
     $user = User::factory()->create(['email' => 'amir@example.com']);
     $token = Password::createToken($user);
+
+    app(ResetPasswordAction::class)->execute('amir@example.com', $token, 'password', resetPasswordRequest());
+    Log::shouldHaveReceived('info')
+        ->with('Password reset rejected, same as current password.', Mockery::on(fn (array $context) => $context['email'] === 'amir@example.com'));
 
     app(ResetPasswordAction::class)->execute('amir@example.com', $token, 'brand-new-password', resetPasswordRequest());
     Log::shouldHaveReceived('info')

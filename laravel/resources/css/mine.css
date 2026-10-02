@@ -2,6 +2,12 @@
     background: var(--mine-page-bg);
 }
 
+/* Paints the canvas itself so the overscroll rubber-band gap shows the
+   page color too (only background-color reaches the bounce area). */
+html {
+    background-color: var(--mine-page-bg);
+}
+
 @utility mine-logo {
     @apply text-(--mine-btn-primary-bg);
 }

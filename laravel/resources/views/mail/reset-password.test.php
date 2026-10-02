@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use App\Notifications\ResetPasswordNotification;
+use Illuminate\Http\Request;
 use Illuminate\Notifications\SendQueuedNotifications;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
@@ -57,10 +58,13 @@ it('queues the reset notification for background delivery', function () {
     Queue::assertPushed(SendQueuedNotifications::class);
 });
 
-it('roots the reset link at APP_URL instead of the request host', function () {
+it('roots the reset link at APP_URL even when the request host is forged', function () {
+    $this->app->instance('request', Request::create('http://evil.example/forgot-password'));
+
     $user = User::factory()->create(['email' => 'amir@example.com']);
     $mail = (new ResetPasswordNotification('token-123'))->toMail($user);
 
     expect($mail->actionUrl)
-        ->toStartWith(rtrim(config('app.url'), '/').'/reset-password');
+        ->toStartWith(rtrim(config('app.url'), '/').'/reset-password')
+        ->not->toStartWith('http://evil.example');
 });

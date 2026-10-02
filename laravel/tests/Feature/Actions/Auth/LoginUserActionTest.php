@@ -4,6 +4,7 @@ use App\Actions\Auth\LoginUserAction;
 use App\Enums\LoginResult;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
@@ -32,7 +33,8 @@ it('returns fail for invalid credentials', function () {
     User::factory()->create(['email' => 'amir@example.com', 'password' => 'password']);
     $result = app(LoginUserAction::class)
         ->execute('amir@example.com', 'wrong-password', true, loginRequest());
-    expect($result)->toBe(LoginResult::Fail);
+    expect($result)->toBe(LoginResult::Fail)
+        ->and(RateLimiter::attempts('login:127.0.0.1'))->toBe(1);
     $this->assertGuest();
 });
 
@@ -46,15 +48,51 @@ it('returns rate limited after repeated failures', function () {
     expect($result)->toBe(LoginResult::RateLimited);
 });
 
-it('normalizes email casing before authenticating', function () {
-    User::factory()->create([
-        'email' => 'amir@example.com',
-        'password' => 'password',
-    ]);
+it('clears the rate-limit bucket after a successful login', function () {
+    User::factory()->create(['email' => 'amir@example.com', 'password' => 'password']);
+
+    app(LoginUserAction::class)
+        ->execute('amir@example.com', 'wrong-password', true, loginRequest());
+
+    expect(RateLimiter::attempts('login:127.0.0.1'))->toBe(1);
+
     $result = app(LoginUserAction::class)
-        ->execute('Amir@Example.com', 'password', true, loginRequest());
-    expect($result)->toBe(LoginResult::Success);
-    $this->assertAuthenticated();
+        ->execute('amir@example.com', 'password', true, loginRequest());
+
+    expect($result)->toBe(LoginResult::Success)
+        ->and(RateLimiter::attempts('login:127.0.0.1'))->toBe(0);
+});
+
+it('rotates the session id and CSRF token on success but not on failure', function () {
+    User::factory()->create(['email' => 'amir@example.com', 'password' => 'password']);
+    session()->start();
+    $sessionId = session()->getId();
+    $csrfToken = session()->token();
+
+    app(LoginUserAction::class)
+        ->execute('amir@example.com', 'wrong-password', false, loginRequest());
+
+    expect(session()->getId())->toBe($sessionId)
+        ->and(session()->token())->toBe($csrfToken);
+
+    app(LoginUserAction::class)
+        ->execute('amir@example.com', 'password', false, loginRequest());
+
+    expect(session()->getId())->not->toBe($sessionId)
+        ->and(session()->token())->not->toBe($csrfToken);
+});
+
+it('queues the recaller cookie when remember is requested', function () {
+    $user = User::factory()->create(['email' => 'amir@example.com', 'password' => 'password']);
+
+    app(LoginUserAction::class)
+        ->execute('amir@example.com', 'password', true, loginRequest());
+
+    $recaller = collect(Cookie::getQueuedCookies())
+        ->first(fn ($cookie) => $cookie->getName() === Auth::getRecallerName());
+
+    expect($recaller)->not->toBeNull()
+        ->and($recaller->getValue())->toContain((string) $user->getAuthIdentifier());
 });
 
 it('logs failed, limited, and successful login events', function () {
@@ -95,7 +133,9 @@ it('queues the session hint cookie on success', function () {
         ->first(fn ($cookie) => $cookie->getName() === 'session_hint');
 
     expect($queued)->not->toBeNull()
-        ->and($queued->getValue())->toBe('1');
+        ->and($queued->getValue())->toBe('1')
+        ->and($queued->getExpiresTime())->toBeGreaterThan(now()->addDays(29)->getTimestamp())
+        ->and($queued->getExpiresTime())->toBeLessThan(now()->addDays(31)->getTimestamp());
 });
 
 it('does not queue the session hint cookie on failure', function () {

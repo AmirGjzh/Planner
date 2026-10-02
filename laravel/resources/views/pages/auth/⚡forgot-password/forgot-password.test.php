@@ -17,29 +17,6 @@ it('renders successfully', function () {
         ->assertSee('Reset your password');
 });
 
-it('renders the heading at the settled type scale', function () {
-    Livewire::test('pages::auth.forgot-password')
-        ->assertSee('text-xl', false)
-        ->assertSee('tracking-tight', false)
-        ->assertDontSee('text-2xl', false);
-});
-
-it('spaces the form with a uniform gap and comfortable targets', function () {
-    Livewire::test('pages::auth.forgot-password')
-        ->assertSee('flex flex-col gap-4', false)
-        ->assertSee('p-6 sm:p-8', false)
-        ->assertSee('px-4 py-8 sm:px-6', false)
-        ->assertSee('mt-4', false)
-        ->assertSee('inline-flex items-center py-1', false)
-        ->assertDontSee('mb-4', false);
-});
-
-it('validates required fields', function () {
-    Livewire::test('pages::auth.forgot-password')
-        ->call('send')
-        ->assertHasErrors(['email' => ['required']]);
-});
-
 it('validates email format', function () {
     Livewire::test('pages::auth.forgot-password')
         ->set('email', 'bad-email')
@@ -47,7 +24,7 @@ it('validates email format', function () {
         ->assertHasErrors(['email' => ['email']]);
 });
 
-it('focuses the first invalid field when validation fails', function () {
+it('dispatches focus-first-error when validation fails', function () {
     Livewire::test('pages::auth.forgot-password')
         ->call('send')
         ->assertHasErrors(['email' => ['required']])
@@ -69,19 +46,6 @@ it('trims the email before validating', function () {
         ->set('email', '  amir@example.com  ')
         ->call('send')
         ->assertHasNoErrors()
-        ->assertSet('sent', true)
-        ->assertSet('send_error', null);
-
-    Notification::assertSentTo($user, ResetPasswordNotification::class);
-});
-
-it('shows the sent state for an existing user', function () {
-    Notification::fake();
-    $user = User::factory()->create(['email' => 'amir@example.com']);
-
-    Livewire::test('pages::auth.forgot-password')
-        ->set('email', 'amir@example.com')
-        ->call('send')
         ->assertSet('sent', true)
         ->assertSet('send_error', null);
 
@@ -142,6 +106,23 @@ it('restarts back to the form', function () {
         ->assertSet('sent', false)
         ->assertSet('email', '')
         ->assertSet('send_error', null);
+});
+
+it('hides the form while the sent state is shown', function () {
+    Livewire::test('pages::auth.forgot-password')
+        ->set('email', 'amir@example.com')
+        ->set('sent', true)
+        ->assertSee('Check your email')
+        ->assertDontSee('wire:submit="send"', false)
+        ->assertDontSee('placeholder="Your email"', false);
+});
+
+it('clears validation errors when restarting', function () {
+    Livewire::test('pages::auth.forgot-password')
+        ->call('send')
+        ->assertHasErrors(['email' => ['required']])
+        ->call('restart')
+        ->assertHasNoErrors();
 });
 
 it('rate limits after too many attempts', function () {

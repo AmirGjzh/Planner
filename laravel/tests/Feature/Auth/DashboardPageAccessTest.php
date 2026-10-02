@@ -15,6 +15,17 @@ it('allows authenticated users to visit the dashboard', function () {
         ->assertSuccessful();
 });
 
+it('preloads the primary font on app pages', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get('/dashboard')
+        ->assertSee('rel="preload"', false)
+        ->assertSee('as="font"', false)
+        ->assertSee('crossorigin', false)
+        ->assertSee('Vazirmatn-Regular', false);
+});
+
 it('loads the user exactly once per authenticated request', function () {
     $user = User::factory()->create();
 

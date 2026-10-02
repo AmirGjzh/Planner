@@ -65,8 +65,8 @@
                 px-4
                 text-sm
                 font-medium
-                mine-text-primary
-                placeholder:text-medium
+                text-[var(--mine-text-primary)]/80
+                placeholder:font-medium
                 placeholder:text-[var(--mine-input-placeholder)]
                 outline-none',
                 ])

@@ -62,6 +62,7 @@ it('links to the reset-password page in the notification', function () {
 });
 
 it('returns sent without a second notification while the broker throttles', function () {
+    Log::spy();
     Notification::fake();
     $user = User::factory()->create(['email' => 'amir@example.com']);
 
@@ -70,6 +71,19 @@ it('returns sent without a second notification while the broker throttles', func
 
     expect($result)->toBe(SendResetLinkResult::Sent);
     Notification::assertSentToTimes($user, ResetPasswordNotification::class, 1);
+    Log::shouldHaveReceived('info')
+        ->with('Password reset link throttled, a token was recently created.', Mockery::on(fn (array $context) => $context['email'] === 'amir@example.com'));
+});
+
+it('hits the bucket for unknown emails and keeps it across successes', function () {
+    Notification::fake();
+    User::factory()->create(['email' => 'amir@example.com']);
+
+    app(ForgotPasswordAction::class)->execute('ghost@example.com', forgotPasswordRequest());
+    expect(RateLimiter::attempts('forgot-password:127.0.0.1'))->toBe(1);
+
+    app(ForgotPasswordAction::class)->execute('amir@example.com', forgotPasswordRequest());
+    expect(RateLimiter::attempts('forgot-password:127.0.0.1'))->toBe(2);
 });
 
 it('rate limits after too many requests even for an existing email', function () {

@@ -12,7 +12,7 @@ How tests are written (Pest), including the Persian-behavior rules.
 ## Write tests with Pest `it()` + `expect()`, LazilyRefreshDatabase
 
 - All tests are Pest `it('desc', function () {})` closures using the `expect()` expectation API — no PHPUnit classes.
-- DB reset is centrally wired in `tests/Pest.php` via `pest()->use(LazilyRefreshDatabase::class)->in('Feature', 'Unit', '../resources/views')` — test files declare no trait.
+- DB reset is centrally wired in `tests/Pest.php` via `pest()->use(LazilyRefreshDatabase::class)->in('Feature', 'Unit', 'Browser', '../resources/views')` — test files declare no trait.
 - Use factories for the principal subject user, and build owned records via relationship `->create()` (never real fixture/seed calls).
 - Actions are tested by real integration: `app(XxxAction::class)->execute(...)` against the in-memory SQLite DB.
 
@@ -27,3 +27,22 @@ How tests are written (Pest), including the Persian-behavior rules.
 ## Head content needs an HTTP test, not `Livewire::test`
 
 `Livewire::test()` renders only the component view, never the layout's `<head>` — title, font preload, and other head assertions must go through a feature HTTP test (`$this->get('/login')->assertSee('rel="preload"', false)`), e.g. in `tests/Feature/Auth/`.
+
+## Tests pin behavior and contracts, not markup styling
+
+- Do **not** assert design/utility classes — heading type scale (`text-xl`, `tracking-tight`), spacing (`gap-4`, `p-6`), animation duration (`transitionDuration = '350ms'`), or shared component entrance classes. Those are reviewed visually, not behavior contracts; a test pinning them turns every styling tweak into a failing test.
+- **Do** assert behavior: validation outcomes and their user-visible copy, dispatched events, `aria-*` wiring that gates behavior, escaping of interpolated user/URL input, overflow-guard classes (pages.md mandates those), rendered user-visible copy, and rate-limit/security contracts (`attempts('{prefix}:{ip}')`, clear-on-success, rotation).
+- One defect or one contract per test; when a test is fully subsumed by a stronger twin at the same layer, delete it instead of keeping both (cross-layer twins stay — page proves the UI mapping, action proves the domain outcome).
+
+## Name tests after the observable contract
+
+- A test's name must promise only what it can observe: `Livewire::test` never runs JavaScript, so "focuses the first invalid field" is false advertising — name the observable event instead: `dispatches focus-first-error when validation fails`. Likewise `renders ... type scale` for markup pins becomes nothing at all (delete), while `renders the email field with semantic input attributes` stays because those attributes are the contract.
+
+## Browser tier: opt-in, real-JS contracts only
+
+- `tests/Browser/` is a **separate, opt-in tier** — it is deliberately **not** listed in `phpunit.xml`'s `<testsuite>` entries, so plain `composer test` never starts a browser. Run it like any other suite: `composer test:browser` (narrow it with `composer test:browser -- --filter=SignInJourneyTest` or `-- --filter="auto-dismisses"`; dev dependencies + a downloaded Chromium required).
+- **What belongs there:** contracts that need real JavaScript and real navigation — DOM focus, Alpine toggles (password eye), toast auto-dismiss timing, redirect journeys across pages, axe (`assertNoAccessibilityIssues`). Everything assertable from `Livewire::test` or an HTTP feature test stays in the fast tier — never move a logic assertion into the browser tier for convenience.
+- **Selector discipline:** prefer semantic/text selectors (`getByText`, `getByRole`-style copy from the page tests); the input component gives every field a stable `id`/`name` from `wire:model`, so `#field` / `[name=field]` beats brittle CSS chains. Assert user-visible copy (translated strings), never utility classes (see the rule above).
+- **Flake guards:** pages animate in (`animate-fade-in`); settle with `$pages->wait(1.5)` before layout-wide assertions (axe reads mid-fade colors as contrast violations), and `wait(7)` to observe a 6s toast auto-dismiss. Rate-limit keys are IP-based (`login:127.0.0.1`, …) and shared with the in-process server — clear them in `beforeEach`.
+- **Debugging:** a failed assertion auto-screenshots into `tests/Browser/Screenshots/` (git-ignored); `--debug` pauses interactively (works headless); `--headed` needs an X display and is unavailable in the container. `Route::block` locks are released in `finally`, so sequential browser requests are safe.
+- **Pins stay in lockstep:** the exact `playwright` version in `package.json` must match the `playwright@X` in `docker/development/php-cli/Dockerfile` (bump both + rebuild + `npx playwright install chromium`).

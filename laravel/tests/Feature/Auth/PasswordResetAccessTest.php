@@ -25,7 +25,10 @@ it('redirects authenticated users away from the forgot-password page', function 
 });
 
 it('allows guests to visit the reset-password page', function () {
-    $this->get('/reset-password')->assertSuccessful();
+    $this->get('/reset-password')
+        ->assertSuccessful()
+        ->assertSee('Enter and confirm your new password')
+        ->assertSee('Link invalid or expired!');
 });
 
 it('shows the emailed account on the reset-password page', function () {

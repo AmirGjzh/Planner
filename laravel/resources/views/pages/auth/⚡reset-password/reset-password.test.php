@@ -17,7 +17,6 @@ it('renders successfully with a token', function () {
         ->assertSee('Choose a new password')
         ->assertSee('Resetting password for')
         ->assertSee('amir@example.com')
-        ->assertSee('mine-text-secondary mb-6 truncate text-center text-sm font-medium', false)
         ->assertDontSee('wire:model="email"', false);
 });
 
@@ -30,23 +29,13 @@ it('truncates a long email subtitle', function () {
         ->assertSee($long);
 });
 
-it('renders the heading at the settled type scale', function () {
-    Livewire::withQueryParams(['token' => 'abc123', 'email' => 'amir@example.com'])
+it('escapes the email in the subtitle', function () {
+    Livewire::withQueryParams(['token' => 'abc123', 'email' => '<b>x</b>'])
         ->test('pages::auth.reset-password')
-        ->assertSee('text-xl', false)
-        ->assertSee('tracking-tight', false)
-        ->assertDontSee('text-2xl', false);
-});
-
-it('spaces the form with a uniform gap and comfortable targets', function () {
-    Livewire::withQueryParams(['token' => 'abc123', 'email' => 'amir@example.com'])
-        ->test('pages::auth.reset-password')
-        ->assertSee('flex flex-col gap-4', false)
-        ->assertSee('p-6 sm:p-8', false)
-        ->assertSee('px-4 py-8 sm:px-6', false)
-        ->assertSee('mt-4', false)
-        ->assertSee('inline-flex items-center py-1', false)
-        ->assertDontSee('mb-8', false);
+        ->assertSet('reset_error', 'invalid_link')
+        ->assertSee('Resetting password for')
+        ->assertSee('<b>x</b>')
+        ->assertDontSee('<b>', false);
 });
 
 it('shows the invalid-link state without a token', function () {
@@ -72,7 +61,7 @@ it('validates required fields', function () {
         ]);
 });
 
-it('focuses the first invalid field when validation fails', function () {
+it('dispatches focus-first-error when validation fails', function () {
     Livewire::withQueryParams(['token' => 'abc123', 'email' => 'amir@example.com'])
         ->test('pages::auth.reset-password')
         ->call('resetPassword')

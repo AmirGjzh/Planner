@@ -23,6 +23,15 @@ it('keeps a session when the password is unchanged', function () {
     $this->get('/dashboard')->assertSuccessful();
 });
 
+it('stamps a session that predates the password change instead of rejecting it', function () {
+    $user = User::factory()->create(['password_changed_at' => now()]);
+
+    $this->actingAs($user)->get('/dashboard')->assertSuccessful();
+
+    $this->assertAuthenticated();
+    expect(session()->get('auth_time'))->not->toBeNull();
+});
+
 it('signs out a session whose password changed after its auth time', function () {
     $user = User::factory()->create();
 
@@ -33,7 +42,7 @@ it('signs out a session whose password changed after its auth time', function ()
 
     $this->get('/dashboard')
         ->assertRedirect('/login')
-        ->assertSessionHas('toast');
+        ->assertSessionHas('toast', fn (array $toast) => $toast['title'] === 'Your password was changed, sign in again');
     $this->assertGuest();
 });
 

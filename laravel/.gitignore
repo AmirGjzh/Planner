@@ -32,3 +32,6 @@ _ide_helper_models.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Browser-test failure screenshots (pest-plugin-browser)
+/tests/Browser/Screenshots

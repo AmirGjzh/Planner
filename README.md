@@ -150,6 +150,16 @@ This repo ships [Laravel Boost](https://laravel.com/docs/boost) as a dev depende
 
 > [!NOTE]
 > If a fresh clone ever needs more one-time installs (new packages, extra tooling), they'll be listed right here in this step.
+>
+> **Browser tests** (the opt-in `composer test:browser` suite) need, once per fresh clone, inside the shell:
+>
+> ```bash
+> npx playwright install chromium
+> ```
+>
+> The browser downloads into a named Docker volume (so it survives restarts); the system
+> libraries are baked into the toolchain image — if `playwright` was just added or bumped,
+> rebuild the image first (`./planner-dev build && ./planner-dev up`).
 
 Nothing starts automatically after this — the container is waiting for you to start the servers yourself.
 
@@ -178,7 +188,7 @@ npm run dev                                     # optional — Vite live reload 
 composer run dev
 ```
 
-Edit code, refresh the browser — changes show up instantly, no rebuild needed. After a database change, run `php artisan migrate` inside the container. Run the tests anytime with `php artisan test` — they're fast and don't even touch the database.
+Edit code, refresh the browser — changes show up instantly, no rebuild needed. After a database change, run `php artisan migrate` inside the container. Run the tests anytime with `composer test` — they're fast and don't even touch the database. The opt-in browser suite (`composer test:browser`) drives a real headless Chromium through the journeys; a failed assertion saves a debug screenshot to `laravel/tests/Browser/Screenshots/`.
 
 **Stop, start, and reset** — same safety rules as production:
 

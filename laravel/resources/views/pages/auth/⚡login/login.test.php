@@ -50,11 +50,12 @@ it('validates email format', function () {
         ->set('email', 'bad-email')
         ->set('password', 'password')
         ->call('login')
-        ->assertHasErrors(['email' => ['email']]);
+        ->assertHasErrors(['email' => ['email']])
+        ->assertSee('Enter a valid email.');
     $this->assertGuest();
 });
 
-it('focuses the first invalid field when validation fails', function () {
+it('dispatches focus-first-error when validation fails', function () {
     Livewire::test('pages::auth.login')
         ->call('login')
         ->assertHasErrors(['email' => ['required']])
@@ -85,26 +86,9 @@ it('labels the password visibility toggle', function () {
         ->assertSee(':aria-pressed="show"', false);
 });
 
-it('renders the heading and inputs at the settled type scale', function () {
-    Livewire::test('pages::auth.login')
-        ->assertSee('text-xl', false)
-        ->assertSee('tracking-tight', false)
-        ->assertSee('text-base', false)
-        ->assertSee('placeholder:text-medium', false);
-});
-
 it('shows the email field placeholder label', function () {
     Livewire::test('pages::auth.login')
-        ->assertSee(__('Your email'));
-});
-
-it('spaces the form with a uniform gap and comfortable targets', function () {
-    Livewire::test('pages::auth.login')
-        ->assertSee('flex flex-col gap-4', false)
-        ->assertSee('p-6 sm:p-8', false)
-        ->assertSee('px-4 py-8 sm:px-6', false)
-        ->assertSee('gap-2 py-1', false)
-        ->assertDontSee('mb-5', false);
+        ->assertSee('placeholder="'.__('Your email').'"', false);
 });
 
 it('animates only explicit CSS properties', function () {
@@ -116,24 +100,6 @@ it('dims the submit button while it is busy', function () {
     Livewire::test('pages::auth.login')
         ->assertSee('disabled:opacity-60', false)
         ->assertSee('disabled:cursor-wait', false);
-});
-
-it('fades alerts in with a short entrance animation', function () {
-    User::factory()->create([
-        'email' => 'amir@example.com',
-        'password' => 'password',
-    ]);
-
-    Livewire::test('pages::auth.login')
-        ->set('email', 'amir@example.com')
-        ->set('password', 'wrong-password')
-        ->call('login')
-        ->assertSee('mine-alert-enter', false);
-});
-
-it('keeps entrance motion quick', function () {
-    Livewire::test('pages::auth.login')
-        ->assertSee("transitionDuration = '350ms'", false);
 });
 
 it('trims the email before validating', function () {
@@ -226,8 +192,29 @@ it('rate limits after too many failed attempts', function () {
         ->set('email', 'amir@example.com')
         ->set('password', 'password')
         ->call('login')
-        ->assertSet('login_error', 'rate_limited');
+        ->assertSet('login_error', 'rate_limited')
+        ->assertSee('Too many sign-in attempts!');
     $this->assertGuest();
+});
+
+it('flashes the sign-in toast in the user locale', function () {
+    User::factory()->create([
+        'email' => 'amir@example.com',
+        'password' => 'password',
+        'locale' => 'fa',
+    ]);
+
+    Livewire::test('pages::auth.login')
+        ->set('email', 'amir@example.com')
+        ->set('password', 'password')
+        ->call('login')
+        ->assertRedirect(route('dashboard'));
+
+    $toast = session('toast');
+
+    expect($toast)->toBeArray()
+        ->and($toast['title'])->toBe('وارد شدی')
+        ->and($toast['variant'])->toBe('success');
 });
 
 it('allows login again after one minute', function () {

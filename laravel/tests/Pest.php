@@ -16,7 +16,21 @@ use Tests\TestCase;
 
 pest()->extend(TestCase::class)
     ->use(LazilyRefreshDatabase::class)
-    ->in('Feature', 'Unit', '../resources/views');
+    ->in('Feature', 'Unit', 'Browser', '../resources/views');
+
+/*
+|--------------------------------------------------------------------------
+| Browser
+|--------------------------------------------------------------------------
+|
+| The browser tier is opt-in (never part of `php artisan test`): run it with
+| `composer test:browser`. Every failed assertion saves a PNG to
+| `tests/Browser/Screenshots/` (on the bind mount, so open it straight from
+| the host). Use `$page->screenshot()` for on-demand captures, or run with
+| `--debug` to pause on the first failure. The container is headless, so
+| `--headed` is not available here.
+|
+*/
 
 /*
 |--------------------------------------------------------------------------

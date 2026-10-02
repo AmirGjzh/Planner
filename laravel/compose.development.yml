@@ -15,6 +15,7 @@ services:
       APP_KEY: ${APP_KEY:?Set APP_KEY in .env}
     volumes:
       - .:/var/www
+      - playwright:/home/workspace/.cache/ms-playwright
     ports:
       - "8000:8000"
       - "5173:5173"
@@ -99,3 +100,4 @@ networks:
 volumes:
   database:
   redis:
+  playwright:

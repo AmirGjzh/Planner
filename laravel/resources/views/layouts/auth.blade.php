@@ -22,7 +22,7 @@
     @livewireStyles
 </head>
 
-<body class="font-sans">
+<body class="mine-page-bg flex min-h-dvh flex-col font-sans">
     {{ $slot }}
     <x-mine.toast />
 </body>

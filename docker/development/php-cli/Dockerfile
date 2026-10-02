@@ -25,6 +25,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zip \
     bcmath \
     gd \
+    sockets \
+    pcntl \
     && apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN pecl install redis && docker-php-ext-enable redis
@@ -40,7 +42,12 @@ RUN ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
     && npm --version \
     && composer --version
 
-RUN mkdir -p /home/workspace && chown -R 1000:1000 /home/workspace && php -m | grep -q redis
+# Chromium system libraries for pest-plugin-browser (runtime is non-root, so apt only works here).
+# Version pinned to the `playwright` devDependency in laravel/package.json — bump both together.
+RUN npx -y playwright@1.63.0 install-deps chromium \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN mkdir -p /home/workspace/.cache/ms-playwright && chown -R 1000:1000 /home/workspace && php -m | grep -q redis
 
 ENV HOME=/home/workspace
 

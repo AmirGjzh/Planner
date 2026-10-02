@@ -1,5 +1,5 @@
 {
-    "mine-page-bg": "linear-gradient(180deg, #FFFCFD 0%, #F9F2F5 100%)",
+    "mine-page-bg": "#F9F2F5",
     "mine-card-bg": "rgba(255, 255, 255, .82)",
     "mine-card-bg-hover": "rgba(255, 255, 255, .88)",
     "mine-card-border": "#EADDE2",
