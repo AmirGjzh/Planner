@@ -17,9 +17,9 @@ Describes the local development stack: one workspace container with the full PHP
 | Workspace image | `php:8.4-cli` (Debian/glibc) built from `docker/development/php-cli/Dockerfile` |
 | Build stages | `composer:2.10`, `node:24` (toolchain; never installed in-image) |
 | Services | `planner-development-workspace` + `-mysql` + `-redis` + `-mailpit` |
-| Volumes | `database` + `redis` (appendonly; workspace is stateless) |
+| Volumes | `database` + `redis` (appendonly) + `playwright` (Chromium; workspace is stateless) |
 | Host ports | `8000` (artisan serve), `5173` (Vite HMR), `8025` (Mailpit UI) — MySQL/Redis/SMTP expose none |
-| PHP extensions | `pdo_mysql, pdo_sqlite, intl, mbstring, zip, bcmath, gd, redis` |
+| PHP extensions | `pdo_mysql, pdo_sqlite, intl, mbstring, zip, bcmath, gd, sockets, pcntl, redis` |
 | Tests | Pest on SQLite `:memory:` — `pdo_sqlite` is required |
 | Restart / logging | `unless-stopped`; `json-file` capped 10m × 3 |
 
@@ -94,10 +94,9 @@ Single-file Compose v2 spec. Facts:
   stays internal (other containers reach `mailpit:1025`). No compose healthcheck — the
   image ships a built-in exec-form `HEALTHCHECK ["/mailpit", "readyz"]`. Nothing
   `depends_on` it; a stopped Mailpit must never block the app.
-- **`playwright` named volume** on the workspace's `/home/workspace/.cache/ms-playwright` —
-  keeps the downloaded Chromium across `down`/`up` (the image bakes only the *system
-  libraries* via `playwright install-deps`, not the browser itself). The volume is created
-  root-owned on first use; the image's startup `chown` normalizes it to the workspace user.
+- **`playwright` named volume** on `/home/workspace/.cache/ms-playwright` — keeps the
+  downloaded Chromium across `down`/`up` (only the system libraries are baked into the
+  image). Created root-owned on first use; the image's startup `chown` normalizes it.
 - Credentials are baked when the mysql volume is first created; changing `MYSQL_*` later
   needs the volume reset (see Troubleshooting).
 
@@ -110,13 +109,12 @@ Multi-stage toolchain image. Structure:
   libfreetype6-dev libsqlite3-dev` + `curl unzip git ca-certificates`; then
   `docker-php-ext-configure gd --with-freetype --with-jpeg` and installs
   `pdo_mysql pdo_sqlite intl mbstring zip bcmath gd sockets pcntl`; `pecl install redis`
-  + enable. `sockets` and `pcntl` exist for pest-plugin-browser's in-process Amp server
-  (it serves the Laravel kernel on a local socket and SIGTERMs itself at shutdown —
-  without `pcntl` every run dies with a SIGTERM backtrace at process end).
+  + enable. `sockets`/`pcntl` serve pest-plugin-browser's in-process Amp server — without
+  `pcntl`, every run ends in a SIGTERM backtrace.
 - **`npx -y playwright@1.63.0 install-deps chromium`** bakes the browser's system
-  libraries; the version must match the exact pin in `laravel/package.json` exactly
-  (`1.63.0`) or deps and browser drift apart. The Chromium download itself goes to the
-  `playwright` compose volume (one-time `npx playwright install chromium` inside the shell).
+  libraries; the version must match `laravel/package.json`'s exact pin or deps and browser
+  drift apart. The Chromium download itself goes to the `playwright` volume (one-time
+  `npx playwright install chromium` — README step 8).
 - **Debian, not Alpine** — Node's alpine builds are musl and cannot run in a glibc PHP
   image; `node:24` (no suffix) is glibc, the exact tag prod uses.
 - composer phar copied from the composer stage; node + npm/npx from the node stage (npm/npx
@@ -190,8 +188,7 @@ Keep the credential values in sync between compose interpolation and the workspa
    base images, compiles extensions).
 6. Shell in: `./planner-dev shell`, then once: `composer install` and `npm install` (they
    persist on the bind mount). For the browser test tier also run once:
-   `npx playwright install chromium` (downloads into the named volume; needs the rebuilt
-   image so the baked system libraries match the pinned Playwright version).
+   `npx playwright install chromium` (README step 8).
 7. Start servers: `php artisan serve --host=0.0.0.0 --port=8000` (the `0.0.0.0` is required),
    `npm run dev`, optional `php artisan queue:listen --tries=1`. Or `composer run dev` for all
    three.
@@ -242,10 +239,10 @@ docker compose -f laravel/compose.development.yml ps   # workspace + mysql + red
 | `artisan serve` runs but browser times out | forgot `--host=0.0.0.0` |
 | Vite not hot-reloading | `usePolling` is on; ensure 5173 is free and reach via `localhost:5173` |
 | tinker `app@... does not exist` | run `composer install`, then `php artisan package:discover`, restart tinker |
-| `composer test:browser` → "Executable doesn't exist ... chrome-linux" | the `playwright` volume has no browser yet — run `npx playwright install chromium` once in the shell |
-| browser test run ends in a `SIGTERM`/`pcntl` backtrace | image predates the `pcntl` extension — `./planner-dev build && ./planner-dev up` (or `up -d --build`) |
-| browser test fails with `EACCES` under `~/.cache/ms-playwright` | volume created root-owned on an old image — rebuild (the image normalizes ownership at startup) or `docker exec -u root <workspace> chown -R 1000:1000 /home/workspace/.cache/ms-playwright` |
-| Playwright/Chromium mismatch after a toolchain bump | `package.json`'s exact pin and the Dockerfile's `playwright@X install-deps` must move together — bump both, rebuild, re-run `npx playwright install chromium` |
+| `composer test:browser` → "Executable doesn't exist ... chrome-linux" | no browser in the `playwright` volume yet — `npx playwright install chromium` once in the shell |
+| browser test run ends in a `SIGTERM`/`pcntl` backtrace | image predates the `pcntl` extension — `./planner-dev build && ./planner-dev up` |
+| browser test fails with `EACCES` under `~/.cache/ms-playwright` | volume root-owned on an old image — rebuild, or `docker exec -u root <workspace> chown -R 1000:1000 /home/workspace/.cache/ms-playwright` |
+| Playwright/Chromium mismatch after a toolchain bump | `package.json`'s pin and the Dockerfile's `playwright@X` must move together — bump both, rebuild, re-run the Chromium install |
 
 ## Future Notes, Desires, and Not-Done
 

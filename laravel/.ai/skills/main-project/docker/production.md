@@ -97,7 +97,7 @@ Single-file Compose v2 spec.
   `mysqladmin ping`) with `start_period: 30s`; data in the `database` volume.
 - **redis**: `requirepass` via `REDIS_PASSWORD`, healthcheck `redis-cli ping` via
   `REDISCLI_AUTH`; `--appendonly yes` with a `redis:/data` volume — sessions/cache/jobs
-  survive restarts (persistence was the recorded precondition for the redis-backed queue).
+  survive restarts (the queue needs it).
 - **mailpit**: `axllent/mailpit:v1.27`, publishes only the web UI (`8025:8025`); SMTP 1025
   stays internal (`mailpit:1025` from php-fpm). No compose healthcheck — the image ships a
   built-in exec-form `HEALTHCHECK ["/mailpit", "readyz"]`. Not in any `depends_on` chain
@@ -166,8 +166,7 @@ AES-256-CBC), then `php artisan migrate --seed --force` and `php artisan optimiz
   output without the `base64:` prefix. It only reports the problem — fix is on the host.
 - **Seeds on every boot** — see the seeding decision in `shared-conventions.md`. `UserSeeder` is a
   no-op today, but this line must be revisited before that ever creates real users
-  (a known-credential dev seed must not reach production). The queue service starts only
-  after healthy php-fpm, so the two boots never migrate concurrently.
+  (a known-credential dev seed must not reach production).
 - `migrate --force` is idempotent; `optimize` bakes config/routes/views, which is why
   "edit `.env`, recreate php-fpm + queue" is sufficient for env changes.
 
@@ -304,17 +303,15 @@ file-by-file sections above; this is the one-line record.
     the app sends over SMTP to `mailpit:1025`, everything is read in the UI on 8025. No
     compose healthcheck (the image ships `/mailpit readyz`), no `depends_on` (mail capture
     never blocks boot), no volume (disposable).
-27. **Redis persistence (`--appendonly yes` + `planner_redis` volume), both stacks** — the
-    recorded precondition for a redis-backed queue: jobs in flight must survive restarts.
-    Supersedes row 5's no-volume stance (sessions/cache persisting too is harmless).
+27. **Redis persistence (`--appendonly yes` + `planner_redis` volume), both stacks** —
+    precondition for the redis-backed queue: jobs must survive restarts; supersedes row 5's
+    no-volume stance (sessions/cache persisting too is harmless).
 28. **`queue` worker service** (same `production` image as php-fpm, `queue:work --tries=3
-    --sleep=1`, ordered after healthy php-fpm) — a queue with no consumer silently piles up,
-    which is worse than sync. `entrypoint.sh` ends `exec "$@"` so the image `CMD` decides the
-    process; the php-fpm service is byte-identical to before.
-29. **Mailpit UI left unauthenticated on 8025** — re-reviewed during the UC-1 step-3
-    security pass and deliberately skipped again: it is a temporary capture tool, not
-    part of later production. Row 12's `MP_UI_AUTH`/loopback revisit stands if the
-    stack ever serves anyone beyond this machine.
+    --sleep=1`, ordered after healthy php-fpm) — a queue with no consumer piles up silently,
+    worse than sync. `entrypoint.sh` ends `exec "$@"` so the image `CMD` picks the process.
+29. **Mailpit UI left unauthenticated on 8025** — deliberately skipped again in the UC-1
+    step-3 security pass: temporary capture tool, not part of later production; row 12's
+    `MP_UI_AUTH`/loopback revisit stands if the stack ever serves anyone beyond this machine.
 
 ## Deployment Runbook (fresh machine, golden path)
 
@@ -394,7 +391,7 @@ Healthcheck definitions (for diagnosis):
 | mailpit | image built-in `["/mailpit", "readyz"]` (no compose stanza) | image default 15s / — / 3, start-period 10s |
 
 `depends_on: condition: service_healthy` orders them: mysql+redis → php-fpm → nginx + queue
-(the queue has no healthcheck — no port; it is ordered after healthy php-fpm).
+(queue: no port → no healthcheck).
 
 ## Docker Hygiene on This Host
 
