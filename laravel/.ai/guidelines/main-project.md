@@ -48,7 +48,7 @@ Vite dev binds `0.0.0.0` (no flag). If the UI doesn't reflect a frontend change,
 - **New file? Decide both ignore files.** `.gitignore` keeps the repo clean — secrets, local env, and generated files stay untracked; shared config (e.g. `pint.json`) stays committed. The root `.dockerignore` keeps images clean — dev-only tooling (`AGENTS.md`, `.ai/`, `phpunit.xml`, `pint.json`, …) never enters the build context; anything the image needs must not be listed. Check both whenever you add or bring in a file.
 - Use the boost agent skills for Laravel/Livewire/Tailwind/testing patterns and the `search-docs` MCP tool for exact API syntax.
 - Pest: `php artisan make:test --pest`; feature tests first; co-located `.test.php` page tests live beside pages in `resources/views/pages/⚡<name>/`.
-- Run `vendor/bin/pint --dirty --format agent` after modifying PHP or Blade files (Blade formatting is enabled via `pint.json`).
+- Run `vendor/bin/pint --format agent <touched paths>` after modifying PHP or Blade files (Blade formatting is enabled via `pint.json`; the container has no Git, so `--dirty` is unavailable).
 - **Docs: no volatile counts.** Never hard-code counts that drift with every change (line counts, file/test/model counts, theme/UC counts) — describe the shape or point at the source; a redundant count forces a pointless doc update whenever the thing changes. Explicit identifier ranges (e.g. `UC-01 … UC-11`) are content, not counts.
 - Keep going in `.ai/`: this guideline, the rules, and the skill docs are the contract for the code.
 

@@ -1,11 +1,12 @@
 ---
 paths:
   - config/themes.php
+  - config/themes/**
 ---
 
 # Config
 
-Rules for `config/themes.php`.
+Rules for `config/themes.php` and the theme JSONs under `config/themes/`.
 
 ## themes.php returns the full theme list; resolution lives in the component
 

@@ -157,7 +157,7 @@ npx playwright install chromium
 Only needed if you run the opt-in `composer test:browser` suite — skip it otherwise. This is a one-time download into a named Docker volume (it survives restarts; the system libraries are already baked into the toolchain image). If `playwright` was just added or bumped, rebuild the image first (`./planner-dev build && ./planner-dev up`).
 
 > [!NOTE]
-> If a fresh clone ever needs more one-time installs (new packages, extra tooling), they'll be listed right here in this step.
+> If a fresh clone ever needs more one-time installs (new packages, extra tooling), they'll get their own step here.
 
 Nothing starts automatically after this — the container is waiting for you to start the servers yourself.
 
