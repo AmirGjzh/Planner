@@ -16,28 +16,26 @@
 
         @if ($reset_error === 'rate_limited')
             <div class="mb-4">
-                <x-mine.alert variant="warning" title="{{ __('Too many reset attempts!') }}">
+                <x-mine.alert variant="warning" title="{{ __('Too many password-reset attempts!') }}">
                     {{ __('Try again in a minute.') }}</x-mine.alert>
             </div>
         @endif
 
         @if ($reset_error === 'invalid_link')
-            <div class="mb-4">
-                <x-mine.alert variant="danger" title="{{ __('Link invalid or expired!') }}">
-                    {{ __('This password reset link is invalid or has expired.') }}
-                    <a
-                        wire:navigate.hover
-                        href="{{ route('password.request') }}"
-                        class="mine-text-link inline-flex items-center py-1 font-bold"
-                    >{{ __('Request a new link') }}</a>
-                </x-mine.alert>
-            </div>
+            <x-mine.alert variant="danger" title="{{ __('Link invalid or expired!') }}">
+                {{ __('This password reset link is invalid or has expired.') }}
+                <a
+                    wire:navigate.hover
+                    href="{{ route('password.request') }}"
+                    class="mine-text-link inline-flex items-center py-1 font-semibold"
+                >{{ __('Request a new link') }}</a>
+            </x-mine.alert>
         @endif
 
         @if ($reset_error === 'same_password')
             <div class="mb-4">
-                <x-mine.alert variant="danger" title="{{ __('Password unchanged!') }}">
-                    {{ __('Choose a password you haven\'t used before.') }}
+                <x-mine.alert variant="danger" title="{!! __('Password didn\'t change!') !!}">
+                    {{ __('New password is equal to current one.') }}
                 </x-mine.alert>
             </div>
         @endif
@@ -81,11 +79,7 @@
             </form>
         @endif
 
-        <div class="mt-4">
-            <x-mine.separator label="{{ __('OR') }}"></x-mine.separator>
-        </div>
-
-        <div class="mt-2 flex items-center justify-center gap-2">
+        <div class="mt-5 flex items-center justify-center gap-2">
             <p class="mine-text-primary text-sm font-medium">{{ __('Remember your password?') }}</p>
             <a
                 wire:navigate.hover

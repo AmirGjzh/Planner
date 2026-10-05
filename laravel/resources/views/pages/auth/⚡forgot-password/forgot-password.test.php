@@ -138,7 +138,7 @@ it('rate limits after too many attempts', function () {
         ->set('email', 'amir@example.com')
         ->call('send')
         ->assertSet('send_error', 'rate_limited')
-        ->assertSee('Too many reset requests!');
+        ->assertSee('Too many password-reset requests!');
 });
 
 it('allows a new request after one minute', function () {

@@ -5,10 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ __('Reset your password') }}</title>
     <style>
+        @font-face {
+            font-family: 'Vazirmatn';
+            font-style: normal;
+            font-weight: 400;
+            src: url('{{ $fontUris[400] }}') format('woff2');
+        }
+
+        @font-face {
+            font-family: 'Vazirmatn';
+            font-style: normal;
+            font-weight: 500;
+            src: url('{{ $fontUris[500] }}') format('woff2');
+        }
+
+        @font-face {
+            font-family: 'Vazirmatn';
+            font-style: normal;
+            font-weight: 600;
+            src: url('{{ $fontUris[600] }}') format('woff2');
+        }
+
         :root {
             @foreach ($themeVars as $key => $value)
                 --{{ $key }}: {{ $value }};
             @endforeach
+            color-scheme: var(--color-scheme, light);
         }
 
         body {
@@ -16,7 +38,9 @@
             padding: 32px 12px;
             background-color: #f3f6fa;
             background: var(--mine-page-bg, #f3f6fa);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Tahoma, Arial, sans-serif;
+            font-family: 'Vazirmatn', Tahoma, 'Segoe UI', Arial, sans-serif;
+            mso-generic-font-family: swiss;
+            mso-font-alt: Tahoma;
         }
 
         .shell {
@@ -37,42 +61,50 @@
 
         .content {
             padding: 32px 28px;
+            text-align: center;
         }
 
-        .wordmark {
+        .brand {
             margin: 0 0 20px;
             color: var(--mine-btn-primary-bg, #173b67);
-            font-size: 19px;
-            font-weight: 700;
-            letter-spacing: .4px;
         }
 
         h1 {
             margin: 0 0 12px;
             color: var(--mine-text-primary, #111827);
+            font-family: 'Vazirmatn', Tahoma, 'Segoe UI', Arial, sans-serif;
             font-size: 22px;
-            font-weight: 700;
+            font-weight: 600;
             line-height: 1.35;
+            mso-generic-font-family: swiss;
+            mso-font-alt: Tahoma;
         }
 
         p {
             margin: 0 0 16px;
             color: var(--mine-text-secondary, #536174);
-            font-size: 15px;
+            font-family: 'Vazirmatn', Tahoma, 'Segoe UI', Arial, sans-serif;
+            font-size: 14px;
+            font-weight: 500;
             line-height: 1.65;
+            mso-generic-font-family: swiss;
+            mso-font-alt: Tahoma;
         }
 
         .button {
             display: inline-block;
             margin: 8px 0 20px;
-            padding: 13px 30px;
-            border-radius: 10px;
+            padding: 14px 32px;
+            border-radius: 12px;
             background-color: #173b67;
             background: var(--mine-btn-primary-bg, #173b67);
             color: var(--mine-btn-primary-text, #ffffff);
+            font-family: 'Vazirmatn', Tahoma, 'Segoe UI', Arial, sans-serif;
             font-size: 15px;
-            font-weight: 600;
+            font-weight: 500;
             text-decoration: none;
+            mso-generic-font-family: swiss;
+            mso-font-alt: Tahoma;
         }
 
         .button:hover {
@@ -85,19 +117,7 @@
         }
 
         .quiet {
-            font-size: 13px;
-        }
-
-        .separator {
-            margin: 24px 0 16px;
-            border: 0;
-            border-top: 1px solid var(--mine-separator-border, #d5dfea);
-        }
-
-        .footer {
-            margin: 0;
-            font-size: 12px;
-            text-align: center;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -109,7 +129,7 @@
                     <tr>
                         <td class="card">
                             <div class="content">
-                                <p class="wordmark">{{ config('app.name') }}</p>
+                                <p class="brand"><x-mine.brand-logo width="100" height="20" translate="no" /></p>
 
                                 <h1>{{ __('Reset your password') }}</h1>
 
@@ -119,11 +139,7 @@
 
                                 <p class="hint">{{ __('This password reset link will expire in :count minutes.', ['count' => $expireMinutes]) }}</p>
 
-                                <p class="quiet">{{ __('If you did not request a password reset, no further action is required.') }}</p>
-
-                                <hr class="separator">
-
-                                <p class="footer">{{ config('app.name') }}</p>
+                                <p class="quiet">{{ __('If you didn\'t request a password reset, no further action is required.') }}</p>
                             </div>
                         </td>
                     </tr>

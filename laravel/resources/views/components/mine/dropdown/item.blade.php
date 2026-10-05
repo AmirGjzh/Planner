@@ -23,7 +23,7 @@
         @click="close()"
         {{
             $attributes->class([
-                'group flex w-full items-center rounded-lg transition-all duration-200 ease-out outline-none no-underline text-sm mine-text-secondary',
+                'group flex w-full items-center rounded-lg transition-[background-color,color,box-shadow] duration-200 ease-out outline-none no-underline text-sm mine-text-secondary',
                 'hover:bg-(--mine-dropdown-item-bg-hover) hover:text-(--mine-text-link) focus:bg-(--mine-dropdown-item-bg-hover) focus:text-(--mine-text-link) focus-visible:ring-4 focus-visible:ring-(--mine-dropdown-item-ring)' => ! $destructive && ! $active,
                 'bg-(--mine-dropdown-item-bg-hover) text-(--mine-text-link) hover:bg-(--mine-dropdown-item-bg-hover) hover:text-(--mine-text-link) focus:bg-(--mine-dropdown-item-bg-hover) focus:text-(--mine-text-link) focus-visible:ring-4 focus-visible:ring-(--mine-dropdown-item-ring)' => ! $destructive && $active,
                 'hover:bg-(--mine-dropdown-destructive-item-bg-hover) focus:bg-(--mine-dropdown-destructive-item-bg-hover) focus-visible:ring-4 focus-visible:ring-(--mine-dropdown-destructive-item-ring) text-(--mine-dropdown-item-text-danger)' => $destructive,
@@ -47,7 +47,7 @@
         @click="multiple ? toggleSelect(@js($value)) : close()"
         {{
             $attributes->class([
-                'group flex w-full items-center rounded-lg transition-all duration-200 ease-out outline-none text-sm mine-text-secondary',
+                'group flex w-full items-center rounded-lg transition-[background-color,color,box-shadow] duration-200 ease-out outline-none text-sm mine-text-secondary',
                 'hover:bg-(--mine-dropdown-item-bg-hover) hover:text-(--mine-text-link) focus:bg-(--mine-dropdown-item-bg-hover) focus:text-(--mine-text-link) focus-visible:ring-4 focus-visible:ring-(--mine-dropdown-item-ring)' => ! $destructive && ! $active,
                 'bg-(--mine-dropdown-item-bg-hover) text-(--mine-text-link) hover:bg-(--mine-dropdown-item-bg-hover) hover:text-(--mine-text-link) focus:bg-(--mine-dropdown-item-bg-hover) focus:text-(--mine-text-link) focus-visible:ring-4 focus-visible:ring-(--mine-dropdown-item-ring)' => ! $destructive && $active,
                 'hover:bg-(--mine-dropdown-destructive-item-bg-hover) focus:bg-(--mine-dropdown-destructive-item-bg-hover) focus-visible:ring-4 focus-visible:ring-(--mine-dropdown-destructive-item-ring) text-(--mine-dropdown-item-text-danger)' => $destructive,
@@ -62,11 +62,16 @@
                 'cursor-pointer',
             ])>
                 <span
-                    class="inline-flex size-5 shrink-0 items-center justify-center rounded-[6px] border-2 transition-all duration-200 ease-out"
+                    class="inline-flex size-5 shrink-0 items-center justify-center rounded-[6px] border-2 transition-colors duration-200 ease-out"
                     :class="isSelected(@js($value)) ? 'bg-(--mine-checkbox-bg) border-(--mine-checkbox-bg) text-(--mine-checkbox-text)' : 'border-(--mine-input-border) text-transparent'"
                     aria-hidden="true"
                 >
-                    <x-mine.icon name="Check" weight="filled" size="12" class="transition-all duration-200 ease-out" />
+                    <x-mine.icon
+                        name="Check"
+                        weight="filled"
+                        size="12"
+                        class="transition-colors duration-200 ease-out"
+                    />
                 </span>
             </div>
         @endif

@@ -25,7 +25,7 @@ new #[Layout('layouts::auth', ['title' => 'Sign in'])] class extends Component
 
         if (request()->cookie(LoginUserAction::SESSION_HINT)) {
             $this->dispatch('toast',
-                title: __('Your session has expired. Please sign in again.'),
+                title: __('Your session has expired, sign in again.'),
                 variant: 'info',
                 duration: 6000,
                 position: 'bottom-center'

@@ -7,7 +7,7 @@
         type="button"
         @click="open = ! open"
         :data-open="open"
-        class="mine-text-primary flex cursor-pointer items-center gap-1 rounded-xl border-2 border-(--mine-input-border)/0 bg-(--mine-input-bg) px-3 py-1.5 text-sm font-medium transition-all duration-200 focus-visible:ring-2 focus-visible:ring-(--mine-input-ring-focus) focus-visible:outline-none data-open:border-(--mine-input-border-focus) data-open:ring-2 data-open:ring-(--mine-input-ring-focus)"
+        class="mine-text-primary flex cursor-pointer items-center gap-1 rounded-xl border-2 border-(--mine-input-border)/0 bg-(--mine-input-bg) px-3 py-1.5 text-sm font-medium transition-[border-color,box-shadow] duration-200 focus-visible:ring-2 focus-visible:ring-(--mine-input-ring-focus) focus-visible:outline-none data-open:border-(--mine-input-border-focus) data-open:ring-2 data-open:ring-(--mine-input-ring-focus)"
     >
         <span x-text="{{ $label }}"></span>
     </button>

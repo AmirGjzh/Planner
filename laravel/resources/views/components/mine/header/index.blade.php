@@ -48,7 +48,7 @@
                                 ? 'opacity:0; transform: rotate(90deg) scale(0.75);'
                                 : 'opacity:1; transform: rotate(0deg) scale(1);'"
                             style="opacity: 1; transform: rotate(0deg) scale(1)"
-                            class="absolute inset-0 flex flex-col items-center justify-center transition-all duration-200 ease-out"
+                            class="absolute inset-0 flex flex-col items-center justify-center transition-[opacity,transform] duration-200 ease-out"
                         >
                             <x-mine.icon name="MoreH" size="24" weight="filled" />
                         </div>
@@ -57,7 +57,7 @@
                                 ? 'opacity:1; transform: rotate(0deg) scale(1);'
                                 : 'opacity:0; transform: rotate(-90deg) scale(0.75);'"
                             style="opacity: 0; transform: rotate(-90deg) scale(0.75)"
-                            class="absolute inset-0 flex items-center justify-center transition-all duration-200 ease-out"
+                            class="absolute inset-0 flex items-center justify-center transition-[opacity,transform] duration-200 ease-out"
                         >
                             <x-mine.icon name="Xmark" size="20" weight="filled" />
                         </div>
@@ -131,7 +131,7 @@
                             <div @class([
                                 'mine-badge-primary rounded-xl size-11 flex items-center justify-center',
                             ])>
-                                <h2 class="pt-0.5 text-sm font-bold" x-text="initials">{{ $initials }}</h2>
+                                <h2 class="pt-0.5 text-sm font-semibold" x-text="initials">{{ $initials }}</h2>
                             </div>
                             <div class="hidden items-center rounded-xl px-2 py-2 sm:flex">
                                 <h2
@@ -147,13 +147,13 @@
                                 <div class="mine-text-secondary relative size-4">
                                     <div
                                         :class="! open ? 'opacity-100 scale-100' : 'opacity-0 scale-75'"
-                                        class="absolute inset-0 transition-all duration-200 ease-out"
+                                        class="absolute inset-0 transition-[opacity,transform] duration-200 ease-out"
                                     >
                                         <x-mine.icon name="AngleDown" weight="filled" size="16" />
                                     </div>
                                     <div
                                         :class="open ? 'opacity-100 scale-100' : 'opacity-0 scale-75'"
-                                        class="absolute inset-0 transition-all duration-200 ease-out"
+                                        class="absolute inset-0 transition-[opacity,transform] duration-200 ease-out"
                                     >
                                         <x-mine.icon name="AngleUp" weight="filled" size="16" />
                                     </div>
@@ -172,7 +172,7 @@
                             'flex items-center gap-3 py-2',
                         ])>
                             <div class="mine-badge-primary flex size-14 shrink-0 items-center justify-center rounded-xl text-sm font-medium">
-                                <h1 class="pt-1 text-lg font-bold" x-text="initials">{{ $initials }}</h1>
+                                <h1 class="pt-1 text-lg font-semibold" x-text="initials">{{ $initials }}</h1>
                             </div>
                             <div class="flex max-w-60 min-w-0 flex-col justify-between gap-1 truncate">
                                 <p class="mine-text-primary text-sm font-semibold" x-text="username">

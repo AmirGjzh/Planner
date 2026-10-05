@@ -1,6 +1,6 @@
 <div class="flex flex-1 flex-col px-4 pt-4 pb-6 sm:px-8 md:px-16">
     <x-mine.animate class="mb-6">
-        <h1 class="mine-text-primary text-base font-bold">{{ __('My profile') }}</h1>
+        <h1 class="mine-text-primary text-base font-semibold">{{ __('My profile') }}</h1>
     </x-mine.animate>
     <div class="flex flex-col gap-6 md:flex-row">
         <x-mine.animate
@@ -9,10 +9,10 @@
         >
             <div class="flex items-center gap-4 md:flex-col">
                 <div class="mine-badge-primary flex size-20 shrink-0 items-center justify-center rounded-full md:mt-20">
-                    <h1 class="pt-1 text-xl font-bold">{{ $this->user->initials() }}</h1>
+                    <h1 class="pt-1 text-xl font-semibold">{{ $this->user->initials() }}</h1>
                 </div>
                 <div class="min-w-0 sm:flex-1 md:my-2 md:flex-0 md:text-center">
-                    <h1 class="mine-text-primary mb-1 truncate text-base font-bold">{{ $this->user->username }}</h1>
+                    <h1 class="mine-text-primary mb-1 truncate text-base font-semibold">{{ $this->user->username }}</h1>
                     <p class="mine-text-secondary truncate text-sm font-medium">{{ $this->user->email }}</p>
                 </div>
             </div>
@@ -28,7 +28,7 @@
         <div class="flex flex-col md:flex-2">
             <x-mine.animate delay="100" class="mine-card flex flex-col gap-4 px-4 py-6 sm:p-8">
                 <div class="mb-2">
-                    <h1 class="mine-text-primary px-1 text-sm font-bold">{{ __('Personal information') }}</h1>
+                    <h1 class="mine-text-primary px-1 text-sm font-semibold">{{ __('Personal information') }}</h1>
                 </div>
                 @foreach ([
                     __('Firstname') => $this->user->firstname,
@@ -49,7 +49,7 @@
                     </div>
                 @endforeach
                 <div class="mt-4 mb-2">
-                    <h1 class="mine-text-primary px-1 text-sm font-bold">{{ __('Preferences') }}</h1>
+                    <h1 class="mine-text-primary px-1 text-sm font-semibold">{{ __('Preferences') }}</h1>
                 </div>
                 <div class="flex justify-between px-2">
                     <p class="mine-text-secondary text-sm font-medium">{{ __('Theme') }}</p>

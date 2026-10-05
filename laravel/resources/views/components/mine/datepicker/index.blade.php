@@ -365,7 +365,7 @@
             data-datepicker-trigger
             :data-open="open"
             @class([
-                'group flex items-center justify-between w-full px-4 rounded-xl border-2 transition-all duration-200 ease-out cursor-pointer',
+                'group flex items-center justify-between w-full px-4 rounded-xl border-2 transition-[border-color,box-shadow] duration-200 ease-out cursor-pointer',
                 $height => true,
                 'bg-(--mine-input-bg)' => ! $hasError,
                 'bg-(--mine-input-error-bg)' => $hasError,

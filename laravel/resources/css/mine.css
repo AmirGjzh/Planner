@@ -303,7 +303,9 @@ html {
         transition: none !important;
     }
 
-    .mine-alert-enter {
+    .mine-alert-enter,
+    .mine-toast-enter,
+    .mine-toast-leaving {
         animation: none !important;
     }
 }

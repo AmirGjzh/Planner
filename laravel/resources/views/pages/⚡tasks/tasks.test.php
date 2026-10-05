@@ -4,7 +4,6 @@ use App\Enums\TaskPriority;
 use App\Models\User;
 use App\Support\Jalali;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Livewire;
 
@@ -553,12 +552,13 @@ it('prevents completing a task owned by another user', function () {
         'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
     ]);
 
-    $this->expectException(ModelNotFoundException::class);
-
     Livewire::actingAs($user)
         ->test('pages::tasks')
         ->set('completing_id', $task->id)
-        ->call('completeTask');
+        ->call('completeTask')
+        ->assertNotDispatched('toast');
+
+    expect($task->fresh()->done)->toBeFalse();
 });
 
 it('prevents editing a task owned by another user', function () {
@@ -570,8 +570,6 @@ it('prevents editing a task owned by another user', function () {
         'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
     ]);
 
-    $this->expectException(ModelNotFoundException::class);
-
     Livewire::actingAs($user)
         ->test('pages::tasks')
         ->set('editing_id', $task->id)
@@ -580,7 +578,10 @@ it('prevents editing a task owned by another user', function () {
         ->set('edit_estimated_minutes', 30)
         ->set('edit_priority', 'medium')
         ->set('edit_category_id', $category->id)
-        ->call('editTask');
+        ->call('editTask')
+        ->assertNotDispatched('toast');
+
+    expect($task->fresh()->title)->toBe('Private');
 });
 
 it('prevents deleting a task owned by another user', function () {
@@ -592,12 +593,13 @@ it('prevents deleting a task owned by another user', function () {
         'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
     ]);
 
-    $this->expectException(ModelNotFoundException::class);
-
     Livewire::actingAs($user)
         ->test('pages::tasks')
         ->set('deleting_id', $task->id)
-        ->call('deleteTask');
+        ->call('deleteTask')
+        ->assertNotDispatched('toast');
+
+    expect($task->fresh())->not->toBeNull();
 });
 
 it('shows only today\'s tasks by default', function () {

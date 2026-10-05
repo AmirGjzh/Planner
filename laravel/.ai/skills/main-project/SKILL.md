@@ -69,6 +69,7 @@ Project-wide decisions that must not regress; per-UC scope decisions live in `ph
 - **Rate limiting is action-level**, keys via `Str::transliterate('kebab-prefix:identifier')`, guest vs authenticated shapes; cleared on success (see `.ai/rules/actions.md`).
 - **Soft-delete only for User** with credential obfuscation (`deleted-user-{id}`); other entities use restrict-on-delete.
 - **Ownership enforced in Actions, not Livewire** — frontend-agnostic defense in depth.
+- **Three font weights only:** Vazirmatn ships 400/500/600 (Regular/Medium/SemiBold) everywhere — the web faces in `resources/css/app.css` and the same trio embedded in the reset mail; `font-bold` never appears in markup (see `.ai/rules/css.md`, `.ai/rules/auth.md`).
 
 ## How to Use
 

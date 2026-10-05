@@ -21,6 +21,8 @@ it('renders the themed reset mail with the emailed url', function () {
         ->toContain('Reset Password')
         ->toContain('This password reset link will expire in 60 minutes.')
         ->toContain('--mine-btn-primary-bg')
+        ->toContain('<svg')                                // brand ships as the inline logo SVG…
+        ->toContain('color: var(--mine-btn-primary-bg')    // …tinted by the receiving user's theme
         ->toContain('dir="ltr"');
 });
 
@@ -67,4 +69,15 @@ it('roots the reset link at APP_URL even when the request host is forged', funct
     expect($mail->actionUrl)
         ->toStartWith(rtrim(config('app.url'), '/').'/reset-password')
         ->not->toStartWith('http://evil.example');
+});
+
+it('embeds the subset fonts as data uris and stays under the gmail clip budget', function () {
+    $user = User::factory()->create(['email' => 'amir@example.com']);
+    $mail = (new ResetPasswordNotification('token-123'))->toMail($user);
+
+    $html = view($mail->view, $mail->viewData)->render();
+
+    expect(substr_count($html, 'data:font/woff2;base64,'))->toBe(3)
+        ->and($html)->not->toContain('/fonts/Vazirmatn')
+        ->and(strlen($html))->toBeLessThan(100 * 1024);
 });

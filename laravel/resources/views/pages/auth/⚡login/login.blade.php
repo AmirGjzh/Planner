@@ -61,11 +61,7 @@
             <x-mine.button wire:target="login" type="submit" height="h-12">{{ __('Sign in') }}</x-mine.button>
         </form>
 
-        <div class="mt-4">
-            <x-mine.separator label="{{ __('OR') }}"></x-mine.separator>
-        </div>
-
-        <div class="mt-2 flex items-center justify-center gap-2">
+        <div class="mt-5 flex items-center justify-center gap-2">
             <p class="mine-text-primary text-sm font-medium">{{ __('New to Planner?') }}</p>
             <a
                 wire:navigate.hover

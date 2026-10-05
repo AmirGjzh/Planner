@@ -1,7 +1,7 @@
 ---
 paths:
-  - resources/views/components/mine/brand-logo.blade.php
   - 'resources/views/components/mine/**'
+  - resources/js/app.js
 ---
 
 # Mine
@@ -19,6 +19,8 @@ The favicon is the deliberate exception: `public/favicon.svg` is a cropped copy 
 ## Toast state lives in the JS bundle
 
 The toast's Alpine factory is registered as `Alpine.data('mineToast', …)` in `resources/js/app.js`; the component passes its `position`/`duration` props as factory arguments (`x-data="mineToast(@js($position), @js($duration))"`). Keep the maps and methods out of an inline `x-data` — inline factories re-serialize the whole toast implementation into every HTML response.
+
+Toasts are navigation-proof inside the factory too: every toast carries an absolute wall-clock `expiresAt`, `addToast`/dismiss persist the surviving list to `sessionStorage` (`mine-toasts`, capped), and `init()` restores unexpired toasts with their remaining time on every mount — so a toast survives `wire:navigate`, full reloads, and back/forward in either layout. Expired toasts are filtered on restore (never resurrect them), and persistence stays in the factory as the single choke point — never in the dispatching callers.
 
 ## Nested UI components are anonymous Blade, not Livewire
 

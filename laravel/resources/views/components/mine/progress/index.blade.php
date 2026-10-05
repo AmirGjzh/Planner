@@ -27,7 +27,7 @@
     aria-valuemax="{{ $total }}"
 >
     <div
-        class="rounded-full transition-all duration-500 ease-out"
+        class="rounded-full transition-[width] duration-500 ease-out"
         style="width: {{ $percent }}%; height: 100%; background: var({{ $fillVar }});"
     ></div>
 </div>

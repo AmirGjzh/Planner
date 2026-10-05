@@ -5,7 +5,6 @@ use App\Models\Plan;
 use App\Models\User;
 use App\Support\Jalali;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Livewire;
 
@@ -336,12 +335,13 @@ it('prevents completing a plan owned by another user', function () {
     $other = User::factory()->create();
     $plan = $other->plans()->create(['name' => 'Private', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
 
-    $this->expectException(ModelNotFoundException::class);
-
     Livewire::actingAs($user)
         ->test('pages::plans')
         ->set('completing_id', $plan->id)
-        ->call('completePlan');
+        ->call('completePlan')
+        ->assertNotDispatched('toast');
+
+    expect($plan->fresh()->done)->toBeFalse();
 });
 
 it('prevents reopening a plan owned by another user', function () {
@@ -349,12 +349,13 @@ it('prevents reopening a plan owned by another user', function () {
     $other = User::factory()->create();
     $plan = $other->plans()->create(['name' => 'Private', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31', 'done' => true]);
 
-    $this->expectException(ModelNotFoundException::class);
-
     Livewire::actingAs($user)
         ->test('pages::plans')
         ->set('reopening_id', $plan->id)
-        ->call('reopenPlan');
+        ->call('reopenPlan')
+        ->assertNotDispatched('toast');
+
+    expect($plan->fresh()->done)->toBeTrue();
 });
 
 it('filters plans by active status', function () {

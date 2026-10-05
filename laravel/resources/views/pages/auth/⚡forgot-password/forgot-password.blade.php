@@ -14,19 +14,17 @@
             </p>
 
             <div class="flex flex-col gap-4">
-                <x-mine.alert variant="success" title="{{ __('Check your inbox') }}">
+                <x-mine.alert variant="success" title="{{ __('Check your inbox!') }}">
                     {{ __('The link expires in :count minutes. Don\'t forget to check your spam folder.', ['count' => $this->expireMinutes]) }}
                 </x-mine.alert>
 
-                <x-mine.button type="button" wire:click="restart" height="h-12">
-                    {{ __('Use a different email') }}</x-mine.button>
+                <div class="mt-2">
+                    <x-mine.button type="button" wire:click="restart" height="h-12">
+                        {{ __('Use a different email') }}</x-mine.button>
+                </div>
             </div>
 
-            <div class="mt-4">
-                <x-mine.separator label="{{ __('OR') }}"></x-mine.separator>
-            </div>
-
-            <div class="mt-2 flex items-center justify-center gap-2">
+            <div class="mt-5 flex items-center justify-center gap-2">
                 <p class="mine-text-primary text-sm font-medium">{{ __('Remember your password?') }}</p>
                 <a
                     wire:navigate.hover
@@ -52,7 +50,7 @@
                 "
             >
                 @if ($send_error === 'rate_limited')
-                    <x-mine.alert variant="warning" title="{{ __('Too many reset requests!') }}">
+                    <x-mine.alert variant="warning" title="{{ __('Too many password-reset requests!') }}">
                         {{ __('Try again in a minute.') }}</x-mine.alert>
                 @endif
 
@@ -74,11 +72,7 @@
                 </div>
             </form>
 
-            <div class="mt-4">
-                <x-mine.separator label="{{ __('OR') }}"></x-mine.separator>
-            </div>
-
-            <div class="mt-2 flex items-center justify-center gap-2">
+            <div class="mt-5 flex items-center justify-center gap-2">
                 <p class="mine-text-primary text-sm font-medium">{{ __('Remember your password?') }}</p>
                 <a
                     wire:navigate.hover

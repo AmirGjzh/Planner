@@ -14,7 +14,10 @@ final class ExpireSessionsOnPasswordChange
      * Kick every session that predates the latest password change, so a
      * reset acts as "sign out everywhere". Sessions without an auth_time
      * (remember-me logins, sessions from before this middleware) get
-     * stamped on their first pass instead of being rejected.
+     * stamped on their first pass instead of being rejected. The
+     * comparison is strictly greater-than: both timestamps are
+     * second-precision, so a re-login in the same second as the change
+     * survives — a `>=` would evict it on its very next request and loop.
      *
      * @param  Closure(Request): Response  $next
      */
@@ -43,7 +46,7 @@ final class ExpireSessionsOnPasswordChange
             return redirect()
                 ->route('login')
                 ->with('toast', [
-                    'title' => __('Your password was changed, sign in again'),
+                    'title' => __('Your password was changed, sign in again.'),
                     'variant' => 'info',
                     'duration' => 6000,
                     'position' => 'bottom-center',

@@ -1,11 +1,12 @@
 ---
 paths:
-  - resources/css/mine.css
+  - resources/css/{mine,app}.css
+  - resources/fonts/*.woff2
 ---
 
 # CSS
 
-Rules for `resources/css/mine.css` (custom `@utility` definitions).
+Rules for `resources/css/` — mine.css (custom `@utility` definitions) and app.css (font faces).
 
 ## mine-animate must not leave a stacking context
 
@@ -18,5 +19,9 @@ Tailwind v4 emits `@utility` rules not in source order (`.mine-animate` lands af
 
 ## Animate explicit properties, never `transition-all`
 
-- Every `transition-…` in mine.css and the auth-facing components (input, checkbox, button, alert) lists the properties it animates (e.g. `transition-colors transition-[box-shadow,transform]`, `transition duration-200`) — `transition-all` also animates layout properties and repaints on unrelated DOM changes. The remaining mine components (dropdown, select, datepicker, header, textarea, progress) still use `transition-all`; convert them opportunistically.
-- Reduced motion is handled by neutralization: the `@media (prefers-reduced-motion: reduce)` block kills `.mine-alert-enter` and the card reveal's transition — motion never ships enabled to those users.
+- Every `transition-…` in mine.css and the mine components lists the properties it animates (e.g. `transition-[border-color,background-color,box-shadow]`, `transition-colors`, `transition-[opacity,transform]`) — `transition-all` also animates layout properties and repaints on unrelated DOM changes. No component may introduce `transition-all`; the login page test pins its absence.
+- Reduced motion is handled by neutralization: the `@media (prefers-reduced-motion: reduce)` block kills `.mine-alert-enter`, the toast enter/leave animations, and the card reveal's transition — motion never ships enabled to those users.
+
+## Web fonts: exactly three Vazirmatn weights
+
+`resources/css/app.css` declares `@font-face` for 400/500/600 (Regular/Medium/SemiBold) — and nothing else. Bold was dropped app-wide in favour of the dominant `font-semibold` usage, so `font-bold` must never appear in markup; semibold is the heaviest class allowed. The reset mail embeds the same trio as `data:` URIs (`.ai/rules/auth.md`), keeping web and mail from ever drifting apart.

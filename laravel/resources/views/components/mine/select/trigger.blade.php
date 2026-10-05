@@ -16,7 +16,7 @@
     role="button"
     aria-disabled="@if($disabled) true @endif"
     @class([
-        'group flex items-center justify-between w-full px-4 rounded-xl border-2 transition-all duration-200 ease-out cursor-pointer focus-visible:outline-none',
+        'group flex items-center justify-between w-full px-4 rounded-xl border-2 transition-[border-color,box-shadow] duration-200 ease-out cursor-pointer focus-visible:outline-none',
         $height => true,
         'bg-(--mine-input-bg)' => ! $invalid,
         'bg-(--mine-input-error-bg)' => $invalid,

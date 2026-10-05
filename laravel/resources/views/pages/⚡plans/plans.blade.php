@@ -1,6 +1,6 @@
 <div class="flex flex-1 flex-col px-4 pt-4 pb-6 sm:px-8 md:px-16">
     <x-mine.animate class="mb-6">
-        <h1 class="mine-text-primary text-base font-bold">{{ __('My plans') }}</h1>
+        <h1 class="mine-text-primary text-base font-semibold">{{ __('My plans') }}</h1>
     </x-mine.animate>
     @island(name: 'plans-content', always: true)
         <x-mine.animate delay="50" class="mb-6 flex flex-col gap-2 sm:gap-4 md:flex-row">
@@ -434,7 +434,7 @@
                                         <h2 class="mine-text-secondary mb-2 text-[13px] font-medium">
                                             {{ __('Progress') }}
                                         </h2>
-                                        <h2 class="text-2xl font-bold {{ $config['percent_color'] }} mb-2">
+                                        <h2 class="text-2xl font-semibold {{ $config['percent_color'] }} mb-2">
                                             {{ app()->isLocale('fa') ? App\Support\PersianNumber::convert($config['pct']) : $config['pct'] }}%
                                         </h2>
                                         <x-mine.progress

@@ -60,7 +60,7 @@
             <div>
                 <div class="flex items-center gap-2">
                     <h1 class="mine-text-primary mb-1 text-base font-semibold">{{ __('Tasks needing attention') }}</h1>
-                    <div class="mine-badge-primary mb-1 flex size-6 items-center justify-center rounded-full pt-0.5 text-xs font-bold">
+                    <div class="mine-badge-primary mb-1 flex size-6 items-center justify-center rounded-full pt-0.5 text-xs font-semibold">
                         {{ count($this->upcomingTasks) }}
                     </div>
                 </div>

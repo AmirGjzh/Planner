@@ -9,6 +9,7 @@ Alpine.data('mineToast', (position = 'top-right', duration = 4000) => ({
     progressFrame: null,
     defaultPosition: position,
     defaultDuration: duration,
+    storageKey: 'mine-toasts',
     positions: {
         'top-right': { class: 'top-4 right-4 items-end', from: 'translateX(120%)' },
         'top-left': { class: 'top-4 left-4 items-start', from: 'translateX(-120%)' },
@@ -39,16 +40,22 @@ Alpine.data('mineToast', (position = 'top-right', duration = 4000) => ({
             icon: 'text-[var(--mine-alert-info-icon)]',
         },
     },
+    init() {
+        this.restoreToasts()
+    },
     addToast({ title, variant = 'info', position = null, duration = null }) {
         if (! title) return
+
+        const ms = duration && duration > 0 ? duration : this.defaultDuration
 
         const toast = {
             id: ++this.uid,
             title,
             variant: this.variants[variant] ? variant : 'info',
             position: this.resolvePosition(position),
-            duration: duration && duration > 0 ? duration : this.defaultDuration,
-            remaining: duration && duration > 0 ? duration : this.defaultDuration,
+            duration: ms,
+            remaining: ms,
+            expiresAt: Date.now() + ms,
             startedAt: null,
             timer: null,
             progress: 1,
@@ -56,6 +63,7 @@ Alpine.data('mineToast', (position = 'top-right', duration = 4000) => ({
         }
 
         this.toasts.push(toast)
+        this.persistToasts()
         this.startTimer(toast)
         if (! this.progressFrame) {
             this.progressFrame = requestAnimationFrame(() => this.tickProgress())
@@ -83,7 +91,7 @@ Alpine.data('mineToast', (position = 'top-right', duration = 4000) => ({
 
         for (const toast of this.toasts) {
             if (toast.timer) {
-                toast.progress = Math.max(0, (toast.remaining - (performance.now() - toast.startedAt)) / toast.duration)
+                toast.progress = Math.min(1, Math.max(0, (toast.remaining - (performance.now() - toast.startedAt)) / toast.duration))
             }
         }
 
@@ -97,7 +105,74 @@ Alpine.data('mineToast', (position = 'top-right', duration = 4000) => ({
         clearTimeout(toast.timer)
         setTimeout(() => {
             this.toasts = this.toasts.filter((item) => item.id !== id)
+            this.persistToasts()
         }, 220)
+    },
+    persistToasts() {
+        const now = Date.now()
+        const alive = this.toasts
+            .filter((toast) => ! toast.leaving && toast.expiresAt > now)
+            .slice(-5)
+            .map(({ title, variant, position, duration, expiresAt }) => ({ title, variant, position, duration, expiresAt }))
+
+        try {
+            if (alive.length === 0) {
+                sessionStorage.removeItem(this.storageKey)
+            } else {
+                sessionStorage.setItem(this.storageKey, JSON.stringify(alive))
+            }
+        } catch (error) {
+            // Storage unavailable — toasts simply do not cross navigations.
+        }
+    },
+    restoreToasts() {
+        let saved = []
+
+        try {
+            saved = JSON.parse(sessionStorage.getItem(this.storageKey)) || []
+        } catch (error) {
+            saved = []
+        }
+
+        if (! Array.isArray(saved) || saved.length === 0) {
+            // Re-persist even on an empty/corrupt read so a poisoned key is
+            // pruned away instead of lingering until the next toast fires.
+            this.persistToasts()
+            return
+        }
+
+        const now = Date.now()
+
+        for (const item of saved) {
+            if (! item || typeof item.title !== 'string' || item.title === '') continue
+            if (typeof item.expiresAt !== 'number' || item.expiresAt <= now) continue
+
+            const remaining = item.expiresAt - now
+            const duration = typeof item.duration === 'number' && item.duration > 0 ? item.duration : this.defaultDuration
+
+            const toast = {
+                id: ++this.uid,
+                title: item.title,
+                variant: this.variants[item.variant] ? item.variant : 'info',
+                position: this.resolvePosition(item.position),
+                duration,
+                remaining,
+                expiresAt: item.expiresAt,
+                startedAt: null,
+                timer: null,
+                progress: Math.min(1, remaining / duration),
+                leaving: false,
+            }
+
+            this.toasts.push(toast)
+            this.startTimer(toast)
+        }
+
+        this.persistToasts()
+
+        if (! this.progressFrame) {
+            this.progressFrame = requestAnimationFrame(() => this.tickProgress())
+        }
     },
     startTimer(toast) {
         toast.startedAt = performance.now()
@@ -116,6 +191,10 @@ Alpine.data('mineToast', (position = 'top-right', duration = 4000) => ({
             this.removeToast(toast.id)
             return
         }
+        // A hover pause stops the wall-clock deadline too: re-arm it from the
+        // frozen remaining time so storage and screen agree after a reload.
+        toast.expiresAt = Date.now() + toast.remaining
+        this.persistToasts()
         this.startTimer(toast)
     },
     variantClass(toast) {

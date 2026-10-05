@@ -41,6 +41,7 @@ laravel/public/fonts-manifest.dev.json
 laravel/public/hot
 laravel/public/storage
 laravel/resources/**/*.test.php
+laravel/resources/fonts/mail/subset.cjs
 laravel/resources/images/screenshots
 laravel/scripts
 laravel/storage/pail

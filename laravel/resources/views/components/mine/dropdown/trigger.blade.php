@@ -23,7 +23,7 @@
             focus-visible:ring-4
             focus-visible:ring-(--mine-input-ring-focus)
             focus-visible:outline-none
-            transition-all
+            transition-shadow
             duration-200
             ease-out
             ',
@@ -56,7 +56,7 @@
             focus-visible:ring-4
             focus-visible:ring-(--mine-input-ring-focus)
             focus-visible:outline-none
-            transition-all
+            transition-shadow
             duration-200
             ease-out
             flex-shrink-0

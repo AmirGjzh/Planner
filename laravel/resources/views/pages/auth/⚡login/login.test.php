@@ -291,7 +291,7 @@ it('consumes the session hint cookie and shows an expired-session toast', functi
     Livewire::withCookies(['session_hint' => '1'])
         ->test('pages::auth.login')
         ->assertDispatched('toast',
-            title: 'Your session has expired. Please sign in again.',
+            title: 'Your session has expired, sign in again.',
             variant: 'info',
         );
 

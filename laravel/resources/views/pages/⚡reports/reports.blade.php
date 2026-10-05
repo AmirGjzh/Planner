@@ -5,7 +5,7 @@
 @endphp
 <div class="flex flex-1 flex-col px-4 pt-4 pb-6 sm:px-8 md:px-16">
     <x-mine.animate class="mb-6">
-        <h1 class="mine-text-primary text-base font-bold">{{ __('My reports') }}</h1>
+        <h1 class="mine-text-primary text-base font-semibold">{{ __('My reports') }}</h1>
     </x-mine.animate>
     <div class="flex flex-col">
         <x-mine.animate delay="50" class="mb-6 flex flex-col items-center justify-between gap-4 md:flex-row">

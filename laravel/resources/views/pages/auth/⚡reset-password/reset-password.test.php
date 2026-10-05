@@ -165,7 +165,7 @@ it('rate limits after too many invalid attempts', function () {
         ->set('password_confirmation', 'brand-new-password')
         ->call('resetPassword')
         ->assertSet('reset_error', 'rate_limited')
-        ->assertSee('Too many reset attempts!');
+        ->assertSee('Too many password-reset attempts!');
 });
 
 it('shows the same-password error and keeps the link usable for a retry', function () {
@@ -182,8 +182,8 @@ it('shows the same-password error and keeps the link usable for a retry', functi
         ->call('resetPassword')
         ->assertSet('reset_error', 'same_password')
         ->assertSet('password', '')
-        ->assertSee('Password unchanged!')
-        ->assertSee('Choose a password you haven');
+        ->assertSee('Password didn\'t change!')
+        ->assertSee('New password is equal to current one.');
 
     expect(Hash::check('old-password', $user->fresh()->password))->toBeTrue();
 

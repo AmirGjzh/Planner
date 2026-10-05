@@ -41,7 +41,7 @@
         @class([
             'mr-3' => app()->isLocale('en'),
             'ml-3' => app()->isLocale('fa'),
-            'size-4 shrink-0 transition-all duration-200',
+            'size-4 shrink-0 transition-[opacity,transform] duration-200',
         ])
     >
         <x-mine.icon name="Check" size="16" weight="filled" />

@@ -6,18 +6,18 @@ Before planning or editing, find the row whose globs match the file's path and r
 | --- | --- |
 | app/Actions/**, resources/views/pages/** | .ai/rules/actions.md |
 | resources/views/components/mine/animate/** | .ai/rules/animate.md |
-| app/Actions/Auth/**, app/Http/Middleware/**, app/Notifications/**, resources/views/mail/** | .ai/rules/auth.md |
+| app/Actions/Auth/**, app/Http/Middleware/**, app/Notifications/**, resources/views/mail/**, resources/fonts/mail/** | .ai/rules/auth.md |
 | app/Actions/Category/** | .ai/rules/category.md |
 | resources/views/components/** | .ai/rules/components.md |
 | config/themes.php, config/themes/** | .ai/rules/config.md |
-| resources/css/mine.css | .ai/rules/css.md |
+| resources/css/{mine,app}.css, resources/fonts/*.woff2 | .ai/rules/css.md |
 | app/Actions/Dashboard/**, app/Enums/WorkloadLevel.php | .ai/rules/dashboard.md |
 | tests/Feature/Actions/** | .ai/rules/feature-actions.md |
 | resources/views/pages/**, resources/views/components/** | .ai/rules/island.md |
 | lang/** | .ai/rules/lang.md |
 | .ai/skills/main-project/**/*.md | .ai/rules/main-project.md |
 | database/migrations/** | .ai/rules/migrations.md |
-| resources/views/components/mine/brand-logo.blade.php, resources/views/components/mine/** | .ai/rules/mine.md |
+| resources/js/app.js, resources/views/components/mine/** | .ai/rules/mine.md |
 | app/Models/** | .ai/rules/models.md |
 | resources/views/pages/**, resources/views/pages/**/*.test.php, app/Livewire/** | .ai/rules/pages.md |
 | app/Actions/Plan/** | .ai/rules/plan.md |
