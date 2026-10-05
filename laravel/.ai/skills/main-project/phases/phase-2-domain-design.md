@@ -120,8 +120,10 @@ Main Flow:
    - Password length and requirements
 5. If validation succeeds:
    - The account is created
+   - A verification email with a signed, expiring link is sent
    - A success or welcome message is shown
    - The user is redirected to the Login page
+6. After signing in, an unverified account lands on the verification notice page, where the link can be resent; opening the emailed link marks the email verified and unlocks the authenticated pages.
 
 ### 2.3.3 UC-03 – View and Edit Profile
 

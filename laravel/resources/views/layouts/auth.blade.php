@@ -17,7 +17,8 @@
     <title>{{ ($title ?? null) ? __($title).' — '.config('app.name') : config('app.name') }}</title>
 
     @livewireScriptConfig
-    <x-mine.theme-vars />
+    {{-- Auth surfaces are pre-personalization: always the app default theme, never a saved account theme. --}}
+    <x-mine.theme-vars :theme="config('themes.default')" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>

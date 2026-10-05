@@ -138,8 +138,9 @@ The acceptance criteria are grouped by use case (UC-01 … UC-11), in topologica
 
 **Given** the user is on the registration page,
 **When** they enter a unique username, valid email, and matching password confirmation,
-**Then** the account is created and they are redirected to the login page.
+**Then** the account is created, a verification email is sent, and they are redirected to the login page.
 **And** if the username or email is taken, an error is shown.
+**And** until the emailed link is followed, every authenticated page redirects to the verification notice, where the link can be resent.
 
 ### UC-03 – View and Edit Profile
 

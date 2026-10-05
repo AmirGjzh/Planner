@@ -18,8 +18,9 @@ Rules for `config/themes.php` and the theme JSONs under `config/themes/`.
 The active theme per request resolves at the component level in `resources/views/components/mine/theme-vars/index.blade.php`:
 
 ```php
-config('themes.vars')[auth()->user()?->theme ?? config('themes.default')]
+config('themes.vars')[$theme ?? auth()->user()?->theme ?? config('themes.default')]
 ```
 
+- The component's optional `theme` prop pins an explicit slug for surfaces that must ignore the account theme — only the auth layout passes it (`config('themes.default')`, see `.ai/rules/auth.md`); everyone else renders with no prop and keeps the fallback below.
 - Keep that fallback pointing at a present theme file (`forest`).
 - Never remove a theme from the array without also removing its json/vars — `Rule::in` and the dropdown must stay in sync.

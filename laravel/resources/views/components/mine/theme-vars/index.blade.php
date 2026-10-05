@@ -1,5 +1,9 @@
+@props([
+    'theme' => null,
+])
+
 @php
-    $vars = config('themes.vars')[auth()->user()?->theme ?? config('themes.default')];
+    $vars = config('themes.vars')[$theme ?? auth()->user()?->theme ?? config('themes.default')];
     $colorScheme = $vars['color-scheme'] ?? 'light';
     unset($vars['color-scheme']);
 @endphp

@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Psr\Log\LoggerInterface;
+use Throwable;
 
 final class RegisterUserAction
 {
@@ -39,7 +40,7 @@ final class RegisterUserAction
             return RegisterResult::RateLimited;
         }
         try {
-            User::create([
+            $user = User::create([
                 'username' => $username,
                 'email' => $email,
                 'password' => $password,
@@ -75,6 +76,20 @@ final class RegisterUserAction
             'email' => $email,
             'ip' => $request->ip(),
         ]);
+
+        try {
+            // create() only returns the inserted columns — reload the persisted row first,
+            // otherwise locale is missing and preferredLocale() TypeErrors on a null.
+            $user->refresh();
+            $user->sendEmailVerificationNotification();
+        } catch (Throwable $e) {
+            $this->logger->error('Verification email dispatch failed.', [
+                'email' => $email,
+                'ip' => $request->ip(),
+                'exception' => $e::class,
+                'message' => $e->getMessage(),
+            ]);
+        }
 
         return RegisterResult::Success;
     }

@@ -28,7 +28,7 @@ Guest pages (home/login/register/forgot-password/reset-password) have no `HasUse
 ## Toast contract
 
 - Mutations that stay on the page dispatch directly: `$this->dispatch('toast', variant: ..., title: ...)` — `success|info`, 3000ms, bottom-center.
-- Flows that redirect flash `session('toast')`; the destination page's `mount()` re-dispatches it. Every page that can receive a flash implements the re-dispatch (login, home, dashboard, profile, tasks, plans, categories, reports) — register deliberately has none (see `.ai/rules/auth.md`).
+- Flows that redirect flash `session('toast')`; the destination page's `mount()` re-dispatches it. Every page that can receive a flash implements the re-dispatch (login, home, dashboard, verify-email, profile, tasks, plans, categories, reports) — register deliberately has none (see `.ai/rules/auth.md`).
 - Pull the flash once in `mount()` and dispatch with `...$toast`.
 
 ## Forms fail focus on the first invalid field

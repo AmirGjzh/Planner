@@ -2,15 +2,15 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Concerns\EmbedsThemeFonts;
 use Illuminate\Auth\Notifications\ResetPassword as BaseResetPassword;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Support\Facades\File;
 
 final class ResetPasswordNotification extends BaseResetPassword implements ShouldQueue
 {
-    use Queueable;
+    use EmbedsThemeFonts, Queueable;
 
     /**
      * Build the mail representation of the notification on the project's own template, colored
@@ -22,7 +22,6 @@ final class ResetPasswordNotification extends BaseResetPassword implements Shoul
     public function toMail($notifiable): MailMessage
     {
         $url = $this->resetUrl($notifiable);
-        $theme = $notifiable->theme;
 
         return (new MailMessage)
             ->subject(__('Reset your password'))
@@ -30,32 +29,9 @@ final class ResetPasswordNotification extends BaseResetPassword implements Shoul
             ->view('mail.reset-password', [
                 'url' => $url,
                 'expireMinutes' => (int) config('auth.passwords.'.config('auth.defaults.passwords').'.expire'),
-                'themeVars' => config("themes.vars.$theme") ?? [],
+                'themeVars' => $this->themeVarsFor($notifiable),
                 'fontUris' => $this->embeddedFontUris(),
             ]);
-    }
-
-    /**
-     * The subsetted Vazirmatn weights as data URIs, encoded when the mail renders so the sent
-     * HTML is a self-contained static document: email HTML is never same-origin with the app,
-     * so a served font URL gets CORS-blocked in clients like Mailpit and would need
-     * per-environment URL/nginx/CORS setup. Subsetting keeps the payload under Gmail's ~102KB
-     * message-clip budget — the size contract is pinned in the mail test and regeneration is
-     * documented in .ai/rules/auth.md.
-     *
-     * @return array{400: string, 500: string, 600: string} font weight => data URI
-     */
-    private function embeddedFontUris(): array
-    {
-        $uris = [];
-
-        foreach ([400 => 'Regular', 500 => 'Medium', 600 => 'SemiBold'] as $weight => $file) {
-            $uris[$weight] = 'data:font/woff2;base64,'.base64_encode(
-                File::get(resource_path("fonts/mail/Vazirmatn-{$file}.woff2"))
-            );
-        }
-
-        return $uris;
     }
 
     /**

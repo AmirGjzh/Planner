@@ -3,9 +3,11 @@
 use App\Actions\Auth\RegisterUserAction;
 use App\Enums\RegisterResult;
 use App\Models\User;
+use App\Notifications\VerifyEmailNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\RateLimiter;
 
 beforeEach(function () {
@@ -108,6 +110,34 @@ it('returns username taken for a whitespace-padded mixed-case username matching 
         ->execute('  Amir_User  ', 'amir@example.com', 'password123', registerRequest());
 
     expect($result)->toBe(RegisterResult::UsernameTaken);
+});
+
+it('sends the verification notification after a successful signup', function () {
+    Notification::fake();
+
+    $result = app(RegisterUserAction::class)
+        ->execute('amir_user', 'amir@example.com', 'password123', registerRequest());
+
+    $user = User::where('email', 'amir@example.com')->firstOrFail();
+
+    expect($result)->toBe(RegisterResult::Success);
+    Notification::assertSentTo($user, VerifyEmailNotification::class);
+});
+
+it('creates the account and still succeeds when the verification dispatch fails', function () {
+    Log::spy();
+    config(['queue.default' => 'missing-queue']);
+
+    $result = app(RegisterUserAction::class)
+        ->execute('amir_user', 'amir@example.com', 'password123', registerRequest());
+
+    expect($result)->toBe(RegisterResult::Success);
+    $this->assertDatabaseHas('users', ['email' => 'amir@example.com']);
+    Log::shouldHaveReceived('error')
+        ->with('Verification email dispatch failed.', Mockery::on(
+            fn (array $context) => $context['email'] === 'amir@example.com'
+                && isset($context['exception'], $context['message'])
+        ));
 });
 
 it('logs failed, limited, and successful register events', function () {
