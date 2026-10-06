@@ -61,7 +61,7 @@ cp laravel/.env.production laravel/.env
 
 - `./planner ps` — every service (`php-fpm`, `queue`, `nginx`, `mysql`, `redis`, `mailpit`) is `Up` / `running` / `healthy`
 - **http://localhost** loads the app
-- You can register an account and log in
+- You can register an account, verify it through Mailpit, and log in
 - **http://localhost/up** returns `200`
 
 ## ▶️ Usage
@@ -169,7 +169,7 @@ The easy way — one command starts the app server, the queue worker, and Vite t
 composer run dev
 ```
 
-Then open **http://localhost:8000** and register an account to try the real features. (**http://localhost:8000/up** should return `200`.) Any email the app sends (e.g. a password reset) lands in Mailpit — browse it at **http://localhost:8025**.
+Then open **http://localhost:8000** and register an account to try the real features. (**http://localhost:8000/up** should return `200`.) Any email the app sends (e.g. the verification link a new account needs, or a password reset) lands in Mailpit — browse it at **http://localhost:8025**.
 
 Prefer running things one at a time? Use a second terminal inside the container (`./planner-dev shell`):
 

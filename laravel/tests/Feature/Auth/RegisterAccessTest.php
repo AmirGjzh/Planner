@@ -2,7 +2,9 @@
 
 use App\Models\User;
 
-it('allows guests to visit register page', function () {
+it('renders register for guests without database queries', function () {
+    $this->expectsDatabaseQueryCount(0);
+
     $this->get('/register')->assertSuccessful();
 });
 

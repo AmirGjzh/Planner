@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\TaskPriority;
+use App\Models\Category;
 use App\Models\User;
 use App\Support\Jalali;
 use Carbon\Carbon;
@@ -89,6 +90,23 @@ it('creates a new task', function () {
         ->assertDispatched('toast', title: __('Your task created successfully'), variant: 'success');
 
     expect($user->tasks()->where('title', 'Test task')->exists())->toBeTrue();
+});
+
+it('renders the no-plan option with an empty value', function () {
+    $user = User::factory()->create();
+    Category::factory()->create(['user_id' => $user->id]);
+
+    $html = $this->actingAs($user)
+        ->get('/tasks')
+        ->assertSuccessful()
+        ->getContent();
+
+    expect($html)
+        ->toContain(__('No plan'))
+        ->and(preg_match('/data-value="[^"]*"\s+data-label="'.preg_quote(__('No plan'), '/').'"/', $html, $m))->toBe(1);
+
+    preg_match('/data-value="([^"]*)"/', $m[0], $value);
+    expect($value[1])->toBe('');
 });
 
 it('creates a task with a plan assigned', function () {

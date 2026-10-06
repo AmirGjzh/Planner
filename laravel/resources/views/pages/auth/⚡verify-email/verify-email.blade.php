@@ -8,20 +8,31 @@
             {{ __('Open the verification link in your :email inbox', ['email' => $this->user->email]) }}
         </p>
 
-        @if ($resend_error === 'rate_limited')
-            <div class="mb-4">
-                <x-mine.alert variant="warning" title="{{ __('Too many verification emails!') }}">
-                    {{ __('Try again in a minute.') }}</x-mine.alert>
-            </div>
-        @endif
-
         <p class="mine-text-secondary mb-6 text-center text-sm font-medium">
             {{ __('The link expires in :count minutes. Don\'t forget to check your spam folder.', ['count' => (int) config('auth.verification.expire', 60)]) }}
         </p>
 
-        <form wire:submit="resend">
+        <form
+            wire:submit="resend"
+            novalidate
+            class="flex flex-col gap-4"
+            x-data
+            x-on:focus-first-error.window="
+                $nextTick(() => $el.querySelector('[aria-invalid=&quot;true&quot;]')?.focus())
+            "
+        >
+            @if ($resend_error === 'rate_limited')
+                <x-mine.alert variant="warning" title="{{ __('Too many verification emails!') }}">
+                    {{ __('Try again in a minute.') }}</x-mine.alert>
+            @endif
+
             <div class="mt-2">
-                <x-mine.button type="submit" height="h-12"> {{ __('Resend verification email') }}</x-mine.button>
+                <x-mine.button
+                    wire:target="resend"
+                    type="submit"
+                    height="h-12"
+                >
+                    {{ __('Resend verification email') }}</x-mine.button>
             </div>
         </form>
 
@@ -40,7 +51,7 @@
                         })
                         .catch(() => busy = false);
                 "
-                class="mine-text-link inline-flex items-center py-1 text-sm font-medium cursor-pointer"
+                class="mine-text-link inline-flex cursor-pointer items-center py-1 text-sm font-medium"
             >
                 {{ __('Log out') }}
             </button>

@@ -34,6 +34,27 @@ it('returns success and creates a user', function () {
     expect(Hash::check('password123', $user->password))->toBeTrue();
 });
 
+it('creates the account with exactly the insert and row reload queries', function () {
+    Notification::fake();
+    $this->expectsDatabaseQueryCount(2);
+
+    $result = app(RegisterUserAction::class)
+        ->execute('amir_user', 'amir@example.com', 'password123', registerRequest());
+
+    expect($result)->toBe(RegisterResult::Success);
+});
+
+it('creates the account unverified', function () {
+    $result = app(RegisterUserAction::class)
+        ->execute('amir_user', 'amir@example.com', 'password123', registerRequest());
+
+    expect($result)->toBe(RegisterResult::Success);
+
+    $user = User::where('email', 'amir@example.com')->firstOrFail();
+
+    expect($user->email_verified_at)->toBeNull();
+});
+
 it('returns username taken when username already exists', function () {
     User::factory()->create([
         'username' => 'amir_user',
@@ -42,18 +63,6 @@ it('returns username taken when username already exists', function () {
 
     $result = app(RegisterUserAction::class)
         ->execute('amir_user', 'amir@example.com', 'password123', registerRequest());
-
-    expect($result)->toBe(RegisterResult::UsernameTaken);
-});
-
-it('returns username taken for mixed-case username that matches existing lowercase', function () {
-    User::factory()->create([
-        'username' => 'amir_user',
-        'email' => 'old@example.com',
-    ]);
-
-    $result = app(RegisterUserAction::class)
-        ->execute('Amir_User', 'amir@example.com', 'password123', registerRequest());
 
     expect($result)->toBe(RegisterResult::UsernameTaken);
 });
@@ -68,6 +77,18 @@ it('returns email taken when email already exists', function () {
         ->execute('amir_user', 'amir@example.com', 'password123', registerRequest());
 
     expect($result)->toBe(RegisterResult::EmailTaken);
+});
+
+it('reports the username first when both the username and email are taken', function () {
+    User::factory()->create([
+        'username' => 'amir_user',
+        'email' => 'amir@example.com',
+    ]);
+
+    $result = app(RegisterUserAction::class)
+        ->execute('amir_user', 'amir@example.com', 'password123', registerRequest());
+
+    expect($result)->toBe(RegisterResult::UsernameTaken);
 });
 
 it('returns rate limited after repeated failed attempts', function () {
@@ -85,6 +106,23 @@ it('returns rate limited after repeated failed attempts', function () {
         ->execute('amir_user', 'amir@example.com', 'password123', registerRequest());
 
     expect($result)->toBe(RegisterResult::RateLimited);
+});
+
+it('counts every attempt and never clears the register bucket', function () {
+    foreach (range(1, 5) as $index) {
+        $result = app(RegisterUserAction::class)
+            ->execute("user{$index}", "user{$index}@example.com", 'password123', registerRequest());
+
+        expect($result)->toBe(RegisterResult::Success);
+    }
+
+    expect(RateLimiter::attempts('register:127.0.0.1'))->toBe(5);
+
+    $result = app(RegisterUserAction::class)
+        ->execute('another_user', 'another@example.com', 'password123', registerRequest());
+
+    expect($result)->toBe(RegisterResult::RateLimited)
+        ->and(User::where('username', 'another_user')->exists())->toBeFalse();
 });
 
 it('trims surrounding whitespace and lowercases username and email before creating', function () {

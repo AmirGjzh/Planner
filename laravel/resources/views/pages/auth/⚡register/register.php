@@ -22,6 +22,7 @@ new #[Layout('layouts::auth', ['title' => 'Create your account'])] class extends
     {
         $this->register_error = null;
 
+        $this->username = trim($this->username);
         $this->email = trim($this->email);
 
         try {
@@ -63,8 +64,8 @@ new #[Layout('layouts::auth', ['title' => 'Create your account'])] class extends
     {
         return [
             'username' => ['required', 'regex:/^[a-zA-Z][a-zA-Z0-9_-]{2,29}$/'],
-            'email' => ['required', 'email:rfc'],
-            'password' => ['required', 'confirmed', 'min:8'],
+            'email' => ['required', 'email:rfc', 'max:255'],
+            'password' => ['required', 'confirmed', 'min:8', 'max:256'],
             'password_confirmation' => ['required'],
         ];
     }
@@ -76,9 +77,11 @@ new #[Layout('layouts::auth', ['title' => 'Create your account'])] class extends
             'username.regex' => __('Start with a letter, use 3 to 30 characters.'),
             'email.required' => __('Email is required.'),
             'email.email' => __('Enter a valid email.'),
+            'email.max' => __('Use at most 255 characters.'),
             'password.required' => __('Password is required.'),
             'password.confirmed' => __('The passwords don\'t match.'),
             'password.min' => __('Use at least 8 characters.'),
+            'password.max' => __('Use at most 256 characters.'),
             'password_confirmation.required' => __('Confirm your password.'),
         ];
     }

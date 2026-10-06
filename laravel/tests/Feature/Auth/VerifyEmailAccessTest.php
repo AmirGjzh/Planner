@@ -12,10 +12,17 @@ it('shows the notice page to an unverified account', function () {
     $this->actingAs($user)
         ->get('/email/verify')
         ->assertSuccessful()
-        ->assertSee('<title>'.__('Verify your email address').' — '.config('app.name').'</title>', false)
-        ->assertSee('Verify your email address')
-        ->assertSee('amir@example.com')
-        ->assertSee('Resend verification email');
+        ->assertSee('<title>'.__('Verify your email address').' — '.config('app.name').'</title>', false);
+});
+
+it('renders the verification notice without database queries', function () {
+    $user = User::factory()->unverified()->create();
+
+    $this->expectsDatabaseQueryCount(0);
+
+    $this->actingAs($user)
+        ->get('/email/verify')
+        ->assertSuccessful();
 });
 
 it('redirects a verified account to the dashboard', function () {

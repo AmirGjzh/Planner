@@ -26,6 +26,15 @@ it('renders the notice with the emailed account and resend button', function () 
         ->assertSee('Log out');
 });
 
+it('wires the resend form with novalidate and a scoped busy target', function () {
+    $user = resendUser();
+
+    Livewire::actingAs($user)->test('pages::auth.verify-email')
+        ->assertSee('novalidate', false)
+        ->assertSee('wire:submit="resend"', false)
+        ->assertSee('wire:target="resend"', false);
+});
+
 it('truncates a long email subtitle', function () {
     $long = str_repeat('a', 250).'@example.com';
     $user = User::factory()->unverified()->create(['email' => $long]);
@@ -57,13 +66,6 @@ it('renders the notice on the app default theme, not the account theme', functio
         ->assertDontSee('--mine-btn-primary-bg: '.config('themes.vars.'.$accountTheme)['mine-btn-primary-bg'], false);
 });
 
-it('redirects a verified account to the dashboard', function () {
-    $user = User::factory()->create();
-
-    Livewire::actingAs($user)->test('pages::auth.verify-email')
-        ->assertRedirect(url('/dashboard'));
-});
-
 it('re-dispatches a flashed session toast on mount', function () {
     session()->flash('toast', [
         'title' => 'You\'re signed in',
@@ -93,6 +95,17 @@ it('sends a verification email and dispatches a success toast when resending', f
         );
 
     Notification::assertSentTo($user, VerifyEmailNotification::class);
+});
+
+it('resends without database queries', function () {
+    Notification::fake();
+    $user = resendUser();
+
+    $this->expectsDatabaseQueryCount(0);
+
+    Livewire::actingAs($user)->test('pages::auth.verify-email')
+        ->call('resend')
+        ->assertDispatched('toast');
 });
 
 it('shows the rate-limit alert after too many resends', function () {

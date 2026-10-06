@@ -9,6 +9,7 @@ it('has no smoke or accessibility issues on the auth pages', function () {
 
     $pages = visit([
         '/login',
+        '/register',
         '/forgot-password',
         "/reset-password?token={$token}&email={$user->email}",
     ]);
@@ -19,9 +20,10 @@ it('has no smoke or accessibility issues on the auth pages', function () {
     $pages->assertNoSmoke()
         ->assertNoAccessibilityIssues();
 
-    [$login, $forgot, $reset] = $pages;
+    [$login, $register, $forgot, $reset] = $pages;
 
     $login->assertSee('Welcome back');
+    $register->assertSee('Welcome to Planner');
     $forgot->assertSee('Reset your password');
     $reset->assertSee('Choose a new password');
 

@@ -39,6 +39,13 @@ final class RegisterUserAction
 
             return RegisterResult::RateLimited;
         }
+
+        // Volume cap: every attempt (success or failure) counts and the bucket never clears —
+        // account creation is the volume being capped (a row plus a queued mail each), so
+        // clearing on success would defeat it. Login keeps clear-on-success because its bucket
+        // counts failed credential guesses instead (contracts: .ai/rules/auth.md).
+        RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
+
         try {
             $user = User::create([
                 'username' => $username,
@@ -49,7 +56,6 @@ final class RegisterUserAction
             if (! $this->isIntegrityConstraintViolation($e)) {
                 throw $e;
             }
-            RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
             if (User::where('username', $username)->exists()) {
                 $this->logger->warning('Register failed, username already taken.', [
                     'username' => $username,
@@ -70,7 +76,6 @@ final class RegisterUserAction
             }
             throw $e;
         }
-        RateLimiter::clear($rate_limit_key);
         $this->logger->info('User registered.', [
             'username' => $username,
             'email' => $email,

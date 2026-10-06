@@ -22,7 +22,6 @@
     "Password is required.": "رمز عبور ضروریه.",
     "Use at most 256 characters.": "حداکثر ۲۵۶ کاراکتر وارد کن.",
     "You're signed in": "وارد شدی",
-    "OR": "یا",
 
     "Reset your password": "بازنشانی رمز عبور",
     "Enter your email to receive a reset link": "ایمیلت رو وارد کن تا لینک بازنشانی رو برات بفرستیم",
@@ -66,6 +65,7 @@
     "Username is required.": "نام کاربریتو وارد کن.",
     "Start with a letter, use 3 to 30 characters.": "با یه حرف شروع کن، ۳ تا ۳۰ کاراکتر.",
     "Use at least 8 characters.": "حداقل ۸ کاراکتر بذار.",
+    "Use at most 255 characters.": "حداکثر ۲۵۵ کاراکتر وارد کن.",
     "Confirm your password.": "رمزتو دوباره وارد کن.",
     "The passwords don't match.": "دو رمز یکی نیستن.",
     "Your account is ready, sign in to continue": "حسابت آماده‌ست، برای ادامه وارد شو",

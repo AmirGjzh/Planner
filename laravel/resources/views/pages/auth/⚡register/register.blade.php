@@ -73,15 +73,11 @@
             </x-mine.input>
 
             <div class="mt-2">
-                <x-mine.button type="submit" height="h-12">{{ __('Sign up') }}</x-mine.button>
+                <x-mine.button wire:target="register" type="submit" height="h-12">{{ __('Sign up') }}</x-mine.button>
             </div>
         </form>
 
-        <div class="mt-4">
-            <x-mine.separator label="{{ __('OR') }}"></x-mine.separator>
-        </div>
-
-        <div class="mt-2 flex items-center justify-center gap-2">
+        <div class="mt-5 flex items-center justify-center gap-2">
             <p class="mine-text-primary text-sm font-medium">{{ __('Already have an account?') }}</p>
             <a
                 wire:navigate.hover
