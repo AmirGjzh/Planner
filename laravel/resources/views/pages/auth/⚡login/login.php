@@ -34,7 +34,7 @@ new #[Layout('layouts::auth', ['title' => 'Sign in'])] class extends Component
         }
     }
 
-    public function login(LoginUserAction $login_user_action)
+    public function login(LoginUserAction $login_user_action): void
     {
         $this->login_error = null;
 
@@ -73,10 +73,12 @@ new #[Layout('layouts::auth', ['title' => 'Sign in'])] class extends Component
             $intended = session()->pull('url.intended');
 
             if ($intended) {
-                return $this->redirect($intended);
+                $this->redirect($intended);
+            } else {
+                $this->redirectRoute('dashboard');
             }
 
-            return $this->redirectRoute('dashboard');
+            return;
         }
 
         $this->reset(['password']);

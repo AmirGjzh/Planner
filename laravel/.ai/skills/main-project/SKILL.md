@@ -1,6 +1,6 @@
 ---
 name: main-project
-description: "Activate at the start of every session — project context, UC numbering, implementation status, key decisions, and the docs map (phases, docker, git workflow, agentic environment) for Planner."
+description: "Activate at the start of every session — project context, UC numbering, implementation status, key decisions, and the docs map (phases, docker, git workflow, cleaning flow, agentic environment) for Planner."
 license: MIT
 metadata:
   author: planner-team
@@ -18,7 +18,7 @@ Activate at the start of every session (or lazily when working on Planner). It p
 
 - the **UC map** and implementation status below,
 - the **key decisions** that must not regress,
-- pointers to the phase, docker, git, and agentic-environment docs.
+- pointers to the phase, docker, git, cleaning, and agentic-environment docs.
 
 Pair it with the project rules in `.ai/rules/` (see the mandatory ritual in the guideline: read `rules/index.md` and every matching rule file before planning or editing).
 
@@ -56,6 +56,7 @@ Pair it with the project rules in `.ai/rules/` (see the mandatory ritual in the 
 | `docker/development.md` | Dev workspace stack, runbook, troubleshooting |
 | `docker/production.md` | Prod nginx/php-fpm/mysql/redis stack, runbook, troubleshooting |
 | `git-setup/workflow.md` | Two-remote git workflow (public `origin` / private `private`) |
+| `cleaning/flow.md` | Per-UC cleaning cycle: rules, subjobs, gate |
 | `agentic/setup.md` | Agentic environment: Boost install, opencode MCP bridge, skills via skills.sh, project rules |
 
 ## Key Decisions

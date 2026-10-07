@@ -28,7 +28,7 @@ new #[Layout('layouts::auth', ['title' => 'Choose a new password'])] class exten
         }
     }
 
-    public function resetPassword(ResetPasswordAction $reset_password_action)
+    public function resetPassword(ResetPasswordAction $reset_password_action): void
     {
         $this->reset_error = null;
 
@@ -74,7 +74,9 @@ new #[Layout('layouts::auth', ['title' => 'Choose a new password'])] class exten
                 'position' => 'bottom-center',
             ]);
 
-            return $this->redirectRoute('login', navigate: true);
+            $this->redirectRoute('login', navigate: true);
+
+            return;
         }
 
         $this->reset(['password', 'password_confirmation']);

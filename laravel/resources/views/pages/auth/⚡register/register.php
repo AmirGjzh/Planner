@@ -18,7 +18,7 @@ new #[Layout('layouts::auth', ['title' => 'Create your account'])] class extends
 
     public ?string $register_error = null;
 
-    public function register(RegisterUserAction $register_user_action)
+    public function register(RegisterUserAction $register_user_action): void
     {
         $this->register_error = null;
 
@@ -48,7 +48,9 @@ new #[Layout('layouts::auth', ['title' => 'Create your account'])] class extends
                 'position' => 'bottom-center',
             ]);
 
-            return $this->redirectRoute('login', navigate: true);
+            $this->redirectRoute('login', navigate: true);
+
+            return;
         }
 
         $this->register_error = match ($result) {

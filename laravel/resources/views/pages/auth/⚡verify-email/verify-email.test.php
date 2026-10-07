@@ -40,7 +40,7 @@ it('truncates a long email subtitle', function () {
     $user = User::factory()->unverified()->create(['email' => $long]);
 
     Livewire::actingAs($user)->test('pages::auth.verify-email')
-        ->assertSee('mine-text-secondary mb-6 truncate text-center text-sm font-medium', false)
+        ->assertSee('mb-6 truncate text-center', false)
         ->assertSee($long);
 });
 

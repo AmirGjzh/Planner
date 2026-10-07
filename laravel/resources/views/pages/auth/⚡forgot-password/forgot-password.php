@@ -21,7 +21,7 @@ new #[Layout('layouts::auth', ['title' => 'Reset your password'])] class extends
         return (int) config('auth.passwords.'.config('auth.defaults.passwords').'.expire');
     }
 
-    public function send(ForgotPasswordAction $forgot_password_action)
+    public function send(ForgotPasswordAction $forgot_password_action): void
     {
         $this->send_error = null;
 

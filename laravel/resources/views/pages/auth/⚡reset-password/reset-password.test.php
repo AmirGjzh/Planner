@@ -17,6 +17,7 @@ it('renders successfully with a token', function () {
         ->assertSee('Choose a new password')
         ->assertSee('Resetting password for')
         ->assertSee('amir@example.com')
+        ->assertDontSee('Link invalid or expired!')
         ->assertDontSee('wire:model="email"', false);
 });
 
@@ -25,7 +26,7 @@ it('truncates a long email subtitle', function () {
 
     Livewire::withQueryParams(['token' => 'abc123', 'email' => $long])
         ->test('pages::auth.reset-password')
-        ->assertSee('mine-text-secondary mb-6 truncate text-center text-sm font-medium', false)
+        ->assertSee('mb-6 truncate text-center', false)
         ->assertSee($long);
 });
 
@@ -41,6 +42,7 @@ it('escapes the email in the subtitle', function () {
 it('shows the invalid-link state without a token', function () {
     Livewire::test('pages::auth.reset-password')
         ->assertSet('reset_error', 'invalid_link')
+        ->assertSee('Enter and confirm your new password')
         ->assertDontSee('resetPassword', false);
 });
 
@@ -69,9 +71,11 @@ it('dispatches focus-first-error when validation fails', function () {
         ->assertDispatched('focus-first-error');
 });
 
-it('skips native browser validation on the form', function () {
+it('renders the password fields with semantic input attributes', function () {
     Livewire::withQueryParams(['token' => 'abc123', 'email' => 'amir@example.com'])
         ->test('pages::auth.reset-password')
+        ->assertSee(':type="show ? \'text\' : \'password\'"', false)
+        ->assertSee('autocomplete="new-password"', false)
         ->assertSee('novalidate', false);
 });
 

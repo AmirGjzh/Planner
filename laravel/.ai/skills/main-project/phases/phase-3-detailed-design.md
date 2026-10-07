@@ -70,7 +70,7 @@ Plan (0..1) ——— (0..N) Task
 - `#[Fillable]`: `username`, `email`, `password`, `firstname`, `lastname`, `birthday`, `country`, `gender`, `locale`, `theme`
 - `#[Hidden]`: `password`, `remember_token`
 - **Casts:** `email_verified_at` → `datetime`, `password_changed_at` → `datetime`, `birthday` → `date:Y-m-d`, `gender` → `UserGender` enum, `password` → `hashed`
-- **Accessors:** `fullName()` — trimmed `"{firstname} {lastname}"`; `initials()` — multibyte-safe ZWNJ-separated initials from firstname+lastname (falls back to username)
+- **Accessors:** `initials()` — multibyte-safe ZWNJ-separated initials from firstname+lastname (falls back to username)
 - **Relationships:** `plans()` (HasMany), `tasks()` (HasMany), `categories()` (HasMany)
 - **Soft deletes:** Yes (only entity with this)
 - **Locale note:** `locale` (`fa`/`en`) selects the UI language and is read by the shared `HasUser` trait `boot()`; `theme` selects the CSS variable set resolved by `mine/theme-vars`. See `.ai/rules/pages.md` and `.ai/rules/config.md`.

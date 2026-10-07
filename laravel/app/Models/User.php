@@ -52,11 +52,6 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
         return $this->hasMany(Category::class);
     }
 
-    public function fullName(): string
-    {
-        return trim("$this->firstname $this->lastname");
-    }
-
     public function initials(): string
     {
         if ($this->firstname && $this->lastname) {

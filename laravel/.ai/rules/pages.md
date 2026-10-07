@@ -36,12 +36,12 @@ Guest pages (home/login/register/forgot-password/reset-password) have no `HasUse
 Auth forms carry `novalidate` (the browser's native bubbles for `type="email"` are unlocalized and can block submit) and dispatch the focus themselves:
 
 - Wrap `$this->validate()` in `try { ... } catch (ValidationException) { $this->dispatch('focus-first-error'); throw; }` — dispatch before rethrowing so the event ships with the same request.
-- The layout listens with `<x-slot name="scripts">` → `Alpine.data('focusFirstError', ...)` bound `@window.focus-first-error`, focusing `[aria-invalid="true"]` (first match, then `.focus()`).
+- The form binds the listener itself: `<form x-data x-on:focus-first-error.window>` runs `$nextTick(() => $el.querySelector('[aria-invalid="true"]')?.focus())`, so the first invalid field inside that form receives focus.
 - Never rely on the browser's own focus for invalid fields on these pages.
 
 ## Auth form rhythm and overflow guards
 
-Auth form rhythm is one formula: fields separated by the form's `gap-4`, and the submit button wrapped in `mt-2` so it sits 24px below the last field — single-field forms use the same formula, not a bigger gap. Auth headings are `text-xl tracking-tight`; links are `text-sm font-medium` except inside alerts, where an inline link stays `font-semibold` for visibility (deliberate — the app ships Regular/Medium/SemiBold only, never `font-bold`).
+Auth form rhythm: fields are separated by the form's `gap-4`. Auth headings are `text-xl tracking-tight`; links are `text-sm font-medium` except inside alerts, where an inline link stays `font-semibold` for visibility (deliberate — the app ships Regular/Medium/SemiBold only, never `font-bold`).
 
 The card footer is always the same prompt + link row, `mt-5` below the form (or the last block) — auth cards never render an `OR` separator.
 

@@ -24,7 +24,7 @@ it('stays on the sign-in page with an error for wrong credentials', function () 
     $this->assertGuest();
 });
 
-it('validates the email format in the real browser', function () {
+it('shows the email validation message after clicking sign in', function () {
     visit('/login')
         ->fill('email', 'bad-email')
         ->fill('password', 'password')

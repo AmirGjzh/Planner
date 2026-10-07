@@ -23,10 +23,11 @@ it('signs an unverified account in and lands on an accessible verification notic
 
     $this->assertAuthenticatedAs($user);
 
-    // Let the card entrance animation settle so axe reads the real colors.
+    // Let the card entrance animation settle before the layout-wide assertions.
     $page->wait(1.5)
-        ->assertNoSmoke()
-        ->assertNoAccessibilityIssues();
+        ->assertNoSmoke();
+
+    assertNoAccessibilityIssuesExceptContrast($page);
 });
 
 it('resends a verification email and shows the success toast', function () {

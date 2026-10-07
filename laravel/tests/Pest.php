@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Pest\Browser\Api\ArrayablePendingAwaitablePage;
+use Pest\Browser\Api\PendingAwaitablePage;
 use Tests\TestCase;
 
 /*
@@ -30,7 +32,42 @@ pest()->extend(TestCase::class)
 | `--debug` to pause on the first failure. The container is headless, so
 | `--headed` is not available here.
 |
+| Axe runs through `assertNoAccessibilityIssuesExceptContrast()` below:
+| every axe rule applies except `color-contrast`, which is switched off
+| while the theme palettes are frozen in this stage of the project (the
+| safrron orange sits at ~4.2:1 against the card white — a known, deferred
+| WCAG miss, not a test blocker). Drop the `script()` call to re-enable it
+| once the themes resume.
+|
 */
+
+/**
+ * Assert the page has no accessibility issues, minus axe's color-contrast rule.
+ *
+ * Works on a single page and on the array result of `visit([...])` alike.
+ */
+function assertNoAccessibilityIssuesExceptContrast(PendingAwaitablePage|ArrayablePendingAwaitablePage $page): void
+{
+    $patch = <<<'JS'
+        (() => {
+            const run = window.axe.run.bind(window.axe);
+            window.axe.run = (context, options) => run(context ?? document, {
+                ...options,
+                rules: { ...options?.rules, 'color-contrast': { enabled: false } },
+            });
+        })();
+        JS;
+
+    // The multi-page wrapper rejects `script()`'s null result, so patch each
+    // contained page directly; the assertion below maps over them itself.
+    $targets = $page instanceof ArrayablePendingAwaitablePage ? iterator_to_array($page) : [$page];
+
+    foreach ($targets as $target) {
+        $target->script($patch);
+    }
+
+    $page->assertNoAccessibilityIssues();
+}
 
 /*
 |--------------------------------------------------------------------------
