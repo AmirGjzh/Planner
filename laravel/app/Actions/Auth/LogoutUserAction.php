@@ -19,6 +19,8 @@ final class LogoutUserAction
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+        // The hint cookie outlives the session (30 days vs the session lifetime);
+        // logout must kill it explicitly or the next visit claims "session expired".
         Cookie::queue(Cookie::forget(LoginUserAction::SESSION_HINT));
         $this->logger->info('User logged out.', [
             'user_id' => $userId,

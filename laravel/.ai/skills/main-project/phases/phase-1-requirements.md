@@ -16,7 +16,7 @@ As a user, I want to create a new account with a username, email, and password s
 
 ### UC-03 – View and Edit Profile
 
-As a user, I want to view and edit my profile information (name, date of birth, country, gender, UI language, and color theme) so that I can keep my account details up to date.
+As a user, I want to view and edit my profile information (name, date of birth, country, gender, UI language, and color theme), and change my password from the same page, so that I can keep my account details up to date.
 
 ### UC-04 – Delete Account
 
@@ -157,6 +157,13 @@ The acceptance criteria are grouped by use case (UC-01 … UC-11), in topologica
 
 **Given** the user enters a username that is already taken,
 **Then** an error is shown and the profile is not updated.
+
+**Given** the user opens Change password from the Profile page,
+**When** they enter their current password plus a new confirmed password that differs from it,
+**Then** the password is updated, this session stays signed in, and every other session is signed out.
+
+**Given** the user enters a wrong current password, or reuses the current one as the new password,
+**Then** an error is shown and the password is not updated.
 
 ### UC-04 – Delete Account
 

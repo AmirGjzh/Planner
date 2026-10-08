@@ -1,8 +1,11 @@
 <?php
 
+use App\Actions\Auth\ChangePasswordAction;
 use App\Actions\Auth\ResetPasswordAction;
+use App\Enums\ChangePasswordResult;
 use App\Enums\ResetPasswordResult;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 
 it('stamps the session auth time on the first authenticated request', function () {
@@ -63,4 +66,23 @@ it('invalidates active sessions when the recovery flow resets the password', fun
 
     $this->get('/dashboard')->assertRedirect('/login');
     $this->assertGuest();
+});
+
+it('keeps the session that changed the password signed in', function () {
+    $user = User::factory()->create(['password' => 'old-password']);
+
+    $this->actingAs($user)->get('/dashboard')->assertSuccessful();
+
+    $this->travel(1)->seconds();
+
+    $request = Request::create('/profile', 'POST', server: ['REMOTE_ADDR' => '127.0.0.1']);
+    $result = app(ChangePasswordAction::class)
+        ->execute($user, 'old-password', 'new-password-123', $request);
+
+    expect($result)->toBe(ChangePasswordResult::Success);
+
+    $this->travel(1)->seconds();
+
+    $this->get('/dashboard')->assertSuccessful();
+    $this->assertAuthenticated();
 });

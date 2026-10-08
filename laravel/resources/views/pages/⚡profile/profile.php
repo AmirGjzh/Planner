@@ -1,12 +1,15 @@
 <?php
 
+use App\Actions\Auth\ChangePasswordAction;
 use App\Actions\Auth\DeleteAccountAction;
 use App\Actions\Profile\UpdateProfileAction;
+use App\Enums\ChangePasswordResult;
 use App\Enums\DeleteAccountResult;
 use App\Enums\UpdateProfileResult;
 use App\Enums\UserGender;
 use App\Livewire\Concerns\HasUser;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Symfony\Component\Intl\Countries;
@@ -37,6 +40,14 @@ new class extends Component
 
     public ?string $delete_error = null;
 
+    public string $current_password = '';
+
+    public string $new_password = '';
+
+    public string $new_password_confirmation = '';
+
+    public ?string $change_error = null;
+
     public function mount(): void
     {
         if ($toast = session()->pull('toast')) {
@@ -66,7 +77,14 @@ new class extends Component
 
         $need_reload = ($this->theme !== $this->user->theme or $this->locale !== $this->user->locale);
 
-        $data = $this->validate();
+        try {
+            $data = $this->validate();
+        } catch (ValidationException $exception) {
+            $this->dispatch('focus-first-error');
+
+            throw $exception;
+        }
+
         $result = $action->execute(
             $this->user,
             $data['username'],
@@ -125,13 +143,69 @@ new class extends Component
         $this->resetValidation();
     }
 
+    public function changePassword(ChangePasswordAction $action): void
+    {
+        $this->change_error = null;
+
+        try {
+            $data = $this->validate([
+                'current_password' => ['required'],
+                'new_password' => ['required', 'confirmed', 'min:8', 'max:256'],
+                'new_password_confirmation' => ['required'],
+            ]);
+        } catch (ValidationException $exception) {
+            $this->dispatch('focus-first-error');
+
+            throw $exception;
+        }
+
+        $result = $action->execute(
+            $this->user,
+            $data['current_password'],
+            $data['new_password'],
+            request(),
+        );
+        $this->change_error = match ($result) {
+            ChangePasswordResult::RateLimited => 'rate_limited',
+            ChangePasswordResult::WrongCurrentPassword => 'wrong_password',
+            ChangePasswordResult::SameAsCurrent => 'same_as_current',
+            ChangePasswordResult::Success => null,
+        };
+        if ($this->change_error) {
+            return;
+        }
+        $this->reset(['current_password', 'new_password', 'new_password_confirmation']);
+        $this->resetValidation();
+        $this->dispatch('close-modal', id: 'change-password-form');
+        $this->dispatch('toast',
+            title: __('Password changed'),
+            variant: 'success',
+            duration: 3000,
+            position: 'bottom-center'
+        );
+    }
+
+    public function cancelChange(): void
+    {
+        $this->change_error = null;
+        $this->reset(['current_password', 'new_password', 'new_password_confirmation']);
+        $this->resetValidation();
+    }
+
     public function deleteAccount(DeleteAccountAction $deleteAccountAction): void
     {
         $this->delete_error = null;
 
-        $data = $this->validate([
-            'password' => ['required'],
-        ]);
+        try {
+            $data = $this->validate([
+                'password' => ['required'],
+            ]);
+        } catch (ValidationException $exception) {
+            $this->dispatch('focus-first-error');
+
+            throw $exception;
+        }
+
         $result = $deleteAccountAction->execute($this->user, $data['password'], request());
         $this->delete_error = match ($result) {
             DeleteAccountResult::RateLimited => 'rate_limited',
@@ -206,6 +280,12 @@ new class extends Component
             'birthday.date' => __('Birthdate must be a valid date.'),
             'birthday.before_or_equal' => __('Birthdate must be today or earlier.'),
             'password.required' => __('Password is required.'),
+            'current_password.required' => __('Current password is required.'),
+            'new_password.required' => __('Password is required.'),
+            'new_password.confirmed' => __('The passwords don\'t match.'),
+            'new_password.min' => __('Use at least 8 characters.'),
+            'new_password.max' => __('Use at most 256 characters.'),
+            'new_password_confirmation.required' => __('Confirm your password.'),
         ];
     }
 };

@@ -16,6 +16,12 @@ final class LoginUserAction
         private readonly LoggerInterface $logger,
     ) {}
 
+    /**
+     * One-shot hint that the visitor's session died: a 30-day cookie that
+     * outlives the session. Expiry cannot be detected from inside a session,
+     * so the login page reads this on arrival, flashes "session expired",
+     * and forgets it (contracts: .ai/rules/auth.md).
+     */
     public const string SESSION_HINT = 'session_hint';
 
     private const int MAX_ATTEMPTS = 5;
@@ -51,6 +57,8 @@ final class LoginUserAction
 
             return LoginResult::Fail;
         }
+        // Clear-on-success: this bucket counts failed credential guesses, so one
+        // correct login empties it (register never clears — see RegisterUserAction).
         RateLimiter::clear($rate_limit_key);
         session()->regenerate();
         session()->regenerateToken();

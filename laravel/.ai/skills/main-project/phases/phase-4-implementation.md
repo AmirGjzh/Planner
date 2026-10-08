@@ -93,13 +93,13 @@ All use cases are delivered, tested, and accepted. Files and structure reference
 
 **Status:** Completed
 
-**Goal:** View and update personal info plus a Theme and Language preference from a modal.
+**Goal:** View and update personal info plus a Theme and Language preference from a modal, and change the password from a second modal.
 
-**Delivered:** `app/Actions/Profile/UpdateProfileAction.php` (+ `UpdateProfileResult` enum), Livewire page `pages::profile`, `app/Enums/UserGender.php`, `User::initials()` (multibyte-safe), `users.locale` persisted. Country list cached per locale and ICU-collated; birthday renders Jalali in `fa`; on theme/locale change the page re-lands on `/profile` with `navigate: false` so the new language applies. `profile-updated` event carries `initials` from the server (no Alpine reimplementation). `deleteAccount()` resets locale to `config('app.locale')` before redirecting home.
+**Delivered:** `app/Actions/Profile/UpdateProfileAction.php` (+ `UpdateProfileResult` enum), Livewire page `pages::profile`, `app/Enums/UserGender.php`, `User::initials()` (multibyte-safe), `users.locale` persisted. Country list cached per locale and ICU-collated; birthday renders Jalali in `fa`; on theme/locale change the page re-lands on `/profile` with `navigate: false` so the new language applies. `profile-updated` event carries `initials` from the server (no Alpine reimplementation). `deleteAccount()` resets locale to `config('app.locale')` before redirecting home. Password change: `app/Actions/Auth/ChangePasswordAction.php` (+ `ChangePasswordResult` enum) behind a Change password trigger under Edit profile — current + new + confirmed fields, outcome alerts in the modal, success toast and modal close; the form carries `novalidate` with the shared focus-first-error wiring.
 
-**Key decisions:** locale restricted to `in:['fa','en']`, theme validated against `config('themes.name')`; `HasUser::boot()` applies `users.locale` app-wide on every Livewire request; rate limit key `update-profile:` (user-ID+IP shape); clearable nullable fields handled by the action (they set empty strings to `null`).
+**Key decisions:** locale restricted to `in:['fa','en']`, theme validated against `config('themes.name')`; `HasUser::boot()` applies `users.locale` app-wide on every Livewire request; rate limit key `update-profile:` (user-ID+IP shape); clearable nullable fields handled by the action (they set empty strings to `null`). Password change: `change-password:{user_id}|{ip}` counts wrong current-password guesses and clears on success; a reused current password returns `SameAsCurrent` after the current-password check (the caller is authenticated — no oracle), with no bucket movement; the action stamps `password_changed_at` and rotates the remember token like the reset, then re-stamps the changing session's `auth_time` so `ExpireSessionsOnPasswordChange` evicts every older session but never the one that made the change.
 
-**Tests:** Livewire page, action, access, and unit coverage.
+**Tests:** Livewire page, action, access, and unit coverage — including the change-password outcome/rate-limit/logging contracts and the session split (changing session survives its next request, an older session is evicted).
 
 ### UC-04 – Delete Account
 

@@ -181,6 +181,17 @@ it('allows profile updates again after one minute', function () {
         ->and($user->refresh()->firstname)->toBe('Allowed');
 });
 
+it('counts every profile update and never clears the update-profile bucket', function () {
+    $user = User::factory()->create(['username' => 'amir_user']);
+    $this->actingAs($user);
+    RateLimiter::clear(profileRateLimitKey($user));
+
+    app(UpdateProfileAction::class)->execute($user, 'amir_user', 'First', null, null, null, null, 'forest', 'en', profileRequest());
+    app(UpdateProfileAction::class)->execute($user, 'amir_user', 'Second', null, null, null, null, 'forest', 'en', profileRequest());
+
+    expect(RateLimiter::attempts(profileRateLimitKey($user)))->toBe(2);
+});
+
 it('logs failed, limited, and successful profile update events', function () {
     Log::spy();
 
@@ -207,7 +218,7 @@ it('logs failed, limited, and successful profile update events', function () {
 
     Log::shouldHaveReceived('warning')
         ->with('Profile update rate limited.', Mockery::on(
-            fn (array $context) => isset($context['seconds_remaining'])
+            fn (array $context) => isset($context['available_in'])
         ));
 
     RateLimiter::clear(profileRateLimitKey($user));

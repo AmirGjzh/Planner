@@ -66,7 +66,7 @@
                         class="mine-text-secondary shrink-0 rounded-lg p-1 transition-colors duration-200 hover:cursor-pointer focus-visible:ring-4 focus-visible:ring-(--mine-input-ring-focus) focus-visible:outline-none"
                         :class="variantClass(toast).icon"
                         @click="removeToast(toast.id)"
-                        aria-label="Close notification"
+                        aria-label="{{ __('Close notification') }}"
                     >
                         <x-mine.icon name="Xmark" size="14" weight="filled" />
                     </button>

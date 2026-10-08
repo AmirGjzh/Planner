@@ -9,15 +9,20 @@
         >
             <div class="flex items-center gap-4 md:flex-col">
                 <div class="mine-badge-primary flex size-20 shrink-0 items-center justify-center rounded-full md:mt-20">
-                    <h1 class="pt-1 text-xl font-semibold">{{ $this->user->initials() }}</h1>
+                    <p class="pt-1 text-xl font-semibold">{{ $this->user->initials() }}</p>
                 </div>
                 <div class="min-w-0 sm:flex-1 md:my-2 md:flex-0 md:text-center">
-                    <h1 class="mine-text-primary mb-1 truncate text-base font-semibold">{{ $this->user->username }}</h1>
+                    <p class="mine-text-primary mb-1 truncate text-base font-semibold">{{ $this->user->username }}</p>
                     <p class="mine-text-secondary truncate text-sm font-medium">{{ $this->user->email }}</p>
                 </div>
             </div>
             <div class="mt-4 sm:mt-0 md:mt-auto md:w-full md:px-4">
-                <x-mine.modal.trigger class="w-full" id="edit-profile-form">
+                <x-mine.modal.trigger class="w-full" id="change-password-form">
+                    <x-mine.button type="button" class="mine-btn-ghost">
+                        <p class="text-sm">{{ __('Change password') }}</p>
+                    </x-mine.button>
+                </x-mine.modal.trigger>
+                <x-mine.modal.trigger class="mt-3 w-full" id="edit-profile-form">
                     <x-mine.button type="button" class="mine-btn-primary">
                         <p class="text-sm">{{ __('Edit profile') }}</p>
                     </x-mine.button>
@@ -28,7 +33,7 @@
         <div class="flex flex-col md:flex-2">
             <x-mine.animate delay="100" class="mine-card flex flex-col gap-4 px-4 py-6 sm:p-8">
                 <div class="mb-2">
-                    <h1 class="mine-text-primary px-1 text-sm font-semibold">{{ __('Personal information') }}</h1>
+                    <h2 class="mine-text-primary px-1 text-sm font-semibold">{{ __('Personal information') }}</h2>
                 </div>
                 @foreach ([
                     __('Firstname') => $this->user->firstname,
@@ -49,7 +54,7 @@
                     </div>
                 @endforeach
                 <div class="mt-4 mb-2">
-                    <h1 class="mine-text-primary px-1 text-sm font-semibold">{{ __('Preferences') }}</h1>
+                    <h2 class="mine-text-primary px-1 text-sm font-semibold">{{ __('Preferences') }}</h2>
                 </div>
                 <div class="flex justify-between px-2">
                     <p class="mine-text-secondary text-sm font-medium">{{ __('Theme') }}</p>
@@ -93,6 +98,7 @@
                 <h2 class="mine-text-primary text-base font-semibold">{{ __('Edit your information') }}</h2>
                 <button
                     type="button"
+                    aria-label="{{ __('Close') }}"
                     @click="
                         close();
                         $wire.cancelEdit();
@@ -119,7 +125,15 @@
                 </div>
             @endif
 
-            <form class="flex flex-col gap-4" wire:submit="editProfile">
+            <form
+                wire:submit="editProfile"
+                novalidate
+                class="flex flex-col gap-4"
+                x-data
+                x-on:focus-first-error.window="
+                    $nextTick(() => $el.querySelector('[aria-invalid=&quot;true&quot;]')?.focus())
+                "
+            >
                 <div>
                     <x-mine.input
                         label="{{ __('Username') }}"
@@ -212,8 +226,101 @@
                     >
                         <p class="text-sm">{{ __('Cancel') }}</p>
                     </x-mine.button>
-                    <x-mine.button wire:target="editProfile" class="mine-btn-primary">
+                    <x-mine.button wire:target="editProfile" wire:loading:disabled class="mine-btn-primary">
                         <p class="text-sm">{{ __('Save') }}</p>
+                    </x-mine.button>
+                </div>
+            </form>
+        </div>
+    </x-mine.modal>
+
+    <x-mine.modal id="change-password-form" :close-by-clicking-away="false" :close-by-escaping="false" width="lg">
+        <div class="px-6 py-6 sm:px-8">
+            <div class="mb-6 flex items-center justify-between">
+                <h2 class="mine-text-primary text-base font-semibold">{{ __('Change password') }}</h2>
+                <button
+                    type="button"
+                    aria-label="{{ __('Close') }}"
+                    @click="
+                        close();
+                        $wire.cancelChange();
+                    "
+                    class="mine-btn-icon rounded-xl p-2"
+                >
+                    <x-mine.icon name="Xmark" weight="filled" size="16" />
+                </button>
+            </div>
+
+            @if ($change_error === 'rate_limited')
+                <div class="mb-4">
+                    <x-mine.alert variant="warning" title="{{ __('Too many password change attempts!') }}">
+                        {{ __('Try again in a minute.') }}
+                    </x-mine.alert>
+                </div>
+            @endif
+
+            @if ($change_error === 'wrong_password')
+                <div class="mb-4">
+                    <x-mine.alert variant="danger" title="{{ __('Wrong password!') }}">
+                        {{ __('The password you entered is incorrect.') }}
+                    </x-mine.alert>
+                </div>
+            @endif
+
+            @if ($change_error === 'same_as_current')
+                <div class="mb-4">
+                    <x-mine.alert variant="danger" title="{!! __('Password didn\'t change!') !!}">
+                        {{ __('New password is equal to current one.') }}
+                    </x-mine.alert>
+                </div>
+            @endif
+
+            <form
+                wire:submit="changePassword"
+                novalidate
+                class="flex flex-col gap-4"
+                x-data
+                x-on:focus-first-error.window="
+                    $nextTick(() => $el.querySelector('[aria-invalid=&quot;true&quot;]')?.focus())
+                "
+            >
+                <x-mine.input
+                    wire:model="current_password"
+                    label="{{ __('Current password') }}"
+                    placeholder="{{ __('Your password') }}"
+                    type="password"
+                    autocomplete="current-password"
+                    leftIcon="Lock"
+                />
+                <x-mine.input
+                    wire:model="new_password"
+                    label="{{ __('New password') }}"
+                    placeholder="{{ __('Your new password') }}"
+                    type="password"
+                    autocomplete="new-password"
+                    leftIcon="Lock"
+                />
+                <x-mine.input
+                    wire:model="new_password_confirmation"
+                    label="{{ __('Confirm new password') }}"
+                    placeholder="{{ __('Confirm your new password') }}"
+                    type="password"
+                    autocomplete="new-password"
+                    leftIcon="Lock"
+                />
+                <div class="mt-4 flex justify-end gap-4">
+                    <x-mine.button
+                        type="button"
+                        @click="
+                            close();
+                            $wire.cancelChange();
+                        "
+                        class="mine-btn-ghost"
+                    >
+                        <p class="text-sm">{{ __('Cancel') }}</p>
+                    </x-mine.button>
+                    <x-mine.button wire:target="changePassword" wire:loading:disabled class="mine-btn-primary">
+                        <p class="text-sm">{{ __('Change password') }}</p>
                     </x-mine.button>
                 </div>
             </form>
@@ -231,6 +338,7 @@
                 <h2 class="mine-text-primary text-base font-semibold">{{ __('Delete your account') }}</h2>
                 <button
                     type="button"
+                    aria-label="{{ __('Close') }}"
                     @click="
                         close();
                         $wire.cancelDelete();
@@ -259,12 +367,21 @@
                 </x-mine.alert>
             @endunless
 
-            <form wire:submit="deleteAccount" class="flex flex-col gap-6">
+            <form
+                wire:submit="deleteAccount"
+                novalidate
+                class="flex flex-col gap-6"
+                x-data
+                x-on:focus-first-error.window="
+                    $nextTick(() => $el.querySelector('[aria-invalid=&quot;true&quot;]')?.focus())
+                "
+            >
                 <x-mine.input
                     wire:model="password"
                     label="{{ __('Password') }}"
                     placeholder="{{ __('Your password') }}"
                     type="password"
+                    autocomplete="current-password"
                     leftIcon="Lock"
                 />
                 <div class="flex items-center justify-between gap-4">

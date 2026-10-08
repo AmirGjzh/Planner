@@ -139,7 +139,7 @@ it('logs deletion events', function () {
 
     Log::shouldHaveReceived('warning')
         ->with('Account deletion rate limited.', Mockery::on(
-            fn (array $context) => isset($context['seconds_remaining'])
+            fn (array $context) => isset($context['available_in'])
         ));
 
     RateLimiter::clear('delete-account:'.$user->id.'|127.0.0.1');

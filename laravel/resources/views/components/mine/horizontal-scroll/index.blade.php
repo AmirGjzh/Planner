@@ -83,7 +83,7 @@
             x-on:click="scrollToStart()"
             x-transition.opacity.duration.150ms
             class="absolute start-2 top-1/2 z-10 flex size-9 -translate-y-1/2 items-center justify-center rounded-full border border-(--mine-card-border) bg-(--mine-dropdown-bg) text-(--mine-text-secondary) shadow-md transition-colors duration-200 hover:bg-(--mine-card-bg-hover) hover:text-(--mine-text-primary)"
-            aria-label="Scroll to the beginning"
+            aria-label="{{ __('Scroll to the beginning') }}"
         >
             <x-mine.icon name="Angle{{ app()->isLocale('fa') ? 'Right' : 'Left' }}" variant="mini" class="size-5" />
         </button>
@@ -95,7 +95,7 @@
             x-on:click="scrollToEnd()"
             x-transition.opacity.duration.150ms
             class="absolute end-2 top-1/2 z-10 flex size-9 -translate-y-1/2 items-center justify-center rounded-full border border-(--mine-card-border) bg-(--mine-dropdown-bg) text-(--mine-text-secondary) shadow-md transition-colors duration-200 hover:bg-(--mine-card-bg-hover) hover:text-(--mine-text-primary)"
-            aria-label="Scroll to the end"
+            aria-label="{{ __('Scroll to the end') }}"
         >
             <x-mine.icon name="Angle{{ app()->isLocale('fa') ? 'Left' : 'Right' }}" variant="mini" class="size-5" />
         </button>

@@ -42,11 +42,15 @@ final class UpdateProfileAction
             $this->logger->warning('Profile update rate limited.', [
                 'user_id' => $user->id,
                 'ip' => $request->ip(),
-                'seconds_remaining' => RateLimiter::availableIn($rate_limit_key),
+                'available_in' => RateLimiter::availableIn($rate_limit_key),
             ]);
 
             return UpdateProfileResult::RateLimited;
         }
+
+        // Volume cap: every attempt (success or failure) counts and the bucket never clears —
+        // an authenticated profile write is the volume being capped (contracts: .ai/rules/actions.md).
+        RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
 
         try {
             $user->update([
@@ -64,7 +68,6 @@ final class UpdateProfileAction
                 throw $e;
             }
 
-            RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
             $this->logger->warning('Profile update failed, username already taken.', [
                 'user_id' => $user->id,
                 'attempted_username' => $username,
@@ -74,7 +77,6 @@ final class UpdateProfileAction
             return UpdateProfileResult::UsernameTaken;
         }
 
-        RateLimiter::clear($rate_limit_key);
         $this->logger->info('Profile updated.', [
             'user_id' => $user->id,
             'ip' => $request->ip(),

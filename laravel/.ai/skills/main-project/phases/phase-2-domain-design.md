@@ -127,7 +127,7 @@ Main Flow:
 
 ### 2.3.3 UC-03 – View and Edit Profile
 
-**Module:** Profile Module — read and update profile information. Depends on the User model.
+**Module:** Profile Module — read and update profile information; the password change executes in the Authentication Module. Depends on the User model.
 
 Actor: Logged-in user
 
@@ -140,6 +140,11 @@ Main Flow:
 4. The user may also choose a UI language (fa/en) and a color theme.
 5. The user clicks Save.
 6. The system validates and stores the updated information and shows a success message.
+
+Password change flow:
+1. The user clicks Change password under Edit profile and enters the current password plus a new confirmed password.
+2. The system verifies the current password, rejects a wrong or reused one, and stores the new password.
+3. The current session stays signed in while every other session is signed out, and a success message is shown.
 
 ### 2.3.4 UC-04 – Delete Account
 

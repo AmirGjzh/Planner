@@ -40,9 +40,14 @@ final class ResetPasswordAction
             return ResetPasswordResult::RateLimited;
         }
 
+        // Every accepted request counts — invalid links included — and only a
+        // completed reset clears the bucket (contracts: .ai/rules/auth.md).
         RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
 
         $user = Password::getUser(['email' => $email]);
+        // Order matters: Hash::check sits behind a valid token on purpose — testing
+        // a candidate password against the stored hash without one would be an
+        // oracle for guessing the current password.
         if ($user !== null && Password::tokenExists($user, $token) && Hash::check($password, $user->password)) {
             $this->logger->info('Password reset rejected, same as current password.', [
                 'email' => $email,
@@ -55,6 +60,8 @@ final class ResetPasswordAction
         $status = Password::reset(
             ['email' => $email, 'token' => $token, 'password' => $password],
             function (User $user, string $password) {
+                // Rotating the remember token kills any remember-me cookie issued
+                // before the reset — a hijacked device must not stay logged in.
                 $user->forceFill([
                     'password' => $password,
                     'password_changed_at' => now(),

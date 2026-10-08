@@ -6,10 +6,10 @@ Scope of a UC's cleaning pass = the files its refactor/implementation commits to
 
 ## Rules (every subjob, every UC)
 
-1. **Behavior frozen.** Cleaning never changes logic, dates, query counts, rate-limit keys, or markup contracts. A change that would alter behavior stops and goes into the report as a defect — reported, not fixed.
+1. **Behavior frozen.** Cleaning never changes logic, dates, query counts, rate-limit keys, or markup contracts. A change that would alter behavior stops and goes into the report as a defect — reported, not fixed, unless the user approves it as an explicit fix batch.
 2. **Deletions need approval.** Every subjob produces a batch list (item + evidence + why it's dead); the user approves, then we delete. This includes tests — the pest rule "do not delete tests without approval" applies, and `.ai/rules/tests.md` decides *which* twins die (same-layer subsumed twin → delete; cross-layer twins stay).
 3. **Kill before polish.** The dead-code sweep runs first so nothing is prettified and then deleted.
-4. **Green at every boundary.** Rerun the narrowest set after each edit (`php artisan test --compact <path>`); the full suite runs once, at the gate.
+4. **Green at every boundary.** Rerun the narrowest set after each edit (`php artisan test --compact <path>`); the full suite runs once, at the gate. If the container is unavailable while editing, batch the narrow reruns into the gate run and note it in the report.
 5. **Consistency first** (boost skills): sibling files decide the pattern; never introduce a second way to do the same job.
 6. **No new tools or dependencies.** Sweeps use the grep playbook, Pint, and the existing suite — no deadcode analyzers, no new packages.
 7. **No git.** Everything stays in the working tree; the user reviews and commits, one commit per UC.
@@ -42,6 +42,14 @@ Runs first, every cycle; also catches cross-UC fallout from earlier passes.
 - CSS: drop unused `@utility`s (from the sweep), no deprecated v3 utilities, `gap` over sibling margins, honest `@source` list, `dark:` parity.
 - Rules in charge: `.ai/rules/island.md`, `animate.md`, `css.md`, `components.md`, `mine.md`.
 
+### Commentary (why-comments)
+
+- Scope: non-test production code (`app/`, `routes/`, `resources/views/`, `config/`). Tests keep their trailing `//` why-note convention under the Tests subjob.
+- A comment earns its place by documenting what the code cannot show: a decision and its rejected alternative, a security/timing constraint, a cross-file contract (e.g. `.ai/rules/auth.md`), a workaround. Test: would a future edit here plausibly go wrong without this note? If no → no comment.
+- PHPDoc blocks over inline comments; inline `//` only for local rationale inside a method body. Blade uses `{{-- --}}` — HTML comments ship to the browser.
+- Never: restating names or parameters, step narration, commented-out code, getter-style PHPDoc, volatile counts.
+- Close: `vendor/bin/pint --format agent <touched paths>`; the diff must contain comment lines only; the report lists the comment sites added.
+
 ### Tests
 
 - Inventory: `tests/Feature/Actions/<Area>/`, `tests/Feature/<Area>/`, co-located `resources/views/pages/**/*.test.php`, `tests/Browser/`.
@@ -71,9 +79,9 @@ Runs first, every cycle; also catches cross-UC fallout from earlier passes.
 1. `vendor/bin/pint --format agent` on every touched PHP/Blade path.
 2. Full `php artisan test --compact` (browser tier too if a JS/UI contract changed).
 3. Re-read the whole diff against every mapped rule (the boost "How to Apply" final step).
-4. Emit the **cleaning report**: per subjob — deletions with evidence (the approval list), files shrunk, tests trimmed/added, defects found-but-not-fixed; suite runtime before/after.
+4. Emit the **cleaning report**: per subjob — deletions with evidence (the approval list), files shrunk, tests trimmed/added, comment sites added, defects found-but-not-fixed; suite runtime before/after.
 5. User reviews the tree and commits (one commit per UC).
 
 ## Cycle order
 
-**Sweep → Code → Views & CSS → Tests → i18n → Docs & repo sync → Gate** — sweep first so dead weight is never polished, gate last so nothing leaves unverified. Finish the UC fully before starting the next one.
+**Sweep → Code → Views & CSS → Commentary → Tests → i18n → Docs & repo sync → Gate** — sweep first so dead weight is never polished, gate last so nothing leaves unverified. Finish the UC fully before starting the next one.

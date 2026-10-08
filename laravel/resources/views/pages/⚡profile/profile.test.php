@@ -2,6 +2,7 @@
 
 use App\Enums\UserGender;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
 
 function profileUser(array $attributes = []): User
@@ -34,6 +35,16 @@ it('renders the authenticated user profile', function () {
         ->assertSee('Iran');
 });
 
+it('renders without database queries', function () {
+    $user = profileUser();
+
+    $this->expectsDatabaseQueryCount(0);
+
+    Livewire::actingAs($user)
+        ->test('pages::profile')
+        ->assertStatus(200);
+});
+
 it('fills form properties from the authenticated user', function () {
     $user = profileUser([
         'username' => 'amir_user',
@@ -49,6 +60,27 @@ it('fills form properties from the authenticated user', function () {
         ->assertSet('birthday', '2000-01-15')
         ->assertSet('gender', 'male')
         ->assertSet('country', 'IR');
+});
+
+it('ships the parity markup: focus wiring, autofill tokens, close labels, headings, and overflow guards', function () {
+    $user = profileUser([
+        'username' => 'amir_user',
+        'email' => 'amir@example.com',
+    ]);
+
+    $html = Livewire::actingAs($user)
+        ->test('pages::profile')
+        ->html();
+
+    expect(substr_count($html, 'novalidate'))->toBe(3)
+        ->and(substr_count($html, 'focus-first-error.window'))->toBe(3)
+        ->and(substr_count($html, 'autocomplete="current-password"'))->toBe(2)
+        ->and(substr_count($html, 'autocomplete="new-password"'))->toBe(2)
+        ->and(substr_count($html, 'aria-label="Close"'))->toBe(3)
+        ->and(substr_count($html, '<h1'))->toBe(1)
+        ->and(substr_count($html, 'wire:loading:disabled'))->toBe(3)
+        ->and($html)->toContain('mine-text-primary mb-1 truncate text-base font-semibold">amir_user<')
+        ->and($html)->toContain('mine-text-secondary truncate text-sm font-medium">amir@example.com<');
 });
 
 it('validates required username', function () {
@@ -107,6 +139,17 @@ it('validates gender, country, and birth date', function () {
         ->assertSee('Birthdate must be today or earlier');
 });
 
+it('dispatches focus-first-error when the edit profile validation fails', function () {
+    $user = profileUser();
+
+    Livewire::actingAs($user)
+        ->test('pages::profile')
+        ->set('username', '')
+        ->call('editProfile')
+        ->assertHasErrors(['username' => ['required']])
+        ->assertDispatched('focus-first-error');
+});
+
 it('updates all editable profile fields', function () {
     $user = profileUser([
         'username' => 'old_user',
@@ -143,6 +186,18 @@ it('updates all editable profile fields', function () {
         ->and($user->gender)->toBe(UserGender::Female)
         ->and($user->country)->toBe('DE')
         ->and($user->birthday->format('Y-m-d'))->toBe('1998-05-20');
+});
+
+it('edits the profile with exactly the update query', function () {
+    $user = profileUser();
+
+    $this->expectsDatabaseQueryCount(1);
+
+    Livewire::actingAs($user)
+        ->test('pages::profile')
+        ->set('firstname', 'Locked')
+        ->call('editProfile')
+        ->assertHasNoErrors();
 });
 
 it('stores blank optional fields as null', function () {
@@ -288,6 +343,16 @@ it('cancels edits and restores form state', function () {
         ->assertSet('firstname', 'Amir');
 });
 
+it('dispatches focus-first-error when the delete account validation fails', function () {
+    $user = profileUser();
+
+    Livewire::actingAs($user)
+        ->test('pages::profile')
+        ->call('deleteAccount')
+        ->assertHasErrors(['password' => ['required']])
+        ->assertDispatched('focus-first-error');
+});
+
 it('shows wrong password error', function () {
     $user = profileUser();
 
@@ -376,4 +441,165 @@ it('cancels delete and resets form state', function () {
         ->call('cancelDelete')
         ->assertSet('password', '')
         ->assertSet('delete_error', null);
+});
+
+it('renders the change password trigger and modal fields', function () {
+    $user = profileUser();
+
+    Livewire::actingAs($user)
+        ->test('pages::profile')
+        ->assertSee('Change password')
+        ->assertSee('Current password')
+        ->assertSee('New password')
+        ->assertSee('Confirm new password');
+});
+
+it('validates the change password fields', function () {
+    $user = profileUser();
+
+    Livewire::actingAs($user)
+        ->test('pages::profile')
+        ->call('changePassword')
+        ->assertHasErrors([
+            'current_password' => ['required'],
+            'new_password' => ['required'],
+            'new_password_confirmation' => ['required'],
+        ]);
+
+    Livewire::actingAs($user)
+        ->test('pages::profile')
+        ->set('current_password', 'password')
+        ->set('new_password', 'short')
+        ->set('new_password_confirmation', 'different')
+        ->call('changePassword')
+        ->assertHasErrors(['new_password' => ['confirmed', 'min']]);
+});
+
+it('dispatches focus-first-error when the change password validation fails', function () {
+    $user = profileUser();
+
+    Livewire::actingAs($user)
+        ->test('pages::profile')
+        ->call('changePassword')
+        ->assertDispatched('focus-first-error');
+});
+
+it('changes the password and confirms with a toast', function () {
+    $user = profileUser();
+
+    Livewire::actingAs($user)
+        ->test('pages::profile')
+        ->set('current_password', 'password')
+        ->set('new_password', 'brand-new-password')
+        ->set('new_password_confirmation', 'brand-new-password')
+        ->call('changePassword')
+        ->assertHasNoErrors()
+        ->assertSet('change_error', null)
+        ->assertDispatched('close-modal', id: 'change-password-form')
+        ->assertDispatched('toast',
+            title: __('Password changed'),
+            variant: 'success',
+        )
+        ->assertSet('current_password', '')
+        ->assertSet('new_password', '')
+        ->assertSet('new_password_confirmation', '');
+
+    expect(Hash::check('brand-new-password', $user->fresh()->password))->toBeTrue();
+});
+
+it('changes the password with exactly the update query', function () {
+    $user = profileUser([
+        'password' => 'current-password',
+    ]);
+
+    $this->expectsDatabaseQueryCount(1);
+
+    Livewire::actingAs($user)
+        ->test('pages::profile')
+        ->set('current_password', 'current-password')
+        ->set('new_password', 'brand-new-password')
+        ->set('new_password_confirmation', 'brand-new-password')
+        ->call('changePassword')
+        ->assertHasNoErrors();
+});
+
+it('shows wrong current password error', function () {
+    $user = profileUser();
+
+    Livewire::actingAs($user)
+        ->test('pages::profile')
+        ->set('current_password', 'wrong_password')
+        ->set('new_password', 'brand-new-password')
+        ->set('new_password_confirmation', 'brand-new-password')
+        ->call('changePassword')
+        ->assertSet('change_error', 'wrong_password')
+        ->assertSee('Wrong password!');
+});
+
+it('shows the same-password alert when the new password equals the current one', function () {
+    $user = profileUser();
+
+    Livewire::actingAs($user)
+        ->test('pages::profile')
+        ->set('current_password', 'password')
+        ->set('new_password', 'password')
+        ->set('new_password_confirmation', 'password')
+        ->call('changePassword')
+        ->assertSet('change_error', 'same_as_current')
+        ->assertSee('New password is equal to current one.');
+});
+
+it('shows rate limit error after too many change password attempts', function () {
+    $user = profileUser();
+
+    foreach (range(1, 5) as $ignored) {
+        Livewire::actingAs($user)
+            ->test('pages::profile')
+            ->set('current_password', 'wrong_password')
+            ->set('new_password', 'brand-new-password')
+            ->set('new_password_confirmation', 'brand-new-password')
+            ->call('changePassword')
+            ->assertSet('change_error', 'wrong_password');
+    }
+
+    Livewire::actingAs($user)
+        ->test('pages::profile')
+        ->set('current_password', 'wrong_password')
+        ->set('new_password', 'brand-new-password')
+        ->set('new_password_confirmation', 'brand-new-password')
+        ->call('changePassword')
+        ->assertSet('change_error', 'rate_limited');
+});
+
+it('clears a previous change error on a new submission', function () {
+    $user = profileUser();
+
+    Livewire::actingAs($user)
+        ->test('pages::profile')
+        ->set('current_password', 'wrong_password')
+        ->set('new_password', 'brand-new-password')
+        ->set('new_password_confirmation', 'brand-new-password')
+        ->call('changePassword')
+        ->assertSet('change_error', 'wrong_password')
+        ->set('current_password', '')
+        ->call('changePassword')
+        ->assertHasErrors(['current_password' => 'required'])
+        ->assertSet('change_error', null);
+});
+
+it('cancels change and resets form state', function () {
+    $user = profileUser();
+
+    Livewire::actingAs($user)
+        ->test('pages::profile')
+        ->set('current_password', 'wrong_password')
+        ->set('new_password', 'brand-new-password')
+        ->set('new_password_confirmation', 'brand-new-password')
+        ->call('changePassword')
+        ->assertSet('change_error', 'wrong_password')
+        ->call('cancelChange')
+        ->assertSet('current_password', '')
+        ->assertSet('new_password', '')
+        ->assertSet('new_password_confirmation', '')
+        ->assertSet('change_error', null);
 });

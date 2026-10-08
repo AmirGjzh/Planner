@@ -17,7 +17,7 @@ All `RateLimiter` keys follow one of two shapes, built with `Str::transliterate(
 | Guest | `prefix:{ip}` | `register:{ip}`, `login:{ip}` |
 | Authenticated | `prefix:{user_id}|{ip}` | `create-task:{user_id}|{ip}`, `edit-plan:{user_id}|{ip}`, `toggle-task:{user_id}|{ip}` |
 
-- Clear the bucket on success (`RateLimiter::clear(...)`) — unless the bucket caps volume or leaks existence: the auth exceptions that must never clear are documented in `.ai/rules/auth.md`.
+- Clear the bucket on success (`RateLimiter::clear(...)`) — unless the bucket caps volume or leaks existence: the auth exceptions that must never clear are documented in `.ai/rules/auth.md`, and the mutation volume caps (`toggle-task:`, `update-profile:`) count every attempt and never clear for the same reason — the write itself is the capped volume.
 - Log `available_in` for rate-limited outcomes.
 - Reuse an existing shape — never add a second ad-hoc limiter for a covered case.
 

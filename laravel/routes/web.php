@@ -16,8 +16,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::livewire('/reports', 'pages::reports')->name('reports')->block(10, 10);
 });
 
+// The verification notice, the signed verify link, and logout stay outside the
+// `verified` gate on purpose: an unverified visitor must be able to read the
+// notice and sign out, and the link route verifies through the action itself.
 Route::middleware(['auth'])->group(function () {
     Route::livewire('/email/verify', 'pages::auth.verify-email')->name('verification.notice')->block(10, 10);
+    // signed:relative binds the signature to path and query, not scheme/host,
+    // so the emailed link stays valid across domain or port drift.
     Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request, VerifyEmailAction $verifyEmailAction) {
         if ($verifyEmailAction->execute($request->user(), $request) === VerifyEmailResult::Verified) {
             session()->flash('toast', [

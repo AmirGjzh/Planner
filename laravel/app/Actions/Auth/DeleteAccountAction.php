@@ -32,7 +32,7 @@ final class DeleteAccountAction
             $this->logger->warning('Account deletion rate limited.', [
                 'user_id' => $user->id,
                 'ip' => $request->ip(),
-                'seconds_remaining' => RateLimiter::availableIn($rate_limit_key),
+                'available_in' => RateLimiter::availableIn($rate_limit_key),
             ]);
 
             return DeleteAccountResult::RateLimited;
@@ -54,6 +54,9 @@ final class DeleteAccountAction
         session()->regenerateToken();
         Cookie::queue(Cookie::forget(LoginUserAction::SESSION_HINT));
 
+        // Soft delete keeps the row so plans and tasks retain their owner; the
+        // junk values strip the PII and free the real email/username for reuse,
+        // while the user-id suffix keeps the unique indexes satisfied.
         $user->forceFill([
             'email' => 'deleted-user-'.$userId,
             'username' => 'deleted_user_'.$userId,

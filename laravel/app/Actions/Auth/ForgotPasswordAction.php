@@ -35,6 +35,9 @@ final class ForgotPasswordAction
             return SendResetLinkResult::RateLimited;
         }
 
+        // Volume cap: the hit is unconditional (unknown emails count too) and the
+        // bucket never clears — clearing on success would leak which accounts
+        // exist and let one caller drain the bucket (contracts: .ai/rules/auth.md).
         RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
 
         try {
@@ -47,6 +50,8 @@ final class ForgotPasswordAction
                 'message' => $e->getMessage(),
             ]);
 
+            // A dispatch failure must not change the contract or reveal mailer
+            // state: it is logged for ops and the caller still sees the generic Sent.
             return SendResetLinkResult::Sent;
         }
 

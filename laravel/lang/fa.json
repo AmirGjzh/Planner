@@ -111,6 +111,15 @@
     "Edit profile": "ویرایش پروفایل",
     "Too many edit-profile attempts!": "تعداد تلاش های ویرایش پروفایل بیش از حد مجاز!",
     "Too many delete-account attempts!": "تعداد تلاش‌های حذف حساب بیش از حد مجاز!",
+    "Change password": "تغییر رمز عبور",
+    "Current password": "رمز عبور فعلی",
+    "New password": "رمز عبور جدید",
+    "Confirm new password": "تکرار رمز عبور جدید",
+    "Your new password": "رمز عبور جدیدتو وارد کن",
+    "Confirm your new password": "رمز عبور جدیدتو دوباره وارد کن",
+    "Password changed": "رمز عبور تغییر کرد",
+    "Current password is required.": "رمز عبور فعلی الزامیه.",
+    "Too many password change attempts!": "تعداد تلاش‌های تغییر رمز عبور بیش از حد مجاز!",
     "Personal information": "اطلاعات شخصی",
     "Firstname": "نام",
     "Lastname": "نام خانوادگی",
@@ -127,6 +136,7 @@
     "Select your country": "کشورتو انتخاب کن",
     "Save": "ذخیره",
     "Cancel": "لغو",
+    "Close": "بستن",
     "Wrong password!": "رمز اشتباهه!",
     "The password you entered is incorrect.": "رمزی که وارد کردی درست نیست.",
     "Be careful!": "مراقب باش!",
@@ -344,5 +354,10 @@
     "Light (1–120 min)": "سبک (۱–۱۲۰ دقیقه)",
     "Moderate (121–240 min)": "متوسط (۱۲۱–۲۴۰ دقیقه)",
     "Heavy (241–360 min)": "سنگین (۲۴۱–۳۶۰ دقیقه)",
-    "Very heavy (361+ min)": "خیلی سنگین (۳۶۱+ دقیقه)"
+    "Very heavy (361+ min)": "خیلی سنگین (۳۶۱+ دقیقه)",
+
+    "Loading": "در حال بارگذاری",
+    "Close notification": "بستن اعلان",
+    "Scroll to the beginning": "پیمایش به ابتدا",
+    "Scroll to the end": "پیمایش به انتها"
 }

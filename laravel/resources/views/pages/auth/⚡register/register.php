@@ -66,6 +66,8 @@ new #[Layout('layouts::auth', ['title' => 'Create your account'])] class extends
     {
         return [
             'username' => ['required', 'regex:/^[a-zA-Z][a-zA-Z0-9_-]{2,29}$/'],
+            // 255 is the email column's width: email:rfc alone accepts longer
+            // strings and the INSERT would fail with SQLSTATE 22001.
             'email' => ['required', 'email:rfc', 'max:255'],
             'password' => ['required', 'confirmed', 'min:8', 'max:256'],
             'password_confirmation' => ['required'],

@@ -37,6 +37,8 @@ final class ResendVerificationAction
             return ResendVerificationResult::RateLimited;
         }
 
+        // Volume cap: the hit is unconditional and the bucket never clears — it
+        // throttles outbound mail volume, not user success (contracts: .ai/rules/auth.md).
         RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
 
         try {
@@ -49,6 +51,8 @@ final class ResendVerificationAction
                 'message' => $e->getMessage(),
             ]);
 
+            // A dispatch failure must not change the contract or reveal mailer
+            // state: it is logged for ops and the user still sees the generic Sent.
             return ResendVerificationResult::Sent;
         }
 
