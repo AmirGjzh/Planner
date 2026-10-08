@@ -4,7 +4,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 
 | Applies to | Rule file |
 | --- | --- |
-| app/Actions/**, resources/views/pages/** | .ai/rules/actions.md |
+| app/Actions/**, app/Enums/*Result.php, resources/views/pages/** | .ai/rules/actions.md |
 | resources/views/components/mine/animate/** | .ai/rules/animate.md |
 | app/Actions/Auth/**, app/Http/Middleware/**, app/Notifications/**, resources/views/mail/**, resources/fonts/mail/** | .ai/rules/auth.md |
 | app/Actions/Category/** | .ai/rules/category.md |
@@ -18,12 +18,12 @@ Before planning or editing, find the row whose globs match the file's path and r
 | .ai/skills/main-project/**/*.md | .ai/rules/main-project.md |
 | database/migrations/** | .ai/rules/migrations.md |
 | resources/js/app.js, resources/views/components/mine/** | .ai/rules/mine.md |
-| app/Models/** | .ai/rules/models.md |
+| app/Models/**, app/Enums/UserGender.php | .ai/rules/models.md |
 | resources/views/pages/**, resources/views/pages/**/*.test.php, app/Livewire/** | .ai/rules/pages.md |
 | app/Actions/Plan/** | .ai/rules/plan.md |
 | routes/** | .ai/rules/routes.md |
 | database/seeders/** | .ai/rules/seeders.md |
 | resources/views/components/mine/{select,datepicker,input}/** | .ai/rules/select-datepicker-input.md |
-| app/Actions/Task/** | .ai/rules/task.md |
+| app/Actions/Task/**, app/Enums/TaskPriority.php | .ai/rules/task.md |
 | tests/**, tests/**/*.test.php, database/factories/** | .ai/rules/tests.md |
 | bootstrap/app.php, config/database.php, config/queue.php | .ai/rules/wiring.md |

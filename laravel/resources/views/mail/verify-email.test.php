@@ -43,8 +43,8 @@ it('renders the Persian copy with rtl direction', function () {
 
     expect($html)
         ->toContain('dir="rtl"')
-        ->toContain('ایمیلت رو تایید کن')
-        ->toContain('تا 60 دقیقه');
+        ->toContain('ایمیلت رو تأیید کن')
+        ->toContain('این لینک تأیید 60 دقیقه');
 });
 
 it('sends the notification in the user saved locale', function () {
@@ -54,7 +54,7 @@ it('sends the notification in the user saved locale', function () {
 
     $message = Mail::mailer()->getSymfonyTransport()->messages()->last()->getOriginalMessage();
 
-    expect($message->getSubject())->toBe('ایمیلت رو تایید کن')
+    expect($message->getSubject())->toBe('ایمیلت رو تأیید کن')
         ->and($message->getHtmlBody())->toContain('dir="rtl"');
 });
 

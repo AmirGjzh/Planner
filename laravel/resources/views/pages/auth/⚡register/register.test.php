@@ -48,6 +48,7 @@ it('validates username format', function (string $username) {
 })->with([
     'starts with number' => '1amir',
     'too short' => 'am',
+    'too long' => str_repeat('a', 31),
     'contains space' => 'amir user',
     'contains symbol' => 'amir@user',
 ]);
@@ -198,7 +199,9 @@ it('shows username taken error', function () {
         ->set('password', 'password123')
         ->set('password_confirmation', 'password123')
         ->call('register')
-        ->assertSet('register_error', 'username_taken');
+        ->assertSet('register_error', 'username_taken')
+        ->assertSee('role="alert"', false)
+        ->assertSee('Username taken!');
 });
 
 it('clears a previous register error on a new submission', function () {
@@ -255,7 +258,8 @@ it('shows email taken error', function () {
         ->set('password', 'password123')
         ->set('password_confirmation', 'password123')
         ->call('register')
-        ->assertSet('register_error', 'email_taken');
+        ->assertSet('register_error', 'email_taken')
+        ->assertSee('Email already registered!');
 });
 
 it('creates the user and redirects to login', function () {
@@ -323,7 +327,8 @@ it('rate limits after too many failed register attempts', function () {
         ->set('password', 'password123')
         ->set('password_confirmation', 'password123')
         ->call('register')
-        ->assertSet('register_error', 'rate_limited');
+        ->assertSet('register_error', 'rate_limited')
+        ->assertSee('Too many sign-up attempts!');
 });
 
 it('allows registration again after one minute', function () {

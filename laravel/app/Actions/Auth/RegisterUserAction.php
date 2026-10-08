@@ -76,6 +76,7 @@ final class RegisterUserAction
             }
             throw $e;
         }
+
         $this->logger->info('User registered.', [
             'username' => $username,
             'email' => $email,

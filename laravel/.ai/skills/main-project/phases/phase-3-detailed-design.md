@@ -187,7 +187,7 @@ This section defines the conventions and patterns to follow during implementatio
 ```
 app/
 ├── Actions/           # Domain actions, grouped by domain
-│   ├── Auth/          #   Login, Register, Logout, DeleteAccount
+│   ├── Auth/          #   Login, Register, Email Verification, Password Reset, Logout, DeleteAccount
 │   ├── Category/
 │   ├── Dashboard/     #   WeeklyWorkloadAction, AttentionTasksAction
 │   ├── Plan/
@@ -254,7 +254,7 @@ Every use case maps to one `app/Actions/<Domain>/` folder. There is no separate 
 | UC | Use Case | Module / Service | Responsibilities |
 |----|----------|------------------|------------------|
 | 01 | Login | Authentication (`LoginUserAction`, `ForgotPasswordAction`, `ResetPasswordAction`) | Verify credentials, send/reset password links, session-hint + intended-URL handling, password-change session eviction, rate-limit attempts |
-| 02 | Register | Authentication (`RegisterUserAction`) | Create account, enforce unique username/email |
+| 02 | Register | Authentication (`RegisterUserAction`, `VerifyEmailAction`, `ResendVerificationAction`) | Create account, enforce unique username/email, verify/resend verification email, gate unverified access |
 | 03 | View and Edit Profile | Profile (`UpdateProfileAction`) | Read/update profile fields, rate-limit updates |
 | 04 | Delete Account | Account (`DeleteAccountAction`) | Verify password, obfuscate credentials, soft-delete |
 | 05 | Logout | Authentication (`LogoutUserAction`) | Invalidate session, regenerate CSRF token |

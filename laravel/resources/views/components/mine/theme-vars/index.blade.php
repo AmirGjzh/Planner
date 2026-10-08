@@ -13,8 +13,8 @@
         :root {
             color-scheme: {{ $colorScheme }};
             @foreach ($vars as $key => $value)
-        --{{ $key }}: {{ $value }};
-@endforeach
+                --{{ $key }}: {{ $value }};
+            @endforeach
         }
     </style>
 @endif
