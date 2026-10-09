@@ -11,7 +11,7 @@
 |
 */
 
-$themes = ['ocean', 'forest', 'magic', 'safrron', 'amber', 'chocolate', 'gol-goli', 'midnight'];
+$themes = ['ocean', 'forest', 'magic', 'saffron', 'amber', 'chocolate', 'gol-goli', 'midnight'];
 
 $vars = [];
 

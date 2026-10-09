@@ -8,9 +8,16 @@
     ];
 @endphp
 
-<div class="mine-card sticky top-2 z-60 m-2 flex h-16 items-center justify-between overflow-visible!">
+<header class="mine-card sticky top-2 z-60 m-2 flex h-16 items-center justify-between overflow-visible!">
+    <a
+        href="#main-content"
+        class="sr-only focus:not-sr-only focus:absolute focus:start-2 focus:top-2 focus:z-70 focus:rounded-xl focus:border-2 focus:border-(--mine-dropdown-border) focus:bg-(--mine-card-bg) focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:shadow-lg"
+    >
+        {{ __('Skip to content') }}
+    </a>
+
     {{-- Desktop navigation --}}
-    <div class="hidden items-center md:flex">
+    <nav aria-label="{{ __('Main navigation') }}" class="hidden items-center md:flex">
         <div @class([
             'pl-6' => app()->isLocale('en'),
             'pr-6' => app()->isLocale('fa'),
@@ -31,16 +38,22 @@
                 </x-mine.nav-link>
             @endforeach
         </div>
-    </div>
+    </nav>
 
     {{-- Mobile navigation dropdown --}}
-    <div class="pointer-events-none absolute inset-0 flex items-center md:hidden">
+    <nav
+        aria-label="{{ __('Main navigation') }}"
+        class="pointer-events-none absolute inset-0 flex items-center md:hidden"
+    >
         <x-mine.dropdown group="header-action" class="flex h-full w-full items-center">
-            <x-mine.dropdown.trigger @class([
-                'ml-2' => app()->isLocale('en'),
-                'mr-2' => app()->isLocale('fa'),
-                'pointer-events-auto',
-            ])>
+            <x-mine.dropdown.trigger
+                aria-label="{{ __('Menu') }}"
+                @class([
+                    'ml-2' => app()->isLocale('en'),
+                    'mr-2' => app()->isLocale('fa'),
+                    'pointer-events-auto',
+                ])
+            >
                 <div class="mine-btn-icon flex items-center justify-center rounded-xl px-2 py-2">
                     <div class="relative block size-6">
                         <div
@@ -92,7 +105,7 @@
                 @endforeach
             </x-mine.dropdown.content>
         </x-mine.dropdown>
-    </div>
+    </nav>
 
     <div class="mx-auto flex items-center md:hidden">
         <a wire:navigate.hover href="{{ route('home') }}">
@@ -131,10 +144,10 @@
                             <div @class([
                                 'mine-badge-primary rounded-xl size-11 flex items-center justify-center',
                             ])>
-                                <h2 class="pt-0.5 text-sm font-semibold" x-text="initials">{{ $initials }}</h2>
+                                <p class="pt-0.5 text-sm font-semibold" x-text="initials">{{ $initials }}</p>
                             </div>
                             <div class="hidden items-center rounded-xl px-2 py-2 sm:flex">
-                                <h2
+                                <p
                                     @class([
                                         'mr-2 ml-1' => app()->isLocale('en'),
                                         'ml-2 mr-1' => app()->isLocale('fa'),
@@ -143,7 +156,7 @@
                                     x-text="username"
                                 >
                                     {{ $user->username }}
-                                </h2>
+                                </p>
                                 <div class="mine-text-secondary relative size-4">
                                     <div
                                         :class="! open ? 'opacity-100 scale-100' : 'opacity-0 scale-75'"
@@ -172,7 +185,7 @@
                             'flex items-center gap-3 py-2',
                         ])>
                             <div class="mine-badge-primary flex size-14 shrink-0 items-center justify-center rounded-xl text-sm font-medium">
-                                <h1 class="pt-1 text-lg font-semibold" x-text="initials">{{ $initials }}</h1>
+                                <p class="pt-1 text-lg font-semibold" x-text="initials">{{ $initials }}</p>
                             </div>
                             <div class="flex max-w-60 min-w-0 flex-col justify-between gap-1 truncate">
                                 <p class="mine-text-primary text-sm font-semibold" x-text="username">
@@ -282,4 +295,4 @@
             </div>
         @endauth
     </div>
-</div>
+</header>

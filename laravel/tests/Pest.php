@@ -35,7 +35,7 @@ pest()->extend(TestCase::class)
 | Axe runs through `assertNoAccessibilityIssuesExceptContrast()` below:
 | every axe rule applies except `color-contrast`, which is switched off
 | while the theme palettes are frozen in this stage of the project (the
-| safrron orange sits at ~4.2:1 against the card white — a known, deferred
+| saffron orange sits at ~4.2:1 against the card white — a known, deferred
 | WCAG miss, not a test blocker). Drop the `script()` call to re-enable it
 | once the themes resume.
 |

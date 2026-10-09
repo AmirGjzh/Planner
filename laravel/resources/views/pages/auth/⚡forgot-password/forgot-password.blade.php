@@ -15,7 +15,7 @@
 
             <div class="flex flex-col gap-4">
                 <x-mine.alert variant="success" title="{{ __('Check your inbox!') }}">
-                    {{ __('The link expires in :count minutes, Don\'t forget to check your spam folder.', ['count' => $this->expireMinutes]) }}
+                    {{ __('The link expires in :count minutes, don\'t forget to check your spam folder.', ['count' => $this->expireMinutes]) }}
                 </x-mine.alert>
 
                 <div class="mt-2">

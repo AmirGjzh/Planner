@@ -34,7 +34,7 @@ class UserFactory extends Factory
             'birthday' => fake()->date(),
             'country' => fake()->countryCode(),
             'gender' => fake()->randomElement(UserGender::cases()),
-            'theme' => fake()->randomElement(['ocean', 'magic', 'forest', 'chocolate', 'amber', 'safrron', 'midnight', 'gol-goli']),
+            'theme' => fake()->randomElement(['ocean', 'magic', 'forest', 'chocolate', 'amber', 'saffron', 'midnight', 'gol-goli']),
             'locale' => 'en',
             'email_verified_at' => now(),
             'remember_token' => Str::random(10),

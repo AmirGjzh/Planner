@@ -72,6 +72,7 @@
     <div
         x-ref="scroller"
         x-on:scroll="update()"
+        tabindex="0"
         class="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden {{ $scrollerClass }}"
     >
         {{ $slot }}

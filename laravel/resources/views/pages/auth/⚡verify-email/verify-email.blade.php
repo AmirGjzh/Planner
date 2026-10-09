@@ -9,7 +9,7 @@
         </p>
 
         <p class="mine-text-secondary mb-6 text-center text-sm font-medium">
-            {{ __('The link expires in :count minutes, Don\'t forget to check your spam folder.', ['count' => (int) config('auth.verification.expire', 60)]) }}
+            {{ __('The link expires in :count minutes, don\'t forget to check your spam folder.', ['count' => (int) config('auth.verification.expire', 60)]) }}
         </p>
 
         <form
