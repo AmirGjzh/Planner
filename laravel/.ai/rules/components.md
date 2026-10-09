@@ -22,7 +22,7 @@ Blade caches compiled views in `storage/framework/views` keyed on the raw tag st
 - The skip link (`#main-content`, `sr-only`) is the header's first child and pairs with `layouts/app.blade.php`'s `<main id="main-content">`; neither half works alone.
 - The page owns the only `<h1>`: header initials, username, and labels are `<p>` (live `x-text` sync works the same).
 - Icon-only controls carry an explicit `aria-label` (`Menu`) — decorative `<x-mine.icon>` children never name a control (mine.md).
-- Never build an attribute with `{{ }}`: `nav-link` once emitted `{{ $active ? 'aria-current="page"' : '' }}` and `e()` turned the quotes into `&quot;`, so `aria-current` shipped broken and invisible to tests — use a literal `@if ($active) aria-current="page" @endif` instead.
+- Never *mint* an attribute from `{{ }}` **outside** an attribute: `nav-link` once emitted `{{ $active ? 'aria-current="page"' : '' }}` as raw tag content and `e()` turned the quotes into `&quot;`, so `aria-current` shipped broken and invisible to tests — use a literal `@if ($active) aria-current="page" @endif` instead. Value-position interpolation (`class="{{ $x }}"`) is safe; there `e()` only escapes the value.
 
 ## Dropdown menus declare themselves
 

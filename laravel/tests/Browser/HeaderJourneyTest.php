@@ -52,3 +52,19 @@ it('navigates through the mobile menu at a mobile viewport', function () {
         ->assertPathIs('/tasks')
         ->assertSee('My tasks');
 });
+
+it('reveals the skip link as the first keyboard stop and jumps to main content', function () {
+    $page = visit('/login');
+
+    $page->fill('email', 'amir@example.com')
+        ->fill('password', 'password')
+        ->click('Sign in')
+        ->assertPathIs('/dashboard');
+
+    $page->keys(':root', 'Tab')
+        ->assertScript('document.activeElement.getAttribute("href")', '#main-content');
+
+    $page->keys('a[href="#main-content"]', 'Enter')
+        ->wait(1)
+        ->assertScript('location.hash', '#main-content');
+});

@@ -40,7 +40,7 @@
         </div>
     </nav>
 
-    {{-- Mobile navigation dropdown --}}
+    {{-- Mobile navigation dropdown: the layer is full-bleed so the trigger sits at the flex start and the menu can span the header; pointer-events stay off so the centred logo beneath it remains clickable. --}}
     <nav
         aria-label="{{ __('Main navigation') }}"
         class="pointer-events-none absolute inset-0 flex items-center md:hidden"
@@ -113,7 +113,7 @@
         </a>
     </div>
 
-    {{-- Right actions --}}
+    {{-- Right actions: the same full-bleed click-through layer (z-10 stacks it above the mobile nav on small screens) — right-pins the controls without stealing clicks from the logo/menu below. --}}
     <div class="pointer-events-none absolute inset-0 z-10">
         @auth
             @php
@@ -124,10 +124,10 @@
             <div
                 class="flex h-full w-full items-center justify-end"
                 x-data="{
-                                        username: @js($user->username),
-                                        email: @js($user->email),
-                                        initials: @js($initials),
-                                    }"
+                    username: @js($user->username),
+                    email: @js($user->email),
+                    initials: @js($initials),
+                }"
                 x-on:profile-updated.window="
                     username = $event.detail.username;
                     email = $event.detail.email;
@@ -243,15 +243,15 @@
                             destructive
                             x-data="{ busy: false }"
                             x-on:click.prevent="
-                                                    if (busy) return;
-                                                    busy = true;
-                                                    fetch('{{ route('logout') }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
-                                                        .then((response) => {
-                                                            if (! response.ok) throw new Error('Logout request failed');
-                                                            window.location.assign('{{ route('home') }}');
-                                                        })
-                                                        .catch(() => busy = false);
-                                                "
+                                if (busy) return;
+                                busy = true;
+                                fetch('{{ route('logout') }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
+                                    .then((response) => {
+                                        if (! response.ok) throw new Error('Logout request failed');
+                                        window.location.assign('{{ route('home') }}');
+                                    })
+                                    .catch(() => busy = false);
+                            "
                         >
                             <div class="mine-text-error flex w-full items-center gap-3 px-3 py-3 hover:cursor-pointer">
                                 <x-mine.icon name="Logout4" weight="filled" size="18" />

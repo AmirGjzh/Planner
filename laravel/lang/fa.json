@@ -89,6 +89,9 @@
     "Profile": "پروفایل",
     "Settings": "تنظیمات",
     "Log out": "خروج",
+    "Menu": "منو",
+    "Main navigation": "ناوبری اصلی",
+    "Skip to content": "پرش به محتوا",
 
     "My profile": "پروفایل من",
     "Preferences": "شخصی‌سازی",
@@ -359,9 +362,5 @@
     "Loading": "در حال بارگذاری",
     "Close notification": "بستن اعلان",
     "Scroll to the beginning": "پیمایش به ابتدا",
-    "Scroll to the end": "پیمایش به انتها",
-
-    "Menu": "منو",
-    "Main navigation": "ناوبری اصلی",
-    "Skip to content": "پرش به محتوا"
+    "Scroll to the end": "پیمایش به انتها"
 }

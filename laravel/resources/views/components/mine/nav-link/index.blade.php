@@ -8,6 +8,7 @@
     $active = $active || ($route && request()->routeIs($route));
 @endphp
 
+{{-- aria-current stays an @if: minting the attribute from {{ }} lets e() escape its quotes into &quot; (components.md) --}}
 <a
     wire:navigate.hover
     href="{{ $href }}"
