@@ -75,7 +75,10 @@ new class extends Component
     {
         $this->edit_error = null;
 
-        $need_reload = ($this->theme !== $this->user->theme or $this->locale !== $this->user->locale);
+        // A theme or locale change only takes effect on a full page load (HasUser
+        // applies the locale on the next request), so the save flashes the toast
+        // and re-lands on /profile with navigate: false instead of live-updating.
+        $need_reload = ($this->theme !== $this->user->theme || $this->locale !== $this->user->locale);
 
         try {
             $data = $this->validate();

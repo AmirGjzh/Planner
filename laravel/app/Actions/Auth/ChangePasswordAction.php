@@ -69,8 +69,8 @@ final class ChangePasswordAction
         $user->forceFill([
             'password' => $new_password,
             'password_changed_at' => now(),
-            'remember_token' => Str::random(60),
-        ])->save();
+        ])->setRememberToken(Str::random(60));
+        $user->save();
 
         session()->put('auth_time', now()->toIso8601String());
 
