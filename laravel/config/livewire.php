@@ -194,7 +194,10 @@ return [
 
     'navigate' => [
         'show_progress_bar' => true,
-        'progress_bar_color' => '#173B67',
+        // Var-chained so the bar follows the page's theme variables (guest pages
+        // get the app default, signed-in pages the account theme); the hex is
+        // the fallback for responses rendered without theme-vars.
+        'progress_bar_color' => 'var(--mine-btn-primary-bg, #173B67)',
     ],
 
     /*

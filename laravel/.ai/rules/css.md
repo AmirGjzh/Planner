@@ -25,3 +25,7 @@ Tailwind v4 emits `@utility` rules not in source order (`.mine-animate` lands af
 ## Web fonts: exactly three Vazirmatn weights
 
 `resources/css/app.css` declares `@font-face` for 400/500/600 (Regular/Medium/SemiBold) — and nothing else. Bold was dropped app-wide in favour of the dominant `font-semibold` usage, so `font-bold` must never appear in markup; semibold is the heaviest class allowed. The reset mail embeds the same trio as `data:` URIs (`.ai/rules/auth.md`), keeping web and mail from ever drifting apart.
+
+## The framework's pagination views are deliberately not scanned
+
+Every paginator in the app runs inside a Livewire component, which pins `Paginator::defaultView()` to `livewire::tailwind` — published, themed, and `@source`d through `resources/views/vendor/livewire/*.blade.php`. The framework's own pagination views never render, so `app.css` carries no `@source` for them: scanning would only bake dead (largely `dark:`) utilities into the bundle. Re-add it if a non-Livewire paginator ever ships.

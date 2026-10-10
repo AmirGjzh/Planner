@@ -12,8 +12,6 @@
         href="{{ \Illuminate\Support\Facades\Vite::asset('resources/fonts/Vazirmatn-Regular.woff2') }}"
     />
 
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}" />
-
     <title>{{ ($title ?? null) ? __($title).' — '.config('app.name') : config('app.name') }}</title>
 
     @livewireScriptConfig

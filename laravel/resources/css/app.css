@@ -1,7 +1,6 @@
 @import "tailwindcss";
 @import './mine.css';
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../resources/views/vendor/livewire/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
