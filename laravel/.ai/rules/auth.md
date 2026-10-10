@@ -9,14 +9,14 @@ paths:
 
 # Auth
 
-Audit decisions for the auth actions (login, UC-02 register + email verification, UC-05 logout), session freshness, the password-reset and verification notifications, and the mail templates.
+Audit decisions for the auth actions (login, UC-02 register + email verification, UC-04 account deletion, UC-05 logout), session freshness, the password-reset and verification notifications, and the mail templates.
 
 ## Keep the auth forms strict
 
 - `login.php`, `forgot-password.php`, and `register.php` share trim + `['required', 'email:rfc']` on email — keep them aligned; register alone adds `max:255` (the varchar column) because it is the only one that stores the address.
 - The login/forgot/register pages `trim($this->email)` before `$this->validate()` (register also trims `username`), while every action trims and lowercases again at the domain boundary; validation must not reject what the action accepts — `email:rfc` rejects the padded value a paste carries, and the username regex rejects padded edges the action accepts.
 - No password field is ever trimmed — not on login, register, reset, or the profile's change form. Spaces are significant password characters; trim stays an email/username concern.
-- Login, reset, register, and the profile password change cap passwords at `max:256` (bcrypt only honors 72 bytes; the bound keeps input sized). Register's email bound is load-bearing: `email:rfc` passes overlong addresses and `RegisterUserAction` only catches SQLSTATE `23xxx`, so an overlong insert would throw `22001` uncaught (a 500 on MySQL). `password_confirmation` stays unmaxed, like reset — a longer confirm surfaces as the mismatch message.
+- Login, reset, register, the profile change form (both the new and the current field), and delete-account re-auth cap passwords at `max:256` (bcrypt only honors 72 bytes; the bound keeps input sized). Register's email bound is load-bearing: `email:rfc` passes overlong addresses and `RegisterUserAction` only catches SQLSTATE `23xxx`, so an overlong insert would throw `22001` uncaught (a 500 on MySQL). `password_confirmation` stays unmaxed, like reset — a longer confirm surfaces as the mismatch message.
 
 ## Register has no toast re-dispatch on mount
 
@@ -37,6 +37,13 @@ Both are intentional; keep them.
 ## Logout returns void
 
 `LogoutUserAction::execute()` returns `void` (no result enum) — a logout can't fail. Don't re-add a single-case result enum.
+
+## Account deletion
+
+- `DeleteAccountAction` orders authorize → limiter → `Hash::check` (`abort_unless($user->is(auth()->user()), 403)` first, then the bucket, then the password), so a foreign account is rejected before any bucket movement and a limited caller never reaches the hash — no oracle while limited.
+- Its bucket `delete-account:{user_id}|{ip}` (5/60s) counts wrong-password re-auth guesses and clears on success — the default failure-counter shape (the delete modal is a second password-guessing surface); the clear is hygiene more than policy because the key dies with the account (a new account gets a new id). Phase-1's original "UC-04 exempt" line was corrected to match — the limiter ships.
+- On success the action ends this session (`Auth::logout()` + invalidate + CSRF regenerate), forgets the session-hint cookie, scrubs the row, and soft-deletes — the page then flashes the toast and redirects home (a guest page, so the locale is reset to `config('app.locale')` first).
+- **The scrub is full-scope:** email/username obfuscated to `deleted-user-{id}` / `deleted_user_{id}` (frees the unique constraints for reuse), the password replaced with junk no `Hash::check` can satisfy (a leaked row must not keep a crackable hash of a likely-reused password), `remember_token` nulled, and firstname/lastname/birthday/gender nulled. `locale`/`theme` stay — preferences, not personal data. Everything else on the row is kept for the owner FKs on tasks/plans.
 
 ## Password reset and session-hint contracts
 

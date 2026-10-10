@@ -55,11 +55,21 @@ final class DeleteAccountAction
         Cookie::queue(Cookie::forget(LoginUserAction::SESSION_HINT));
 
         // Soft delete keeps the row so plans and tasks retain their owner; the
-        // junk values strip the PII and free the real email/username for reuse,
-        // while the user-id suffix keeps the unique indexes satisfied.
+        // obfuscated email/username free the real values for reuse (the user-id
+        // suffix keeps the unique indexes satisfied). The rest of the scrub
+        // drops whatever secrets and PII the row still holds: the password
+        // becomes junk no hash check can satisfy, the recaller token is
+        // blanked, and name/birthday/gender are nulled — locale and theme
+        // stay, preferences are not personal data.
         $user->forceFill([
             'email' => 'deleted-user-'.$userId,
             'username' => 'deleted_user_'.$userId,
+            'password' => Str::random(60),
+            'remember_token' => null,
+            'firstname' => null,
+            'lastname' => null,
+            'birthday' => null,
+            'gender' => null,
         ])->save();
 
         $user->delete();

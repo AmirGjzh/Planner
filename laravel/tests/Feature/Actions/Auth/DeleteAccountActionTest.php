@@ -6,8 +6,11 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 function deleteAccountRequest(): Request
 {
@@ -49,11 +52,16 @@ it('forgets the session hint cookie on account deletion', function () {
         ->and($queued->getValue())->toBeNull();
 });
 
-it('obfuscates email and username after deletion', function () {
+it('scrubs credentials and profile PII after deletion', function () {
     $user = User::factory()->create([
         'email' => 'amir@example.com',
         'username' => 'amir_user',
         'password' => 'password',
+        'firstname' => 'Amir',
+        'lastname' => 'Gol',
+        'birthday' => '1990-01-01',
+        'gender' => 'male',
+        'remember_token' => Str::random(10),
     ]);
     $this->actingAs($user);
 
@@ -63,7 +71,58 @@ it('obfuscates email and username after deletion', function () {
     $deleted = User::withTrashed()->find($user->id);
 
     expect($deleted->email)->toBe('deleted-user-'.$user->id)
-        ->and($deleted->username)->toBe('deleted_user_'.$user->id);
+        ->and($deleted->username)->toBe('deleted_user_'.$user->id)
+        ->and(Hash::check('password', $deleted->password))->toBeFalse()
+        ->and($deleted->remember_token)->toBeNull()
+        ->and($deleted->firstname)->toBeNull()
+        ->and($deleted->lastname)->toBeNull()
+        ->and($deleted->birthday)->toBeNull()
+        ->and($deleted->gender)->toBeNull();
+});
+
+it('forbids deleting another user account', function () {
+    $user = User::factory()->create(['password' => 'password']);
+    $other = User::factory()->create(['password' => 'password']);
+    $this->actingAs($user);
+
+    $this->expectException(HttpException::class);
+
+    app(DeleteAccountAction::class)
+        ->execute($other, 'password', deleteAccountRequest());
+});
+
+it('cuts off another live session once the account is deleted', function () {
+    $user = User::factory()->create([
+        'password' => 'password',
+    ]);
+    $this->actingAs($user);
+
+    app(DeleteAccountAction::class)
+        ->execute($user, 'password', deleteAccountRequest());
+
+    $this->withSession([Auth::guard('web')->getName() => $user->id])
+        ->get('/dashboard')
+        ->assertRedirect('/login');
+    $this->assertGuest();
+});
+
+it('tracks wrong guesses in the delete-account bucket and clears it on success', function () {
+    $user = User::factory()->create([
+        'password' => 'password',
+    ]);
+    $this->actingAs($user);
+
+    $key = 'delete-account:'.$user->id.'|127.0.0.1';
+
+    app(DeleteAccountAction::class)
+        ->execute($user, 'wrong_password', deleteAccountRequest());
+
+    expect(RateLimiter::attempts($key))->toBe(1);
+
+    app(DeleteAccountAction::class)
+        ->execute($user, 'password', deleteAccountRequest());
+
+    expect(RateLimiter::attempts($key))->toBe(0);
 });
 
 it('returns wrong password for incorrect password', function () {

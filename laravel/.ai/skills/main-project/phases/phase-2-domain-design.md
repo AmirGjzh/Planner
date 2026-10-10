@@ -155,14 +155,14 @@ Actor: Logged-in user
 Description: The user deletes their account along with all related data.
 
 Main Flow:
-1. The user opens Account Settings from the profile menu.
-2. At the bottom of the page, the user sees a Delete Account button.
+1. The user opens their profile page (Profile in the user menu).
+2. In the danger box at the bottom of the page, the user clicks Delete Account.
 3. The system requests the current password for confirmation.
 4. The user enters the password and confirms.
 5. The system verifies the password.
 6. If valid:
-   - The account deletion process begins
-   - Related data is soft-deleted or hard-deleted as configured
+   - The account row is soft-deleted with its credentials and personal data scrubbed (email/username obfuscated for reuse, password hash dropped, name/birthday/gender nulled)
+   - Tasks, plans, and categories keep their owner — no cascade
 7. The user is logged out, sees a success toast ("Account deleted"), and is redirected to the homepage.
 
 ### 2.3.5 UC-05 – Logout

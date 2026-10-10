@@ -353,6 +353,27 @@ it('dispatches focus-first-error when the delete account validation fails', func
         ->assertDispatched('focus-first-error');
 });
 
+it('caps the delete password at 256 characters', function () {
+    $user = profileUser();
+
+    Livewire::actingAs($user)
+        ->test('pages::profile')
+        ->set('password', str_repeat('a', 257))
+        ->call('deleteAccount')
+        ->assertHasErrors(['password' => 'max']);
+});
+
+it('names every profile dialog for screen readers', function () {
+    $user = profileUser();
+
+    Livewire::actingAs($user)
+        ->test('pages::profile')
+        ->assertSee('aria-labelledby="delete-account-title"', false)
+        ->assertSee('id="delete-account-title"', false)
+        ->assertSee('aria-labelledby="change-password-title"', false)
+        ->assertSee('aria-labelledby="edit-profile-title"', false);
+});
+
 it('shows wrong password error', function () {
     $user = profileUser();
 
@@ -475,6 +496,16 @@ it('validates the change password fields', function () {
         ->assertHasErrors(['new_password' => ['confirmed', 'min']]);
 });
 
+it('caps the current password at 256 characters', function () {
+    $user = profileUser();
+
+    Livewire::actingAs($user)
+        ->test('pages::profile')
+        ->set('current_password', str_repeat('a', 257))
+        ->call('changePassword')
+        ->assertHasErrors(['current_password' => 'max']);
+});
+
 it('dispatches focus-first-error when the change password validation fails', function () {
     $user = profileUser();
 
@@ -505,6 +536,18 @@ it('changes the password and confirms with a toast', function () {
         ->assertSet('new_password_confirmation', '');
 
     expect(Hash::check('brand-new-password', $user->fresh()->password))->toBeTrue();
+});
+
+it('deletes the account with exactly the three update queries', function () {
+    $user = profileUser();
+
+    $this->expectsDatabaseQueryCount(3);
+
+    Livewire::actingAs($user)
+        ->test('pages::profile')
+        ->set('password', 'password')
+        ->call('deleteAccount')
+        ->assertRedirect(route('home'));
 });
 
 it('changes the password with exactly the update query', function () {

@@ -92,10 +92,18 @@
         </div>
     </div>
 
-    <x-mine.modal id="edit-profile-form" :close-by-clicking-away="false" :close-by-escaping="false" width="xl">
+    <x-mine.modal
+        id="edit-profile-form"
+        :close-by-clicking-away="false"
+        :close-by-escaping="false"
+        width="xl"
+        labelled-by="edit-profile-title"
+    >
         <div class="px-6 py-6 sm:px-8">
             <div class="mb-6 flex items-center justify-between">
-                <h2 class="mine-text-primary text-base font-semibold">{{ __('Edit your information') }}</h2>
+                <h2 id="edit-profile-title" class="mine-text-primary text-base font-semibold">
+                    {{ __('Edit your information') }}
+                </h2>
                 <button
                     type="button"
                     aria-label="{{ __('Close') }}"
@@ -234,10 +242,18 @@
         </div>
     </x-mine.modal>
 
-    <x-mine.modal id="change-password-form" :close-by-clicking-away="false" :close-by-escaping="false" width="lg">
+    <x-mine.modal
+        id="change-password-form"
+        :close-by-clicking-away="false"
+        :close-by-escaping="false"
+        width="lg"
+        labelled-by="change-password-title"
+    >
         <div class="px-6 py-6 sm:px-8">
             <div class="mb-6 flex items-center justify-between">
-                <h2 class="mine-text-primary text-base font-semibold">{{ __('Change password') }}</h2>
+                <h2 id="change-password-title" class="mine-text-primary text-base font-semibold">
+                    {{ __('Change password') }}
+                </h2>
                 <button
                     type="button"
                     aria-label="{{ __('Close') }}"
@@ -332,10 +348,13 @@
         :close-by-clicking-away="false"
         :close-by-escaping="false"
         width="lg"
+        labelled-by="delete-account-title"
     >
         <div class="px-6 py-6 sm:px-8">
             <div class="mb-6 flex items-center justify-between">
-                <h2 class="mine-text-primary text-base font-semibold">{{ __('Delete your account') }}</h2>
+                <h2 id="delete-account-title" class="mine-text-primary text-base font-semibold">
+                    {{ __('Delete your account') }}
+                </h2>
                 <button
                     type="button"
                     aria-label="{{ __('Close') }}"

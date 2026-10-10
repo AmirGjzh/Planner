@@ -152,7 +152,7 @@ new class extends Component
 
         try {
             $data = $this->validate([
-                'current_password' => ['required'],
+                'current_password' => ['required', 'max:256'],
                 'new_password' => ['required', 'confirmed', 'min:8', 'max:256'],
                 'new_password_confirmation' => ['required'],
             ]);
@@ -201,7 +201,7 @@ new class extends Component
 
         try {
             $data = $this->validate([
-                'password' => ['required'],
+                'password' => ['required', 'max:256'],
             ]);
         } catch (ValidationException $exception) {
             $this->dispatch('focus-first-error');
@@ -283,7 +283,9 @@ new class extends Component
             'birthday.date' => __('Birthdate must be a valid date.'),
             'birthday.before_or_equal' => __('Birthdate must be today or earlier.'),
             'password.required' => __('Password is required.'),
+            'password.max' => __('Use at most 256 characters.'),
             'current_password.required' => __('Current password is required.'),
+            'current_password.max' => __('Use at most 256 characters.'),
             'new_password.required' => __('Password is required.'),
             'new_password.confirmed' => __('The passwords don\'t match.'),
             'new_password.min' => __('Use at least 8 characters.'),

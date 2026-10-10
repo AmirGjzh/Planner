@@ -107,11 +107,11 @@ All use cases are delivered, tested, and accepted. Files and structure reference
 
 **Goal:** Permanent account deletion with password confirmation and rate limiting.
 
-**Delivered:** `app/Actions/Auth/DeleteAccountAction.php` (+ `DeleteAccountResult` enum), confirmation modal on the profile page. Obfuscates email/username (`deleted-user-{id}` / `deleted_user_{id}`) to free unique constraints, then soft-deletes; logs the user out and invalidates the session.
+**Delivered:** `app/Actions/Auth/DeleteAccountAction.php` (+ `DeleteAccountResult` enum), confirmation modal on the profile page. Obfuscates email/username (`deleted-user-{id}` / `deleted_user_{id}`) to free unique constraints, replaces the password with junk no hash check can satisfy, nulls the remember token and firstname/lastname/birthday/gender, then soft-deletes; logs the user out and invalidates the session. The profile dialogs carry accessible names through the shared modal's `labelled-by` prop.
 
-**Key decisions:** password verified inside the action (frontend-agnostic); rate limit 5/min per user+IP; success flashes a toast re-dispatched by the home page's `mount()`.
+**Key decisions:** password verified inside the action with `Hash::check` (frontend-agnostic), behind the authorize-then-limiter gate so a limited caller never reaches the hash; rate limit 5/min per user+IP with the failure-counter bucket `delete-account:{user_id}|{ip}` (wrong guesses only — phase-1's original UC-04 exemption line was corrected to match); `locale`/`theme` stay on the trashed row (preferences, not personal data); success flashes a toast re-dispatched by the home page's `mount()`.
 
-**Tests:** action coverage plus the delete-account flow in the profile Livewire tests.
+**Tests:** action coverage (outcomes, bucket shape and lifecycle, full scrub, 403 self-check, cut-off of other live sessions), the delete flow and query lock in the profile Livewire tests, and a browser journey that axes the open dialog before the wrong-password and confirm steps.
 
 ### UC-05 – Logout
 

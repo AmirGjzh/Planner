@@ -27,3 +27,8 @@ Blade caches compiled views in `storage/framework/views` keyed on the raw tag st
 ## Dropdown menus declare themselves
 
 `dropdown/content` carries `role="menu"` because `dropdown.trigger` announces `aria-haspopup="menu"` — keep the pair in sync; `dropdown/divider` is already `role="separator"` and items render `menuitem`/`menuitemcheckbox`. When a menu gains non-item children (the header's profile card is one), re-run the open-menu axe pass in `HeaderJourneyTest` before shipping.
+
+## Modals name their dialog
+
+- `x-mine.modal` renders `role="dialog" aria-modal="true"` inside an `x-teleport` — pass `labelled-by="<heading-id>"` and put that `id` on the dialog's heading (which lives in the slot) so the dialog has an accessible name; an unset prop renders nothing. The open-dialog axe pass in `DeleteAccountJourneyTest` is the contract.
+- Credential and destructive forms use `:close-by-clicking-away="false"` and `:close-by-escaping="false"` — the explicit Cancel/Close button owns dismissal. The shared modal deliberately has no focus trap (app-wide pattern; if that changes, change it once here for every dialog at once).
