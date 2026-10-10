@@ -146,6 +146,7 @@
     "This action is permanent, enter your password to continue.": "این کار قابل بازگشت نیست، برای ادامه، رمز عبورت رو وارد کن.",
     "Profile updated": "پروفایلت به‌روزرسانی شد",
     "Logged out successfully": "از حساب کاربریت خارج شدی",
+    "Log out failed": "خروج ناموفق",
     "Account deleted": "حساب کاربریت حذف شد",
     "No results found": "نتیجه‌ای پیدا نشد",
     "Search...": "جستجو...",

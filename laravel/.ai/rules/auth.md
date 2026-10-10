@@ -34,9 +34,12 @@ Both are intentional; keep them.
 - `register:{ip}` counts **every** attempt — success or failure — and never clears: account creation is the volume being capped (a row plus a queued mail each), so clearing on the common path would defeat it, exactly like `verify-resend`. Login keeps `RateLimiter::clear` on success because its bucket counts failed credential guesses instead — do not align the two.
 - Page-side validation failures never reach the action and therefore never count — the page does no DB or queue work before `execute()`, and uniqueness stays behind the limiter gate for the same reason (no reads while limited). The happy path stays **INSERT-first**: `User::create()` runs directly and the existence `SELECT`s fire only inside the 23xxx integrity-violation path — never add a pre-insert uniqueness pre-check (the action's query-count lock pins the request side to the insert + row reload).
 
-## Logout returns void
+## Logout
 
-`LogoutUserAction::execute()` returns `void` (no result enum) — a logout can't fail. Don't re-add a single-case result enum.
+- `LogoutUserAction::execute()` returns `void` (no result enum) — a logout can't fail server-side. Don't re-add a single-case result enum.
+- **Rotation is the recollection killer:** `Auth::logout()` cycles the `remember_token`, so any remember-me recollection tied to the old token dies with the session — no separate recollection logic may be added; the action test pins the rotation.
+- **The success flash lands at the app locale, deliberately.** Nothing on the plain `POST /logout` sets a per-user locale (only the Livewire auth boundaries do), so `__()` at flash time resolves at the app locale — the toast a guest reads on the home page matches the guest page it opens on. A future locale-setting middleware on this route would silently flip that; the invariant is pinned by the route comment, keep it.
+- Client-side the header dropdown item and the verification-notice button share `Alpine.data('mineLogout', …)` in `resources/js/app.js` (never inline — see `.ai/rules/mine.md`), pass the logout/home URLs, CSRF, and the failure title via `:x-data` (component-tag attributes are extracted as raw strings, so `@js` stays literal there — the `:attr="php"` form is the working one on components), and dispatch a `danger` toast on a non-ok response or network failure (the session is still alive — say so instead of failing silently). The failure toast renders in the page's current locale: the user is still signed in there.
 
 ## Account deletion
 

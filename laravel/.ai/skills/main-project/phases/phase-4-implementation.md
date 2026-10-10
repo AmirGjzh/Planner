@@ -117,13 +117,13 @@ All use cases are delivered, tested, and accepted. Files and structure reference
 
 **Status:** Completed
 
-**Goal:** One-click logout with an SPA transition back to home.
+**Goal:** One-click logout that kills the session and remember-me, then drops the user on the guest home with a success toast.
 
-**Delivered:** `POST /logout` (204 No Content) + `app/Actions/Auth/LogoutUserAction.php` (returns `void` — the single-case `LogoutResult` enum was removed as YAGNI). Header dropdown logs out via Alpine `fetch()` with CSRF, then `Livewire.navigate()` to home; flashed toast is re-dispatched by home's `mount()`.
+**Delivered:** `POST /logout` (204 No Content) + `app/Actions/Auth/LogoutUserAction.php` (returns `void` — the single-case `LogoutResult` enum was removed as YAGNI). The header dropdown item and the verification-notice button share one `Alpine.data('mineLogout', …)` factory in `resources/js/app.js` (the `mineToast` precedent — no inline factory): `fetch()` with CSRF, a hard reload to home on success, and a danger toast on failure so a rate-blocked or network-dead attempt never dies silently. The route flashes the success toast; home's `mount()` re-dispatches it.
 
-**Key decisions:** session invalidated + CSRF regenerated (fixation prevention); action logs user ID and IP.
+**Key decisions:** session invalidated + CSRF regenerated (fixation prevention); `Auth::logout()` rotates the remember token, so remember-me recollections die with the session (no separate recollection logic — the action test pins the rotation); action logs user ID and IP; no per-action rate limiter — the uniform `block(10, 10)` route lock covers the endpoint; the success flash lands at the app locale because nothing sets a per-user locale on this plain HTTP request (the toast is read on a guest page); the logout factory lives in the JS bundle, not inline, so its implementation is never re-serialized into HTML responses.
 
-**Tests:** access and action coverage.
+**Tests:** action coverage (session killed, CSRF rotated, remember-token rotation, hint cookie forgotten, log line), access coverage with a one-query lock (the remember-token cycle UPDATE), the sign-out browser journey (header dropdown → guest home with the nav's Sign in/Sign up back), and a verification-notice journey that signs out from the notice page's button.
 
 ### UC-06 – Manage Categories
 

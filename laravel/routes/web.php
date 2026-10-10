@@ -37,7 +37,9 @@ Route::middleware(['auth'])->group(function () {
     })->middleware(['signed:relative'])->name('verification.verify')->block(10, 10);
     Route::post('/logout', function (LogoutUserAction $logoutUserAction, Request $request) {
         $logoutUserAction->execute($request);
-        app()->setLocale(config('app.locale'));
+        // No per-user locale runs on this plain HTTP request (only the Livewire
+        // auth boundaries set one), so the flash below already lands at the app
+        // locale — the toast a guest sees matches the guest page it opens on.
         session()->flash('toast', [
             'title' => __('Logged out successfully'),
             'variant' => 'success',

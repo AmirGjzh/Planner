@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Auth\LoginUserAction;
 use App\Actions\Auth\LogoutUserAction;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -64,6 +65,20 @@ it('logs the logout event', function () {
         ));
 });
 
+it('rotates the remember token so remember-me sessions die with logout', function () {
+    $user = User::factory()->create([
+        'remember_token' => 'old-token',
+    ]);
+    $this->actingAs($user);
+
+    $request = Request::create('/logout', 'POST', server: ['REMOTE_ADDR' => '127.0.0.1']);
+    $request->setLaravelSession(app('session')->driver());
+
+    app(LogoutUserAction::class)->execute($request);
+
+    expect($user->fresh()->remember_token)->not->toBe('old-token');
+});
+
 it('forgets the session hint cookie on logout', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
@@ -74,7 +89,7 @@ it('forgets the session hint cookie on logout', function () {
     app(LogoutUserAction::class)->execute($request);
 
     $queued = collect(Cookie::getQueuedCookies())
-        ->first(fn ($cookie) => $cookie->getName() === 'session_hint');
+        ->first(fn ($cookie) => $cookie->getName() === LoginUserAction::SESSION_HINT);
 
     expect($queued)->not->toBeNull()
         ->and($queued->getValue())->toBeNull()

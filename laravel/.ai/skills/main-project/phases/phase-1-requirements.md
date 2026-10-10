@@ -115,7 +115,7 @@ As a user, I want to select a time range and see my performance — tasks create
 
 The acceptance criteria are grouped by use case (UC-01 … UC-11), in topological order.
 
-> **Rate limiting:** write and auth actions are rate-limited per-Action with the key shapes in `.ai/rules/actions.md`. This applies to UC-01, 02, 03 (profile update and password change), 04 (account delete), 06, 07, and 08; UC-05 (logout) is exempt.
+> **Rate limiting:** write and auth actions are rate-limited per-Action with the key shapes in `.ai/rules/actions.md`. This applies to UC-01, 02, 03 (profile update and password change), 04 (account delete), 06, 07, and 08; UC-05 (logout) is exempt from *per-Action* limiting — its route still carries the uniform `->block(10, 10)` every web route has (`.ai/rules/routes.md`).
 
 ### UC-01 – Login
 

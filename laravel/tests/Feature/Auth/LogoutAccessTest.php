@@ -17,6 +17,17 @@ it('logs out an authenticated user and flashes a success toast', function () {
     $this->assertGuest();
 });
 
+it('logs out with exactly the remember-token update query', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    // The whole logout is one UPDATE: Auth::logout() cycles the remember
+    // token (killing remember-me); everything else rides the array session.
+    $this->expectsDatabaseQueryCount(1);
+
+    $this->post('/logout')->assertNoContent();
+});
+
 it('requires authentication to logout', function () {
     $this->post('/logout')
         ->assertRedirect('/login');

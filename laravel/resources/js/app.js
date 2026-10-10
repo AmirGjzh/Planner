@@ -205,4 +205,25 @@ Alpine.data('mineToast', (position = 'top-right', duration = 4000) => ({
     },
 }))
 
+Alpine.data('mineLogout', ({ action, home, csrf, failed }) => ({
+    busy: false,
+    logout() {
+        if (this.busy) return
+        this.busy = true
+        fetch(action, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrf } })
+            .then((response) => {
+                if (! response.ok) throw new Error('Logout request failed')
+                window.location.assign(home)
+            })
+            .catch(() => {
+                // Non-ok (rate block, expired CSRF) or network failure — the
+                // session is still alive, so say so instead of failing silently.
+                this.busy = false
+                window.dispatchEvent(new CustomEvent('toast', {
+                    detail: { title: failed, variant: 'danger' },
+                }))
+            })
+    },
+}))
+
 Livewire.start()

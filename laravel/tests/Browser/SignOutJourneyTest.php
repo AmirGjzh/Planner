@@ -22,7 +22,10 @@ it('signs out through the header menu', function () {
     $page->click('amir')
         ->click('Log out')
         ->assertPathIs('/')
-        ->assertSee('Logged out successfully');
+        ->assertSee('Logged out successfully')
+        // The AC: the guest navigation is back ("Login and Register options").
+        ->assertSee('Sign in')
+        ->assertSee('Sign up');
 
     $this->assertGuest();
 });

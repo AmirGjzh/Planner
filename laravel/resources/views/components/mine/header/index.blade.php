@@ -6,6 +6,15 @@
         ['label' => __('Categories'), 'route' => 'categories', 'icon' => 'Folder'],
         ['label' => __('Reports'), 'route' => 'reports', 'icon' => 'Chart2'],
     ];
+
+    // Component-tag attributes are extracted as raw strings, so @js would stay
+    // literal there — build the Alpine data in PHP and pass it with :x-data.
+    $logoutData = 'mineLogout('.\Illuminate\Support\Js::from([
+        'action' => route('logout'),
+        'home' => route('home'),
+        'csrf' => csrf_token(),
+        'failed' => __('Log out failed'),
+    ]).')';
 @endphp
 
 <header class="mine-card sticky top-2 z-60 m-2 flex h-16 items-center justify-between overflow-visible!">
@@ -239,20 +248,7 @@
 
                         <x-mine.dropdown.divider class="-mx-1" />
 
-                        <x-mine.dropdown.item
-                            destructive
-                            x-data="{ busy: false }"
-                            x-on:click.prevent="
-                                if (busy) return;
-                                busy = true;
-                                fetch('{{ route('logout') }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
-                                    .then((response) => {
-                                        if (! response.ok) throw new Error('Logout request failed');
-                                        window.location.assign('{{ route('home') }}');
-                                    })
-                                    .catch(() => busy = false);
-                            "
-                        >
+                        <x-mine.dropdown.item destructive :x-data="$logoutData" x-on:click.prevent="logout()">
                             <div class="mine-text-error flex w-full items-center gap-3 px-3 py-3 hover:cursor-pointer">
                                 <x-mine.icon name="Logout4" weight="filled" size="18" />
                                 <p @class([

@@ -30,7 +30,7 @@ Pair it with the project rules in `.ai/rules/` (see the mandatory ritual in the 
 | 02 | Register | Username, email, password with validation |
 | 03 | View and Edit Profile | View and update personal info |
 | 04 | Delete Account | Soft-delete with password confirmation |
-| 05 | Logout | Session invalidation with SPA transition |
+| 05 | Logout | Session + remember-token rotation, toast on the guest home |
 | 06 | Manage Categories | CRUD with duplicate detection, rate limiting, task-guarded deletion |
 | 07 | Manage Plans | CRUD with duplicate detection, rate limiting, task-guarded deletion |
 | 08 | Manage Tasks | CRUD, toggle done, date-range, filter/sort — category/plan validation, rate limiting |

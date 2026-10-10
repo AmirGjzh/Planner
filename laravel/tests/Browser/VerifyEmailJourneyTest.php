@@ -45,3 +45,23 @@ it('resends a verification email and shows the success toast', function () {
         ->wait(1)
         ->assertSee('Verification email sent');
 });
+
+it('signs out from the verification notice and lands home signed out', function () {
+    User::factory()->unverified()->create([
+        'email' => 'amir@example.com',
+        'password' => 'password',
+    ]);
+
+    $page = visit('/login');
+
+    $page->fill('email', 'amir@example.com')
+        ->fill('password', 'password')
+        ->click('Sign in')
+        ->assertPathIs('/email/verify')
+        ->click('Log out')
+        ->wait(1)
+        ->assertPathIs('/')
+        ->assertSee('Logged out successfully');
+
+    $this->assertGuest();
+});

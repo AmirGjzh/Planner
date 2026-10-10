@@ -174,9 +174,9 @@ Actor: Logged-in user
 Description: The user logs out of the system.
 
 Main Flow:
-1. The user clicks Logout in the top navigation bar.
-2. The system invalidates the session or token.
-3. The user is redirected to the homepage or login page.
+1. The user clicks Logout in the top navigation bar (or on the verification notice).
+2. The system invalidates the session and rotates the remember token — both the live session and any remember-me recollection die.
+3. The user lands on the homepage and sees a success toast.
 4. The navigation bar again shows Login and Register options.
 
 ### 2.3.6 UC-06 – Manage Categories

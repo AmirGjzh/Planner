@@ -27,11 +27,7 @@
             @endif
 
             <div class="mt-2">
-                <x-mine.button
-                    wire:target="resend"
-                    type="submit"
-                    height="h-12"
-                >
+                <x-mine.button wire:target="resend" type="submit" height="h-12">
                     {{ __('Resend verification email') }}</x-mine.button>
             </div>
         </form>
@@ -40,17 +36,8 @@
             <p class="mine-text-primary text-sm font-medium">{{ __('Not your account?') }}</p>
             <button
                 type="button"
-                x-data="{ busy: false }"
-                x-on:click.prevent="
-                    if (busy) return;
-                    busy = true;
-                    fetch('{{ route('logout') }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
-                        .then((response) => {
-                            if (! response.ok) throw new Error('Logout request failed');
-                            window.location.assign('{{ route('home') }}');
-                        })
-                        .catch(() => busy = false);
-                "
+                x-data="mineLogout({ action: @js(route('logout')), home: @js(route('home')), csrf: @js(csrf_token()), failed: @js(__('Log out failed')) })"
+                x-on:click.prevent="logout()"
                 class="mine-text-link inline-flex cursor-pointer items-center py-1 text-sm font-medium"
             >
                 {{ __('Log out') }}
