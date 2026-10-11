@@ -65,3 +65,27 @@ it('signs out from the verification notice and lands home signed out', function 
 
     $this->assertGuest();
 });
+
+it('keeps the user on the notice and shows a danger toast when logout fails', function () {
+    User::factory()->unverified()->create([
+        'email' => 'amir@example.com',
+        'password' => 'password',
+    ]);
+
+    $page = visit('/login');
+
+    $page->fill('email', 'amir@example.com')
+        ->fill('password', 'password')
+        ->click('Sign in')
+        ->assertPathIs('/email/verify');
+
+    // Kill the fetch so the non-ok branch runs: the session is still alive,
+    // so the page must stay put (auth would redirect a dead one) and say so.
+    // The trailing undefined keeps Playwright from auto-invoking the stub.
+    $page->script('window.fetch = () => Promise.reject(new Error("stubbed")); undefined');
+
+    $page->click('Log out')
+        ->wait(1)
+        ->assertPathIs('/email/verify')
+        ->assertSee('Log out failed');
+});

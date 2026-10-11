@@ -8,6 +8,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | resources/views/components/mine/animate/** | .ai/rules/animate.md |
 | app/Actions/Auth/**, app/Http/Middleware/**, app/Notifications/**, resources/views/mail/**, resources/fonts/mail/** | .ai/rules/auth.md |
 | app/Actions/Category/** | .ai/rules/category.md |
+| app/Console/** | .ai/rules/commands.md |
 | resources/views/components/**, resources/views/layouts/** | .ai/rules/components.md |
 | resources/views/errors/** | .ai/rules/errors.md |
 | config/themes.php, config/themes/** | .ai/rules/config.md |

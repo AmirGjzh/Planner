@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 it('renders our themed 404 page for unknown URLs', function () {
@@ -67,4 +68,35 @@ it('renders the error page in the account language for a signed-in fa user', fun
         ->assertStatus(404)
         ->assertSee('صفحه پیدا نشد')
         ->assertSee('۴۰۴');
+});
+
+it('renders an unknown URL in the signed-in account theme and locale', function () {
+    $default = config('themes.default');
+    $theme = collect(config('themes.name'))->first(fn (string $slug) => $slug !== $default);
+    $user = User::factory()->create(['theme' => $theme, 'locale' => 'fa']);
+
+    // The GET catch-all runs the web pipeline for unmatched URLs, so the
+    // session resolves exactly like it does on a normal page.
+    $this->withSession([Auth::guard('web')->getName() => $user->id])
+        ->get('/this-page-does-not-exist')
+        ->assertStatus(404)
+        ->assertSee('صفحه پیدا نشد')
+        ->assertSee('href="'.asset("favicons/{$theme}.svg").'"', false)
+        ->assertDontSee('href="'.asset("favicons/{$default}.svg").'"', false);
+});
+
+it('has an fa translation for every copy string the error shell renders', function () {
+    $shell = file_get_contents(resource_path('views/errors/shell.blade.php'));
+
+    preg_match_all("/'(?:title|description)'\s*=>\s*'([^']+)'/u", $shell, $map);
+    preg_match_all("/__\('([^']+)'\)/u", $shell, $literal);
+    $copy = array_unique(array_merge($map[1], $literal[1]));
+
+    expect($copy)->not->toBeEmpty();
+
+    // The 419/500 keys once drifted from the map (em-dash vs comma) and shipped
+    // untranslated in fa — every literal the shell can render must exist in fa.json.
+    $missing = array_filter($copy, fn (string $key) => trans($key, [], 'fa') === $key);
+
+    expect($missing)->toBeEmpty();
 });

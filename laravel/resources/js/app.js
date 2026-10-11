@@ -220,7 +220,7 @@ Alpine.data('mineLogout', ({ action, home, csrf, failed }) => ({
                 // session is still alive, so say so instead of failing silently.
                 this.busy = false
                 window.dispatchEvent(new CustomEvent('toast', {
-                    detail: { title: failed, variant: 'danger' },
+                    detail: { title: failed, variant: 'danger', position: 'bottom-center' },
                 }))
             })
     },

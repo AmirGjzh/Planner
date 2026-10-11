@@ -1,8 +1,9 @@
 @php
-    // Error views render outside the route-middleware pipeline: an unknown URL
-    // never starts the session, and the failure behind a 500 may be the database
-    // or session store itself — so auth resolution is guarded and always falls
-    // back to the app defaults (default theme + app locale).
+    // GET dead links reach the web pipeline through routes/web.php's fallback
+    // route (session started, auth resolvable), but error views still render
+    // outside it on POST-only 404s, maintenance responses, and failures whose
+    // cause IS the database or session store — so auth resolution stays
+    // guarded and falls back to the app defaults (default theme + app locale).
     try {
         $user = auth()->user();
     } catch (Throwable) {

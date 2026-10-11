@@ -330,6 +330,8 @@ Expected business-rule failures are **not** exceptions — Actions return an `Xx
 | Error Type | User Sees |
 |------------|-----------|
 | Validation error | Per-field message (Livewire handles this) |
-| Authorization failure | "You are not authorized to perform this action." |
-| Delete blocked (category/plan has tasks) | User-friendly explanation: "This category still has tasks. Reassign or delete them first." |
-| Unexpected system error | "Something went wrong. Please try again." |
+| Authorization failure (`abort_unless($user->can(...), 403)` in an Action) | The themed 403 page — "You do not have access to this page" |
+| Delete blocked (category/plan has tasks) | A danger alert inside the confirmation modal — e.g. "This category has tasks, reassign or delete them first." |
+| Unexpected system error | The themed 500 page — "Something went wrong" + fixed description; the exception message never renders |
+
+Every HTTP error status (404, 419, 429, 503, and the wildcard 4xx/5xx) renders the themed error pages with fixed copy — see `.ai/rules/errors.md`.

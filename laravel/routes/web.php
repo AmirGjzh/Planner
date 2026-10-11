@@ -58,3 +58,12 @@ Route::middleware(['guest'])->group(function () {
     Route::livewire('/forgot-password', 'pages::auth.forgot-password')->name('password.request')->block(10, 10);
     Route::livewire('/reset-password', 'pages::auth.reset-password')->name('password.reset')->block(10, 10);
 });
+
+// Unmatched URLs must still reach the web pipeline: with no matching route,
+// Router::findRoute throws before any middleware runs, so the session never
+// starts and a signed-in visitor's dead link would render like a guest's
+// (app-default theme and locale). Laravel's fallback is GET-only and gets
+// partitioned after every real route (never shadowing one), so dead links get
+// the same session/auth context as every other page while a POST to a dead
+// URL stays a plain framework 404 instead of tripping CSRF verification.
+Route::fallback(fn () => abort(404))->block(10, 10);

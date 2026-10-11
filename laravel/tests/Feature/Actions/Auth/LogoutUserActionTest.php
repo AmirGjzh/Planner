@@ -8,14 +8,21 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Log;
 
-it('returns success and logs out the authenticated user', function () {
+function logoutRequest(): Request
+{
+    $request = Request::create('/logout', 'POST', server: ['REMOTE_ADDR' => '127.0.0.1']);
+    $request->setLaravelSession(app('session')->driver());
+
+    return $request;
+}
+
+it('logs out the authenticated user', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
     expect(Auth::check())->toBeTrue();
 
-    $request = Request::create('/logout', 'POST', server: ['REMOTE_ADDR' => '127.0.0.1']);
-    $request->setLaravelSession(app('session')->driver());
+    $request = logoutRequest();
 
     app(LogoutUserAction::class)->execute($request);
 
@@ -26,8 +33,7 @@ it('invalidates the session after logout', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
-    $request = Request::create('/logout', 'POST', server: ['REMOTE_ADDR' => '127.0.0.1']);
-    $request->setLaravelSession(app('session')->driver());
+    $request = logoutRequest();
     $sessionId = $request->session()->getId();
 
     app(LogoutUserAction::class)->execute($request);
@@ -39,8 +45,7 @@ it('regenerates the CSRF token after logout', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
-    $request = Request::create('/logout', 'POST', server: ['REMOTE_ADDR' => '127.0.0.1']);
-    $request->setLaravelSession(app('session')->driver());
+    $request = logoutRequest();
     $oldToken = $request->session()->token();
 
     app(LogoutUserAction::class)->execute($request);
@@ -54,8 +59,7 @@ it('logs the logout event', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
-    $request = Request::create('/logout', 'POST', server: ['REMOTE_ADDR' => '127.0.0.1']);
-    $request->setLaravelSession(app('session')->driver());
+    $request = logoutRequest();
 
     app(LogoutUserAction::class)->execute($request);
 
@@ -71,8 +75,7 @@ it('rotates the remember token so remember-me sessions die with logout', functio
     ]);
     $this->actingAs($user);
 
-    $request = Request::create('/logout', 'POST', server: ['REMOTE_ADDR' => '127.0.0.1']);
-    $request->setLaravelSession(app('session')->driver());
+    $request = logoutRequest();
 
     app(LogoutUserAction::class)->execute($request);
 
@@ -83,8 +86,7 @@ it('forgets the session hint cookie on logout', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
-    $request = Request::create('/logout', 'POST', server: ['REMOTE_ADDR' => '127.0.0.1']);
-    $request->setLaravelSession(app('session')->driver());
+    $request = logoutRequest();
 
     app(LogoutUserAction::class)->execute($request);
 

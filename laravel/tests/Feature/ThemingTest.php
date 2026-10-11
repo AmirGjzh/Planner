@@ -2,6 +2,15 @@
 
 use App\Models\User;
 
+/**
+ * The first theme that is not the app default — the odd one out every
+ * theme-marker assertion needs to prove the right file/chrome was served.
+ */
+function nonDefaultTheme(): string
+{
+    return collect(config('themes.name'))->first(fn (string $slug) => $slug !== config('themes.default'));
+}
+
 it('serves guest auth pages with the default theme favicon and browser chrome', function () {
     $default = config('themes.default');
 
@@ -12,7 +21,7 @@ it('serves guest auth pages with the default theme favicon and browser chrome', 
 });
 
 it('serves the app shell with the user theme favicon and browser chrome', function () {
-    $theme = collect(config('themes.name'))->first(fn (string $slug) => $slug !== config('themes.default'));
+    $theme = nonDefaultTheme();
 
     $user = User::factory()->create(['theme' => $theme]);
 
@@ -25,7 +34,7 @@ it('serves the app shell with the user theme favicon and browser chrome', functi
 
 it('pins auth surfaces to the default theme even for a user with a saved theme', function () {
     $default = config('themes.default');
-    $theme = collect(config('themes.name'))->first(fn (string $slug) => $slug !== $default);
+    $theme = nonDefaultTheme();
 
     $user = User::factory()->unverified()->create(['theme' => $theme]);
 

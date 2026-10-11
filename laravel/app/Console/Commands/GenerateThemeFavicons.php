@@ -10,9 +10,6 @@ use Illuminate\Console\Command;
 #[Description('Regenerate the per-theme favicon SVGs in public/favicons from the public/favicon.svg template')]
 final class GenerateThemeFavicons extends Command
 {
-    /**
-     * Execute the console command.
-     */
     public function handle(): int
     {
         $templatePath = public_path('favicon.svg');
