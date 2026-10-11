@@ -9,6 +9,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Actions/Auth/**, app/Http/Middleware/**, app/Notifications/**, resources/views/mail/**, resources/fonts/mail/** | .ai/rules/auth.md |
 | app/Actions/Category/** | .ai/rules/category.md |
 | resources/views/components/**, resources/views/layouts/** | .ai/rules/components.md |
+| resources/views/errors/** | .ai/rules/errors.md |
 | config/themes.php, config/themes/** | .ai/rules/config.md |
 | resources/css/{mine,app}.css, resources/fonts/*.woff2 | .ai/rules/css.md |
 | app/Actions/Dashboard/**, app/Enums/WorkloadLevel.php | .ai/rules/dashboard.md |

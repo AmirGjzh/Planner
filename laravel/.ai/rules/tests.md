@@ -28,6 +28,10 @@ How tests are written (Pest): what to pin, how to name, the Persian-behavior rul
 
 `Livewire::test()` renders only the component view, never the layout's `<head>` — title, font preload, and other head assertions must go through a feature HTTP test (`$this->get('/login')->assertSee('rel="preload"', false)`), e.g. in `tests/Feature/Auth/`.
 
+## Error-page 500s in tests need the debug flag off or an `abort`
+
+`config('app.debug')` is `true` in dev/tests, and the exception handler routes **uncaught** exceptions with debug on to Symfony's debug page — our `errors::500` never renders. Test the themed 500 either through `abort(500)` (an HttpException renders the error view regardless of debug) or by flipping `config(['app.debug' => false])` before throwing — the flip is also the only way to pin that the exception message never leaks.
+
 ## Tests pin behavior and contracts, not markup styling
 
 - Do **not** assert design/utility classes — heading type scale (`text-xl`, `tracking-tight`), spacing (`gap-4`, `p-6`), animation duration (`transitionDuration = '350ms'`), or shared component entrance classes. Those are reviewed visually, not behavior contracts; a test pinning them turns every styling tweak into a failing test.
