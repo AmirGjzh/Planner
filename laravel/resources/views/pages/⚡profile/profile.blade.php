@@ -369,21 +369,27 @@
             </div>
 
             @if ($delete_error === 'rate_limited')
-                <x-mine.alert variant="warning" title="{{ __('Too many delete-account attempts!') }}" class="mb-4">
-                    {{ __('Try again in a minute.') }}
-                </x-mine.alert>
+                <div class="mb-4">
+                    <x-mine.alert variant="warning" title="{{ __('Too many delete-account attempts!') }}">
+                        {{ __('Try again in a minute.') }}
+                    </x-mine.alert>
+                </div>
             @endif
 
             @if ($delete_error === 'wrong_password')
-                <x-mine.alert variant="danger" title="{{ __('Wrong password!') }}" class="mb-4">
-                    {{ __('The password you entered is incorrect.') }}
-                </x-mine.alert>
+                <div class="mb-4">
+                    <x-mine.alert variant="danger" title="{{ __('Wrong password!') }}">
+                        {{ __('The password you entered is incorrect.') }}
+                    </x-mine.alert>
+                </div>
             @endif
 
             @unless ($delete_error)
-                <x-mine.alert variant="warning" title="{{ __('Be careful!') }}" class="mb-4">
-                    {{ __('This action is permanent, enter your password to continue.') }}
-                </x-mine.alert>
+                <div class="mb-4">
+                    <x-mine.alert variant="warning" title="{{ __('Be careful!') }}">
+                        {{ __('This action is permanent, enter your password to continue.') }}
+                    </x-mine.alert>
+                </div>
             @endunless
 
             <form

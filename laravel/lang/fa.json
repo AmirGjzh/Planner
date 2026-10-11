@@ -361,20 +361,20 @@
     "Very heavy (361+ min)": "خیلی سنگین (۳۶۱+ دقیقه)",
 
     "Page not found": "صفحه پیدا نشد",
-    "The page you are looking for does not exist or may have been moved.": "صفحه‌ای که دنبالشی وجود نداره یا جابه‌جا شده.",
+    "The page you are looking for does not exist or may have been moved.": "صفحه‌ای که دنبالش می‌گردی وجود نداره یا ممکنه جابه‌جا شده باشه.",
     "You do not have access to this page": "به این صفحه دسترسی نداری",
     "Page expired": "صفحه منقضی شده",
-    "The form timed out — go back and try again.": "مدت فرم تموم شده؛ برگرد و دوباره امتحان کن.",
-    "Too many requests": "درخواست‌های زیاد",
-    "Take a short break and try again.": "یکم صبر کن و دوباره امتحان کن.",
-    "Something went wrong": "یه مشکلی پیش اومده",
-    "An unexpected error occurred — please try again.": "یه خطای غیرمنتظره پیش اومد؛ دوباره تلاش کن.",
-    "Under maintenance": "در حال تعمیریم",
+    "The form timed out, go back and try again.": "مدت اعتبار این فرم تموم شده، به صفحه‌ی قبل برگرد و دوباره امتحان کن.",
+    "Too many requests": "تعداد درخواست‌ها از حد مجاز گذشته",
+    "Take a short break and try again.": "کمی صبر کن و دوباره امتحان کن.",
+    "Something went wrong": "مشکلی پیش اومده",
+    "An unexpected error occurred, please try again.": "یک خطای غیرمنتظره رخ داد، لطفاً دوباره امتحان کن.",
+    "Under maintenance": "در حال تعمیر و نگهداری",
     "We will be back soon.": "به‌زودی برمی‌گردیم.",
-    "Go to home": "رفتن به صفحه اصلی",
+    "Go to home": "رفتن به صفحه‌ی اصلی",
 
     "Loading": "در حال بارگذاری",
     "Close notification": "بستن اعلان",
-    "Scroll to the beginning": "پیمایش به ابتدا",
-    "Scroll to the end": "پیمایش به انتها"
+    "Scroll to the beginning": "رفتن به ابتدا",
+    "Scroll to the end": "رفتن به انتها"
 }

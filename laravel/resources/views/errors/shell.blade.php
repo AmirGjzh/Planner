@@ -16,9 +16,9 @@
     $copy = [
         403 => ['title' => 'You do not have access to this page'],
         404 => ['title' => 'Page not found', 'description' => 'The page you are looking for does not exist or may have been moved.'],
-        419 => ['title' => 'Page expired', 'description' => 'The form timed out — go back and try again.'],
+        419 => ['title' => 'Page expired', 'description' => 'The form timed out, go back and try again.'],
         429 => ['title' => 'Too many requests', 'description' => 'Take a short break and try again.'],
-        500 => ['title' => 'Something went wrong', 'description' => 'An unexpected error occurred — please try again.'],
+        500 => ['title' => 'Something went wrong', 'description' => 'An unexpected error occurred, please try again.'],
         503 => ['title' => 'Under maintenance', 'description' => 'We will be back soon.'],
     ];
 
@@ -68,15 +68,14 @@
 <body class="mine-page-bg mine-text-primary flex min-h-dvh items-center justify-center p-6 font-sans">
     <main class="w-full max-w-md">
         <div class="mine-card mine-error-in p-8 text-center">
-
-            <p aria-hidden="true" class="mine-text-secondary text-6xl font-semibold">
+            <p aria-hidden="true" class="mine-text-secondary text-5xl font-semibold">
                 {{ app()->isLocale('en') ? $status : \App\Support\PersianNumber::convert($status) }}
             </p>
 
-            <h1 class="mt-6 text-xl font-semibold">{{ $title }}</h1>
+            <h1 class="mt-6 text-lg font-semibold">{{ $title }}</h1>
 
             @if ($description)
-                <p class="mine-text-secondary font-medium mt-2 text-base leading-7">{{ $description }}</p>
+                <p class="mine-text-secondary mt-2 text-sm leading-7 font-medium">{{ $description }}</p>
             @endif
 
             <a
