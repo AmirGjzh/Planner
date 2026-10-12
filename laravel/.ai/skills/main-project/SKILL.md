@@ -54,7 +54,7 @@ Pair it with the project rules in `.ai/rules/` (see the mandatory ritual in the 
 | `phases/phase-4-implementation.md` | Implementation process (build/test/refactor/doc/accept) + delivered scope |
 | `docker/shared-conventions.md` | Shared docker conventions (healthchecks, env contract, wrappers) |
 | `docker/development.md` | Dev workspace stack, runbook, troubleshooting |
-| `docker/production.md` | Prod nginx/php-fpm/mysql/redis stack, runbook, troubleshooting |
+| `docker/production.md` | Prod nginx/php-fpm/mariadb/redis stack, runbook, troubleshooting |
 | `git-setup/workflow.md` | Two-remote git workflow (public `origin` / private `private`) |
 | `cleaning/flow.md` | Per-UC cleaning cycle: rules, subjobs, gate |
 | `agentic/setup.md` | Agentic environment: Boost install, opencode MCP bridge, skills via skills.sh, project rules |

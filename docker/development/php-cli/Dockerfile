@@ -44,7 +44,7 @@ RUN ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
 
 # Chromium system libraries for pest-plugin-browser (runtime is non-root, so apt only works here).
 # Version pinned to the `playwright` devDependency in laravel/package.json — bump both together.
-RUN npx -y playwright@1.63.0 install-deps chromium \
+RUN npx -y playwright@1.64.0 install-deps chromium \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN mkdir -p /home/workspace/.cache/ms-playwright && chown -R 1000:1000 /home/workspace && php -m | grep -q redis

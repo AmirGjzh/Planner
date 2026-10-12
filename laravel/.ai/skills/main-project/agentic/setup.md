@@ -5,10 +5,10 @@ How this project's AI-agent environment is set up: Laravel Boost, the OpenCode M
 ## Where everything runs
 
 - **opencode (the agent) runs on the host**, launched from the `laravel/` directory so it discovers the project config, skills, and MCP server.
-- **PHP, Composer, and the app run inside the dev `workspace` container.** The host has no `php`, and MySQL/Redis live on the Docker network, so every Artisan command is executed inside the container:
+- **PHP, Composer, and the app run inside the dev `workspace` container.** The host has no `php`, and MariaDB/Redis live on the Docker network, so every Artisan command is executed inside the container:
 
 ```bash
-./planner-dev up      # start workspace + mysql + redis (required for the MCP bridge)
+./planner-dev up      # start workspace + mariadb + redis (required for the MCP bridge)
 ./planner-dev shell   # open a shell in the container (cwd = /var/www = laravel/)
 ```
 

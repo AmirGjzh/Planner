@@ -46,7 +46,7 @@ cp laravel/.env.production laravel/.env
   printf 'base64:%s\n' "$(openssl rand -base64 32)"
   ```
 
-- `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `REDIS_PASSWORD` — invent any passwords you like.
+- `DB_PASSWORD`, `MARIADB_ROOT_PASSWORD`, `REDIS_PASSWORD` — invent any passwords you like.
 
 **4. Start it up**
 
@@ -59,7 +59,7 @@ cp laravel/.env.production laravel/.env
 
 ### Make sure it's healthy
 
-- `./planner ps` — every service (`php-fpm`, `queue`, `nginx`, `mysql`, `redis`, `mailpit`) is `Up` / `running` / `healthy`
+- `./planner ps` — every service (`php-fpm`, `queue`, `nginx`, `mariadb`, `redis`, `mailpit`) is `Up` / `running` / `healthy`
 - **http://localhost** loads the app
 - You can register an account, verify it through Mailpit, and log in
 - **http://localhost/up** returns `200`
@@ -119,7 +119,7 @@ cd planner
 cp laravel/.env.development laravel/.env
 ```
 
-**3. Add the same secrets** as production (`APP_KEY`, `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `REDIS_PASSWORD`) — set `APP_KEY` before the first start; the container won't run without it.
+**3. Add the same secrets** as production (`APP_KEY`, `DB_PASSWORD`, `MARIADB_ROOT_PASSWORD`, `REDIS_PASSWORD`) — set `APP_KEY` before the first start; the container won't run without it.
 
 **4. Start the dev containers**
 

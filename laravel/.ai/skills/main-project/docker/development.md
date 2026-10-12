@@ -7,7 +7,7 @@
 ## Purpose and Audience
 
 Describes the local development stack: one workspace container with the full PHP + Composer
-+ Node toolchain, MySQL and Redis for prod parity. It is not user documentation.
++ Node toolchain, MariaDB and Redis for prod parity. It is not user documentation.
 
 ## Current Status (snapshot)
 
@@ -16,9 +16,9 @@ Describes the local development stack: one workspace container with the full PHP
 | Orchestration | Docker Compose v2 (`laravel/compose.development.yml`), project `planner-development` |
 | Workspace image | `php:8.4-cli` (Debian/glibc) built from `docker/development/php-cli/Dockerfile` |
 | Build stages | `composer:2.10`, `node:24` (toolchain; never installed in-image) |
-| Services | `planner-development-workspace` + `-mysql` + `-redis` + `-mailpit` |
+| Services | `planner-development-workspace` + `-mariadb` + `-redis` + `-mailpit` |
 | Volumes | `database` + `redis` (appendonly) + `playwright` (Chromium; workspace is stateless) |
-| Host ports | `8000` (artisan serve), `5173` (Vite HMR), `8025` (Mailpit UI) — MySQL/Redis/SMTP expose none |
+| Host ports | `8000` (artisan serve), `5173` (Vite HMR), `8025` (Mailpit UI) — MariaDB/Redis/SMTP expose none |
 | PHP extensions | `pdo_mysql, pdo_sqlite, intl, mbstring, zip, bcmath, gd, sockets, pcntl, redis` |
 | Tests | Pest on SQLite `:memory:` — `pdo_sqlite` is required |
 | Restart / logging | `unless-stopped`; `json-file` capped 10m × 3 |
@@ -32,7 +32,7 @@ Describes the local development stack: one workspace container with the full PHP
   — caches writable, no permission fights, files owned by the host user.
 - **Nothing runs on boot.** No entrypoint; image ends at `CMD ["sleep", "infinity"]`.
   Deps install once, manually, on the bind mount (`composer install` / `npm install`) and
-  persist there. MySQL data survives restarts in its own volume.
+  persist there. MariaDB data survives restarts in its own volume.
 
 ## Architecture
 
@@ -44,18 +44,18 @@ Describes the local development stack: one workspace container with the full PHP
  planner-development-workspace ◄─ bind mount ./:/var/www
   artisan serve 0.0.0.0:8000      │
   Vite dev    0.0.0.0:5173        │
- ──► mysql (DNS, :3306)          │
+ ──► mariadb (DNS, :3306)        │
  ──► redis (DNS, :6379)          │
  ──► mailpit (DNS, :1025)        │
  └──────────┬───────────────────┘
-planner-development-mysql (mysql:8.4, data in database volume)
+planner-development-mariadb (mariadb:12.3, data in database volume)
 planner-development-redis (redis:8.10)
 planner-development-mailpit (axllent/mailpit:v1.27, UI published on host :8025)
 ```
 
-Service names are DNS: `DB_HOST=mysql`, `REDIS_HOST=redis`, `MAIL_HOST=mailpit`. Only the
+Service names are DNS: `DB_HOST=mariadb`, `REDIS_HOST=redis`, `MAIL_HOST=mailpit`. Only the
 workspace and the Mailpit UI publish
-host ports. Secrets arrive by compose interpolation, not `MYSQL_PWD` (see shared-conventions).
+host ports. Secrets arrive by compose interpolation, not `MARIADB_PWD` (see shared-conventions).
 
 ## Repository Layout (Docker Parts)
 
@@ -83,10 +83,10 @@ Single-file Compose v2 spec. Facts:
 - **workspace**: no `env_file` — Laravel reads the bind-mounted `laravel/.env` directly.
   Only `APP_KEY` is enforced via compose `${APP_KEY:?Set APP_KEY in .env}` (must already be
   in `.env` before the first `up`). `tty` + `stdin_open` keep it interactive; `depends_on`
-  waits for both mysql and redis health.
-- **mysql**: `mysql:8.4`, `MYSQL_ROOT_PASSWORD`/`DB_PASSWORD` required via `${VAR:?}`, data in
-  the `database` volume, exec-form healthcheck `mysql -uroot -p"${MYSQL_ROOT_PASSWORD}" -e
-  'SELECT 1'` with `start_period: 30s`. **Never set `MYSQL_PWD`** (breaks first-boot init).
+  waits for both mariadb and redis health.
+- **mariadb**: `mariadb:12.3`, `MARIADB_ROOT_PASSWORD`/`DB_PASSWORD` required via `${VAR:?}`, data in
+  the `database` volume, exec-form healthcheck `mariadb -uroot -p"${MARIADB_ROOT_PASSWORD}" -e
+  'SELECT 1'` with `start_period: 30s`. **Never set `MARIADB_PWD`** (breaks first-boot init).
 - **redis**: `redis:8.10`, `requirepass` via `REDIS_PASSWORD`, `--appendonly yes` with a
   `redis:/data` volume (jobs in flight survive `down`/`up`), healthcheck `redis-cli ping`
   authed through `REDISCLI_AUTH`.
@@ -97,7 +97,7 @@ Single-file Compose v2 spec. Facts:
 - **`playwright` named volume** on `/home/workspace/.cache/ms-playwright` — keeps the
   downloaded Chromium across `down`/`up` (only the system libraries are baked into the
   image). Created root-owned on first use; the image's startup `chown` normalizes it.
-- Credentials are baked when the mysql volume is first created; changing `MYSQL_*` later
+- Credentials are baked when the mariadb volume is first created; changing `MARIADB_*` later
   needs the volume reset (see Troubleshooting).
 
 ### `docker/development/php-cli/Dockerfile`
@@ -111,7 +111,7 @@ Multi-stage toolchain image. Structure:
   `pdo_mysql pdo_sqlite intl mbstring zip bcmath gd sockets pcntl`; `pecl install redis`
   + enable. `sockets`/`pcntl` serve pest-plugin-browser's in-process Amp server — without
   `pcntl`, every run ends in a SIGTERM backtrace.
-- **`npx -y playwright@1.63.0 install-deps chromium`** bakes the browser's system
+- **`npx -y playwright@1.64.0 install-deps chromium`** bakes the browser's system
   libraries; the version must match `laravel/package.json`'s exact pin or deps and browser
   drift apart. The Chromium download itself goes to the `playwright` volume (one-time
   `npx playwright install chromium` — README step 8).
@@ -131,7 +131,7 @@ Committed template. Real values live only in the git-ignored `.env`. Notable
 defaults:
 
 - `APP_ENV=local`, `APP_DEBUG=true`, `LOG_LEVEL=debug`.
-- `DB_HOST=mysql`, `REDIS_HOST=redis` (service names as hostnames).
+- `DB_HOST=mariadb`, `REDIS_HOST=redis` (service names as hostnames).
 - `SESSION_DRIVER=redis` / `CACHE_STORE=redis` / `QUEUE_CONNECTION=redis` — prod parity through the real Redis stack.
 - `SESSION_ENCRYPT=false` — the one deliberate divergence from prod, so dev tools can read
   sessions while debugging.
@@ -143,7 +143,7 @@ defaults:
   through another hostname.
 - Removed from stock Laravel: BROADCAST/FILESYSTEM/MEMCACHED/AWS/VITE (each has a
   sane default or is unused).
-- Only these blanks to fill: `APP_KEY`, `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `REDIS_PASSWORD`.
+- Only these blanks to fill: `APP_KEY`, `DB_PASSWORD`, `MARIADB_ROOT_PASSWORD`, `REDIS_PASSWORD`.
 
 ### `vite.config.js`
 
@@ -165,7 +165,7 @@ Container-specific settings: `server.host: '0.0.0.0'` (reachable via the host po
 |---|---|---|
 | `workspace` env | mounted `laravel/.env` | Laravel reads it from the bind mount |
 | `workspace.environment.APP_KEY` | `${APP_KEY:?}` | compose-level guard |
-| `MYSQL_*` | `${MYSQL_ROOT_PASSWORD:?}`, `${DB_DATABASE}`, `${DB_USERNAME}`, `${DB_PASSWORD:?}` | requirements + DB name/user; baked at first volume init |
+| `MARIADB_*` | `${MARIADB_ROOT_PASSWORD:?}`, `${DB_DATABASE}`, `${DB_USERNAME}`, `${DB_PASSWORD:?}` | requirements + DB name/user; baked at first volume init |
 | `REDIS_PASSWORD` / `REDISCLI_AUTH` | `${REDIS_PASSWORD:?}` | `requirepass` + healthcheck auth |
 | `workspace` mail config | `MAIL_*` (mounted `laravel/.env`) | SMTP to `mailpit:1025`; UI published on host :8025 |
 
@@ -182,8 +182,8 @@ Keep the credential values in sync between compose interpolation and the workspa
    (compose enforces it). Generate on the host:
    `printf 'base64:%s\n' "$(openssl rand -base64 32)"` (Windows: build the same from
    `[System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32)`).
-   Set `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `REDIS_PASSWORD` before the first `up` too —
-   MySQL bakes them when the volume is created.
+   Set `DB_PASSWORD`, `MARIADB_ROOT_PASSWORD`, `REDIS_PASSWORD` before the first `up` too —
+   MariaDB bakes them when the volume is created.
 5. Build + start: `./planner-dev up` (or the raw compose form). First run is slow (pulls all
    base images, compiles extensions).
 6. Shell in: `./planner-dev shell`, then once: `composer install` and `npm install` (they
@@ -208,7 +208,7 @@ All from the project root. `down` never deletes data.
 | Logs | `./planner-dev logs [service]` |
 | Browser tests (opt-in tier) | `composer test:browser` (inside the shell; not included in plain `composer test`) |
 
-**Never** `down -v` — it wipes the MySQL dev volume.
+**Never** `down -v` — it wipes the MariaDB dev volume.
 
 Inside the workspace daily loop: `artisan serve --host=0.0.0.0 --port=8000`, `npm run dev`,
 `composer test`, `php artisan migrate`, `php artisan tinker`.
@@ -218,7 +218,7 @@ Inside the workspace daily loop: `artisan serve --host=0.0.0.0 --port=8000`, `np
 ### Checking the stack
 
 ```bash
-docker compose -f laravel/compose.development.yml ps   # workspace + mysql + redis + mailpit healthy
+docker compose -f laravel/compose.development.yml ps   # workspace + mariadb + redis + mailpit healthy
 # inside: node --version && npm --version && composer --version && php -v && php -m | grep redis
 # host:   curl -s http://localhost:8000/up             # expect 200
 ```
@@ -233,7 +233,7 @@ docker compose -f laravel/compose.development.yml ps   # workspace + mysql + red
 | deps "no such file" on fresh clone | nothing auto-installs — run `composer install` + `npm install` once |
 | Composer platform issues on install | toolchain changed — rebuild via `up -d --build` |
 | port 8000/5173 already in use | free the port or edit `ports:` in the compose file |
-| mysql unhealthy / `Access denied for user 'planner'` | baked creds differ from current `.env` — dev data is disposable: `down`, `docker volume rm planner-development_database`, `up -d --build`, re-`migrate` |
+| mariadb unhealthy / `Access denied for user 'planner'` | baked creds differ from current `.env` — dev data is disposable: `down`, `docker volume rm planner-development_database`, `up -d --build`, re-`migrate` |
 | redis `NOAUTH` / `WRONGPASS` | `.env` `REDIS_PASSWORD` mismatch — make it match and `up -d --force-recreate redis` |
 | password-reset mail never appears | queue worker not running (`composer run dev` includes `queue:listen`) or mailpit down / `MAIL_HOST` wrong — start the dev script, `./planner-dev up`, `logs mailpit`, UI at `http://localhost:8025` |
 | `artisan serve` runs but browser times out | forgot `--host=0.0.0.0` |
@@ -251,7 +251,7 @@ docker compose -f laravel/compose.development.yml ps   # workspace + mysql + red
   deferred.
 - `SESSION_ENCRYPT=false` is prod-only; flip it in the dev template to match prod exactly if
   it ever matters.
-- MySQL/Redis on a host port for a GUI client is possible but deliberately not done — no host
+- MariaDB/Redis on a host port for a GUI client is possible but deliberately not done — no host
   exposure, matching prod.
 - prod ↔ dev on one host: both read the same `laravel/.env`; only one runs at a time
   (re-copy template + re-fill secrets to switch). Volumes are separate per stack.

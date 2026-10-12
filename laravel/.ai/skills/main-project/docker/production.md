@@ -8,7 +8,7 @@
 ## Purpose and Audience
 
 Describes the production deployment: a single Linux host on a private LAN, plain HTTP, no
-domain. nginx + php-fpm + a queue worker + MySQL + Redis via Docker Compose. Not user
+domain. nginx + php-fpm + a queue worker + MariaDB + Redis via Docker Compose. Not user
 documentation.
 
 ## Current Status (snapshot)
@@ -19,9 +19,9 @@ documentation.
 | Orchestration | Docker Compose v2 (`laravel/compose.production.yml`), project `planner` |
 | php-fpm image | `php:8.4-fpm`, multi-stage (see Dockerfile), runs as `www-data` |
 | nginx image | `nginx:1.30`, serves `/var/www/public` + proxies PHP |
-| MySQL / Redis | `mysql:8.4` (own volume) / `redis:8.10` (appendonly volume) |
+| MariaDB / Redis | `mariadb:12.3` (own volume) / `redis:8.10` (appendonly volume) |
 | Build-only | `composer:2.10`, `node:24` |
-| Containers | `planner-php-fpm`, `planner-queue`, `planner-nginx`, `planner-mysql`, `planner-redis`, `planner-mailpit` |
+| Containers | `planner-php-fpm`, `planner-queue`, `planner-nginx`, `planner-mariadb`, `planner-redis`, `planner-mailpit` |
 | Volumes | `planner_database`, `planner_storage`, `planner_redis` |
 | Host ports | `80:80` (nginx), `8025:8025` (Mailpit UI) |
 | Restart / logging | `unless-stopped`; `json-file` capped 10m × 3 |
@@ -45,17 +45,17 @@ documentation.
              v
    planner-php-fpm        runs the app; entrypoint runs setup each boot, then php-fpm
    planner-queue          same image; entrypoint, then queue:work (consumes redis jobs)
-        |  mysql:8.4 (data in volume)     | redis:8.10 (sessions/cache/jobs, appendonly)
-        v                                  v
-   planner-mysql                        planner-redis        planner-mailpit (SMTP :1025, UI :8025)
+        |  mariadb:12.3 (data in volume)  | redis:8.10 (sessions/cache/jobs, appendonly)
+        v                                 v
+   planner-mariadb                        planner-redis        planner-mailpit (SMTP :1025, UI :8025)
 ```
 
-- Container names are DNS (`mysql`, `redis`, `php-fpm`, `nginx` upstream). nginx and the
-  Mailpit UI publish ports; MySQL/Redis/SMTP do not.
+- Container names are DNS (`mariadb`, `redis`, `php-fpm`, `nginx` upstream). nginx and the
+  Mailpit UI publish ports; MariaDB/Redis/SMTP do not.
 - nginx serves assets from its own baked `public/build`; php-fpm renders `@vite` from its own
   copy. **Assets are built twice** (once per image) with identical pins/lockfiles so the
   output matches.
-- Boot chain (healthchecks): mysql + redis → php-fpm → nginx + queue. Mailpit is
+- Boot chain (healthchecks): mariadb + redis → php-fpm → nginx + queue. Mailpit is
   deliberately outside the chain — mail capture must never gate the app.
 
 ## Repository Layout (Docker Parts)
@@ -92,9 +92,9 @@ Single-file Compose v2 spec.
   → no healthcheck (mailpit precedent).
 - **nginx**: built from the nginx Dockerfile; `80:80`; healthcheck `curl -fs
   http://127.0.0.1/up`; depends on healthy php-fpm.
-- **mysql**: `MYSQL_ROOT_PASSWORD`/`DB_PASSWORD` required via `${VAR:?}`, DB/user from
-  `DB_DATABASE`/`DB_USERNAME`; real-auth healthcheck (`mysql -e 'SELECT 1'`, never
-  `mysqladmin ping`) with `start_period: 30s`; data in the `database` volume.
+- **mariadb**: `MARIADB_ROOT_PASSWORD`/`DB_PASSWORD` required via `${VAR:?}`, DB/user from
+  `DB_DATABASE`/`DB_USERNAME`; real-auth healthcheck (`mariadb -e 'SELECT 1'`, never
+  `mariadb-admin ping`) with `start_period: 30s`; data in the `database` volume.
 - **redis**: `requirepass` via `REDIS_PASSWORD`, healthcheck `redis-cli ping` via
   `REDISCLI_AUTH`; `--appendonly yes` with a `redis:/data` volume — sessions/cache/jobs
   survive restarts (the queue needs it).
@@ -103,7 +103,7 @@ Single-file Compose v2 spec.
   built-in exec-form `HEALTHCHECK ["/mailpit", "readyz"]`. Not in any `depends_on` chain
   and no volume (captured mail is disposable test data).
 - All secrets enforced via `${VAR:?msg}` — Compose aborts naming the missing one. Never
-  `MYSQL_PWD` (breaks first-boot init; see shared-conventions).
+  `MARIADB_PWD` (breaks first-boot init; see shared-conventions).
 - Explicit `name: planner` keeps volume prefix stable regardless of checkout directory.
 - Logging capped (the app is chatty: `LOG_LEVEL=info`, access logs) so unbounded Docker logs
   can't fill the disk.
@@ -201,7 +201,7 @@ blank. Highlights:
   `MAIL_FROM_ADDRESS=no-reply@planner.local` — every mail is captured by the mailpit
   service (UI on host port 8025); nothing is ever delivered to a real inbox.
 
-After the mysql volume is initialized, `MYSQL_DATABASE/USER/PASSWORD` are no longer re-read —
+After the mariadb volume is initialized, `MARIADB_DATABASE/USER/PASSWORD` are no longer re-read —
 keep them in sync with the actual DB user.
 
 ### APP-SIDE changes for this deployment
@@ -232,14 +232,14 @@ These ship with the app; `docker/` alone is not enough.
 | Compose value | Host `.env` key | Purpose |
 |---|---|---|
 | `env_file: .env` (php-fpm, queue) | (all) | full app env (`DB_*`, `REDIS_*`, `SESSION_*`, `QUEUE_*`, `APP_KEY`, `MAIL_*`, ...) |
-| mysql `MYSQL_*` | `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD:?`, `MYSQL_ROOT_PASSWORD:?` | DB/user creation (first init only) |
+| mariadb `MARIADB_*` | `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD:?`, `MARIADB_ROOT_PASSWORD:?` | DB/user creation (first init only) |
 | redis `REDIS_PASSWORD` + `$$REDIS_PASSWORD` in command | `REDIS_PASSWORD:?` | `requirepass` |
 | `REDISCLI_AUTH` | `REDIS_PASSWORD:?` | healthcheck auth |
-| `${VAR:?msg}` guards | `APP_KEY`, `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `REDIS_PASSWORD` | required — Compose aborts if empty |
+| `${VAR:?msg}` guards | `APP_KEY`, `DB_PASSWORD`, `MARIADB_ROOT_PASSWORD`, `REDIS_PASSWORD` | required — Compose aborts if empty |
 
 `$$` escapes a literal `$` from Compose interpolation so the container expands it at runtime
-(redis command); plain `${VAR}` is interpolated at parse time (mysql healthcheck). No
-`MYSQL_PWD` anywhere (see shared-conventions).
+(redis command); plain `${VAR}` is interpolated at parse time (mariadb healthcheck). No
+`MARIADB_PWD` anywhere (see shared-conventions).
 
 ## Decisions Log
 
@@ -252,11 +252,11 @@ file-by-file sections above; this is the one-line record.
 2. **Build assets in BOTH images** — php-fpm renders `@vite`, nginx serves files. Rejected a
    shared-asset builder volume: ordering hacks; duplicating with identical pins is simpler.
 3. **Pinned MAJOR.MINOR tags** (`composer:2.10`, `php:8.4-fpm`, `node:24`, `nginx:1.30`,
-   `mysql:8.4`, `redis:8.10`) — patch updates come free per rebuild; minor moves are
+   `mariadb:12.3`, `redis:8.10`) — patch updates come free per rebuild; minor moves are
    deliberate acts.
 4. **No custom php.ini / pool conf** — base image ships production-sane defaults incl.
    opcache (verified loaded).
-5. **Redis for sessions+cache, MySQL for data** — Redis runs without a volume (loss = forced
+5. **Redis for sessions+cache, MariaDB for data** — Redis runs without a volume (loss = forced
    re-login, acceptable).
 6. **`phpredis` client** (PHP extension) — the config default.
 7. **`SESSION_ENCRYPT=true`**, **`SESSION_EXPIRE_ON_CLOSE=false`** (persistent cookie; the
@@ -269,13 +269,13 @@ file-by-file sections above; this is the one-line record.
     ** — see shared-conventions for the seeding caveat.
 11. **Dedicated redis `session` connection (DB 2)** — key-space isolation from cache/default.
 12. **Single named network; only nginx (80) and the Mailpit UI (8025) publish ports** —
-    MySQL/Redis unreachable by accident. Mailpit is the deliberate exception: a capture
+    MariaDB/Redis unreachable by accident. Mailpit is the deliberate exception: a capture
     tool nobody can reach is useless; it has no auth, which is acceptable on the LAN and
     revisit-worthy (`MP_UI_AUTH`) if that ever changes.
 13. **Named volumes `database` + `storage`**; `bootstrap/cache` deliberately NOT a volume
     (regenerated by `optimize` each boot).
 14. **Log rotation 10m × 3 everywhere**, **`restart: unless-stopped` everywhere**,
-    **healthcheck chain** mysql/redis → php-fpm → nginx + `/up`.
+    **healthcheck chain** mariadb/redis → php-fpm → nginx + `/up`.
 15. **Static container names + `server_name _`** — predictable, small-scale, not swarm.
 16. **Small hardening**: `server_tokens off`, security headers, dotfile-deny, `/build`
     immutable cache, `client_max_body_size` above nginx's 1 MB default.
@@ -284,16 +284,16 @@ file-by-file sections above; this is the one-line record.
     builder apt (leftover from the old composer curl-installer).
 19. **Secrets enforced at compose level** `${VAR:?msg}` + entrypoint `APP_KEY` format guard —
     replaced old `:-root`/`:-` fallbacks that silently defaulted to weak/empty values.
-20. **`start_period: 30s` on mysql** — first boot init is slow; without it mysql flips
+20. **`start_period: 30s` on mariadb** — first boot init is slow; without it mariadb flips
     "unhealthy" during init.
 21. **Production stage keeps `-dev` libs** — their names are stable across the tag's base
     Debian release changes; the runtime names are not. Slimming isn't worth build fragility.
 22. **`npm ci --no-audit --no-fund`** — reproducible from lockfiles, quiet, fast.
 23. **All-Debian, no-suffix base images** (`node:24`, `nginx:1.30`, `redis:8.10` were
-    `-alpine`) — one distro everywhere for free (mysql has no Alpine variant anyway). Costs
+    `-alpine`) — one distro everywhere for free (mariadb has no Alpine variant anyway). Costs
     size only. The Debian nginx image ships no `wget`, so nginx installs `curl` for its
     healthcheck.
-24. **Healthchecks real, not just "alive"** — mysql `SELECT 1` (not `mysqladmin ping` which
+24. **Healthchecks real, not just "alive"** — mariadb `SELECT 1` (not `mariadb-admin ping` which
     passes on failed auth), nginx `curl -fs /up`, redis `ping` via `REDISCLI_AUTH`, php-fpm
     TCP 9000; all exec-form, no shell.
 25. **Layer-cached `composer install`** — only `composer.json`/`composer.lock` precede the
@@ -326,7 +326,7 @@ Fill the secrets in `laravel/.env`:
 
 ```bash
 APP_KEY=$(printf 'base64:%s' "$(openssl rand -base64 32)")   # never reuse from elsewhere
-# also set: DB_PASSWORD, MYSQL_ROOT_PASSWORD, REDIS_PASSWORD
+# also set: DB_PASSWORD, MARIADB_ROOT_PASSWORD, REDIS_PASSWORD
 ```
 
 Then:
@@ -354,7 +354,7 @@ won't answer.
 | **Never** | `down -v` / `docker volume rm planner_database planner_storage` — that's the whole database |
 | Fresh APP_KEY | on your machine: `printf 'base64:%s\n' "$(openssl rand -base64 32)"`, then `.env`, recreate php-fpm + queue |
 | Shell into a service | `exec php-fpm sh` (runs as `www-data`) |
-| Manual DB backup (no automation yet) | `exec mysql sh -c 'mysqldump -u planner -p"$MYSQL_PASSWORD" planner' > backup.sql` |
+| Manual DB backup (no automation yet) | `exec mariadb sh -c 'mariadb-dump -u planner -p"$MARIADB_PASSWORD" planner' > backup.sql` |
 
 APP_KEY rotation (rare; forces re-login): generate, edit `.env` → `up -d --force-recreate
 php-fpm queue nginx`, verify `/up` and a fresh login.
@@ -373,8 +373,8 @@ So: change `.env` → recreate the container that needs it. php-fpm's entrypoint
 | "Unsupported cipher or incorrect key length" | `APP_KEY` missing the `base64:` prefix | regenerate + `up -d --force-recreate php-fpm queue` |
 | `502 Bad Gateway` | is php-fpm healthy? | `up -d php-fpm`; check `logs php-fpm` |
 | `/up` 500 / "whoops" | php-fpm logs | app exception; check memory, APP_KEY validity |
-| Container restart-loop | `logs` shows migration error | mysql not ready (wait; `start_period` covers first boot) or DB creds wrong |
-| MySQL won't accept new creds | volume already initialized | fix the DB user instead (or recreate volume deliberately) |
+| Container restart-loop | `logs` shows migration error | mariadb not ready (wait; `start_period` covers first boot) or DB creds wrong |
+| MariaDB won't accept new creds | volume already initialized | fix the DB user instead (or recreate volume deliberately) |
 | Redis NOAUTH errors | `.env` `REDIS_PASSWORD` vs container env | edit `.env`, recreate redis + php-fpm |
 | Everything healthy but login fails | session store | `exec redis redis-cli -a "$REDIS_PASSWORD" FLUSHALL` (nukes sessions+cache+jobs — queued mail is lost, users just re-request; row data intact) |
 | Queued mail never arrives | `./planner logs queue` + `failed_jobs` table | worker down → `up -d queue`; job exhausted retries → inspect the `failed_jobs` row |
@@ -386,11 +386,11 @@ Healthcheck definitions (for diagnosis):
 |---|---|---|
 | php-fpm | `php -r` fsockopen TCP 9000 | 10s / 3s / 5 / 30s |
 | nginx | `curl -fs http://127.0.0.1/up` (full stack) | 30s / 3s / 3 / 5s |
-| mysql | `mysql -uroot -p"${MYSQL_ROOT_PASSWORD}" -e SELECT 1` (exec CMD, real auth) | 10s / 5s / 5 / 30s |
+| mariadb | `mariadb -uroot -p"${MARIADB_ROOT_PASSWORD}" -e SELECT 1` (exec CMD, real auth) | 10s / 5s / 5 / 30s |
 | redis | `redis-cli ping` (auth via `REDISCLI_AUTH`) | 10s / 5s / 5 |
 | mailpit | image built-in `["/mailpit", "readyz"]` (no compose stanza) | image default 15s / — / 3, start-period 10s |
 
-`depends_on: condition: service_healthy` orders them: mysql+redis → php-fpm → nginx + queue
+`depends_on: condition: service_healthy` orders them: mariadb+redis → php-fpm → nginx + queue
 (queue: no port → no healthcheck).
 
 ## Docker Hygiene on This Host

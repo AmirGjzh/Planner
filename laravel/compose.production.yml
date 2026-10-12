@@ -22,7 +22,7 @@ services:
     networks:
       - network
     depends_on:
-      mysql:
+      mariadb:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -83,15 +83,15 @@ services:
       retries: 3
       start_period: 5s
 
-  mysql:
-    container_name: planner-mysql
-    image: mysql:8.4
+  mariadb:
+    container_name: planner-mariadb
+    image: mariadb:12.3
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}
-      MYSQL_DATABASE: ${DB_DATABASE}
-      MYSQL_USER: ${DB_USERNAME}
-      MYSQL_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:?Set MARIADB_ROOT_PASSWORD in .env}
+      MARIADB_DATABASE: ${DB_DATABASE}
+      MARIADB_USER: ${DB_USERNAME}
+      MARIADB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
     logging:
       driver: json-file
       options:
@@ -102,7 +102,7 @@ services:
     networks:
       - network
     healthcheck:
-      test: ["CMD", "mysql", "-uroot", "-p${MYSQL_ROOT_PASSWORD}", "-e", "SELECT 1"]
+      test: ["CMD", "mariadb", "-uroot", "-p${MARIADB_ROOT_PASSWORD}", "-e", "SELECT 1"]
       interval: 10s
       timeout: 5s
       retries: 5

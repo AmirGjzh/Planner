@@ -17,8 +17,8 @@ Planner is a personal task-planner web app: tasks, categories, and plans with a 
 | Laravel | 13 (`laravel/framework`) |
 | Livewire | 4 — full pages are multi-file SFCs in `resources/views/pages/⚡*/`; routed via `Route::livewire('/path', 'pages::<name>')` |
 | Tailwind | 4 — CSS-first (`@import "tailwindcss"`, `@theme`), no `tailwind.config.js` |
-| Testing | Pest 4 — `it()` + `expect()`, in-memory SQLite (`:memory:`), LazilyRefreshDatabase wired in `tests/Pest.php` |
-| Data | MySQL + Redis (both in Docker; sessions/cache/queue on Redis) |
+| Testing | Pest 5 — `it()` + `expect()`, in-memory SQLite (`:memory:`), LazilyRefreshDatabase wired in `tests/Pest.php` |
+| Data | MariaDB + Redis (both in Docker; sessions/cache/queue on Redis) |
 
 ## Architecture (what to preserve)
 
@@ -31,7 +31,7 @@ Planner is a personal task-planner web app: tasks, categories, and plans with a 
 ## Environment (all commands run inside the dev container)
 
 ```bash
-./planner-dev up      # start workspace + mysql + redis
+./planner-dev up      # start workspace + mariadb + redis
 ./planner-dev shell   # open a shell in the container (cwd = /var/www = laravel/)
 composer run dev      # app server (port 8000) + queue worker + Vite together
 php artisan serve --host=0.0.0.0 --port=8000   # manual app server
