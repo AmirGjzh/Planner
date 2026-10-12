@@ -77,7 +77,7 @@ Runs first, every cycle; also catches cross-topic fallout from earlier passes.
 ### Gate (definition of done)
 
 1. `vendor/bin/pint --format agent` on every touched PHP/Blade path.
-2. Full `php artisan test --compact` (browser tier too if a JS/UI contract changed).
+2. Full `php artisan test --compact --parallel` (browser tier too if a JS/UI contract changed).
 3. Re-read the whole diff against every mapped rule (the boost "How to Apply" final step).
 4. Emit the **cleaning report**: per subjob — deletions with evidence (the approval list), files shrunk, tests trimmed/added, comment sites added, defects found-but-not-fixed; suite runtime before/after.
 5. User reviews the tree and commits (one commit per topic).

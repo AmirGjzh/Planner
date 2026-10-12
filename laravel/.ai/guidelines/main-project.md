@@ -36,7 +36,7 @@ Planner is a personal task-planner web app: tasks, categories, and plans with a 
 composer run dev      # app server (port 8000) + queue worker + Vite together
 php artisan serve --host=0.0.0.0 --port=8000   # manual app server
 php artisan migrate   # after any schema change
-php artisan test      # fast, in-memory SQLite, never touches dev data
+php artisan test --parallel # fast, in-memory SQLite, never touches dev data
 ```
 
 Vite dev binds `0.0.0.0` (no flag). If the UI doesn't reflect a frontend change, the user must run `npm run dev` / `composer run dev` / `npm run build`.
