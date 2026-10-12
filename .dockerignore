@@ -31,6 +31,7 @@ laravel/vendor
 laravel/bootstrap/cache/*.php
 laravel/compose.development.yml
 laravel/compose.production.yml
+laravel/lang/fa.context.md
 laravel/AGENTS.md
 laravel/boost.json
 laravel/opencode.json
