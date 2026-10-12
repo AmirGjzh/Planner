@@ -1,6 +1,7 @@
 ---
 paths:
   - 'app/Actions/Task/**'
+  - 'app/Enums/TaskPriority.php'
 ---
 
 # Task

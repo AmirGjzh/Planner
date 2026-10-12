@@ -107,7 +107,7 @@ npx skills add <owner/repo> --skill <name>        # project-scoped
 npx skills add <owner/repo> --skill <name> -g     # global (any project)
 ```
 
-Currently installed project skills: `accessibility`, `emil-design-eng`, `find-skills`, `frontend-design`, `web-design-guidelines`, `ui-ux-pro-max`, `web-quality-audit`.
+Currently installed project skills: `accessibility`, `emil-design-eng`, `web-design-guidelines`, `web-quality-audit` (`find-skills` is installed globally in `~/.agents/skills/`).
 
 How skills are discovered by opencode:
 

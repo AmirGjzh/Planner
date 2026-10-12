@@ -4,7 +4,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 
 | Applies to | Rule file |
 | --- | --- |
-| app/Actions/**, app/Enums/*Result.php, resources/views/pages/** | .ai/rules/actions.md |
+| app/Actions/**, app/Enums/*Result.php, app/Policies/**, resources/views/pages/** | .ai/rules/actions.md |
 | resources/views/components/mine/animate/** | .ai/rules/animate.md |
 | app/Actions/Auth/**, app/Http/Middleware/**, app/Notifications/**, resources/views/mail/**, resources/fonts/mail/** | .ai/rules/auth.md |
 | app/Actions/Category/** | .ai/rules/category.md |

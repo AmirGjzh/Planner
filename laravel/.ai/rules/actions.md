@@ -1,6 +1,8 @@
 ---
 paths:
   - 'app/Actions/**'
+  - 'app/Enums/*Result.php'
+  - 'app/Policies/**'
   - 'resources/views/pages/**'
 ---
 
