@@ -212,8 +212,8 @@
             </button>
 
             <div class="flex items-center gap-3">
-                <span class="mine-text-primary text-sm font-semibold" x-text="monthName"></span>
-                <span class="mine-text-secondary text-sm font-medium" x-text="yearLabel"></span>
+                <span class="text-sm font-medium text-[var(--mine-text-primary)]/80" x-text="monthName"></span>
+                <span class="text-sm font-medium text-[var(--mine-text-primary)]/80" x-text="yearLabel"></span>
             </div>
 
             <button
@@ -228,7 +228,7 @@
         <div class="mb-6 grid grid-cols-7 justify-items-center">
             <template x-for="day in dayLabels" :key="day">
                 <div class="flex h-8 items-center justify-center">
-                    <span class="mine-text-secondary text-xs font-medium" x-text="day"></span>
+                    <span class="text-sm font-medium text-[var(--mine-text-primary)]/80" x-text="day"></span>
                 </div>
             </template>
         </div>
@@ -246,14 +246,14 @@
                             :class="{
                                 'bg-(--mine-datepicker-pill-bg) text-(--mine-datepicker-pill-text) hover:bg-(--mine-datepicker-pill-bg-hover) shadow-sm font-semibold relative z-40':
                                     cell.isRangeStart || cell.isRangeEnd,
-                                'hover:bg-(--mine-datepicker-day-bg-hover) mine-text-primary relative':
-                                    ! cell.isSelected && ! cell.isInRange,
+                                'hover:bg-(--mine-datepicker-day-bg-hover) text-[var(--mine-text-primary)]/80 relative':
+                                    ! cell.isSelected && ! cell.isInRange && cell.isInMonth,
                                 'text-(--mine-datepicker-day-dim-text) relative':
                                     ! cell.isInMonth && ! cell.isSelected && ! cell.isInRange,
                                 'bg-(--mine-datepicker-day-selected-bg) text-(--mine-datepicker-day-selected-text) hover:bg-(--mine-datepicker-day-selected-bg-hover) shadow-sm font-semibold relative z-40':
                                     cell.isSelected && ! cell.isRangeStart && ! cell.isRangeEnd,
                             }"
-                            class="mx-auto flex h-11 w-11 items-center justify-center rounded-lg text-sm transition-colors duration-200 hover:cursor-pointer focus-visible:ring-2 focus-visible:ring-(--mine-datepicker-day-ring-focus) focus-visible:outline-none"
+                            class="mx-auto flex h-11 w-11 items-center justify-center rounded-lg text-sm font-medium transition-colors duration-200 hover:cursor-pointer focus-visible:ring-2 focus-visible:ring-(--mine-datepicker-day-ring-focus) focus-visible:outline-none"
                         >
                             <span
                                 class="flex w-full items-center justify-center"

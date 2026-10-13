@@ -287,6 +287,6 @@ html {
 .mine-input input:-webkit-autofill:hover,
 .mine-input input:-webkit-autofill:focus {
     -webkit-box-shadow: 0 0 0 1000px var(--mine-input-autofill-bg, var(--mine-input-bg)) inset !important;
-    -webkit-text-fill-color: var(--mine-text-primary) !important;
+    -webkit-text-fill-color: color-mix(in oklab, var(--mine-text-primary) 80%, transparent) !important;
     caret-color: var(--mine-text-primary) !important;
 }

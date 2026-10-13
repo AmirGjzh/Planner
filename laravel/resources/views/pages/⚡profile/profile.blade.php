@@ -18,14 +18,12 @@
             </div>
             <div class="mt-4 sm:mt-0 md:mt-auto md:w-full md:px-4">
                 <x-mine.modal.trigger class="w-full" id="change-password-form">
-                    <x-mine.button type="button" class="mine-btn-ghost">
-                        <p class="text-sm">{{ __('Change password') }}</p>
-                    </x-mine.button>
+                    <x-mine.button type="button" class="mine-btn-ghost" size="sm">
+                        {{ __('Change password') }}</x-mine.button>
                 </x-mine.modal.trigger>
                 <x-mine.modal.trigger class="mt-3 w-full" id="edit-profile-form">
-                    <x-mine.button type="button" class="mine-btn-primary">
-                        <p class="text-sm">{{ __('Edit profile') }}</p>
-                    </x-mine.button>
+                    <x-mine.button type="button" class="mine-btn-primary" size="sm">
+                        {{ __('Edit profile') }}</x-mine.button>
                 </x-mine.modal.trigger>
             </div>
         </x-mine.animate>
@@ -48,7 +46,7 @@
                 ] as $label => $value)
                     <div class="flex justify-between px-2">
                         <p class="mine-text-secondary text-sm font-medium">{{ $label }}</p>
-                        <p class="mine-text-secondary max-w-40 min-w-0 truncate text-sm font-medium">
+                        <p class="mine-text-primary max-w-40 min-w-0 truncate text-sm font-medium">
                             {{ $value ?? '—' }}
                         </p>
                     </div>
@@ -58,13 +56,13 @@
                 </div>
                 <div class="flex justify-between px-2">
                     <p class="mine-text-secondary text-sm font-medium">{{ __('Theme') }}</p>
-                    <p class="mine-text-secondary max-w-40 min-w-0 truncate text-sm font-medium">
+                    <p class="mine-text-primary max-w-40 min-w-0 truncate text-sm font-medium">
                         {{ __(ucfirst($this->user->theme)) }}
                     </p>
                 </div>
                 <div class="flex justify-between px-2">
                     <p class="mine-text-secondary text-sm font-medium">{{ __('Language') }}</p>
-                    <p class="mine-text-secondary max-w-40 min-w-0 truncate text-sm font-medium">
+                    <p class="mine-text-primary max-w-40 min-w-0 truncate text-sm font-medium">
                         {{ $this->user->locale == 'fa' ? 'فارسی' : "English" }}
                     </p>
                 </div>
@@ -83,9 +81,8 @@
                 </div>
                 <div class="flex items-center justify-center">
                     <x-mine.modal.trigger class="w-full" id="delete-account-confirmation">
-                        <x-mine.button type="button" class="mine-btn-danger">
-                            <p class="text-sm">{{ __('Delete account') }}</p>
-                        </x-mine.button>
+                        <x-mine.button type="button" class="mine-btn-danger" size="sm">
+                            {{ __('Delete account') }}</x-mine.button>
                     </x-mine.modal.trigger>
                 </div>
             </x-mine.animate>
@@ -223,7 +220,7 @@
                         leftIcon="Calendar"
                     />
                 </div>
-                <div class="mt-4 flex justify-end gap-4">
+                <div class="mt-2 flex justify-end gap-4">
                     <x-mine.button
                         type="button"
                         @click="
@@ -231,12 +228,11 @@
                             $wire.cancelEdit();
                         "
                         class="mine-btn-ghost"
+                        size="sm"
                     >
-                        <p class="text-sm">{{ __('Cancel') }}</p>
-                    </x-mine.button>
-                    <x-mine.button wire:target="editProfile" wire:loading:disabled class="mine-btn-primary">
-                        <p class="text-sm">{{ __('Save') }}</p>
-                    </x-mine.button>
+                        {{ __('Cancel') }}</x-mine.button>
+                    <x-mine.button wire:target="editProfile" wire:loading:disabled class="mine-btn-primary" size="sm">
+                        {{ __('Save') }}</x-mine.button>
                 </div>
             </form>
         </div>
@@ -324,7 +320,7 @@
                     autocomplete="new-password"
                     leftIcon="Lock"
                 />
-                <div class="mt-4 flex justify-end gap-4">
+                <div class="mt-2 flex justify-end gap-4">
                     <x-mine.button
                         type="button"
                         @click="
@@ -332,12 +328,16 @@
                             $wire.cancelChange();
                         "
                         class="mine-btn-ghost"
+                        size="sm"
                     >
-                        <p class="text-sm">{{ __('Cancel') }}</p>
-                    </x-mine.button>
-                    <x-mine.button wire:target="changePassword" wire:loading:disabled class="mine-btn-primary">
-                        <p class="text-sm">{{ __('Change password') }}</p>
-                    </x-mine.button>
+                        {{ __('Cancel') }}</x-mine.button>
+                    <x-mine.button
+                        wire:target="changePassword"
+                        wire:loading:disabled
+                        class="mine-btn-primary"
+                        size="sm"
+                    >
+                        {{ __('Change password') }}</x-mine.button>
                 </div>
             </form>
         </div>
@@ -395,7 +395,7 @@
             <form
                 wire:submit="deleteAccount"
                 novalidate
-                class="flex flex-col gap-6"
+                class="flex flex-col gap-4"
                 x-data
                 x-on:focus-first-error.window="
                     $nextTick(() => $el.querySelector('[aria-invalid=&quot;true&quot;]')?.focus())
@@ -409,7 +409,7 @@
                     autocomplete="current-password"
                     leftIcon="Lock"
                 />
-                <div class="flex items-center justify-between gap-4">
+                <div class="mt-2 flex items-center justify-between gap-4">
                     <x-mine.button
                         type="button"
                         @click="
@@ -417,12 +417,11 @@
                             $wire.cancelDelete();
                         "
                         class="mine-btn-ghost"
+                        size="sm"
                     >
-                        <p class="text-sm">{{ __('Cancel') }}</p>
-                    </x-mine.button>
-                    <x-mine.button wire:target="deleteAccount" wire:loading:disabled class="mine-btn-danger">
-                        <p class="text-sm">{{ __('Delete account') }}</p>
-                    </x-mine.button>
+                        {{ __('Cancel') }}</x-mine.button>
+                    <x-mine.button wire:target="deleteAccount" wire:loading:disabled class="mine-btn-danger" size="sm">
+                        {{ __('Delete account') }}</x-mine.button>
                 </div>
             </form>
         </div>

@@ -196,7 +196,7 @@
     {{ $attributes->class(['relative w-full']) }}
 >
     @if ($label)
-        <label class="mine-text-primary mb-2 block text-sm font-medium"> {{ $label }} </label>
+        <x-mine.input.label> {{ $label }} </x-mine.input.label>
     @endif
 
     @if ($name)
@@ -225,7 +225,7 @@
                         data-select-search
                         type="text"
                         placeholder="{{ __('Search...') }}"
-                        class="mine-text-primary h-8 w-full bg-transparent text-sm placeholder:text-(--mine-input-placeholder) focus:outline-none focus-visible:outline-none"
+                        class="h-8 w-full bg-transparent text-sm font-medium text-[var(--mine-text-primary)]/80 placeholder:font-medium placeholder:text-(--mine-input-placeholder) focus:outline-none focus-visible:outline-none"
                     />
                 </div>
             @endif
@@ -235,7 +235,7 @@
 
                 <li
                     x-show="isOpen && search !== '' && resultsCount === 0"
-                    class="mine-text-secondary flex h-14 items-center justify-center text-sm"
+                    class="mine-text-secondary flex h-14 items-center justify-center text-sm font-medium"
                 >
                     {{ __('No results found') }}
                 </li>

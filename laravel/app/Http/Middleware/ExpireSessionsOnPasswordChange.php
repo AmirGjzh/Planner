@@ -46,7 +46,7 @@ final class ExpireSessionsOnPasswordChange
             return redirect()
                 ->route('login')
                 ->with('toast', [
-                    'title' => __('Your password was changed, sign in again.'),
+                    'title' => __('Your password was changed, sign in again'),
                     'variant' => 'info',
                     'duration' => 6000,
                     'position' => 'bottom-center',

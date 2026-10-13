@@ -32,3 +32,12 @@ Blade caches compiled views in `storage/framework/views` keyed on the raw tag st
 
 - `x-mine.modal` renders `role="dialog" aria-modal="true"` inside an `x-teleport` — pass `labelled-by="<heading-id>"` and put that `id` on the dialog's heading (which lives in the slot) so the dialog has an accessible name; an unset prop renders nothing. The open-dialog axe pass in `DeleteAccountJourneyTest` is the contract.
 - Credential and destructive forms use `:close-by-clicking-away="false"` and `:close-by-escaping="false"` — the explicit Cancel/Close button owns dismissal. The shared modal deliberately has no focus trap (app-wide pattern; if that changes, change it once here for every dialog at once).
+
+## Button label size and control height
+
+- `x-mine.button` renders label size from the `size` prop (`md` → `text-base`, the default; `sm` → `text-sm`); `height` stays orthogonal (default `h-11`). Callers pick `size="sm"` and pass plain slot text — never force the size with a `class="… text-sm"` override (it fights the component's own `text-base` in the cascade) and never wrap the label in `<p class="text-sm">` (`<p>` is flow content, and the slot already sits inside the button's `<span>`).
+- Control height: the components default to `h-11`; the auth cards (login/register/forgot/reset/verify) deliberately pass `h-12`. That split is the convention — don't "unify" it and don't invent other heights.
+
+## No component text renders font-normal
+
+Interactive and informational text in the `mine` family always carries an explicit weight — `font-medium` for option/list/menu/empty-state text, `font-semibold` for titles — set at the component level, never delegated to the caller. Selection and emphasis are communicated with color and background, never with weight (a selected row gets its token colors, not a heavier font). Any new surface with text gets a weight explicitly.

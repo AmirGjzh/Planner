@@ -25,7 +25,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Actions/Plan/** | .ai/rules/plan.md |
 | routes/** | .ai/rules/routes.md |
 | database/seeders/** | .ai/rules/seeders.md |
-| resources/views/components/mine/{select,datepicker,input}/** | .ai/rules/select-datepicker-input.md |
+| resources/views/components/mine/{select,datepicker,input,textarea,calendar}/** | .ai/rules/select-datepicker-input.md |
 | app/Actions/Task/**, app/Enums/TaskPriority.php | .ai/rules/task.md |
 | tests/**, tests/**/*.test.php, database/factories/** | .ai/rules/tests.md |
 | bootstrap/app.php, config/database.php, config/queue.php | .ai/rules/wiring.md |

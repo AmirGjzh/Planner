@@ -226,4 +226,15 @@ Alpine.data('mineLogout', ({ action, home, csrf, failed }) => ({
     },
 }))
 
+// Search matching across scripts: Persian (۰-۹) and Arabic-Indic (٠-٩) digits
+// normalize to Western digits on both sides of a comparison, so a query typed
+// in either numeral system finds the same option. Letters are left alone.
+// The magic callback must return the callable (it runs as a property getter).
+Alpine.magic('digits', (el) => (value) =>
+    String(value ?? '').replace(/[۰-۹٠-٩]/g, (digit) => {
+        const code = digit.charCodeAt(0)
+        return String(code - (code >= 0x06f0 ? 0x06f0 : 0x0660))
+    })
+)
+
 Livewire.start()

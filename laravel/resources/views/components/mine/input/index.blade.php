@@ -3,7 +3,6 @@
     'label' => null,
     'type' => 'text',
     'placeholder' => null,
-    'helper' => null,
     'required' => false,
     'leftIcon' => null,
     'height' => 'h-11',

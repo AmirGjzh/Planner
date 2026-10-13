@@ -45,7 +45,7 @@ it('signs out a session whose password changed after its auth time', function ()
 
     $this->get('/dashboard')
         ->assertRedirect('/login')
-        ->assertSessionHas('toast', fn (array $toast) => $toast['title'] === 'Your password was changed, sign in again.');
+        ->assertSessionHas('toast', fn (array $toast) => $toast['title'] === 'Your password was changed, sign in again');
     $this->assertGuest();
 });
 

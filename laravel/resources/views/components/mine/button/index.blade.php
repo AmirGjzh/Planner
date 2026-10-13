@@ -3,6 +3,7 @@
     'type' => 'submit',
     'loading' => false,
     'height' => 'h-11',
+    'size' => 'md',
 ])
 
 @php
@@ -31,7 +32,10 @@
         'w-full',
         'rounded-xl',
         'px-4',
-        'text-base',
+        match ($size) {
+            'sm' => 'text-sm',
+            default => 'text-base',
+        },
         'font-medium',
         'transition',
         'duration-200',

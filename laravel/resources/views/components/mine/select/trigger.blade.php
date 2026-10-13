@@ -16,7 +16,7 @@
     role="button"
     aria-disabled="@if($disabled) true @endif"
     @class([
-        'group flex items-center justify-between w-full px-4 rounded-xl border-2 transition-[border-color,box-shadow] duration-200 ease-out cursor-pointer focus-visible:outline-none',
+        'group flex items-center justify-between w-full px-4 rounded-xl border-2 transition-[border-color,background-color,box-shadow] duration-200 ease-out cursor-pointer focus-visible:outline-none',
         $height => true,
         'bg-(--mine-input-bg)' => ! $invalid,
         'bg-(--mine-input-error-bg)' => $invalid,
@@ -36,8 +36,8 @@
         @if ($leftIcon)
             <div @class([
                 'shrink-0',
-                'pr-3' => app()->isLocale('en'),
-                'pl-3' => app()->isLocale('fa'),
+                'pr-4' => app()->isLocale('en'),
+                'pl-4' => app()->isLocale('fa'),
                 'flex h-full items-center',
                 'text-(--mine-input-icon)' => ! $invalid,
                 'text-(--mine-input-error-icon)' => $invalid,
@@ -50,8 +50,8 @@
 
         <span
             x-text="selectedLabel"
-            :class="hasSelection ? 'mine-text-primary' : 'text-(--mine-input-placeholder)'"
-            class="truncate pt-1 text-sm"
+            :class="hasSelection ? 'text-[var(--mine-text-primary)]/80' : 'text-(--mine-input-placeholder)'"
+            class="truncate pt-1 text-sm font-medium"
         >
             {{ $placeholder }}
         </span>

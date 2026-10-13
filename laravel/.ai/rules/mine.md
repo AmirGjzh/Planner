@@ -32,6 +32,6 @@ Toasts are navigation-proof inside the factory too: every toast carries an absol
 ## Accessibility contracts live in the components
 
 - `alert` picks its `role` from the variant — `danger`/`warning` → `alert`, `success`/`info` → `status` — through attribute merge, so a caller can override it.
-- `input` emits the error `id`, `role="alert"`, `aria-invalid`, and `aria-describedby` wiring itself; the error `id` is the input id + `-error`.
+- Fields own their error a11y wiring: `input`/`textarea` set `aria-invalid` + `aria-describedby` on the control, `select` on its listbox wrapper, `datepicker` on its trigger button — all pointing at the error `p`, whose `id` is the field id + `-error` and whose `role` is `alert`.
 - `Reicon` renders `aria-hidden="true"` by default — decorative unless a caller passes an explicit label.
 - Icons/graphics never become the accessible name: `brand-logo` takes `aria-label` from the caller (header passes `config('app.name')`).

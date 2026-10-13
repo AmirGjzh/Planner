@@ -47,7 +47,7 @@ it('sends the notification in the user saved locale', function () {
 
     $message = Mail::mailer()->getSymfonyTransport()->messages()->last()->getOriginalMessage();
 
-    expect($message->getSubject())->toBe('بازیابی رمز عبور')
+    expect($message->getSubject())->toBe('رمز عبورت رو بازیابی کن')
         ->and($message->getHtmlBody())->toContain('dir="rtl"');
 });
 

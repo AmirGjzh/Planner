@@ -270,7 +270,7 @@
                 'w-full h-full pointer-events-none flex items-center justify-end gap-2',
             ])>
                 <a wire:navigate.hover href="{{ route('login') }}" class="pointer-events-auto">
-                    <x-mine.button class="mine-btn-primary sm:mine-btn-ghost text-sm" height="h-10">
+                    <x-mine.button class="mine-btn-primary sm:mine-btn-ghost" height="h-10" size="sm">
                         <div @class([
                             'pb-1' => app()->isLocale('en'),
                             'flex items-center gap-2',
@@ -286,7 +286,7 @@
                     </x-mine.button>
                 </a>
                 <a wire:navigate.hover href="{{ route('register') }}" class="pointer-events-auto hidden sm:flex">
-                    <x-mine.button class="mine-btn-primary text-sm" height="h-10">{{ __('Sign up') }}</x-mine.button>
+                    <x-mine.button class="mine-btn-primary" height="h-10" size="sm">{{ __('Sign up') }}</x-mine.button>
                 </a>
             </div>
         @endauth

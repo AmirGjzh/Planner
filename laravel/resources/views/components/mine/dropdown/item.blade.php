@@ -47,7 +47,7 @@
         @click="multiple ? toggleSelect(@js($value)) : close()"
         {{
             $attributes->class([
-                'group flex w-full items-center rounded-lg transition-[background-color,color,box-shadow] duration-200 ease-out outline-none text-sm mine-text-secondary',
+                'group flex w-full items-center rounded-lg transition-[background-color,color,box-shadow] duration-200 ease-out outline-none text-sm font-medium mine-text-secondary',
                 'hover:bg-(--mine-dropdown-item-bg-hover) hover:text-(--mine-text-link) focus:bg-(--mine-dropdown-item-bg-hover) focus:text-(--mine-text-link) focus-visible:ring-4 focus-visible:ring-(--mine-dropdown-item-ring)' => ! $destructive && ! $active,
                 'bg-(--mine-dropdown-item-bg-hover) text-(--mine-text-link) hover:bg-(--mine-dropdown-item-bg-hover) hover:text-(--mine-text-link) focus:bg-(--mine-dropdown-item-bg-hover) focus:text-(--mine-text-link) focus-visible:ring-4 focus-visible:ring-(--mine-dropdown-item-ring)' => ! $destructive && $active,
                 'hover:bg-(--mine-dropdown-destructive-item-bg-hover) focus:bg-(--mine-dropdown-destructive-item-bg-hover) focus-visible:ring-4 focus-visible:ring-(--mine-dropdown-destructive-item-ring) text-(--mine-dropdown-item-text-danger)' => $destructive,

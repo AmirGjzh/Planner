@@ -21,15 +21,15 @@
     data-search="{{ $searchLabel }}"
     x-on:click="select($el.dataset.value, $el.dataset.label)"
     x-on:keydown="handleOptionKeydown($event)"
-    x-show="! search || $el.dataset.search.toLowerCase().includes(search.toLowerCase())"
+    x-show="! search || $digits($el.dataset.search).toLowerCase().includes($digits(search).toLowerCase())"
     :data-selected="state === $el.dataset.value ? 'true' : 'false'"
     :class="{
         'bg-(--mine-select-selected-bg)': state === $el.dataset.value,
         'text-(--mine-select-selected-text) font-medium': state === $el.dataset.value,
-        'hover:bg-(--mine-select-bg-hover) mine-text-primary': state !== $el.dataset.value,
+        'hover:bg-(--mine-select-bg-hover) text-[var(--mine-text-primary)]/80': state !== $el.dataset.value,
     }"
     @class([
-        'flex items-center rounded-xl px-3 text-sm cursor-pointer transition-colors duration-200 outline-none focus-visible:ring-4 focus-visible:ring-[var(--mine-select-ring-focus)]',
+        'flex items-center rounded-xl px-3 text-sm font-medium cursor-pointer transition-colors duration-200 outline-none focus-visible:ring-4 focus-visible:ring-[var(--mine-select-ring-focus)]',
         'py-2.5' => $height === 'h-12',
         $height => $height !== 'h-12',
         'opacity-50 cursor-not-allowed' => $disabled,
@@ -47,5 +47,5 @@
         <x-mine.icon name="Check" size="16" weight="filled" />
     </div>
 
-    <span class="pt-1"> {{ $slot }} </span>
+    <span class="pt-1 font-medium"> {{ $slot }} </span>
 </li>

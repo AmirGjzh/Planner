@@ -2,6 +2,8 @@
     'mode' => 'single',
     'selectableMonths' => false,
     'selectableYears' => false,
+    'searchableMonths' => false,
+    'searchableYears' => true,
     'yearsRange' => [-10, 10],
     'label' => null,
     'position' => 'bottom-start',
@@ -353,7 +355,7 @@
     {{ $attributes->class(['w-full']) }}
 >
     @if ($label)
-        <label class="mine-text-primary mb-2 block text-sm font-medium"> {{ $label }} </label>
+        <x-mine.input.label> {{ $label }} </x-mine.input.label>
     @endif
 
     <div class="relative">
@@ -365,7 +367,7 @@
             data-datepicker-trigger
             :data-open="open"
             @class([
-                'group flex items-center justify-between w-full px-4 rounded-xl border-2 transition-[border-color,box-shadow] duration-200 ease-out cursor-pointer',
+                'group flex items-center justify-between w-full px-4 rounded-xl border-2 transition-[border-color,background-color,box-shadow] duration-200 ease-out cursor-pointer',
                 $height => true,
                 'bg-(--mine-input-bg)' => ! $hasError,
                 'bg-(--mine-input-error-bg)' => $hasError,
@@ -378,6 +380,7 @@
                 'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-(--mine-input-ring-focus)' => ! $hasError,
                 'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-(--mine-input-error-ring)' => $hasError,
             ])
+            @if ($hasError) aria-invalid="true" aria-describedby="{{ $name }}-error" @endif
         >
             @if ($leftIcon)
                 <x-mine.icon
@@ -412,8 +415,8 @@
 
             <span
                 x-text="triggerLabel"
-                class="flex-1 text-sm truncate {{ app()->isLocale('fa') ? 'text-right' : 'text-left' }} pt-1 {{ ($leftIcon || $showIcon) ? 'mx-2' : (app()->isLocale('en') ? 'mr-2' : 'ml-2') }}"
-                :class="hasState ? 'mine-text-primary' : 'text-(--mine-input-placeholder)'"
+                class="flex-1 text-sm font-medium truncate {{ app()->isLocale('fa') ? 'text-right' : 'text-left' }} pt-1 {{ ($leftIcon || $showIcon) ? 'mx-2' : (app()->isLocale('en') ? 'mr-2' : 'ml-2') }}"
+                :class="hasState ? 'text-[var(--mine-text-primary)]/80' : 'text-(--mine-input-placeholder)'"
             ></span>
 
             <div
@@ -458,49 +461,78 @@
 
                 <div class="flex items-center gap-3">
                     <template x-if="selectableMonths">
-                        <x-mine.datepicker.select label="monthName">
+                        <x-mine.datepicker.select label="monthName" :searchable="$searchableMonths">
                             <template x-for="(m, i) in months" :key="i">
                                 <button
                                     type="button"
+                                    x-show="! search || $digits(m).toLowerCase().includes($digits(search).toLowerCase())"
                                     @click="
                                         setMonth(i);
                                         open = false;
                                     "
                                     :class="currentMonthIndex === i
                                         ? 'bg-(--mine-select-selected-bg) text-(--mine-select-selected-text) font-medium'
-                                        : 'hover:bg-(--mine-select-bg-hover) mine-text-primary'"
-                                    class="flex items-center w-full px-3 py-1.5 rounded-lg text-sm {{ app()->isLocale('fa') ? 'text-right' : 'text-left' }} transition-colors duration-200 hover:cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--mine-select-ring-focus)"
+                                        : 'hover:bg-(--mine-select-bg-hover) text-[var(--mine-text-primary)]/80'"
+                                    class="flex items-center w-full px-3 py-1.5 rounded-lg text-sm font-medium {{ app()->isLocale('fa') ? 'text-right' : 'text-left' }} transition-colors duration-200 hover:cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--mine-select-ring-focus)"
                                 >
                                     <span x-text="m"></span>
                                 </button>
                             </template>
+
+                            <div
+                                x-show="
+                                    search !== '' &&
+                                    ! months.some((m) =>
+                                        $digits(m).toLowerCase().includes($digits(search).toLowerCase()),
+                                    )
+                                "
+                                class="mine-text-secondary flex h-14 items-center justify-center text-sm font-medium"
+                            >
+                                {{ __('No results found') }}
+                            </div>
                         </x-mine.datepicker.select>
                     </template>
                     <template x-if="! selectableMonths">
-                        <span class="mine-text-primary text-sm font-semibold" x-text="monthName"></span>
+                        <span class="text-sm font-medium text-[var(--mine-text-primary)]/80" x-text="monthName"></span>
                     </template>
 
                     <template x-if="selectableYears">
-                        <x-mine.datepicker.select label="yearLabel">
+                        <x-mine.datepicker.select label="yearLabel" :searchable="$searchableYears">
                             <template x-for="y in years" :key="y.value">
                                 <button
                                     type="button"
+                                    x-show="
+                                        ! search ||
+                                        $digits(y.label).toLowerCase().includes($digits(search).toLowerCase())
+                                    "
                                     @click="
                                         setYear(y.value);
                                         open = false;
                                     "
                                     :class="currentYear === y.value
                                         ? 'bg-(--mine-select-selected-bg) text-(--mine-select-selected-text) font-medium'
-                                        : 'hover:bg-(--mine-select-bg-hover) mine-text-primary'"
-                                    class="flex items-center w-full px-3 py-1.5 rounded-lg text-sm {{ app()->isLocale('fa') ? 'text-right' : 'text-left' }} transition-colors duration-200 hover:cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--mine-select-ring-focus)"
+                                        : 'hover:bg-(--mine-select-bg-hover) text-[var(--mine-text-primary)]/80'"
+                                    class="flex items-center w-full px-3 py-1.5 rounded-lg text-sm font-medium {{ app()->isLocale('fa') ? 'text-right' : 'text-left' }} transition-colors duration-200 hover:cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--mine-select-ring-focus)"
                                 >
                                     <span x-text="y.label"></span>
                                 </button>
                             </template>
+
+                            <div
+                                x-show="
+                                    search !== '' &&
+                                    ! years.some((y) =>
+                                        $digits(y.label).toLowerCase().includes($digits(search).toLowerCase()),
+                                    )
+                                "
+                                class="mine-text-secondary flex h-14 items-center justify-center text-sm font-medium"
+                            >
+                                {{ __('No results found') }}
+                            </div>
                         </x-mine.datepicker.select>
                     </template>
                     <template x-if="! selectableYears">
-                        <span class="mine-text-secondary text-sm font-medium" x-text="yearLabel"></span>
+                        <span class="text-sm font-medium text-[var(--mine-text-primary)]/80" x-text="yearLabel"></span>
                     </template>
                 </div>
 
@@ -516,7 +548,7 @@
             <div class="mb-6 grid grid-cols-7 justify-items-center">
                 <template x-for="day in dayLabels" :key="day">
                     <div class="flex h-8 items-center justify-center">
-                        <span class="mine-text-secondary text-xs font-medium" x-text="day"></span>
+                        <span class="text-sm font-medium text-[var(--mine-text-primary)]/80" x-text="day"></span>
                     </div>
                 </template>
             </div>
@@ -534,14 +566,14 @@
                                 :class="{
                                     'bg-(--mine-datepicker-pill-bg) text-(--mine-datepicker-pill-text) hover:bg-(--mine-datepicker-pill-bg-hover) shadow-sm font-semibold relative z-40':
                                         cell.isRangeStart || cell.isRangeEnd,
-                                    'hover:bg-(--mine-datepicker-day-bg-hover) mine-text-primary relative':
-                                        ! cell.isSelected && ! cell.isInRange,
+                                    'hover:bg-(--mine-datepicker-day-bg-hover) text-[var(--mine-text-primary)]/80 relative':
+                                        ! cell.isSelected && ! cell.isInRange && cell.isInMonth,
                                     'text-(--mine-datepicker-day-dim-text) relative':
                                         ! cell.isInMonth && ! cell.isSelected && ! cell.isInRange,
                                     'bg-(--mine-datepicker-day-selected-bg) text-(--mine-datepicker-day-selected-text) hover:bg-(--mine-datepicker-day-selected-bg-hover) shadow-sm font-semibold relative z-40':
                                         cell.isSelected && ! cell.isRangeStart && ! cell.isRangeEnd,
                                 }"
-                                class="mx-auto flex h-11 w-11 items-center justify-center rounded-lg text-sm transition-colors duration-200 hover:cursor-pointer focus-visible:ring-2 focus-visible:ring-(--mine-datepicker-day-ring-focus) focus-visible:outline-none"
+                                class="mx-auto flex h-11 w-11 items-center justify-center rounded-lg text-sm font-medium transition-colors duration-200 hover:cursor-pointer focus-visible:ring-2 focus-visible:ring-(--mine-datepicker-day-ring-focus) focus-visible:outline-none"
                             >
                                 <span
                                     class="flex w-full items-center justify-center"

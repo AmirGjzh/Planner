@@ -39,8 +39,8 @@ Reports | Dashboard | Errors | Components).
 "Try again in a minute."                         → inline alert body · shared rate-limit follow-up (login, categories, profile, plans)
 "Sign-in failed!"                                → inline alert title · danger · bad credentials
 "Check your email and password, then try again." → inline alert body · sign-in failed
-"Your session has expired, sign in again."       → toast title · info · session expiry (login redirect)
-"Your password was changed, sign in again."      → toast title · info · forced re-login (ExpireSessionsOnPasswordChange middleware)
+"Your session has expired, sign in again"        → toast title · info · session expiry (login redirect)
+"Your password was changed, sign in again"       → toast title · info · forced re-login (ExpireSessionsOnPasswordChange middleware)
 "Email is required."                             → validation message · email required (login, register, forgot)
 "Enter a valid email."                           → validation message · email format (login, register, forgot)
 "Password is required."                          → validation message · password required (login, register, reset, profile)
