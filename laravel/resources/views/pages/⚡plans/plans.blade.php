@@ -542,10 +542,16 @@
         <x-mine.animate class="mt-6 w-full"> {{ $this->plans->links(data: ['scrollTo' => false]) }} </x-mine.animate>
     @endisland
 
-    <x-mine.modal id="add-plan-form" :close-by-clicking-away="false" :close-by-escaping="false" width="lg">
+    <x-mine.modal
+        id="add-plan-form"
+        labelled-by="add-plan-title"
+        :close-by-clicking-away="false"
+        :close-by-escaping="false"
+        width="lg"
+    >
         <div class="px-6 py-6 sm:px-8">
             <div class="mb-6 flex items-center justify-between">
-                <h2 class="mine-text-primary text-base font-semibold">{{ __('Add new plan') }}</h2>
+                <h2 id="add-plan-title" class="mine-text-primary text-base font-semibold">{{ __('Add new plan') }}</h2>
                 <button
                     type="button"
                     @click="
@@ -598,7 +604,7 @@
                         leftIcon="PenWriting"
                     />
                 </div>
-                <div class="mt-4 flex justify-end gap-4">
+                <div class="mt-2 flex justify-end gap-4">
                     <x-mine.button
                         type="button"
                         @click="
@@ -606,21 +612,30 @@
                             $wire.cancelAdd();
                         "
                         class="mine-btn-ghost"
+                        size="sm"
                     >
-                        <p class="text-sm">{{ __('Cancel') }}</p>
-                    </x-mine.button>
-                    <x-mine.button wire:target="addPlan" class="mine-btn-primary">
-                        <p class="text-sm">{{ __('Create') }}</p>
-                    </x-mine.button>
+                        {{ __('Cancel') }}</x-mine.button>
+                    <x-mine.button
+                        wire:target="addPlan"
+                        class="mine-btn-primary"
+                        size="sm"
+                    >
+                        {{ __('Create') }}</x-mine.button>
                 </div>
             </form>
         </div>
     </x-mine.modal>
 
-    <x-mine.modal id="edit-plan-form" :close-by-clicking-away="false" :close-by-escaping="false" width="lg">
+    <x-mine.modal
+        id="edit-plan-form"
+        labelled-by="edit-plan-title"
+        :close-by-clicking-away="false"
+        :close-by-escaping="false"
+        width="lg"
+    >
         <div class="px-6 py-6 sm:px-8">
             <div class="mb-6 flex items-center justify-between">
-                <h2 class="mine-text-primary text-base font-semibold">{{ __('Edit plan') }}</h2>
+                <h2 id="edit-plan-title" class="mine-text-primary text-base font-semibold">{{ __('Edit plan') }}</h2>
                 <button
                     type="button"
                     @click="
@@ -673,7 +688,7 @@
                         leftIcon="PenWriting"
                     />
                 </div>
-                <div class="mt-4 flex justify-end gap-4">
+                <div class="mt-2 flex justify-end gap-4">
                     <x-mine.button
                         type="button"
                         @click="
@@ -681,21 +696,32 @@
                             $wire.cancelEdit();
                         "
                         class="mine-btn-ghost"
+                        size="sm"
                     >
-                        <p class="text-sm">{{ __('Cancel') }}</p>
-                    </x-mine.button>
-                    <x-mine.button wire:target="editPlan" class="mine-btn-primary">
-                        <p class="text-sm">{{ __('Save') }}</p>
-                    </x-mine.button>
+                        {{ __('Cancel') }}</x-mine.button>
+                    <x-mine.button
+                        wire:target="editPlan"
+                        class="mine-btn-primary"
+                        size="sm"
+                    >
+                        {{ __('Save') }}</x-mine.button>
                 </div>
             </form>
         </div>
     </x-mine.modal>
 
-    <x-mine.modal id="delete-plan-confirmation" :close-by-clicking-away="false" :close-by-escaping="false" width="lg">
+    <x-mine.modal
+        id="delete-plan-confirmation"
+        labelled-by="delete-plan-title"
+        :close-by-clicking-away="false"
+        :close-by-escaping="false"
+        width="lg"
+    >
         <div class="px-6 py-6 sm:px-8">
             <div class="mb-6 flex items-center justify-between">
-                <h2 class="mine-text-primary text-base font-semibold">{{ __('Delete plan') }}</h2>
+                <h2 id="delete-plan-title" class="mine-text-primary text-base font-semibold">
+                    {{ __('Delete plan') }}
+                </h2>
                 <button
                     type="button"
                     @click="
@@ -721,7 +747,7 @@
             @endif
 
             <form class="flex flex-col gap-4" wire:submit="deletePlan">
-                <div class="mt-4 flex justify-end gap-4">
+                <div class="mt-2 flex justify-end gap-4">
                     <x-mine.button
                         type="button"
                         @click="
@@ -729,21 +755,32 @@
                             $wire.cancelDelete();
                         "
                         class="mine-btn-ghost"
+                        size="sm"
                     >
-                        <p class="text-sm">{{ __('Cancel') }}</p>
-                    </x-mine.button>
-                    <x-mine.button wire:target="deletePlan" class="mine-btn-danger">
-                        <p class="text-sm">{{ __('Delete') }}</p>
-                    </x-mine.button>
+                        {{ __('Cancel') }}</x-mine.button>
+                    <x-mine.button
+                        wire:target="deletePlan"
+                        class="mine-btn-danger"
+                        size="sm"
+                    >
+                        {{ __('Delete') }}</x-mine.button>
                 </div>
             </form>
         </div>
     </x-mine.modal>
 
-    <x-mine.modal id="complete-plan-confirmation" :close-by-clicking-away="false" :close-by-escaping="false" width="lg">
+    <x-mine.modal
+        id="complete-plan-confirmation"
+        labelled-by="complete-plan-title"
+        :close-by-clicking-away="false"
+        :close-by-escaping="false"
+        width="lg"
+    >
         <div class="px-6 py-6 sm:px-8">
             <div class="mb-6 flex items-center justify-between">
-                <h2 class="mine-text-primary text-base font-semibold">{{ __('Complete plan') }}</h2>
+                <h2 id="complete-plan-title" class="mine-text-primary text-base font-semibold">
+                    {{ __('Complete plan') }}
+                </h2>
                 <button
                     type="button"
                     @click="
@@ -769,7 +806,7 @@
             @endif
 
             <form class="flex flex-col gap-4" wire:submit="completePlan">
-                <div class="mt-4 flex justify-end gap-4">
+                <div class="mt-2 flex justify-end gap-4">
                     <x-mine.button
                         type="button"
                         @click="
@@ -777,21 +814,32 @@
                             $wire.cancelComplete();
                         "
                         class="mine-btn-ghost"
+                        size="sm"
                     >
-                        <p class="text-sm">{{ __('Cancel') }}</p>
-                    </x-mine.button>
-                    <x-mine.button wire:target="completePlan" class="mine-btn-primary">
-                        <p class="text-sm">{{ __('Complete') }}</p>
-                    </x-mine.button>
+                        {{ __('Cancel') }}</x-mine.button>
+                    <x-mine.button
+                        wire:target="completePlan"
+                        class="mine-btn-primary"
+                        size="sm"
+                    >
+                        {{ __('Complete') }}</x-mine.button>
                 </div>
             </form>
         </div>
     </x-mine.modal>
 
-    <x-mine.modal id="reopen-plan-confirmation" :close-by-clicking-away="false" :close-by-escaping="false" width="lg">
+    <x-mine.modal
+        id="reopen-plan-confirmation"
+        labelled-by="reopen-plan-title"
+        :close-by-clicking-away="false"
+        :close-by-escaping="false"
+        width="lg"
+    >
         <div class="px-6 py-6 sm:px-8">
             <div class="mb-6 flex items-center justify-between">
-                <h2 class="mine-text-primary text-base font-semibold">{{ __('Re active plan') }}</h2>
+                <h2 id="reopen-plan-title" class="mine-text-primary text-base font-semibold">
+                    {{ __('Re active plan') }}
+                </h2>
                 <button
                     type="button"
                     @click="
@@ -810,7 +858,7 @@
             </div>
 
             <form class="flex flex-col gap-4" wire:submit="reopenPlan">
-                <div class="mt-4 flex justify-end gap-4">
+                <div class="mt-2 flex justify-end gap-4">
                     <x-mine.button
                         type="button"
                         @click="
@@ -818,12 +866,15 @@
                             $wire.cancelReopen();
                         "
                         class="mine-btn-ghost"
+                        size="sm"
                     >
-                        <p class="text-sm">{{ __('Cancel') }}</p>
-                    </x-mine.button>
-                    <x-mine.button wire:target="reopenPlan" class="mine-btn-primary">
-                        <p class="text-sm">{{ __('Re active') }}</p>
-                    </x-mine.button>
+                        {{ __('Cancel') }}</x-mine.button>
+                    <x-mine.button
+                        wire:target="reopenPlan"
+                        class="mine-btn-primary"
+                        size="sm"
+                    >
+                        {{ __('Re active') }}</x-mine.button>
                 </div>
             </form>
         </div>

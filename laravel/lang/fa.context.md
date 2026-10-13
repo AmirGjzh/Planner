@@ -333,7 +333,6 @@ Reports | Dashboard | Errors | Components).
 "Medium"                                          → select option · priority (add/edit, filter, dashboard)
 "High"                                            → select option · priority (add/edit, filter, dashboard)
 "No plan"                                         → select option · unassigned plan (add/edit)
-"Add"                                             → unused · no call site found (flagged for removal)
 "Too many create-task attempts!"                  → inline alert title · warning · create rate limit
 "Too many edit-task attempts!"                    → inline alert title · warning · edit rate limit
 "Too many complete-task attempts!"                → inline alert title · warning · complete rate limit

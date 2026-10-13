@@ -233,10 +233,18 @@
         </x-mine.animate>
     @endisland
 
-    <x-mine.modal id="add-category-form" :close-by-clicking-away="false" :close-by-escaping="false" width="lg">
+    <x-mine.modal
+        id="add-category-form"
+        labelled-by="add-category-title"
+        :close-by-clicking-away="false"
+        :close-by-escaping="false"
+        width="lg"
+    >
         <div class="px-6 py-6 sm:px-8">
             <div class="mb-6 flex items-center justify-between">
-                <h2 class="mine-text-primary text-base font-semibold">{{ __('Add new category') }}</h2>
+                <h2 id="add-category-title" class="mine-text-primary text-base font-semibold">
+                    {{ __('Add new category') }}
+                </h2>
                 <button
                     type="button"
                     @click="
@@ -272,7 +280,7 @@
                         leftIcon="Folder"
                     />
                 </div>
-                <div class="mt-4 flex justify-end gap-4">
+                <div class="mt-2 flex justify-end gap-4">
                     <x-mine.button
                         type="button"
                         @click="
@@ -280,21 +288,32 @@
                             $wire.cancelAdd();
                         "
                         class="mine-btn-ghost"
+                        size="sm"
                     >
-                        <p class="text-sm">{{ __('Cancel') }}</p>
-                    </x-mine.button>
-                    <x-mine.button wire:target="addCategory" class="mine-btn-primary">
-                        <p class="text-sm">{{ __('Create') }}</p>
-                    </x-mine.button>
+                        {{ __('Cancel') }}</x-mine.button>
+                    <x-mine.button
+                        wire:target="addCategory"
+                        class="mine-btn-primary"
+                        size="sm"
+                    >
+                        {{ __('Create') }}</x-mine.button>
                 </div>
             </form>
         </div>
     </x-mine.modal>
 
-    <x-mine.modal id="edit-category-form" :close-by-clicking-away="false" :close-by-escaping="false" width="lg">
+    <x-mine.modal
+        id="edit-category-form"
+        labelled-by="edit-category-title"
+        :close-by-clicking-away="false"
+        :close-by-escaping="false"
+        width="lg"
+    >
         <div class="px-6 py-6 sm:px-8">
             <div class="mb-6 flex items-center justify-between">
-                <h2 class="mine-text-primary text-base font-semibold">{{ __('Edit category') }}</h2>
+                <h2 id="edit-category-title" class="mine-text-primary text-base font-semibold">
+                    {{ __('Edit category') }}
+                </h2>
                 <button
                     type="button"
                     @click="
@@ -330,7 +349,7 @@
                         leftIcon="Folder"
                     />
                 </div>
-                <div class="mt-4 flex justify-end gap-4">
+                <div class="mt-2 flex justify-end gap-4">
                     <x-mine.button
                         type="button"
                         @click="
@@ -338,12 +357,15 @@
                             $wire.cancelEdit();
                         "
                         class="mine-btn-ghost"
+                        size="sm"
                     >
-                        <p class="text-sm">{{ __('Cancel') }}</p>
-                    </x-mine.button>
-                    <x-mine.button wire:target="editCategory" class="mine-btn-primary">
-                        <p class="text-sm">{{ __('Edit') }}</p>
-                    </x-mine.button>
+                        {{ __('Cancel') }}</x-mine.button>
+                    <x-mine.button
+                        wire:target="editCategory"
+                        class="mine-btn-primary"
+                        size="sm"
+                    >
+                        {{ __('Edit') }}</x-mine.button>
                 </div>
             </form>
         </div>
@@ -351,13 +373,16 @@
 
     <x-mine.modal
         id="delete-category-confirmation"
+        labelled-by="delete-category-title"
         :close-by-clicking-away="false"
         :close-by-escaping="false"
         width="lg"
     >
         <div class="px-6 py-6 sm:px-8">
             <div class="mb-6 flex items-center justify-between">
-                <h2 class="mine-text-primary text-base font-semibold">{{ __('Delete category') }}</h2>
+                <h2 id="delete-category-title" class="mine-text-primary text-base font-semibold">
+                    {{ __('Delete category') }}
+                </h2>
                 <button
                     type="button"
                     @click="
@@ -383,7 +408,7 @@
             @endif
 
             <form class="flex flex-col gap-4" wire:submit="deleteCategory">
-                <div class="mt-4 flex justify-end gap-4">
+                <div class="mt-2 flex justify-end gap-4">
                     <x-mine.button
                         type="button"
                         @click="
@@ -391,12 +416,15 @@
                             $wire.cancelDelete();
                         "
                         class="mine-btn-ghost"
+                        size="sm"
                     >
-                        <p class="text-sm">{{ __('Cancel') }}</p>
-                    </x-mine.button>
-                    <x-mine.button wire:target="deleteCategory" class="mine-btn-danger">
-                        <p class="text-sm">{{ __('Delete') }}</p>
-                    </x-mine.button>
+                        {{ __('Cancel') }}</x-mine.button>
+                    <x-mine.button
+                        wire:target="deleteCategory"
+                        class="mine-btn-danger"
+                        size="sm"
+                    >
+                        {{ __('Delete') }}</x-mine.button>
                 </div>
             </form>
         </div>
