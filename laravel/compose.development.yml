@@ -2,10 +2,11 @@ name: planner-development
 
 services:
   workspace:
-    container_name: planner-development-workspace
+    container_name: planner-workspace
+    image: planner-workspace:latest
     build:
-      context: ..
-      dockerfile: ./docker/development/php-cli/Dockerfile
+      context: ../docker/development/php-cli
+      dockerfile: Dockerfile
     restart: unless-stopped
     user: "${UID:-1000}:${GID:-1000}"
     tty: true
@@ -59,7 +60,7 @@ services:
 
   redis:
     container_name: planner-development-redis
-    image: redis:8.10
+    image: redis:8.10-alpine
     restart: unless-stopped
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}

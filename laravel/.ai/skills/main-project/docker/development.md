@@ -15,11 +15,11 @@ Describes the local development stack: one workspace container with the full PHP
 |---|---|
 | Orchestration | Docker Compose v2 (`laravel/compose.development.yml`), project `planner-development` |
 | Workspace image | `php:8.4-cli` (Debian/glibc) built from `docker/development/php-cli/Dockerfile` |
-| Build stages | `composer:2.10`, `node:24` (toolchain; never installed in-image) |
-| Services | `planner-development-workspace` + `-mariadb` + `-redis` + `-mailpit` |
+| Build stages | `node:24-slim` (toolchain; never installed in-image); composer = pinned phar + sha256 |
+| Services | `planner-workspace` + `planner-development-{mariadb,redis,mailpit}` |
 | Volumes | `database` + `redis` (appendonly) + `playwright` (Chromium; workspace is stateless) |
 | Host ports | `8000` (artisan serve), `5173` (Vite HMR), `8025` (Mailpit UI) — MariaDB/Redis/SMTP expose none |
-| PHP extensions | `pdo_mysql, pdo_sqlite, intl, mbstring, zip, bcmath, gd, sockets, pcntl, redis` |
+| PHP extensions | `pdo_mysql, pdo_sqlite, intl, mbstring, zip, sockets, pcntl, redis` |
 | Tests | Pest on SQLite `:memory:` — `pdo_sqlite` is required |
 | Restart / logging | `unless-stopped`; `json-file` capped 10m × 3 |
 
@@ -41,7 +41,7 @@ Describes the local development stack: one workspace container with the full PHP
   ┌──────────────┬────────────────┐
   │  :8000 ◄─────┘   :5173        │
   ▼                              │
- planner-development-workspace ◄─ bind mount ./:/var/www
+ planner-workspace ◄─ bind mount ./:/var/www
   artisan serve 0.0.0.0:8000      │
   Vite dev    0.0.0.0:5173        │
  ──► mariadb (DNS, :3306)        │
@@ -49,7 +49,7 @@ Describes the local development stack: one workspace container with the full PHP
  ──► mailpit (DNS, :1025)        │
  └──────────┬───────────────────┘
 planner-development-mariadb (mariadb:12.3, data in database volume)
-planner-development-redis (redis:8.10)
+planner-development-redis (redis:8.10-alpine)
 planner-development-mailpit (axllent/mailpit:v1.27, UI published on host :8025)
 ```
 
@@ -62,7 +62,7 @@ host ports. Secrets arrive by compose interpolation, not `MARIADB_PWD` (see shar
 ```
 /
 ├── planner / planner-dev           command wrappers (see shared-conventions)
-├── .dockerignore                   build-context filter (with comments)
+├── .dockerignore                   prod build-context filter (with comments); dev no longer needs it (see below)
 ├── docker/development/php-cli/     Dockerfile (dev toolchain image)
 ├── docker/production/              prod images (see production.md)
 └── laravel/
@@ -80,6 +80,12 @@ host ports. Secrets arrive by compose interpolation, not `MARIADB_PWD` (see shar
 
 Single-file Compose v2 spec. Facts:
 
+- **workspace**: build context is `../docker/development/php-cli` (relative to the compose
+  file) — the Dockerfile's own
+  directory, containing nothing but the Dockerfile. The dev image COPYs nothing from the
+  context (tools come from donor stages + downloads), so there is no reason to ship the
+  repo as context; this also makes the build immune to repo churn and independent of the
+  root `.dockerignore` (which filters the **prod** context only).
 - **workspace**: no `env_file` — Laravel reads the bind-mounted `laravel/.env` directly.
   Only `APP_KEY` is enforced via compose `${APP_KEY:?Set APP_KEY in .env}` (must already be
   in `.env` before the first `up`). `tty` + `stdin_open` keep it interactive; `depends_on`
@@ -87,7 +93,9 @@ Single-file Compose v2 spec. Facts:
 - **mariadb**: `mariadb:12.3`, `MARIADB_ROOT_PASSWORD`/`DB_PASSWORD` required via `${VAR:?}`, data in
   the `database` volume, exec-form healthcheck `mariadb -uroot -p"${MARIADB_ROOT_PASSWORD}" -e
   'SELECT 1'` with `start_period: 30s`. **Never set `MARIADB_PWD`** (breaks first-boot init).
-- **redis**: `redis:8.10`, `requirepass` via `REDIS_PASSWORD`, `--appendonly yes` with a
+- **redis**: `redis:8.10-alpine` (same redis, musl-built — self-contained binary service,
+  so alpine is safe here; ~70MB smaller pull), `requirepass` via `REDIS_PASSWORD`,
+  `--appendonly yes` with a
   `redis:/data` volume (jobs in flight survive `down`/`up`), healthcheck `redis-cli ping`
   authed through `REDISCLI_AUTH`.
 - **mailpit**: `axllent/mailpit:v1.27`, publishes only the web UI (`8025:8025`); SMTP 1025
@@ -104,20 +112,31 @@ Single-file Compose v2 spec. Facts:
 
 Multi-stage toolchain image. Structure:
 
-- `FROM node:24 AS node`, `FROM composer:2.10 AS composer`, `FROM php:8.4-cli`.
-- apt installs only runtime deps: `libonig-dev libicu-dev libzip-dev libpng-dev libjpeg-dev
-  libfreetype6-dev libsqlite3-dev` + `curl unzip git ca-certificates`; then
-  `docker-php-ext-configure gd --with-freetype --with-jpeg` and installs
-  `pdo_mysql pdo_sqlite intl mbstring zip bcmath gd sockets pcntl`; `pecl install redis`
-  + enable. `sockets`/`pcntl` serve pest-plugin-browser's in-process Amp server — without
-  `pcntl`, every run ends in a SIGTERM backtrace.
+- `FROM node:24-slim AS node`, `FROM php:8.4-cli`. Composer arrives as a **pinned phar**
+  (version + sha256 baked in the Dockerfile, `sha256sum -c` at build) — replaces the
+  `composer:2.10` donor image (~180MB) which floated patches within the minor; bump both
+  pinned values together.
+- apt installs only what the built extensions link against: `libonig-dev libicu-dev
+  libzip-dev libsqlite3-dev` + `curl unzip git ca-certificates procps`; then installs
+  `pdo_mysql pdo_sqlite intl mbstring zip sockets pcntl`; `pecl install redis-6.3.0`
+  (pinned — unpinned pecl floats to a newer ext on rebuild) + enable. `sockets`/`pcntl`
+  serve pest-plugin-browser's in-process Amp server — without `pcntl`, every run ends in a
+  SIGTERM backtrace. `procps` supplies `ps` — tree-kill (concurrently's dep behind
+  `composer run dev`) spawns it on Ctrl+C to kill the dev process tree; the base image
+  lacks it, so shutdown otherwise throws `spawn ps ENOENT`. No `gd`/`bcmath`: zero call
+  sites in app, routes, config, views, or tests; every composer.lock mention is a
+  `suggest`, never a hard `require`.
 - **`npx -y playwright@1.64.0 install-deps chromium`** bakes the browser's system
   libraries; the version must match `laravel/package.json`'s exact pin or deps and browser
   drift apart. The Chromium download itself goes to the `playwright` volume (one-time
   `npx playwright install chromium` — README step 8).
-- **Debian, not Alpine** — Node's alpine builds are musl and cannot run in a glibc PHP
-  image; `node:24` (no suffix) is glibc, the exact tag prod uses.
-- composer phar copied from the composer stage; node + npm/npx from the node stage (npm/npx
+- **`node:24-slim` donor, glibc — services may be Alpine, the PHP image may not.** The node
+  stage exists only to donate `/usr/local/bin/node` + `lib/node_modules`; the binaries are
+  identical in slim and full (same official build — verified `node v24.x` in-container), and
+  slim skips ~300MB of OS layers nothing reads. Node's alpine builds are musl and cannot run
+  in the glibc PHP image, so the donor stays Debian. Self-contained binary *services*
+  (redis) may take alpine freely — nothing is copied out of them.
+- composer phar downloaded pinned + checksum-verified; node + npm/npx from the node stage (npm/npx
   symlinked into `/usr/local/bin`). Node source install rejected (Python/pip cruft).
 - `HOME=/home/workspace` (created, owned 1000:1000) so `~/.npm`, `~/.composer`, `~/.git`
   are writable — the earlier `EACCES /.npm` failure.

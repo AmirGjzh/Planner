@@ -10,13 +10,13 @@ and `production.md` reference it instead of repeating it.
 
 | Service | Image / source | Dev | Prod |
 |---|---|---|---|
-| App runtime | dev `php:8.4-cli` (workspace) / prod `php:8.4-fpm` | `planner-development-workspace` | `planner-php-fpm` |
-| Queue worker | consumes the redis queue | `queue:listen` inside the workspace (`composer run dev`) | `planner-queue` (same image as php-fpm, `queue:work`) |
-| Web | none (artisan serve) | — | `planner-nginx` (`nginx:1.30`) |
+| App runtime | dev `php:8.4-cli` (workspace) / prod `php:8.4-fpm` | `planner-workspace` | `planner-php-fpm` |
+| Queue worker | consumes the redis queue | `queue:listen` inside the workspace (`composer run dev`) | `planner-queue` (same image as php-fpm, `queue:work`, `SKIP_MIGRATE=1` so it doesn't re-run boot migrations) |
+| Web | none (artisan serve) | — | `planner-nginx` (`nginx:1.30-alpine`) |
 | MariaDB | `mariadb:12.3` (official) | no host port, own volume | `planner-mariadb` |
-| Redis | `redis:8.10` (official, `--appendonly yes` + volume) | no host port | `planner-redis` |
+| Redis | `redis:8.10-alpine` (official, `--appendonly yes` + volume) | no host port | `planner-redis` |
 | Mail | `axllent/mailpit:v1.27` (SMTP capture + web UI) | `planner-development-mailpit` (UI :8025) | `planner-mailpit` (UI :8025) |
-| Build tools | `composer:2.10` + `node:24` (stages, never installed in-image) | both stacks | both stacks |
+| Build tools | `node:24-slim` (dev: donor for the node/npm binaries copied into the workspace; prod: frontend build stage) + Composer phar 2.10.3 + sha256 pinned identically in both builders | both stacks | both stacks |
 
 Service names are the DNS hostnames inside the shared user network (`DB_HOST=mariadb`,
 `REDIS_HOST=redis`, `MAIL_HOST=mailpit`). Compose project names are hard-coded in the compose files
@@ -51,10 +51,13 @@ Service names are the DNS hostnames inside the shared user network (`DB_HOST=mar
   exception in bookkeeping, not in form: its image ships a built-in exec-form
   `HEALTHCHECK CMD ["/mailpit", "readyz"]`, so neither compose file declares one.
 - Boot order via `depends_on: condition: service_healthy`: mariadb + redis → app → nginx +
-  queue (prod). Services do not start until dependencies pass health checks; mariadb has
+  queue (prod); php-fpm and queue additionally wait for mailpit `service_started` (SMTP
+  reachable before any send). Services do not start until dependencies pass health checks;
+  mariadb has
   `start_period: 30s` for slow first-boot init. The queue worker has no port and no
   healthcheck (mailpit precedent) — it is ordered after healthy php-fpm so boot-time
-  `migrate --seed` never races.
+  `migrate --seed` never races; its entrypoint then skips the (already finished) migrate
+  run via `SKIP_MIGRATE=1`.
 - Every service: `restart: unless-stopped` and `logging: json-file, max-size 10m, max-file 3`.
 
 ## `planner` / `planner-dev` wrappers
@@ -75,15 +78,17 @@ per stack, so nothing cross-contaminates.
 
 ## Production seeding decision
 
-`docker/production/php-fpm/entrypoint.sh` runs `migrate --seed --force` on every boot, so
-production **does seed**. `database/seeders/UserSeeder.php` is currently an empty no-op
+`docker/production/entrypoint.sh` runs `migrate --seed --force` on every php-fpm boot, so
+production **does seed**. The queue service sets `SKIP_MIGRATE=1`, so its entrypoint skips
+both migrate and seed (php-fpm — which it waits for — already did them).
+`database/seeders/UserSeeder.php` is currently an empty no-op
 placeholder, so seeding has no effect today; if that seeder ever creates real users, revisit
 this line before deploying (a known-credential dev seed must not reach production).
 
 ## Shared context worth knowing
 
-- Assets are built **twice** on the prod path — once in each image — with the same pins and
-  lockfiles, so nginx can serve the exact files php-fpm references via `@vite`.
+- Prod builds assets **once** in a shared `frontend` build stage; both final images copy
+  from that single build, so nginx serves the exact files php-fpm references via `@vite`.
 - Prod has **no bind mounts**; the repo is the immutable artifact (build context is the repo
   root, filtered by `.dockerignore`). Dev bind-mounts the repo into the workspace.
 - `npm ci --no-audit --no-fund` everywhere for reproducible builds from lockfiles.

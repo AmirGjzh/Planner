@@ -8,7 +8,11 @@ if [ -z "${APP_KEY}" ] || [[ "${APP_KEY}" != base64:* ]] || [ "${#raw_key}" -ne 
     exit 1
 fi
 
-php artisan migrate --seed --force
+# SKIP_MIGRATE=1 (set only on the queue service) skips the migrate+seed run: php-fpm
+# already did it on boot and the queue starts only after php-fpm is healthy.
+if [ "${SKIP_MIGRATE:-0}" != "1" ]; then
+    php artisan migrate --seed --force
+fi
 php artisan optimize
 
 exec "$@"

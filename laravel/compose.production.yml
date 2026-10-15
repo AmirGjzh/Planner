@@ -3,9 +3,10 @@ name: planner
 services:
   php-fpm:
     container_name: planner-php-fpm
+    image: planner-app:latest
     build:
       context: ..
-      dockerfile: ./docker/production/php-fpm/Dockerfile
+      dockerfile: ./docker/production/Dockerfile
       target: production
     restart: unless-stopped
     env_file:
@@ -26,6 +27,10 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      # service_started: any mail sent right after boot (first request, seeded flow)
+      # must reach the SMTP listener instead of racing it.
+      mailpit:
+        condition: service_started
     healthcheck:
       test: ["CMD", "php", "-r", "exit(@fsockopen('127.0.0.1', 9000) ? 0 : 1);"]
       interval: 10s
@@ -35,15 +40,16 @@ services:
 
   queue:
     container_name: planner-queue
-    build:
-      context: ..
-      dockerfile: ./docker/production/php-fpm/Dockerfile
-      target: production
+    # Same image as php-fpm (built once as planner-app:latest; no separate build).
+    image: planner-app:latest
     restart: unless-stopped
     env_file:
       - .env
     environment:
       APP_KEY: ${APP_KEY:?Set APP_KEY in .env}
+      # php-fpm migrates + seeds on its own boot (queue waits for its healthcheck);
+      # SKIP_MIGRATE keeps the worker from re-running it on every start.
+      SKIP_MIGRATE: "1"
     command: ["php", "artisan", "queue:work", "--tries=3", "--sleep=1"]
     volumes:
       - storage:/var/www/storage
@@ -57,12 +63,16 @@ services:
     depends_on:
       php-fpm:
         condition: service_healthy
+      mailpit:
+        condition: service_started
 
   nginx:
     container_name: planner-nginx
+    image: planner-nginx:latest
     build:
       context: ..
-      dockerfile: ./docker/production/nginx/Dockerfile
+      dockerfile: ./docker/production/Dockerfile
+      target: nginx
     restart: unless-stopped
     ports:
       - "80:80"
@@ -110,7 +120,7 @@ services:
 
   redis:
     container_name: planner-redis
-    image: redis:8.10
+    image: redis:8.10-alpine
     restart: unless-stopped
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}

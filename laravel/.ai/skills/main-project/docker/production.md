@@ -17,10 +17,11 @@ documentation.
 |---|---|
 | Deployment model | Single host, LAN, plain HTTP, no domain, personal/small usage |
 | Orchestration | Docker Compose v2 (`laravel/compose.production.yml`), project `planner` |
-| php-fpm image | `php:8.4-fpm`, multi-stage (see Dockerfile), runs as `www-data` |
-| nginx image | `nginx:1.30`, serves `/var/www/public` + proxies PHP |
-| MariaDB / Redis | `mariadb:12.3` (own volume) / `redis:8.10` (appendonly volume) |
-| Build-only | `composer:2.10`, `node:24` |
+| php-fpm image | `php:8.4-fpm`, multi-stage (see Dockerfile), runs as `www-data`; queue shares this exact image (`planner-app:latest`) |
+| nginx image | `nginx:1.30-alpine`, serves `/var/www/public` + proxies PHP; `curl` via apk for the healthcheck |
+| MariaDB / Redis | `mariadb:12.3` (own volume) / `redis:8.10-alpine` (appendonly volume) |
+| Build-only | `node:24-slim` (frontend stage); Composer = pinned phar 2.10.3 + sha256 in the builder (no donor image) |
+| Dockerfiles | one file, `docker/production/Dockerfile`, two final targets (`production`, `nginx`) |
 | Containers | `planner-php-fpm`, `planner-queue`, `planner-nginx`, `planner-mariadb`, `planner-redis`, `planner-mailpit` |
 | Volumes | `planner_database`, `planner_storage`, `planner_redis` |
 | Host ports | `80:80` (nginx), `8025:8025` (Mailpit UI) |
@@ -45,7 +46,7 @@ documentation.
              v
    planner-php-fpm        runs the app; entrypoint runs setup each boot, then php-fpm
    planner-queue          same image; entrypoint, then queue:work (consumes redis jobs)
-        |  mariadb:12.3 (data in volume)  | redis:8.10 (sessions/cache/jobs, appendonly)
+        |  mariadb:12.3 (data in volume)  | redis:8.10-alpine (sessions/cache/jobs, appendonly)
         v                                 v
    planner-mariadb                        planner-redis        planner-mailpit (SMTP :1025, UI :8025)
 ```
@@ -53,8 +54,8 @@ documentation.
 - Container names are DNS (`mariadb`, `redis`, `php-fpm`, `nginx` upstream). nginx and the
   Mailpit UI publish ports; MariaDB/Redis/SMTP do not.
 - nginx serves assets from its own baked `public/build`; php-fpm renders `@vite` from its own
-  copy. **Assets are built twice** (once per image) with identical pins/lockfiles so the
-  output matches.
+  copy. Both copies come from **one shared vite build** (the `frontend` stage) — single
+  install graph, no skew possible.
 - Boot chain (healthchecks): mariadb + redis → php-fpm → nginx + queue. Mailpit is
   deliberately outside the chain — mail capture must never gate the app.
 
@@ -65,8 +66,9 @@ documentation.
 ├── planner / planner-dev           command wrappers
 ├── .dockerignore                   build-context filter (with comments)
 ├── docker/production/
-│   ├── php-fpm/Dockerfile + entrypoint.sh
-│   └── nginx/Dockerfile + conf.d/default.conf
+│   ├── Dockerfile                   multi-stage: builder → frontend → production + nginx
+│   ├── entrypoint.sh
+│   └── nginx/conf.d/default.conf
 ├── docker/development/              dev image (see development.md)
 └── laravel/
     ├── compose.production.yml      prod stack definition
@@ -83,14 +85,18 @@ documentation.
 
 Single-file Compose v2 spec.
 
-- **php-fpm**: built with `target: production`; `env_file: .env` (full environment);
+- **php-fpm**: `image: planner-app:latest`, built from the shared Dockerfile with
+  `target: production`; `env_file: .env` (full environment);
   `APP_KEY: ${APP_KEY:?Set APP_KEY in .env}` guard; `storage:/var/www/storage` volume;
   healthcheck `php -r 'exit(@fsockopen(...9000) ? 0 : 1)'`.
-- **queue**: same image (`target: production`) with `command: php artisan queue:work
-  --tries=3 --sleep=1`; same `env_file`/`APP_KEY` guard/`storage` volume/logging as
-  php-fpm; `depends_on: php-fpm` healthy (boot-time `migrate --seed` never races). No port
+- **queue**: `image: planner-app:latest` with **no build section** — it runs the exact
+  image php-fpm built (one image, zero duplicate build); `command: php artisan queue:work
+  --tries=3 --sleep=1`; `SKIP_MIGRATE=1` so its entrypoint skips the migrate+seed php-fpm
+  already ran (it starts only after php-fpm is healthy; `optimize` still runs). Same
+  `env_file`/`APP_KEY` guard/`storage` volume/logging as
+  php-fpm; `depends_on: php-fpm` healthy + `mailpit` started. No port
   → no healthcheck (mailpit precedent).
-- **nginx**: built from the nginx Dockerfile; `80:80`; healthcheck `curl -fs
+- **nginx**: built from the same Dockerfile (`target: nginx`); `80:80`; healthcheck `curl -fs
   http://127.0.0.1/up`; depends on healthy php-fpm.
 - **mariadb**: `MARIADB_ROOT_PASSWORD`/`DB_PASSWORD` required via `${VAR:?}`, DB/user from
   `DB_DATABASE`/`DB_USERNAME`; real-auth healthcheck (`mariadb -e 'SELECT 1'`, never
@@ -100,39 +106,53 @@ Single-file Compose v2 spec.
   survive restarts (the queue needs it).
 - **mailpit**: `axllent/mailpit:v1.27`, publishes only the web UI (`8025:8025`); SMTP 1025
   stays internal (`mailpit:1025` from php-fpm). No compose healthcheck — the image ships a
-  built-in exec-form `HEALTHCHECK ["/mailpit", "readyz"]`. Not in any `depends_on` chain
-  and no volume (captured mail is disposable test data).
+  built-in exec-form `HEALTHCHECK ["/mailpit", "readyz"]`. Referenced by php-fpm/queue
+  `depends_on` as `service_started` (boot ordering only — decisions row 38); no volume
+  (captured mail is disposable test data).
 - All secrets enforced via `${VAR:?msg}` — Compose aborts naming the missing one. Never
   `MARIADB_PWD` (breaks first-boot init; see shared-conventions).
 - Explicit `name: planner` keeps volume prefix stable regardless of checkout directory.
 - Logging capped (the app is chatty: `LOG_LEVEL=info`, access logs) so unbounded Docker logs
   can't fill the disk.
 
-### `docker/production/php-fpm/Dockerfile`
+### `docker/production/Dockerfile`
 
-Multi-stage image. Stages:
+One multi-stage file serving both final images — **one composer install, one npm ci, one
+vite build per clean build** (BuildKit shares the common stages across the two target
+builds). Final targets:
 
-1. `composer:2.10 AS composer` — pinned Composer binary (also reused by nginx's build).
-2. `php:8.4-fpm AS builder` — compiles extensions (`pdo_mysql intl mbstring zip bcmath gd` +
-   pecl `redis`), layer-cached `composer install --no-dev --no-scripts
-   --optimize-autoloader` (only `composer.*` copied first, so app edits don't bust the
-   dependency layer), then the full source + `package:discover`. Discarded after artifacts
-   are extracted.
-3. `node:24 AS frontend` — `npm ci --no-audit --no-fund`, copies `vendor/` from builder (so
-   Vite can resolve the Livewire ESM import), `npm run build`.
-4. `php:8.4-fpm AS production` — re-installs the `-dev` system packages (their runtime names
-   are not stable across the tag's base Debian releases — bookworm/trixie shifts like
-   `libzip4`→`libzip5`), copies compiled `.so` files + `conf.d/*.ini` + `docker-php-ext-*`
-   helpers, `mv php.ini-production php.ini` (no custom ini — base image already loads opcache
-   with sane defaults), copies app + `public/build`, `chown` to `www-data`, `USER www-data`.
+- **`target: production`** → `planner-app:latest`, run by both `php-fpm` and `queue`.
+- **`target: nginx`** → static assets + fastcgi proxy.
+
+Stages:
+
+1. `php:8.4-fpm AS builder` — compiles extensions (`pdo_mysql intl mbstring zip pcntl` + pecl
+   `redis`, pinned `redis-6.3.0`; `pcntl` drains the queue worker on SIGTERM — decisions row
+   36; no `gd`/`bcmath` — zero call sites, same evidence as dev),
+   installs the pinned Composer phar 2.10.3 with sha256 verification (`curl`/`ca-certificates`
+   ship in the base image — no donor stage, no apt), layer-cached `composer install --no-dev
+   --no-scripts --optimize-autoloader` (only `composer.*` copied first, so app edits don't
+   bust the dependency layer), then the full source + `package:discover`. Discarded after
+   artifacts are extracted.
+2. `node:24-slim AS frontend` — `npm ci --no-audit --no-fund`, copies `vendor/` from builder (so
+   Vite can resolve the Livewire ESM import in `resources/js/app.js`), `npm run build`. Every
+   npm dependency is pure JS or ships a prebuilt linux-x64 glibc binary — nothing compiles, so
+   slim needs no toolchain. Both final images take their assets from this single build — no
+   skew possible.
+3. `php:8.4-fpm AS production` — installs the **runtime** libs only (`libicu76 libonig5
+   libzip5`, ~55MB lighter than the `-dev` packages; names pinned to the base's Debian release,
+   loud `apt-get` failure on a release move — see decisions log), copies compiled `.so` files +
+   `conf.d/*.ini` + `docker-php-ext-*` helpers, `mv php.ini-production php.ini` (no custom ini
+   — base image already loads opcache with sane defaults), copies the app with
+   `COPY --chown=www-data` + a one-directory `chown` for `/var/www` itself
+   (no `chown -R` — decisions row 37), `public/build`
+   root-owned (the app only reads the manifest), `USER www-data`.
+4. `nginx:1.30-alpine AS nginx` — the vhost, `curl` via apk (healthcheck only; keeps the
+   `curl -fs /up` semantics busybox wget lacks), and `public/` copied from the shared
+   `frontend` stage. No composer/npm/vite here anymore — previously this file was a second,
+   duplicate build graph.
 
 **No composer binary in the runtime image** (build-time only), verified intent.
-
-### `docker/production/nginx/Dockerfile`
-
-`composer:2.10` + `node:24` stages build `vendor/` and assets; runtime is
-`nginx:1.30` with the vhost, built `public/` tree, and `curl` (apt — used only by the
-healthcheck; the Debian nginx image has no `wget`).
 
 ### `docker/production/nginx/conf.d/default.conf`
 
@@ -155,16 +175,20 @@ Single vhost. Facts worth knowing:
   X-Powered-By`.
 - `location ~ /\.(?!well-known).*` → `deny all` (a stray `.env` in `public/` is never served).
 
-### `docker/production/php-fpm/entrypoint.sh`
+### `docker/production/entrypoint.sh`
 
 Entrypoint: validates `APP_KEY` (`base64:` prefix, decodes to exactly 32 bytes for
-AES-256-CBC), then `php artisan migrate --seed --force` and `php artisan optimize`, then
+AES-256-CBC), then `php artisan migrate --seed --force` **unless `SKIP_MIGRATE=1`**, then
+`php artisan optimize`, then
 `exec "$@"` — the image `CMD` decides the process (`php-fpm` for the web service, the
 `queue` service overrides it with `queue:work`); pid 1 receives it, signals work.
 
 - The key guard catches the common mistake of pasting a bare `openssl rand -base64 32`
   output without the `base64:` prefix. It only reports the problem — fix is on the host.
-- **Seeds on every boot** — see the seeding decision in `shared-conventions.md`. `UserSeeder` is a
+- **`SKIP_MIGRATE=1` is set only on the queue service**: php-fpm migrates + seeds on its own
+  boot and the queue starts only after php-fpm is healthy, so the worker skips the redundant
+  run. php-fpm itself never sets it — the web tier remains the boot-time migrator.
+- **Seeds on every php-fpm boot** — see the seeding decision in `shared-conventions.md`. `UserSeeder` is a
   no-op today, but this line must be revisited before that ever creates real users
   (a known-credential dev seed must not reach production).
 - `migrate --force` is idempotent; `optimize` bakes config/routes/views, which is why
@@ -251,9 +275,10 @@ file-by-file sections above; this is the one-line record.
    over.
 2. **Build assets in BOTH images** — php-fpm renders `@vite`, nginx serves files. Rejected a
    shared-asset builder volume: ordering hacks; duplicating with identical pins is simpler.
-3. **Pinned MAJOR.MINOR tags** (`composer:2.10`, `php:8.4-fpm`, `node:24`, `nginx:1.30`,
-   `mariadb:12.3`, `redis:8.10`) — patch updates come free per rebuild; minor moves are
-   deliberate acts.
+   *(Superseded by row 30 — one build graph, each image still carries its own copy.)*
+3. **Pinned base/tool versions** (`php:8.4-fpm`, `mariadb:12.3`, `redis:8.10-alpine`,
+   `nginx:1.30-alpine`, `node:24-slim`, Composer phar 2.10.3 + sha256, pecl `redis-6.3.0`) —
+   patch updates come free per rebuild; minor moves are deliberate acts.
 4. **No custom php.ini / pool conf** — base image ships production-sane defaults incl.
    opcache (verified loaded).
 5. **Redis for sessions+cache, MariaDB for data** — Redis runs without a volume (loss = forced
@@ -266,7 +291,8 @@ file-by-file sections above; this is the one-line record.
 9. **`trustProxies('*')`** — behind our only proxy (nginx sets `X-Forwarded-*`). Rejected a
    proxy IP list: the host's Docker bridge IP varies.
 10. **Entrypoint guards `APP_KEY`, runs `migrate --seed --force` + `optimize` on every boot
-    ** — see shared-conventions for the seeding caveat.
+    ** (migrate skipped on the queue via `SKIP_MIGRATE=1`, row 35) — see shared-conventions
+    for the seeding caveat.
 11. **Dedicated redis `session` connection (DB 2)** — key-space isolation from cache/default.
 12. **Single named network; only nginx (80) and the Mailpit UI (8025) publish ports** —
     MariaDB/Redis unreachable by accident. Mailpit is the deliberate exception: a capture
@@ -280,19 +306,24 @@ file-by-file sections above; this is the one-line record.
 16. **Small hardening**: `server_tokens off`, security headers, dotfile-deny, `/build`
     immutable cache, `client_max_body_size` above nginx's 1 MB default.
 17. **`laravel/.env.production` committed; `.env` ignored.**
-18. **`unzip` in the builder** (`--prefer-dist` + PECL tarballs); `curl` removed from the
-    builder apt (leftover from the old composer curl-installer).
+18. **`unzip` in the builder** (`--prefer-dist` + PECL tarballs); `curl` deliberately not in
+    the builder apt — the pinned-phar download uses the `curl` binary that ships in the php
+    base image (an apt-installed curl was a leftover of the old composer curl-installer).
 19. **Secrets enforced at compose level** `${VAR:?msg}` + entrypoint `APP_KEY` format guard —
     replaced old `:-root`/`:-` fallbacks that silently defaulted to weak/empty values.
 20. **`start_period: 30s` on mariadb** — first boot init is slow; without it mariadb flips
     "unhealthy" during init.
-21. **Production stage keeps `-dev` libs** — their names are stable across the tag's base
-    Debian release changes; the runtime names are not. Slimming isn't worth build fragility.
+21. **Production stage installs runtime libs only** (`libicu76 libonig5 libzip5`) — supersedes
+    the earlier `-dev` stance: the `-dev` packages carried ~55MB of headers/static libs for
+    nothing. The names are pinned to the base's Debian release (trixie today): a release move
+    breaks them **loudly** at `apt-get install` (build fails, nothing reaches runtime); the fix
+    is reinstalling the old names' package set in the last working image (`dpkg -l`) —
+    ~3 names. The in-Dockerfile comment marks the failure site.
 22. **`npm ci --no-audit --no-fund`** — reproducible from lockfiles, quiet, fast.
-23. **All-Debian, no-suffix base images** (`node:24`, `nginx:1.30`, `redis:8.10` were
-    `-alpine`) — one distro everywhere for free (mariadb has no Alpine variant anyway). Costs
-    size only. The Debian nginx image ships no `wget`, so nginx installs `curl` for its
-    healthcheck.
+23. **Debian for anything glibc/PHP-bound, Alpine where it loses nothing** — `php:8.4-fpm`
+    and the node stages stay Debian; `redis` and `nginx` are `-alpine` (row 34; they were
+    Debian once when the project-wide no-alpine rule stood). mariadb has no Alpine variant.
+    nginx:alpine ships no curl, so its stage `apk add curl` for the healthcheck.
 24. **Healthchecks real, not just "alive"** — mariadb `SELECT 1` (not `mariadb-admin ping` which
     passes on failed auth), nginx `curl -fs /up`, redis `ping` via `REDISCLI_AUTH`, php-fpm
     TCP 9000; all exec-form, no shell.
@@ -301,8 +332,9 @@ file-by-file sections above; this is the one-line record.
     after the full source copy.
 26. **Mailpit (`axllent/mailpit:v1.27`) replaces the framework `log` mailer in both stacks** —
     the app sends over SMTP to `mailpit:1025`, everything is read in the UI on 8025. No
-    compose healthcheck (the image ships `/mailpit readyz`), no `depends_on` (mail capture
-    never blocks boot), no volume (disposable).
+    compose healthcheck (the image ships `/mailpit readyz`); php-fpm/queue `depends_on` it as
+    `service_started` (boot ordering, still never *blocks* boot — row 38); no volume
+    (disposable).
 27. **Redis persistence (`--appendonly yes` + `planner_redis` volume), both stacks** —
     precondition for the redis-backed queue: jobs must survive restarts; supersedes row 5's
     no-volume stance (sessions/cache persisting too is harmless).
@@ -312,6 +344,53 @@ file-by-file sections above; this is the one-line record.
 29. **Mailpit UI left unauthenticated on 8025** — deliberately skipped again in the UC-1
     step-3 security pass: temporary capture tool, not part of later production; row 12's
     `MP_UI_AUTH`/loopback revisit stands if the stack ever serves anyone beyond this machine.
+30. **One Dockerfile, one build graph, one app image** — `docker/production/Dockerfile`
+    (targets `production` + `nginx`) replaced the separate php-fpm/nginx Dockerfiles: nginx
+    was running a second composer install + npm ci + vite build, and the queue built an
+    image identical to php-fpm's. Shared stages make those runs once per clean build; nginx
+    copies `public/` and the queue runs `planner-app:latest` with no build section.
+    Supersedes row 2's duplication stance (each image still carries its own asset copy —
+    the copies just come from one build now).
+31. **Prod drops `gd` + `bcmath`** — same zero-call-site evidence as dev (repo-wide grep,
+    composer.lock only `suggest`, no hard requires; prod's `--no-dev` dependency set is a
+    subset of dev's). Removes the gd compile + its png/jpeg/freetype `-dev` libs.
+32. **Production stage swaps `-dev` for runtime lib names** — row 21's stance reversed with
+    measurements: `-dev` overhead was ~55MB installed (libicu-dev alone 50MB); `ldd` on the
+    compiled `.so`s gives the exact link set (intl→libicu, mbstring→libonig, zip→libzip;
+    redis/pdo_mysql link nothing apt-provided).
+33. **Composer = pinned phar in prod too** — same 2.10.3 + sha256 block as
+    `docker/development/php-cli/Dockerfile`; drops the `composer:2.10` donor image (~180MB
+    pull on a fresh machine) and makes both stacks bump the composer version in one edit
+    (two places, same values).
+34. **Redis and nginx go `-alpine` in prod** — `redis:8.10-alpine` (byte-identical service
+    definition to dev's, which was already alpine; AOF volume format is cross-compatible) and
+    `nginx:1.30-alpine` (~190MB smaller; `apk add curl` keeps the exact `curl -fs /up`
+    healthcheck). Supersedes row 23's all-Debian stance.
+35. **Queue gets `SKIP_MIGRATE=1`** — php-fpm remains the boot-time migrator/seeder (queue
+    starts only after its healthcheck), so the worker skips the redundant migrate run and
+    goes straight to `optimize` + `queue:work`. Behavior change from "both containers migrate
+    on boot" — approved in the step-2/3 batch.
+36. **`pcntl` joins the prod ext set** — `queue:work` installs its SIGTERM handlers only when
+    pcntl is loaded; without it `docker stop` kills the worker mid-job (the job retries via
+    `--tries`, but nothing ever drains cleanly). Dev's image already had pcntl (the pest
+    browser server needs it); prod was the gap. Gate: `php -m` shows `pcntl` in
+    `planner-app:latest`, proven live — stopping the queue container exits **0** with a
+    `Worker STOPPED Interrupted` log line (without pcntl the worker dies on SIGTERM with
+    exit 143 and no clean drain).
+37. **`COPY --chown=www-data` replaces `RUN chown -R /var/www`** — a `chown -R` layer repacks
+    every file's content (vendor included) into its own layer; COPY sets the ownership in
+    passing at zero cost. `public/build` deliberately stays root-owned (the app only reads
+    the manifest); everything writable — `storage/`, `bootstrap/cache/` — comes from the
+    chowned copy. **Caveat found at the gate:** COPY owns the *contents*, not the
+    destination directory itself — `/var/www` stayed root-owned, so tinker died with
+    psysh's "Writing to directory .config/psysh is not allowed" (psysh creates dot-dirs in
+    the project root). Fix: one non-recursive `RUN chown www-data:www-data /var/www`
+    after the COPYs — a single metadata-only entry, no file repack. Gate: `stat` shows
+    `/var/www` as www-data while `public/build` remains root.
+38. **php-fpm and queue `depends_on` mailpit (`service_started`)** — amends row 26: any mail
+    sent right after boot reaches a listening SMTP socket instead of racing it. `service_started`
+    (not `healthy`) keeps boot instant — mailpit is up in milliseconds and its capture is
+    disposable, so nothing waits on readiness.
 
 ## Deployment Runbook (fresh machine, golden path)
 
@@ -378,6 +457,7 @@ So: change `.env` → recreate the container that needs it. php-fpm's entrypoint
 | Redis NOAUTH errors | `.env` `REDIS_PASSWORD` vs container env | edit `.env`, recreate redis + php-fpm |
 | Everything healthy but login fails | session store | `exec redis redis-cli -a "$REDIS_PASSWORD" FLUSHALL` (nukes sessions+cache+jobs — queued mail is lost, users just re-request; row data intact) |
 | Queued mail never arrives | `./planner logs queue` + `failed_jobs` table | worker down → `up -d queue`; job exhausted retries → inspect the `failed_jobs` row |
+| `inspect … .Image` ≠ `images -q` after a rebuild (looks stale) | sha256 of a real file in the running container vs `docker run --rm --entrypoint sha256sum <image> <file>` | usually benign: with the containerd image store both values are *attested index* digests, which change every build (provenance metadata) even when content is identical — compose compares content manifests, so it skips recreation correctly; only chase it if the content hashes differ |
 | Port 80 busy on host | `ss -ltnp` | stop the other process, or map another port in compose |
 
 Healthcheck definitions (for diagnosis):
@@ -391,7 +471,8 @@ Healthcheck definitions (for diagnosis):
 | mailpit | image built-in `["/mailpit", "readyz"]` (no compose stanza) | image default 15s / — / 3, start-period 10s |
 
 `depends_on: condition: service_healthy` orders them: mariadb+redis → php-fpm → nginx + queue
-(queue: no port → no healthcheck).
+(queue: no port → no healthcheck); php-fpm and queue additionally wait for mailpit
+`service_started` (SMTP reachable before any send).
 
 ## Docker Hygiene on This Host
 
@@ -410,13 +491,13 @@ Structural truth: **the images are immutable**; the repo defines the deployment.
 "change pins/files, rebuild, verify."
 
 - App/config changes → `git pull && up -d --build && curl -s http://localhost/up` + smoke
-  login. Both images rebuild from the same context/locks (no version skew).
+  login. Both final images come from one Dockerfile/context (no version skew).
 - Dependency bumps (`composer.lock` / `package-lock.json`): bump in dev, commit
   both lockfiles, rebuild. Never hand-edit locks in prod; never `up --build` dirty.
 - Framework upgrade: treat like a dependency bump but re-check `bootstrap/app.php` /
   `config/database.php` against the new skeleton and re-run the config-defaults audit.
 - Base-image patch updates: free via rebuild (all tags are MAJOR.MINOR). Minor updates:
-  deliberate — bump in both Dockerfiles / compose, rebuild, full verification, update the
+  deliberate — bump in the Dockerfile / compose, rebuild, full verification, update the
   version table and decisions log.
 - Env surface changes: add to `laravel/.env.production` + a new decisions-log row; live
   installs need the same manual edit + recreate flow.
@@ -424,10 +505,12 @@ Structural truth: **the images are immutable**; the repo defines the deployment.
   image + `command` override, ordered after healthy php-fpm, shared logging/restart model).
   Redis already has the persistence a Redis-backed queue requires — keep it. Out of current
   scope unless a feature requires it.
-- Editing `docker/`: keep `.dockerignore`, `.env.*` templates, both Dockerfiles and
-  `default.conf` coherent across the two images; rebuild + health-verify; update this doc.
+- Editing `docker/`: keep `.dockerignore`, `.env.*` templates, the Dockerfile and
+  `default.conf` coherent; rebuild + health-verify; update this doc.
   The comment-free style in the images is intentional — the "why" lives here.
-- Composer skew guard: both images must keep using the same `composer:2.10` base.
+- Composer pin guard: the phar 2.10.3 + sha256 block exists in **both** Dockerfiles (dev
+  builder and prod builder) — bump version and checksum together in both. The prod build
+  verifies the checksum, so a corrupted download fails the build instead of shipping.
 
 Anti-patterns: bind-mounting code "just for host edits"; running the dev stack inside the
 prod network; editing `laravel/.env.production` and assuming live installs see it (they only
