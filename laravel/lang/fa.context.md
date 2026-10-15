@@ -192,10 +192,10 @@ Reports | Dashboard | Errors | Components).
 "Delete your account"                                                  → modal heading · delete account modal
 "Firstname must be at least 2 characters."                             → validation message · firstname min
 "Firstname cannot exceed 50 characters."                               → validation message · firstname max
-"Firstname can only contain letters, spaces, hyphens and apostrophes." → validation message · firstname charset
+"Firstname can only contain letters, spaces, half-spaces, hyphens and apostrophes." → validation message · firstname charset
 "Lastname must be at least 2 characters."                              → validation message · lastname min
 "Lastname cannot exceed 50 characters."                                → validation message · lastname max
-"Lastname can only contain letters, spaces, hyphens and apostrophes."  → validation message · lastname charset
+"Lastname can only contain letters, spaces, half-spaces, hyphens and apostrophes." → validation message · lastname charset
 "Selected gender is invalid."                                          → validation message · gender enum
 "Selected country is invalid."                                         → validation message · country in-list
 "Birthdate must be a valid date."                                      → validation message · birthday format

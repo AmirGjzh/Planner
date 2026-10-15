@@ -253,8 +253,8 @@ new class extends Component
     {
         return [
             'username' => ['required', 'regex:/^[a-zA-Z][a-zA-Z0-9_-]{2,29}$/'],
-            'firstname' => ['nullable', 'string', 'min:2', 'max:50', 'regex:/^[\p{L}\s\'-]+$/u'],
-            'lastname' => ['nullable', 'string', 'min:2', 'max:50', 'regex:/^[\p{L}\s\'-]+$/u'],
+            'firstname' => ['nullable', 'string', 'min:2', 'max:50', 'regex:/^[\p{L}\s\'\x{200C}-]+$/u'],
+            'lastname' => ['nullable', 'string', 'min:2', 'max:50', 'regex:/^[\p{L}\s\'\x{200C}-]+$/u'],
             'theme' => ['required', Rule::in(config('themes.name'))],
             'locale' => ['required', Rule::in(['fa', 'en'])],
             'gender' => ['nullable', Rule::enum(UserGender::class)],
@@ -270,10 +270,10 @@ new class extends Component
             'username.regex' => __('Start with a letter, use 3 to 30 characters.'),
             'firstname.min' => __('Firstname must be at least 2 characters.'),
             'firstname.max' => __('Firstname cannot exceed 50 characters.'),
-            'firstname.regex' => __('Firstname can only contain letters, spaces, hyphens and apostrophes.'),
+            'firstname.regex' => __('Firstname can only contain letters, spaces, half-spaces, hyphens and apostrophes.'),
             'lastname.min' => __('Lastname must be at least 2 characters.'),
             'lastname.max' => __('Lastname cannot exceed 50 characters.'),
-            'lastname.regex' => __('Lastname can only contain letters, spaces, hyphens and apostrophes.'),
+            'lastname.regex' => __('Lastname can only contain letters, spaces, half-spaces, hyphens and apostrophes.'),
             'gender.enum' => __('Selected gender is invalid.'),
             'theme.required' => __('Theme is required.'),
             'theme.in' => __('Selected theme is invalid.'),

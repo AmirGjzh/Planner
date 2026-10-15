@@ -122,6 +122,34 @@ it('validates text field length', function () {
         ]);
 });
 
+it('allows half-space in firstname and lastname', function () {
+    $user = profileUser();
+
+    Livewire::actingAs($user)
+        ->test('pages::profile')
+        ->set('firstname', 'علی‌رضا')
+        ->set('lastname', 'فاطمه‌زهرا')
+        ->call('editProfile')
+        ->assertHasNoErrors();
+
+    expect($user->refresh()->firstname)->toBe('علی‌رضا')
+        ->and($user->lastname)->toBe('فاطمه‌زهرا');
+});
+
+it('rejects digits and symbols in firstname and lastname', function () {
+    $user = profileUser();
+
+    Livewire::actingAs($user)
+        ->test('pages::profile')
+        ->set('firstname', 'علی۱')
+        ->set('lastname', 'Gol@5')
+        ->call('editProfile')
+        ->assertHasErrors([
+            'firstname' => ['regex'],
+            'lastname' => ['regex'],
+        ]);
+});
+
 it('validates gender, country, and birth date', function () {
     $user = profileUser();
 

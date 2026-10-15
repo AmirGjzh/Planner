@@ -42,6 +42,21 @@ it('returns success and updates profile fields', function () {
     expect($user->birthday->format('Y-m-d'))->toBe('2000-01-15');
 });
 
+it('trims surrounding half-spaces from firstname and lastname', function () {
+    $user = User::factory()->create([
+        'username' => 'amir_user',
+    ]);
+    $this->actingAs($user);
+
+    RateLimiter::clear(profileRateLimitKey($user));
+
+    $result = app(UpdateProfileAction::class)->execute($user, 'amir_user', "\u{200C}علی\u{200C}", "فاطمه\u{200C} ", null, null, null, 'forest', 'en', profileRequest());
+
+    expect($result)->toBe(UpdateProfileResult::Success)
+        ->and($user->refresh()->firstname)->toBe('علی')
+        ->and($user->lastname)->toBe('فاطمه');
+});
+
 it('returns username taken when username belongs to another user', function () {
     User::factory()->create([
         'username' => 'taken_user',

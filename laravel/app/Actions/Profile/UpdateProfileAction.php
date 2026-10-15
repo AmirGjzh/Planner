@@ -92,7 +92,10 @@ final class UpdateProfileAction
 
     private function nullableString(?string $value): ?string
     {
-        $value = is_string($value) ? trim($value) : null;
+        // trim() is byte-wise: ZWNJ (e2 80 8c) shares its tail byte with ی (db 8c), so a
+        // half-space in the mask would corrupt Persian text. Strip edge half-spaces with a
+        // unicode regex instead — a stray leading/trailing نیم‌فاصله is invisible in storage.
+        $value = is_string($value) ? preg_replace('/^[\s\x{200C}]+|[\s\x{200C}]+$/u', '', trim($value)) : null;
 
         return filled($value) ? $value : null;
     }
