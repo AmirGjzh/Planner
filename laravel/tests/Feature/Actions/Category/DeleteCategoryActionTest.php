@@ -16,6 +16,16 @@ it('deletes a category successfully', function () {
     expect($user->categories()->where('name', 'Work')->exists())->toBeFalse();
 });
 
+it('deletes the category with exactly the count-guard and delete queries', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $this->expectsDatabaseQueryCount(2);
+
+    $result = app(DeleteCategoryAction::class)->execute($user, $category);
+
+    expect($result)->toBe(DeleteCategoryResult::Deleted);
+});
+
 it('prevents deleting a category that belongs to another user', function () {
     $user1 = User::factory()->create();
     $user2 = User::factory()->create();

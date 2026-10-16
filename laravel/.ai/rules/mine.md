@@ -33,5 +33,6 @@ Toasts are navigation-proof inside the factory too: every toast carries an absol
 
 - `alert` picks its `role` from the variant — `danger`/`warning` → `alert`, `success`/`info` → `status` — through attribute merge, so a caller can override it.
 - Fields own their error a11y wiring: `input`/`textarea` set `aria-invalid` + `aria-describedby` on the control, `select` on its listbox wrapper, `datepicker` on its trigger button — all pointing at the error `p`, whose `id` is the field id + `-error` and whose `role` is `alert`.
+- A labelless `input` names itself from its placeholder (`aria-label="{{ $placeholder }}"` when there's no label) and a caller-passed `aria-label` always wins — axe gates placeholder-only inputs; the searchable `select`/`datepicker` search inputs pass their own `aria-label` explicitly (same `Search...` key as the placeholder).
 - `Reicon` renders `aria-hidden="true"` by default — decorative unless a caller passes an explicit label.
 - Icons/graphics never become the accessible name: `brand-logo` takes `aria-label` from the caller (header passes `config('app.name')`).

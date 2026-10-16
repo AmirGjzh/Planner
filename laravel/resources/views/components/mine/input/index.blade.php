@@ -49,6 +49,7 @@
         <input
             id="{{ $name }}"
             name="{{ $name }}"
+            @if (! $label && $placeholder && ! $attributes->has('aria-label')) aria-label="{{ $placeholder }}" @endif
             @if ($type === 'password') :type="show ? 'text' : 'password'" @else type="{{ $type }}" @endif
             placeholder="{{ $placeholder }}"
             @if ($errors->has($name))

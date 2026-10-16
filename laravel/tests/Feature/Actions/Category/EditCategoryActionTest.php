@@ -121,3 +121,80 @@ it('logs successful edit info', function () {
             fn (array $context) => $context['user_id'] === $user->id
         ));
 });
+
+it('clears the rate limiter after a successful edit', function () {
+    $user = User::factory()->create();
+    $user->categories()->create(['name' => 'Work']);
+    $category = $user->categories()->create(['name' => 'Personal']);
+    RateLimiter::clear(editCategoryRateLimitKey($user));
+
+    foreach (range(1, 4) as $ignored) {
+        app(EditCategoryAction::class)->execute($user, $category, 'Work', editCategoryRequest());
+    }
+
+    expect(RateLimiter::attempts(editCategoryRateLimitKey($user)))->toBe(4);
+
+    app(EditCategoryAction::class)->execute($user, $category, 'Renamed', editCategoryRequest());
+
+    expect(RateLimiter::attempts(editCategoryRateLimitKey($user)))->toBe(0);
+});
+
+it('logs the rate-limited outcome with available_in', function () {
+    Log::spy();
+
+    $user = User::factory()->create();
+    $user->categories()->create(['name' => 'Work']);
+    $category = $user->categories()->create(['name' => 'Personal']);
+    RateLimiter::clear(editCategoryRateLimitKey($user));
+
+    foreach (range(1, 5) as $ignored) {
+        app(EditCategoryAction::class)->execute($user, $category, 'Work', editCategoryRequest());
+    }
+
+    $result = app(EditCategoryAction::class)->execute($user, $category, 'Work', editCategoryRequest());
+
+    expect($result)->toBe(EditCategoryResult::RateLimited);
+    Log::shouldHaveReceived('warning')
+        ->with('Category edit rate limited.', Mockery::on(
+            fn (array $context) => $context['user_id'] === $user->id && $context['available_in'] > 0
+        ));
+});
+
+it('trims and normalizes the new name at the domain boundary', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    RateLimiter::clear(editCategoryRateLimitKey($user));
+
+    $result = app(EditCategoryAction::class)->execute($user, $category, "  \u{200C}personal\u{200C}  ", editCategoryRequest());
+
+    expect($result)->toBe(EditCategoryResult::Updated);
+    expect($category->fresh()->name)->toBe('Personal');
+});
+
+it('updates the category with exactly the guard and update queries', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    RateLimiter::clear(editCategoryRateLimitKey($user));
+    $this->expectsDatabaseQueryCount(2);
+
+    $result = app(EditCategoryAction::class)->execute($user, $category, 'Renamed', editCategoryRequest());
+
+    expect($result)->toBe(EditCategoryResult::Updated);
+});
+
+it('keeps linked tasks attached when the category is renamed', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $task = $user->tasks()->create([
+        'title' => 'Test task',
+        'task_date' => now(),
+        'estimated_minutes' => 30,
+        'category_id' => $category->id,
+    ]);
+    RateLimiter::clear(editCategoryRateLimitKey($user));
+
+    app(EditCategoryAction::class)->execute($user, $category, 'Renamed', editCategoryRequest());
+
+    expect($task->fresh()->category_id)->toBe($category->id)
+        ->and($task->fresh()->category->name)->toBe('Renamed');
+});

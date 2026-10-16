@@ -24,7 +24,9 @@ final class CreateCategoryAction
     {
         abort_unless($user->can('create', Category::class), 403);
 
-        $name = Str::ucfirst(Str::lower($name));
+        // trim() is byte-wise and blind to ZWNJ — strip edge half-spaces with a unicode
+        // regex (profile precedent) so a visually identical name can't dodge the unique index.
+        $name = Str::ucfirst(Str::lower(preg_replace('/^[\s\x{200C}]+|[\s\x{200C}]+$/u', '', trim($name))));
 
         $rate_limit_key = $this->rateLimitKey($user, $request);
 

@@ -106,3 +106,59 @@ it('logs successful creation info', function () {
             fn (array $context) => $context['user_id'] === $user->id && $context['name'] === 'Work'
         ));
 });
+
+it('clears the rate limiter after a successful create', function () {
+    $user = User::factory()->create();
+    $user->categories()->create(['name' => 'Work']);
+    RateLimiter::clear(createCategoryRateLimitKey($user));
+
+    foreach (range(1, 4) as $ignored) {
+        app(CreateCategoryAction::class)->execute($user, 'Work', createCategoryRequest());
+    }
+
+    expect(RateLimiter::attempts(createCategoryRateLimitKey($user)))->toBe(4);
+
+    app(CreateCategoryAction::class)->execute($user, 'Personal', createCategoryRequest());
+
+    expect(RateLimiter::attempts(createCategoryRateLimitKey($user)))->toBe(0);
+});
+
+it('logs the rate-limited outcome with available_in', function () {
+    Log::spy();
+
+    $user = User::factory()->create();
+    $user->categories()->create(['name' => 'Work']);
+    RateLimiter::clear(createCategoryRateLimitKey($user));
+
+    foreach (range(1, 5) as $ignored) {
+        app(CreateCategoryAction::class)->execute($user, 'Work', createCategoryRequest());
+    }
+
+    $result = app(CreateCategoryAction::class)->execute($user, 'Work', createCategoryRequest());
+
+    expect($result)->toBe(CreateCategoryResult::RateLimited);
+    Log::shouldHaveReceived('warning')
+        ->with('Category creation rate limited.', Mockery::on(
+            fn (array $context) => $context['user_id'] === $user->id && $context['available_in'] > 0
+        ));
+});
+
+it('trims and normalizes the name at the domain boundary', function () {
+    $user = User::factory()->create();
+    RateLimiter::clear(createCategoryRateLimitKey($user));
+
+    $result = app(CreateCategoryAction::class)->execute($user, "  \u{200C}work\u{200C}  ", createCategoryRequest());
+
+    expect($result)->toBe(CreateCategoryResult::Created);
+    expect($user->categories()->where('name', 'Work')->exists())->toBeTrue();
+});
+
+it('creates the category with exactly the exists-check and insert queries', function () {
+    $user = User::factory()->create();
+    RateLimiter::clear(createCategoryRateLimitKey($user));
+    $this->expectsDatabaseQueryCount(2);
+
+    $result = app(CreateCategoryAction::class)->execute($user, 'Work', createCategoryRequest());
+
+    expect($result)->toBe(CreateCategoryResult::Created);
+});

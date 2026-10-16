@@ -171,7 +171,7 @@ Reports | Dashboard | Errors | Components).
 "Select your country"                                                  → select placeholder · country select
 "Save"                                                                 → button · modal primary (profile, plans, tasks edit modals)
 "Cancel"                                                               → button · modal secondary (all add/edit/delete/confirm modals)
-"Close"                                                                → aria-label · modal close buttons (profile modals)
+"Close"                                                                → aria-label · modal close buttons (profile + categories modals)
 "Wrong password!"                                                      → inline alert title · danger · wrong current password (profile)
 "The password you entered is incorrect."                               → inline alert body · wrong current password
 "Be careful!"                                                          → inline alert title · warning · delete-account confirm

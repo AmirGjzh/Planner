@@ -14,6 +14,7 @@
             <x-mine.modal.trigger id="add-category-form">
                 <x-mine.button
                     type="button"
+                    size="sm"
                     @class([
                         'sm:pr-4!' => app()->isLocale('en'),
                         'sm:pl-4!' => app()->isLocale('fa'),
@@ -29,10 +30,10 @@
                             size="16"
                             weight="filled"
                         />
-                        <p class="hidden text-sm font-medium sm:inline">
+                        <span class="hidden sm:inline">
                             <span class="hidden sm:inline md:hidden">{{ __('New') }}</span
                             ><span class="hidden md:inline">{{ __('New category') }}</span>
-                        </p>
+                        </span>
                     </div>
                 </x-mine.button>
             </x-mine.modal.trigger>
@@ -140,7 +141,7 @@
                                     </div>
                                 </div>
                                 <x-mine.dropdown group="category-actions">
-                                    <x-mine.dropdown.trigger>
+                                    <x-mine.dropdown.trigger aria-label="{{ $category->name }}">
                                         <div class="mine-btn-icon rounded-xl p-2">
                                             <x-mine.icon name="MoreH" size="18" weight="filled" />
                                         </div>
@@ -247,6 +248,7 @@
                 </h2>
                 <button
                     type="button"
+                    aria-label="{{ __('Close') }}"
                     @click="
                         close();
                         $wire.cancelAdd();
@@ -271,7 +273,15 @@
                 </div>
             @endif
 
-            <form class="flex flex-col gap-4" wire:submit="addCategory">
+            <form
+                class="flex flex-col gap-4"
+                wire:submit="addCategory"
+                novalidate
+                x-data
+                x-on:focus-first-error.window="
+                    $nextTick(() => $el.querySelector('[aria-invalid=&quot;true&quot;]')?.focus())
+                "
+            >
                 <div>
                     <x-mine.input
                         label="{{ __('Category name') }}"
@@ -291,11 +301,7 @@
                         size="sm"
                     >
                         {{ __('Cancel') }}</x-mine.button>
-                    <x-mine.button
-                        wire:target="addCategory"
-                        class="mine-btn-primary"
-                        size="sm"
-                    >
+                    <x-mine.button wire:target="addCategory" class="mine-btn-primary" size="sm">
                         {{ __('Create') }}</x-mine.button>
                 </div>
             </form>
@@ -316,6 +322,7 @@
                 </h2>
                 <button
                     type="button"
+                    aria-label="{{ __('Close') }}"
                     @click="
                         close();
                         $wire.cancelEdit();
@@ -340,7 +347,15 @@
                 </div>
             @endif
 
-            <form class="flex flex-col gap-4" wire:submit="editCategory">
+            <form
+                class="flex flex-col gap-4"
+                wire:submit="editCategory"
+                novalidate
+                x-data
+                x-on:focus-first-error.window="
+                    $nextTick(() => $el.querySelector('[aria-invalid=&quot;true&quot;]')?.focus())
+                "
+            >
                 <div>
                     <x-mine.input
                         label="{{ __('Category name') }}"
@@ -360,11 +375,7 @@
                         size="sm"
                     >
                         {{ __('Cancel') }}</x-mine.button>
-                    <x-mine.button
-                        wire:target="editCategory"
-                        class="mine-btn-primary"
-                        size="sm"
-                    >
+                    <x-mine.button wire:target="editCategory" class="mine-btn-primary" size="sm">
                         {{ __('Edit') }}</x-mine.button>
                 </div>
             </form>
@@ -385,6 +396,7 @@
                 </h2>
                 <button
                     type="button"
+                    aria-label="{{ __('Close') }}"
                     @click="
                         close();
                         $wire.cancelDelete();
@@ -419,11 +431,7 @@
                         size="sm"
                     >
                         {{ __('Cancel') }}</x-mine.button>
-                    <x-mine.button
-                        wire:target="deleteCategory"
-                        class="mine-btn-danger"
-                        size="sm"
-                    >
+                    <x-mine.button wire:target="deleteCategory" class="mine-btn-danger" size="sm">
                         {{ __('Delete') }}</x-mine.button>
                 </div>
             </form>

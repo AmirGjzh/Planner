@@ -9,6 +9,7 @@ use App\Enums\EditCategoryResult;
 use App\Livewire\Concerns\HasUser;
 use App\Models\Category;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -48,14 +49,16 @@ new class extends Component
     #[Computed]
     public function categories()
     {
+        $search = trim($this->search);
+
         return Category::query()
             ->select(['id', 'name', 'user_id', 'created_at'])
             ->where('user_id', auth()->id())
-            ->when($this->search, fn ($q) => $q->whereRaw('LOWER(name) LIKE ?', [Str::lower('%'.$this->search.'%')]))
+            ->when($search, fn ($q) => $q->whereRaw('LOWER(name) LIKE ?', [Str::lower('%'.$search.'%')]))
             ->withCount('tasks')
             ->when($this->sort === 'name', fn ($q) => $q->orderBy('name'))
-            ->when($this->sort === 'tasks', fn ($q) => $q->orderByDesc('tasks_count'))
-            ->when($this->sort === 'latest', fn ($q) => $q->latest())
+            ->when($this->sort === 'tasks', fn ($q) => $q->orderByDesc('tasks_count')->orderBy('name'))
+            ->when($this->sort === 'latest', fn ($q) => $q->latest()->orderBy('id'))
             ->paginate(6)->onEachSide(1);
     }
 
@@ -64,11 +67,24 @@ new class extends Component
         $this->resetPage();
     }
 
+    public function updatingSort(): void
+    {
+        $this->resetPage();
+    }
+
     public function addCategory(CreateCategoryAction $action): void
     {
-        $this->validate([
-            'add_category' => $this->rules()['add_category'],
-        ]);
+        $this->add_category = preg_replace('/^[\s\x{200C}]+|[\s\x{200C}]+$/u', '', trim($this->add_category));
+
+        try {
+            $this->validate([
+                'add_category' => $this->rules()['add_category'],
+            ]);
+        } catch (ValidationException $exception) {
+            $this->dispatch('focus-first-error');
+
+            throw $exception;
+        }
 
         $result = $action->execute($this->user, $this->add_category, request());
 
@@ -104,9 +120,17 @@ new class extends Component
 
     public function editCategory(EditCategoryAction $action): void
     {
-        $this->validate([
-            'edit_name' => $this->rules()['edit_name'],
-        ]);
+        $this->edit_name = preg_replace('/^[\s\x{200C}]+|[\s\x{200C}]+$/u', '', trim($this->edit_name));
+
+        try {
+            $this->validate([
+                'edit_name' => $this->rules()['edit_name'],
+            ]);
+        } catch (ValidationException $exception) {
+            $this->dispatch('focus-first-error');
+
+            throw $exception;
+        }
 
         $category = $this->user->categories()->findOrFail($this->editing_id);
         $result = $action->execute($this->user, $category, $this->edit_name, request());

@@ -224,6 +224,7 @@
                         x-model="search"
                         data-select-search
                         type="text"
+                        aria-label="{{ __('Search...') }}"
                         placeholder="{{ __('Search...') }}"
                         class="h-8 w-full bg-transparent text-sm font-medium text-[var(--mine-text-primary)]/80 placeholder:font-medium placeholder:text-(--mine-input-placeholder) focus:outline-none focus-visible:outline-none"
                     />
