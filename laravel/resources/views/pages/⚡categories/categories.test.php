@@ -45,15 +45,6 @@ it('shows error for duplicate category', function () {
         ->assertSet('add_error', 'already_exists');
 });
 
-it('validates new category name is required', function () {
-    $user = User::factory()->create();
-
-    Livewire::actingAs($user)
-        ->test('pages::categories')
-        ->set('add_category', '')->call('addCategory')
-        ->assertHasErrors('add_category');
-});
-
 it('validates new category name max length', function () {
     $user = User::factory()->create();
 
@@ -173,7 +164,7 @@ it('dispatches focus-first-error when add validation fails', function () {
     Livewire::actingAs($user)
         ->test('pages::categories')
         ->set('add_category', '')->call('addCategory')
-        ->assertHasErrors('add_category')
+        ->assertHasErrors(['add_category' => ['required']])
         ->assertDispatched('focus-first-error');
 });
 
@@ -468,9 +459,10 @@ it('renders the loading spinner over the category grid', function () {
 it('wraps search, filter and grid in the category-content island', function () {
     $user = User::factory()->create();
 
+    // The @island directive is only observable through Livewire's fragment marker.
     Livewire::actingAs($user)
         ->test('pages::categories')
-        ->assertSee('category-content', false);
+        ->assertSee('FRAGMENT:type=island|name=category-content', false);
 });
 
 it('links view tasks with the category filter preselected', function () {

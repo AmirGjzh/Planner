@@ -52,26 +52,31 @@ it('prevents deleting a category that has tasks', function () {
     expect($user->categories()->where('name', 'Work')->exists())->toBeTrue();
 });
 
-it('logs deletion events', function () {
+it('logs the has-tasks warning', function () {
     Log::spy();
 
     $user = User::factory()->create();
-    $category = $user->categories()->create(['name' => 'Work']);
-
-    $categoryWithTasks = $user->categories()->create(['name' => 'Personal']);
+    $category = $user->categories()->create(['name' => 'Personal']);
     $user->tasks()->create([
         'title' => 'Test',
         'task_date' => now(),
         'estimated_minutes' => 30,
-        'category_id' => $categoryWithTasks->id,
+        'category_id' => $category->id,
     ]);
 
-    app(DeleteCategoryAction::class)->execute($user, $categoryWithTasks);
+    app(DeleteCategoryAction::class)->execute($user, $category);
 
     Log::shouldHaveReceived('warning')
         ->with('Category deletion failed, has tasks assigned.', Mockery::on(
             fn (array $context) => $context['name'] === 'Personal'
         ));
+});
+
+it('logs successful deletion info', function () {
+    Log::spy();
+
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
 
     app(DeleteCategoryAction::class)->execute($user, $category);
 

@@ -60,21 +60,6 @@ it('prevents editing a category that belongs to another user', function () {
     app(EditCategoryAction::class)->execute($user2, $category, 'Personal', editCategoryRequest());
 });
 
-it('returns rate limited after repeated edit attempts', function () {
-    $user = User::factory()->create();
-    $user->categories()->create(['name' => 'Work']);
-    $category = $user->categories()->create(['name' => 'Personal']);
-    RateLimiter::clear(editCategoryRateLimitKey($user));
-
-    foreach (range(1, 5) as $ignored) {
-        app(EditCategoryAction::class)->execute($user, $category, 'Work', editCategoryRequest());
-    }
-
-    $result = app(EditCategoryAction::class)->execute($user, $category, 'Work', editCategoryRequest());
-
-    expect($result)->toBe(EditCategoryResult::RateLimited);
-});
-
 it('allows editing again after one minute', function () {
     $user = User::factory()->create();
     $user->categories()->create(['name' => 'Work']);

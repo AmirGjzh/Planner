@@ -136,7 +136,7 @@
                                             {{ $category->name }}
                                         </h2>
                                         <p class="mine-text-secondary text-[13px] font-medium">
-                                            {{ $category->tasks_count ? (app()->isLocale('en') ? $category->tasks_count : App\Support\PersianNumber::convert($category->tasks_count)) : __('No') }} {{ app()->isLocale('fa') ? 'تسک' : Str::plural('Task', $category->tasks_count) }}
+                                            {{ $category->tasks_count ? (app()->isLocale('en') ? $category->tasks_count : App\Support\PersianNumber::convert($category->tasks_count)) : __('No') }} {{ app()->isLocale('fa') ? 'کار' : Str::plural('Task', $category->tasks_count) }}
                                         </p>
                                     </div>
                                 </div>

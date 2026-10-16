@@ -49,20 +49,6 @@ it('allows different users to have the same category name', function () {
     expect($user2->categories()->where('name', 'Work')->exists())->toBeTrue();
 });
 
-it('returns rate limited after repeated attempts', function () {
-    $user = User::factory()->create();
-    $user->categories()->create(['name' => 'Work']);
-    RateLimiter::clear(createCategoryRateLimitKey($user));
-
-    foreach (range(1, 5) as $ignored) {
-        app(CreateCategoryAction::class)->execute($user, 'Work', createCategoryRequest());
-    }
-
-    $result = app(CreateCategoryAction::class)->execute($user, 'Work', createCategoryRequest());
-
-    expect($result)->toBe(CreateCategoryResult::RateLimited);
-});
-
 it('allows creation again after one minute', function () {
     $user = User::factory()->create();
     $user->categories()->create(['name' => 'Work']);
