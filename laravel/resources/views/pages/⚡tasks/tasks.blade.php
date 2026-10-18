@@ -349,8 +349,8 @@
                                         'status_label' => __('Completed'),
                                         'separator' => 'secondary',
                                         'card' => 'mine-card mine-card-secondary',
-                                        'border-l' => 'border-l-6 border-l-(--mine-btn-secondary-bg) hover:border-l-(--mine-btn-secondary-bg-hover)',
-                                        'border-r' => 'border-r-6 border-r-(--mine-btn-secondary-bg) hover:border-r-(--mine-btn-secondary-bg-hover)',
+                                        'border-l' => 'border-l-6 border-l-(--mine-btn-secondary-bg)',
+                                        'border-r' => 'border-r-6 border-r-(--mine-btn-secondary-bg)',
                                         'action_button' => 'mine-btn-secondary',
                                     ],
                                     'overdue' => [
@@ -360,8 +360,8 @@
                                         'status_label' => __('Overdue'),
                                         'separator' => 'danger',
                                         'card' => 'mine-card mine-card-danger',
-                                        'border-l' => 'border-l-6 border-l-(--mine-btn-danger-bg) hover:border-l-(--mine-btn-danger-bg-hover)',
-                                        'border-r' => 'border-r-6 border-r-(--mine-btn-danger-bg) hover:border-r-(--mine-btn-danger-bg-hover)',
+                                        'border-l' => 'border-l-6 border-l-(--mine-btn-danger-bg)',
+                                        'border-r' => 'border-r-6 border-r-(--mine-btn-danger-bg)',
                                         'action_button' => 'mine-btn-danger',
                                     ],
                                     default => [
@@ -371,8 +371,8 @@
                                         'status_label' => __('Active'),
                                         'separator' => 'primary',
                                         'card' => 'mine-card',
-                                        'border-l' => 'border-l-6 border-l-(--mine-btn-primary-bg) hover:border-l-(--mine-btn-primary-bg-hover)',
-                                        'border-r' => 'border-r-6 border-r-(--mine-btn-primary-bg) hover:border-r-(--mine-btn-primary-bg-hover)',
+                                        'border-l' => 'border-l-6 border-l-(--mine-btn-primary-bg)',
+                                        'border-r' => 'border-r-6 border-r-(--mine-btn-primary-bg)',
                                         'action_button' => 'mine-btn-primary',
                                     ],
                                 };
@@ -625,7 +625,7 @@
                 <x-mine.calendar wire:model.live="range_filter" island="tasks-content" />
             </x-mine.animate>
         </div>
-        <x-mine.animate class="mt-6 w-full"> {{ $this->tasks->links(data: ['scrollTo' => false]) }} </x-mine.animate>
+        {{ $this->tasks->links('mine.pagination') }}
     @endisland
 
     <x-mine.modal

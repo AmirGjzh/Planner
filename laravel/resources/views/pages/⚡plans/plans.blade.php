@@ -212,8 +212,8 @@
                                         'xmark_badge' => 'mine-badge-secondary',
                                         'days' => null,
                                         'action' => 'reopen',
-                                        'border-l' => 'border-l-6 border-l-(--mine-btn-secondary-bg) hover:border-l-(--mine-btn-secondary-bg-hover)',
-                                        'border-r' => 'border-r-6 border-r-(--mine-btn-secondary-bg) hover:border-r-(--mine-btn-secondary-bg-hover)',
+                                        'border-l' => 'border-l-6 border-l-(--mine-btn-secondary-bg)',
+                                        'border-r' => 'border-r-6 border-r-(--mine-btn-secondary-bg)',
                                     ],
                                     $plan->finish_date->isPast() => [
                                         'icon' => 'Siren2',
@@ -238,8 +238,8 @@
                                         'action' => 'complete',
                                         'add_class' => 'mine-btn-outline-danger',
                                         'complete_class' => 'mine-btn-danger',
-                                        'border-l' => 'border-l-6 border-l-(--mine-btn-danger-bg) hover:border-l-(--mine-btn-danger-bg-hover)',
-                                        'border-r' => 'border-r-6 border-r-(--mine-btn-danger-bg) hover:border-r-(--mine-btn-danger-bg-hover)',
+                                        'border-l' => 'border-l-6 border-l-(--mine-btn-danger-bg)',
+                                        'border-r' => 'border-r-6 border-r-(--mine-btn-danger-bg)',
                                     ],
                                     default => [
                                         'icon' => 'Bullseye',
@@ -264,8 +264,8 @@
                                         'action' => 'complete',
                                         'add_class' => 'mine-btn-outline-primary',
                                         'complete_class' => 'mine-btn-primary',
-                                        'border-l' => 'border-l-6 border-l-(--mine-btn-primary-bg) hover:border-l-(--mine-btn-primary-bg-hover)',
-                                        'border-r' => 'border-r-6 border-r-(--mine-btn-primary-bg) hover:border-r-(--mine-btn-primary-bg-hover)',
+                                        'border-l' => 'border-l-6 border-l-(--mine-btn-primary-bg)',
+                                        'border-r' => 'border-r-6 border-r-(--mine-btn-primary-bg)',
                                     ],
                                 };
                             @endphp
@@ -528,7 +528,7 @@
                 <x-mine.calendar wire:model.live="range_filter" island="plans-content" />
             </x-mine.animate>
         </div>
-        <x-mine.animate class="mt-6 w-full"> {{ $this->plans->links(data: ['scrollTo' => false]) }} </x-mine.animate>
+        {{ $this->plans->links('mine.pagination') }}
     @endisland
 
     <x-mine.modal

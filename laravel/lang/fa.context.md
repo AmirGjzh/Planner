@@ -239,11 +239,12 @@ Reports | Dashboard | Errors | Components).
 
 ## Pagination
 
-"Previous" → paginator button · previous page (published Livewire tailwind view); also month-nav button (calendar, datepicker)
-"Next"     → paginator button · next page (published Livewire tailwind view); also month-nav button (calendar, datepicker)
-"Showing"  → paginator text · range summary start (published Livewire tailwind view)
-"to"       → paginator text · range separator
-"of"       → paginator text · range total separator
+"Pagination"  → aria-label · pagination nav landmark (mine/pagination view)
+"Previous"    → paginator button · previous page (mine/pagination view); also month-nav button (calendar, datepicker)
+"Next"        → paginator button · next page (mine/pagination view); also month-nav button (calendar, datepicker)
+"Showing"     → paginator text · range summary start (mine/pagination view)
+"to"          → paginator text · range separator
+"of"          → paginator text · range total separator
 
 ## Plans
 

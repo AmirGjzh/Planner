@@ -203,6 +203,7 @@
     "Category name is required.": "نام دسته‌بندی الزامیه.",
     "Category name cannot exceed 255 characters.": "حداکثر ۲۵۵ کاراکتر وارد کن.",
 
+    "Pagination": "صفحه‌بندی",
     "Previous": "قبلی",
     "Next": "بعدی",
     "Showing": "نمایش",

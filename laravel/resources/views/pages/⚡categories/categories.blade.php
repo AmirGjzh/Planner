@@ -118,8 +118,8 @@
                             stagger="60"
                             data-anim-index="{{ $loop->index }}"
                             @class([
-                                'border-l-6 border-l-(--mine-btn-primary-bg) hover:border-l-(--mine-btn-primary-bg-hover)' => app()->isLocale('en'),
-                                'border-r-6 border-r-(--mine-btn-primary-bg) hover:border-r-(--mine-btn-primary-bg-hover)' => app()->isLocale('fa'),
+                                'border-l-6 border-l-(--mine-btn-primary-bg)' => app()->isLocale('en'),
+                                'border-r-6 border-r-(--mine-btn-primary-bg)' => app()->isLocale('fa'),
                                 'mine-card w-full flex flex-col justify-between px-4 pt-4 pb-4',
                             ])
                         >
@@ -229,9 +229,7 @@
                 </div>
             </div>
         </div>
-        <x-mine.animate class="mt-6 w-full">
-            {{ $this->categories->links(data: ['scrollTo' => false]) }}
-        </x-mine.animate>
+        {{ $this->categories->links('mine.pagination') }}
     @endisland
 
     <x-mine.modal

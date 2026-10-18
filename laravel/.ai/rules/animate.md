@@ -17,7 +17,7 @@ Fix: move interpolation out of the string — concatenate via `:class` (`Arr::to
 
 `<x-mine.animate>` starts hidden (`mine-animate`, opacity 0) and reveals via `x-intersect.once`. When the wrapping Livewire island re-renders (e.g. pagination changes the list):
 
-- Persistent nodes **without** `wire:key` (toolbar, pagination bar, header) get their server-side class patched back to hidden, but `x-intersect.once` does **not** re-fire (the element is still in view and the node is reused).
+- Persistent nodes **without** `wire:key` (toolbar, header, and the pagination bar — which self-wraps inside `mine/pagination`) get their server-side class patched back to hidden, but `x-intersect.once` does **not** re-fire (the element is still in view and the node is reused).
 - Cards **with** `wire:key` are replaced wholly, so their fresh `x-intersect` re-fires (they re-animate fine).
 
 Fix: in the component's Alpine `init()`, keep a `revealed` flag and run a `MutationObserver` on the element's `class` attribute that re-adds `mine-animate-visible` whenever `revealed` is true and the class was stripped. Only `x-intersect.once` should set `revealed = true` — moving it elsewhere would re-reveal everything on every morph.

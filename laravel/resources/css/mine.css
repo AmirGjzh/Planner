@@ -146,12 +146,10 @@ html {
 
 @utility mine-card-danger {
     @apply border-(--mine-card-danger-border);
-    @apply hover:border-(--mine-card-danger-border-hover);
 }
 
 @utility mine-card-secondary {
     @apply border-(--mine-card-secondary-border);
-    @apply hover:border-(--mine-card-secondary-border-hover);
 }
 
 @utility mine-alert-danger-box {

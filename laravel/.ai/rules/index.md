@@ -19,7 +19,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | lang/** | .ai/rules/lang.md |
 | .ai/skills/main-project/**/*.md | .ai/rules/main-project.md |
 | database/migrations/** | .ai/rules/migrations.md |
-| resources/js/app.js, resources/views/components/mine/** | .ai/rules/mine.md |
+| resources/js/app.js, resources/views/components/mine/**, resources/views/mine/** | .ai/rules/mine.md |
 | app/Models/**, app/Enums/UserGender.php | .ai/rules/models.md |
 | resources/views/pages/**, resources/views/pages/**/*.test.php, app/Livewire/** | .ai/rules/pages.md |
 | app/Actions/Plan/** | .ai/rules/plan.md |

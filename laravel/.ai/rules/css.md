@@ -26,6 +26,10 @@ Tailwind v4 emits `@utility` rules not in source order (`.mine-animate` lands af
 
 `resources/css/app.css` declares `@font-face` for 400/500/600 (Regular/Medium/SemiBold) — and nothing else. Bold was dropped app-wide in favour of the dominant `font-semibold` usage, so `font-bold` must never appear in markup; semibold is the heaviest class allowed. The reset mail embeds the same trio as `data:` URIs (`.ai/rules/auth.md`), keeping web and mail from ever drifting apart.
 
+## Card borders never change on hover
+
+`mine-card-danger` and `mine-card-secondary` set their border **color** statically (`--mine-card-danger-border` / `--mine-card-secondary-border`), and no card utility or card markup carries a `hover:border-*` — the accent edges in the page blades stay `border-{l,r}-6 border-{l,r}-(--mine-btn-*-bg)` with the hover fragment stripped (user decision: a hover border shift implied interactivity the cards don't have). The dead `mine-card-{danger,secondary}-border-hover` palette keys were removed from every theme JSON — don't regenerate them; reintroducing a hover border is only allowed as a deliberate, tested interaction.
+
 ## The framework's pagination views are deliberately not scanned
 
-Every paginator in the app runs inside a Livewire component, which pins `Paginator::defaultView()` to `livewire::tailwind` — published, themed, and `@source`d through `resources/views/vendor/livewire/*.blade.php`. The framework's own pagination views never render, so `app.css` carries no `@source` for them: scanning would only bake dead (largely `dark:`) utilities into the bundle. Re-add it if a non-Livewire paginator ever ships.
+Every paginator in the app renders the project-owned view `resources/views/mine/pagination.blade.php` (reached via `->links('mine.pagination')`, contract in mine.md), which `app.css` `@source`s. The old published `resources/views/vendor/livewire/tailwind.blade.php` override is gone — nothing in `vendor/` renders or needs scanning. The framework's own pagination views never render, so `app.css` carries no `@source` for them: scanning would only bake dead (largely `dark:`) utilities into the bundle. Re-add a vendor `@source` if a non-`mine.pagination` paginator ever ships.

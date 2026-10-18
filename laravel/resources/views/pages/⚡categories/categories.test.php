@@ -3,6 +3,17 @@
 use App\Models\User;
 use Livewire\Livewire;
 
+function paginatedCategoryUser(string $locale = 'en'): User
+{
+    $user = User::factory()->create(['locale' => $locale]);
+
+    foreach (['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Foxtrot', 'Golf'] as $name) {
+        $user->categories()->create(['name' => $name]);
+    }
+
+    return $user;
+}
+
 it('renders the category page', function () {
     $user = User::factory()->create();
     $user->categories()->create(['name' => 'Work']);
@@ -568,4 +579,49 @@ it('renders pagination when there are more than six categories', function () {
         ->toContain(__('Showing'))
         ->toContain('gotoPage(2');
     expect(substr_count($html, 'wire:key="category-'))->toBe(6);
+});
+
+it('names the pagination landmark and its icon-only controls', function () {
+    // Desktop Previous/Next carry no visible text — the aria-labels are their only name.
+    $user = paginatedCategoryUser();
+
+    Livewire::actingAs($user)
+        ->test('pages::categories')
+        ->assertStatus(200)
+        ->assertSee('aria-label="Pagination"', false)
+        ->assertSee('aria-label="Previous"', false)
+        ->assertSee('aria-label="Next"', false);
+});
+
+it('renders the pagination summary with Persian digits and labels in fa', function () {
+    $user = paginatedCategoryUser('fa');
+
+    Livewire::actingAs($user)
+        ->test('pages::categories')
+        ->assertSee('نمایش')
+        ->assertSee('صفحه‌بندی')
+        ->assertSee('۷');
+});
+
+it('renders no pagination bar for a single page', function () {
+    $user = User::factory()->create();
+    $user->categories()->create(['name' => 'Work']);
+
+    Livewire::actingAs($user)
+        ->test('pages::categories')
+        ->assertDontSee('aria-label="Pagination"', false)
+        ->assertDontSee('Showing');
+});
+
+it('hides the range summary on an out-of-range page', function () {
+    // firstItem() is null past the last page; the guard drops the summary instead of
+    // rendering the broken "Showing  to of" text.
+    $user = paginatedCategoryUser();
+
+    Livewire::withQueryParams(['page' => 999])
+        ->actingAs($user)
+        ->test('pages::categories')
+        ->assertStatus(200)
+        ->assertDontSee('Showing')
+        ->assertSee('aria-label="Pagination"', false);
 });
