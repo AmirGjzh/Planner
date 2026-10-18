@@ -61,7 +61,7 @@
                         class="mine-pagination-item flex cursor-default items-center gap-1 py-2 ps-3 pe-4 text-[14px] font-medium text-(--mine-pagination-text-disabled) opacity-70"
                     >
                         <x-mine.icon name="Angles{{ $previousIcon }}2" size="16" weight="filled" />
-                        <span @class(["pt-1" => app()->isLocale('en')])>{{ __('Previous') }}</span>
+                        <span @class(['pt-1' => app()->isLocale('en')])>{{ __('Previous') }}</span>
                     </button>
                 @else
                     <button
@@ -72,7 +72,7 @@
                         class="mine-pagination-item flex cursor-pointer items-center gap-1 py-2 ps-3 pe-4 text-[14px] font-medium"
                     >
                         <x-mine.icon name="Angles{{ $previousIcon }}2" size="16" weight="filled" />
-                        <span @class(["pt-1" => app()->isLocale('en')])>{{ __('Previous') }}</span>
+                        <span @class(['pt-1' => app()->isLocale('en')])>{{ __('Previous') }}</span>
                     </button>
                 @endif
 
@@ -84,7 +84,7 @@
                         dusk="nextPage{{ $paginator->getPageName() == 'page' ? '' : '.' . $paginator->getPageName() }}.before"
                         class="mine-pagination-item flex cursor-pointer items-center gap-1 py-2 ps-4 pe-3 text-[14px] font-medium"
                     >
-                        <span @class(["pt-1" => app()->isLocale('en')])>{{ __('Next') }}</span>
+                        <span @class(['pt-1' => app()->isLocale('en')])>{{ __('Next') }}</span>
                         <x-mine.icon name="Angles{{ $nextIcon }}2" size="16" weight="filled" />
                     </button>
                 @else
@@ -93,7 +93,7 @@
                         disabled
                         class="mine-pagination-item flex cursor-default items-center gap-1 py-2 ps-4 pe-3 text-[14px] font-medium text-(--mine-pagination-text-disabled) opacity-70"
                     >
-                        <span @class(["pt-1" => app()->isLocale('en')])>{{ __('Next') }}</span>
+                        <span @class(['pt-1' => app()->isLocale('en')])>{{ __('Next') }}</span>
                         <x-mine.icon name="Angles{{ $nextIcon }}2" size="16" weight="filled" />
                     </button>
                 @endif
@@ -105,11 +105,11 @@
                     <div class="shrink-0">
                         <p class="mine-text-secondary pt-1 text-[14px] font-medium">
                             <span>{{ __('Showing') }}</span>
-                            <span class="mine-text- font-semibold">{{ $num($paginator->firstItem()) }}</span>
+                            <span class="font-semibold">{{ $num($paginator->firstItem()) }}</span>
                             <span>{{ __('to') }}</span>
-                            <span class="mine-text- font-semibold">{{ $num($paginator->lastItem()) }}</span>
+                            <span class="font-semibold">{{ $num($paginator->lastItem()) }}</span>
                             <span>{{ __('of') }}</span>
-                            <span class="mine-text- font-semibold">{{ $num($paginator->total()) }}</span>
+                            <span class="font-semibold">{{ $num($paginator->total()) }}</span>
                         </p>
                     </div>
                 @else

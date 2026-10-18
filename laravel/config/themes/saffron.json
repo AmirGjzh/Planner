@@ -3,7 +3,6 @@
     "mine-card-bg": "rgba(255, 255, 255, .82)",
     "mine-card-bg-hover": "rgba(255, 255, 255, .88)",
     "mine-card-border": "#EAE2D9",
-    "mine-card-border-hover": "#D9CDC0",
     "mine-card-danger-border": "#F3D9D4",
     "mine-card-secondary-border": "#E2D9CF",
     "mine-text-primary": "#211A15",

@@ -566,10 +566,7 @@ it('breaks task-count ties by name', function () {
 });
 
 it('renders pagination when there are more than six categories', function () {
-    $user = User::factory()->create();
-    foreach (range(1, 7) as $i) {
-        $user->categories()->create(['name' => 'Category '.$i]);
-    }
+    $user = paginatedCategoryUser();
 
     $html = Livewire::actingAs($user)
         ->test('pages::categories')
