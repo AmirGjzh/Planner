@@ -13,6 +13,7 @@ use App\Livewire\Concerns\HasUser;
 use App\Models\Plan;
 use App\Support\Jalali;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -73,10 +74,12 @@ new class extends Component
     #[Computed]
     public function plans()
     {
+        $search = trim($this->search);
+
         return Plan::query()
             ->select(['id', 'name', 'description', 'start_date', 'finish_date', 'done', 'user_id', 'created_at'])
             ->where('user_id', auth()->id())
-            ->when($this->search, fn ($q) => $q->whereRaw('LOWER(name) LIKE ?', [Str::lower('%'.$this->search.'%')]))
+            ->when($search, fn ($q) => $q->whereRaw('LOWER(name) LIKE ?', [Str::lower('%'.$search.'%')]))
             ->when($this->range_filter['start'] ?? null, fn ($q) => $q->where('finish_date', '>=', $this->range_filter['start']))
             ->when($this->range_filter['end'] ?? null, fn ($q) => $q->where('start_date', '<=', $this->range_filter['end']))
             ->withCount([
@@ -89,9 +92,10 @@ new class extends Component
             ->when($this->status_filter === 'overdue', fn ($q) => $q->where('done', false)->where('finish_date', '<', now()->toDateString()))
             ->when($this->sort === 'name', fn ($q) => $q->orderBy('name'))
             ->when($this->sort === 'deadline', fn ($q) => $q->orderBy('finish_date')->orderBy('id'))
-            ->when($this->sort === 'latest', fn ($q) => $q->latest())
-            ->when($this->sort === 'load', fn ($q) => $q->orderByDesc('tasks_sum_estimated_minutes'))
-            ->when($this->sort === 'state', fn ($q) => $q->orderByRaw('CASE WHEN done = 0 AND finish_date >= ? THEN 0 WHEN done = 0 THEN 1 ELSE 2 END', [now()->toDateString()]))
+            ->when($this->sort === 'latest', fn ($q) => $q->latest()->orderByDesc('id'))
+            ->when($this->sort === 'load', fn ($q) => $q->orderByDesc('tasks_sum_estimated_minutes')->orderBy('name'))
+            ->when($this->sort === 'state', fn ($q) => $q->orderByRaw('CASE WHEN done = 0 AND finish_date >= ? THEN 0 WHEN done = 0 THEN 1 ELSE 2 END', [now()->toDateString()])->orderBy('finish_date')->orderBy('id'))
+            ->when(! in_array($this->sort, ['name', 'deadline', 'latest', 'load', 'state']), fn ($q) => $q->orderBy('id'))
             ->paginate(4)->onEachSide(1);
     }
 
@@ -129,6 +133,11 @@ new class extends Component
         $this->resetPage();
     }
 
+    public function updatingSort(): void
+    {
+        $this->resetPage();
+    }
+
     public function updatingStatusFilter(): void
     {
         $this->resetPage();
@@ -141,13 +150,25 @@ new class extends Component
 
     public function addPlan(CreatePlanAction $action): void
     {
-        $this->validate([
-            'add_name' => $this->rules()['add_name'],
-            'add_description' => $this->rules()['add_description'],
-            'add_range' => $this->rules()['add_range'],
-            'add_range.start' => $this->rules()['add_range.start'],
-            'add_range.end' => $this->rules()['add_range.end'],
-        ]);
+        $this->add_name = preg_replace('/^[\s\x{200C}]+|[\s\x{200C}]+$/u', '', trim($this->add_name));
+
+        if ($this->add_description !== null) {
+            $this->add_description = preg_replace('/^[\s\x{200C}]+|[\s\x{200C}]+$/u', '', trim($this->add_description)) ?: null;
+        }
+
+        try {
+            $this->validate([
+                'add_name' => $this->rules()['add_name'],
+                'add_description' => $this->rules()['add_description'],
+                'add_range' => $this->rules()['add_range'],
+                'add_range.start' => $this->rules()['add_range.start'],
+                'add_range.end' => $this->rules()['add_range.end'],
+            ]);
+        } catch (ValidationException $exception) {
+            $this->dispatch('focus-first-error');
+
+            throw $exception;
+        }
 
         $result = $action->execute($this->user, $this->add_name, $this->add_description, $this->add_range, request());
 
@@ -187,13 +208,25 @@ new class extends Component
 
     public function editPlan(EditPlanAction $action): void
     {
-        $this->validate([
-            'edit_name' => $this->rules()['edit_name'],
-            'edit_description' => $this->rules()['edit_description'],
-            'edit_range' => $this->rules()['edit_range'],
-            'edit_range.start' => $this->rules()['edit_range.start'],
-            'edit_range.end' => $this->rules()['edit_range.end'],
-        ]);
+        $this->edit_name = preg_replace('/^[\s\x{200C}]+|[\s\x{200C}]+$/u', '', trim($this->edit_name));
+
+        if ($this->edit_description !== null) {
+            $this->edit_description = preg_replace('/^[\s\x{200C}]+|[\s\x{200C}]+$/u', '', trim($this->edit_description)) ?: null;
+        }
+
+        try {
+            $this->validate([
+                'edit_name' => $this->rules()['edit_name'],
+                'edit_description' => $this->rules()['edit_description'],
+                'edit_range' => $this->rules()['edit_range'],
+                'edit_range.start' => $this->rules()['edit_range.start'],
+                'edit_range.end' => $this->rules()['edit_range.end'],
+            ]);
+        } catch (ValidationException $exception) {
+            $this->dispatch('focus-first-error');
+
+            throw $exception;
+        }
 
         $plan = $this->user->plans()->findOrFail($this->editing_id);
         $result = $action->execute($this->user, $plan, $this->edit_name, $this->edit_description, $this->edit_range, request());
@@ -201,6 +234,7 @@ new class extends Component
         $this->edit_error = match ($result) {
             EditPlanResult::AlreadyExists => 'already_exists',
             EditPlanResult::RateLimited => 'rate_limited',
+            EditPlanResult::RangeExcludesTasks => 'range_excludes_tasks',
             EditPlanResult::Updated => null,
         };
 

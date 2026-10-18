@@ -24,7 +24,11 @@ final class EditPlanAction
     {
         abort_unless($user->can('update', $plan), 403);
 
-        $name = Str::ucfirst(Str::lower($name));
+        // trim() is byte-wise and blind to ZWNJ — strip edge half-spaces with a unicode
+        // regex (profile precedent) so a visually identical name can't dodge the unique index.
+        $name = Str::ucfirst(Str::lower(preg_replace('/^[\s\x{200C}]+|[\s\x{200C}]+$/u', '', trim($name))));
+
+        $description = $this->nullableString($description);
 
         $rate_limit_key = $this->rateLimitKey($user, $request);
 
@@ -53,6 +57,26 @@ final class EditPlanAction
             return EditPlanResult::AlreadyExists;
         }
 
+        // Editing a range must not strand existing tasks outside it; ISO Y-m-d compares as strings (R2).
+        $has_stranded_tasks = $plan->tasks()
+            ->where(function ($query) use ($range) {
+                $query->where('task_date', '<', $range['start'])
+                    ->orWhere('task_date', '>', $range['end']);
+            })
+            ->exists();
+
+        if ($has_stranded_tasks) {
+            RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
+            $this->logger->warning('Plan edit failed, range excludes tasks.', [
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+                'start_date' => $range['start'],
+                'finish_date' => $range['end'],
+            ]);
+
+            return EditPlanResult::RangeExcludesTasks;
+        }
+
         $plan->update([
             'name' => $name,
             'description' => $description,
@@ -76,5 +100,15 @@ final class EditPlanAction
     private function rateLimitKey(User $user, Request $request): string
     {
         return Str::transliterate('edit-plan:'.$user->id.'|'.$request->ip());
+    }
+
+    private function nullableString(?string $value): ?string
+    {
+        // trim() is byte-wise: ZWNJ (e2 80 8c) shares its tail byte with ی (db 8c), so a
+        // half-space in the mask would corrupt Persian text. Strip edge half-spaces with a
+        // unicode regex instead — a stray leading/trailing نیم‌فاصله is invisible in storage.
+        $value = is_string($value) ? preg_replace('/^[\s\x{200C}]+|[\s\x{200C}]+$/u', '', trim($value)) : null;
+
+        return filled($value) ? $value : null;
     }
 }

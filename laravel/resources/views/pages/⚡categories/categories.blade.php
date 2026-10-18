@@ -185,7 +185,7 @@
                             <div class="flex items-center justify-center">
                                 <a
                                     href="{{ route('tasks', ['category_filter' => [$category->id]]) }}"
-                                    wire:navigate.hover
+                                    wire:navigate
                                     class="mine-text-link flex w-full items-center justify-between gap-2 px-2"
                                 >
                                     <p @class([

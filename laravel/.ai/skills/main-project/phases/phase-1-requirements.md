@@ -46,6 +46,10 @@ As a user, I want to view a specific plan and see all tasks assigned to it so th
 
 As a user, I want to see the progress of a plan as a percentage (completed/total tasks) and watch it update in real time as I mark tasks done or not done, so that I always know how close I am to finishing a project.
 
+#### Plan Invariants
+
+As a user, I expect a completed plan to stay completed only while all its tasks are done, and its date range to protect its tasks: reactivating (or adding) an undone task reopens the plan, a task's date must fall inside its plan's range, and a plan's range cannot be edited to exclude existing tasks.
+
 ### UC-08 – Manage Tasks
 
 #### Manage Tasks

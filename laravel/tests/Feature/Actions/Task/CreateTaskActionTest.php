@@ -187,3 +187,44 @@ it('logs creation events', function () {
             fn (array $context) => $context['user_id'] === $user->id && $context['title'] === 'Final'
         ));
 });
+
+it('rejects a task date outside the plan range', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $plan = $user->plans()->create(['name' => 'Sprint', 'start_date' => '2026-06-01', 'finish_date' => '2026-06-30']);
+    RateLimiter::clear(createTaskRateLimitKey($user));
+
+    $result = app(CreateTaskAction::class)->execute(
+        $user, 'Late task', null, '2026-07-01', 30, TaskPriority::Medium, 0, $category->id, $plan->id, createTaskRequest(),
+    );
+
+    expect($result)->toBe(CreateTaskResult::DateOutOfRange);
+    expect($user->tasks()->where('title', 'Late task')->exists())->toBeFalse();
+});
+
+it('accepts a task date on the plan range boundary', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $plan = $user->plans()->create(['name' => 'Sprint', 'start_date' => '2026-06-01', 'finish_date' => '2026-06-30']);
+    RateLimiter::clear(createTaskRateLimitKey($user));
+
+    $result = app(CreateTaskAction::class)->execute(
+        $user, 'First day', null, '2026-06-01', 30, TaskPriority::Medium, 0, $category->id, $plan->id, createTaskRequest(),
+    );
+
+    expect($result)->toBe(CreateTaskResult::Created);
+});
+
+it('reopens a completed plan when an undone task is added to it', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $plan = $user->plans()->create(['name' => 'Sprint', 'start_date' => '2026-06-01', 'finish_date' => '2026-06-30', 'done' => true]);
+    RateLimiter::clear(createTaskRateLimitKey($user));
+
+    $result = app(CreateTaskAction::class)->execute(
+        $user, 'New task', null, '2026-06-15', 30, TaskPriority::Medium, 0, $category->id, $plan->id, createTaskRequest(),
+    );
+
+    expect($result)->toBe(CreateTaskResult::Created);
+    expect($plan->fresh()->done)->toBeFalse();
+});

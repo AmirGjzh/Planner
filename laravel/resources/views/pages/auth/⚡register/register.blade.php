@@ -80,7 +80,7 @@
         <div class="mt-5 flex items-center justify-center gap-2">
             <p class="mine-text-primary text-sm font-medium">{{ __('Already have an account?') }}</p>
             <a
-                wire:navigate.hover
+                wire:navigate
                 href="{{ route('login') }}"
                 class="mine-text-link inline-flex items-center py-1 text-sm font-medium"
             >{{ __('Sign in') }}</a>

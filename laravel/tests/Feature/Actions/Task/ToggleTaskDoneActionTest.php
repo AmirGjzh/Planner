@@ -120,3 +120,20 @@ it('allows toggling again after rate limit resets', function () {
 
     expect($result)->toBe(ToggleTaskDoneResult::Toggled);
 });
+
+it('reopens a completed plan when its task is un-done', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $plan = $user->plans()->create(['name' => 'Sprint', 'start_date' => '2026-06-01', 'finish_date' => '2026-06-30', 'done' => true]);
+    $task = $user->tasks()->create([
+        'title' => 'Test task', 'task_date' => '2026-06-15', 'estimated_minutes' => 30,
+        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
+        'plan_id' => $plan->id, 'done' => true,
+    ]);
+    RateLimiter::clear(toggleTaskRateLimitKey($user));
+
+    app(ToggleTaskDoneAction::class)->execute($user, $task, toggleTaskRequest());
+
+    expect($task->fresh()->done)->toBeFalse();
+    expect($plan->fresh()->done)->toBeFalse();
+});

@@ -27,7 +27,7 @@
             <div class="mt-5 flex items-center justify-center gap-2">
                 <p class="mine-text-primary text-sm font-medium">{{ __('Remember your password?') }}</p>
                 <a
-                    wire:navigate.hover
+                    wire:navigate
                     href="{{ route('login') }}"
                     class="mine-text-link inline-flex items-center py-1 text-sm font-medium"
                 >{{ __('Sign in') }}</a>
@@ -75,7 +75,7 @@
             <div class="mt-5 flex items-center justify-center gap-2">
                 <p class="mine-text-primary text-sm font-medium">{{ __('Remember your password?') }}</p>
                 <a
-                    wire:navigate.hover
+                    wire:navigate
                     href="{{ route('login') }}"
                     class="mine-text-link inline-flex items-center py-1 text-sm font-medium"
                 >{{ __('Sign in') }}</a>

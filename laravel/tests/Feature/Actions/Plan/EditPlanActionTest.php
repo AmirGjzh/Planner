@@ -2,6 +2,7 @@
 
 use App\Actions\Plan\EditPlanAction;
 use App\Enums\EditPlanResult;
+use App\Enums\TaskPriority;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -127,5 +128,92 @@ it('logs edit events', function () {
     Log::shouldHaveReceived('info')
         ->with('Plan updated.', Mockery::on(
             fn (array $context) => $context['user_id'] === $user->id
+        ));
+});
+
+it('rejects a range that excludes an existing task', function () {
+    $user = User::factory()->create();
+    $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+    $category = $user->categories()->create(['name' => 'Work']);
+    $user->tasks()->create([
+        'title' => 'Test task', 'task_date' => '2026-01-15', 'estimated_minutes' => 30,
+        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
+        'plan_id' => $plan->id,
+    ]);
+    RateLimiter::clear(editPlanRateLimitKey($user));
+
+    $result = app(EditPlanAction::class)->execute($user, $plan, 'Work', null, ['start' => '2026-01-01', 'end' => '2026-01-10'], editPlanRequest());
+
+    expect($result)->toBe(EditPlanResult::RangeExcludesTasks);
+    expect($plan->fresh()->finish_date->toDateString())->toBe('2026-01-31');
+});
+
+it('allows a range that still contains every task', function () {
+    $user = User::factory()->create();
+    $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+    $category = $user->categories()->create(['name' => 'Work']);
+    $user->tasks()->create([
+        'title' => 'Test task', 'task_date' => '2026-01-01', 'estimated_minutes' => 30,
+        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
+        'plan_id' => $plan->id,
+    ]);
+    RateLimiter::clear(editPlanRateLimitKey($user));
+
+    $result = app(EditPlanAction::class)->execute($user, $plan, 'Work', null, ['start' => '2026-01-01', 'end' => '2026-01-15'], editPlanRequest());
+
+    expect($result)->toBe(EditPlanResult::Updated);
+    expect($plan->fresh()->finish_date->toDateString())->toBe('2026-01-15');
+});
+
+it('trims spaces and edge half-spaces, then normalizes the new name', function () {
+    $user = User::factory()->create();
+    $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+    RateLimiter::clear(editPlanRateLimitKey($user));
+
+    $result = app(EditPlanAction::class)->execute($user, $plan, "  \u{200C}personal\u{200C}  ", null, ['start' => '2026-01-01', 'end' => '2026-01-31'], editPlanRequest());
+
+    expect($result)->toBe(EditPlanResult::Updated);
+    expect($plan->fresh()->name)->toBe('Personal');
+});
+
+it('updates the plan with exactly the dup, range, and update queries', function () {
+    $user = User::factory()->create();
+    $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+    RateLimiter::clear(editPlanRateLimitKey($user));
+    $this->expectsDatabaseQueryCount(3);
+
+    $result = app(EditPlanAction::class)->execute($user, $plan, 'Renamed', null, ['start' => '2026-01-01', 'end' => '2026-01-31'], editPlanRequest());
+
+    expect($result)->toBe(EditPlanResult::Updated);
+});
+
+it('clears the rate limiter after a successful edit', function () {
+    $user = User::factory()->create();
+    $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+    RateLimiter::clear(editPlanRateLimitKey($user));
+
+    app(EditPlanAction::class)->execute($user, $plan, 'Renamed', null, ['start' => '2026-01-01', 'end' => '2026-01-31'], editPlanRequest());
+
+    expect(RateLimiter::tooManyAttempts(editPlanRateLimitKey($user), 5))->toBeFalse();
+});
+
+it('logs the rate-limited outcome with available_in', function () {
+    Log::spy();
+
+    $user = User::factory()->create();
+    $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+    $user->plans()->create(['name' => 'Existing', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+    RateLimiter::clear(editPlanRateLimitKey($user));
+
+    foreach (range(1, 5) as $ignored) {
+        app(EditPlanAction::class)->execute($user, $plan, 'Existing', null, ['start' => '2026-01-01', 'end' => '2026-01-31'], editPlanRequest());
+    }
+
+    $result = app(EditPlanAction::class)->execute($user, $plan, 'Existing', null, ['start' => '2026-01-01', 'end' => '2026-01-31'], editPlanRequest());
+
+    expect($result)->toBe(EditPlanResult::RateLimited);
+    Log::shouldHaveReceived('warning')
+        ->with('Plan edit rate limited.', Mockery::on(
+            fn (array $context) => $context['user_id'] === $user->id && $context['available_in'] > 0
         ));
 });

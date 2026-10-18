@@ -239,8 +239,8 @@ Reports | Dashboard | Errors | Components).
 
 ## Pagination
 
-"Previous" → paginator button · previous page (published Livewire tailwind view)
-"Next"     → paginator button · next page (published Livewire tailwind view)
+"Previous" → paginator button · previous page (published Livewire tailwind view); also month-nav button (calendar, datepicker)
+"Next"     → paginator button · next page (published Livewire tailwind view); also month-nav button (calendar, datepicker)
 "Showing"  → paginator text · range summary start (published Livewire tailwind view)
 "to"       → paginator text · range separator
 "of"       → paginator text · range total separator
@@ -276,6 +276,8 @@ Reports | Dashboard | Errors | Components).
 "You have a plan with this name."                                      → inline alert body · duplicate plan name
 "Too many add-plan attempts!"                                          → inline alert title · warning · create rate limit
 "Too many edit-plan attempts!"                                         → inline alert title · warning · edit rate limit
+"Tasks outside the range!"                                             → inline alert title · danger · edit range would exclude existing tasks
+"Every task must fall inside the new plan range."                      → inline alert body · edit range would exclude existing tasks
 "Your plan name"                                                       → input placeholder · add/edit modal
 "Plan description"                                                     → input label · add/edit textarea; also validation prefix (max)
 "Your plan description"                                                → input placeholder · add/edit textarea
@@ -341,6 +343,8 @@ Reports | Dashboard | Errors | Components).
 "Please choose a valid category."                 → inline alert body · stale category
 "Invalid plan!"                                   → inline alert title · danger · stale plan on add/edit
 "Please choose a valid plan."                     → inline alert body · stale plan
+"Task date out of range!"                         → inline alert title · danger · task date outside plan range (add/edit)
+"The task date must fall inside the plan range."  → inline alert body · task date outside plan range
 "This will mark the task as completed."           → inline alert body · completion confirm
 "This task will be moved back to active."         → inline alert body · reactivate confirm
 "Your task created successfully"                  → toast title · success · create done

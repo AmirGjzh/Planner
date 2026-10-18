@@ -10,7 +10,7 @@
 
 {{-- aria-current stays an @if: minting the attribute from {{ }} lets e() escape its quotes into &quot; (components.md) --}}
 <a
-    wire:navigate.hover
+    wire:navigate
     href="{{ $href }}"
     class="{{ $active ? 'mine-nav-link-active' : 'mine-nav-link' }}"
     @if ($active) aria-current="page" @endif

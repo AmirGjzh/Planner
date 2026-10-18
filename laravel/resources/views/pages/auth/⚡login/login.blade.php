@@ -52,7 +52,7 @@
             <div class="flex items-center justify-between">
                 <x-mine.checkbox wire:model="remember">{{ __('Remember me') }}</x-mine.checkbox>
                 <a
-                    wire:navigate.hover
+                    wire:navigate
                     href="{{ route('password.request') }}"
                     class="mine-text-link inline-flex items-center py-1 text-sm font-medium"
                 >{{ __('Forgot password?') }}</a>
@@ -64,7 +64,7 @@
         <div class="mt-5 flex items-center justify-center gap-2">
             <p class="mine-text-primary text-sm font-medium">{{ __('New to Planner?') }}</p>
             <a
-                wire:navigate.hover
+                wire:navigate
                 href="{{ route('register') }}"
                 class="mine-text-link inline-flex items-center py-1 text-sm font-medium"
             >{{ __('Create your account') }}</a>

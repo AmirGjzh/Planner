@@ -22,6 +22,11 @@ The toast's Alpine factory is registered as `Alpine.data('mineToast', …)` in `
 
 Toasts are navigation-proof inside the factory too: every toast carries an absolute wall-clock `expiresAt`, `addToast`/dismiss persist the surviving list to `sessionStorage` (`mine-toasts`, capped), and `init()` restores unexpired toasts with their remaining time on every mount — so a toast survives `wire:navigate`, full reloads, and back/forward in either layout. Expired toasts are filtered on restore (never resurrect them), and persistence stays in the factory as the single choke point — never in the dispatching callers.
 
+## Navigations never serve stale data
+
+- Links use plain `wire:navigate` — **no `.hover` anywhere**: hover-prefetch caches the destination HTML for 30 seconds and would swap it in on click after data changed on another page (mark a task done, sweep the mouse over the nav, click — the pre-mutation page comes back).
+- `resources/js/app.js` owns one `livewire:navigate` listener: when a back/forward traversal (`detail.history && detail.cached`) lands on a different page than the one rendered, it cancels navigate's in-memory snapshot swap and reloads instead — history navigation always renders fresh server HTML. Same-page fragment traversals (skip link) keep Livewire's scroll restore: their destination path+query equals the rendered page. Every island page is covered by this one listener; add new pages knowing Back/Forward is always fresh.
+
 ## Nested UI components are anonymous Blade, not Livewire
 
 - Nested components are anonymous Blade only, under `resources/views/components/mine/` — the `x-mine.*` tag auto-resolves there with no PHP class.
@@ -35,4 +40,6 @@ Toasts are navigation-proof inside the factory too: every toast carries an absol
 - Fields own their error a11y wiring: `input`/`textarea` set `aria-invalid` + `aria-describedby` on the control, `select` on its listbox wrapper, `datepicker` on its trigger button — all pointing at the error `p`, whose `id` is the field id + `-error` and whose `role` is `alert`.
 - A labelless `input` names itself from its placeholder (`aria-label="{{ $placeholder }}"` when there's no label) and a caller-passed `aria-label` always wins — axe gates placeholder-only inputs; the searchable `select`/`datepicker` search inputs pass their own `aria-label` explicitly (same `Search...` key as the placeholder).
 - `Reicon` renders `aria-hidden="true"` by default — decorative unless a caller passes an explicit label.
+- `calendar`/`datepicker` month-navigation buttons are labelled `__('Previous')`/`__('Next')` — icon-only nav fails axe's button-name rule.
+- `progress` names its bar `aria-label="{{ __('Progress') }}"` — `role="progressbar"` requires an accessible name; no caller overrides it yet.
 - Icons/graphics never become the accessible name: `brand-logo` takes `aria-label` from the caller (header passes `config('app.name')`).

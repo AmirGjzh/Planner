@@ -78,3 +78,13 @@ it('logs completion events', function () {
             fn (array $context) => $context['user_id'] === $user->id && $context['plan_id'] === $plan->id
         ));
 });
+
+it('completes the plan with exactly the undone-check and update queries', function () {
+    $user = User::factory()->create();
+    $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+    $this->expectsDatabaseQueryCount(2);
+
+    $result = app(CompletePlanAction::class)->execute($user, $plan);
+
+    expect($result)->toBe(CompletePlanResult::Completed);
+});

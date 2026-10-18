@@ -15,6 +15,7 @@
                 <x-mine.modal.trigger id="add-plan-form">
                     <x-mine.button
                         type="button"
+                        size="sm"
                         @class([
                             'sm:pr-4!' => app()->isLocale('en'),
                             'sm:pl-4!' => app()->isLocale('fa'),
@@ -30,10 +31,10 @@
                                 weight="filled"
                                 size="16"
                             />
-                            <p class="hidden text-sm font-medium sm:inline">
+                            <span class="hidden sm:inline">
                                 <span class="hidden sm:inline md:hidden">{{ __('New') }}</span
                                 ><span class="hidden md:inline">{{ __('New plan') }}</span>
-                            </p>
+                            </span>
                         </div>
                     </x-mine.button>
                 </x-mine.modal.trigger>
@@ -301,12 +302,12 @@
                                         </div>
                                         <div class="flex min-w-0 flex-col justify-between gap-2">
                                             <div class="flex min-w-0 items-center gap-4">
-                                                <h1 @class([
+                                                <h2 @class([
                                                     'pt-1' => app()->isLocale('en'),
                                                     'text-base font-semibold mine-text-primary truncate min-w-0 '.$config['title_class'],
                                                 ])>
                                                     {{ $plan->name }}
-                                                </h1>
+                                                </h2>
                                                 <div class="{{ $config['header_class'] }} rounded-xl h-7 flex justify-center items-center px-3 shrink-0">
                                                     <p @class([
                                                         'pt-1' => app()->isLocale('en'),
@@ -323,7 +324,7 @@
                                     </div>
                                     <div class="flex h-full shrink-0 items-start justify-end">
                                         <x-mine.dropdown group="plan-actions">
-                                            <x-mine.dropdown.trigger>
+                                            <x-mine.dropdown.trigger aria-label="{{ $plan->name }}">
                                                 <div class="mine-btn-icon rounded-xl p-2">
                                                     <x-mine.icon name="MoreH" size="18" weight="filled" />
                                                 </div>
@@ -431,12 +432,12 @@
                                 </div>
                                 <div class="mb-4 flex">
                                     <div class="flex flex-3 flex-col justify-between">
-                                        <h2 class="mine-text-secondary mb-2 text-[13px] font-medium">
+                                        <p class="mine-text-secondary mb-2 text-[13px] font-medium">
                                             {{ __('Progress') }}
-                                        </h2>
-                                        <h2 class="text-2xl font-semibold {{ $config['percent_color'] }} mb-2">
+                                        </p>
+                                        <p class="text-2xl font-semibold {{ $config['percent_color'] }} mb-2">
                                             {{ app()->isLocale('fa') ? App\Support\PersianNumber::convert($config['pct']) : $config['pct'] }}%
-                                        </h2>
+                                        </p>
                                         <x-mine.progress
                                             total="{{ $config['progress_total'] }}"
                                             progress="{{ $config['progress_value'] }}"
@@ -471,7 +472,7 @@
                                     @else
                                         <a
                                             href="{{ route('tasks', ['plan_filter' => [$plan->id], 'add_plan' => $plan->id]) }}"
-                                            wire:navigate.hover
+                                            wire:navigate
                                             class="w-full"
                                         >
                                             <x-mine.button type="button" class="{{ $config['add_class'] }}">
@@ -554,6 +555,7 @@
                 <h2 id="add-plan-title" class="mine-text-primary text-base font-semibold">{{ __('Add new plan') }}</h2>
                 <button
                     type="button"
+                    aria-label="{{ __('Close') }}"
                     @click="
                         close();
                         $wire.cancelAdd();
@@ -578,7 +580,15 @@
                 </div>
             @endif
 
-            <form class="flex flex-col gap-4" wire:submit="addPlan">
+            <form
+                class="flex flex-col gap-4"
+                wire:submit="addPlan"
+                novalidate
+                x-data
+                x-on:focus-first-error.window="
+                    $nextTick(() => $el.querySelector('[aria-invalid=&quot;true&quot;]')?.focus())
+                "
+            >
                 <div>
                     <x-mine.input
                         label="{{ __('Plan name') }}"
@@ -615,11 +625,7 @@
                         size="sm"
                     >
                         {{ __('Cancel') }}</x-mine.button>
-                    <x-mine.button
-                        wire:target="addPlan"
-                        class="mine-btn-primary"
-                        size="sm"
-                    >
+                    <x-mine.button wire:target="addPlan" class="mine-btn-primary" size="sm">
                         {{ __('Create') }}</x-mine.button>
                 </div>
             </form>
@@ -638,6 +644,7 @@
                 <h2 id="edit-plan-title" class="mine-text-primary text-base font-semibold">{{ __('Edit plan') }}</h2>
                 <button
                     type="button"
+                    aria-label="{{ __('Close') }}"
                     @click="
                         close();
                         $wire.cancelEdit();
@@ -662,7 +669,22 @@
                 </div>
             @endif
 
-            <form class="flex flex-col gap-4" wire:submit="editPlan">
+            @if ($edit_error === 'range_excludes_tasks')
+                <div class="mb-4">
+                    <x-mine.alert variant="danger" title="{{ __('Tasks outside the range!') }}">
+                        {{ __('Every task must fall inside the new plan range.') }}</x-mine.alert>
+                </div>
+            @endif
+
+            <form
+                class="flex flex-col gap-4"
+                wire:submit="editPlan"
+                novalidate
+                x-data
+                x-on:focus-first-error.window="
+                    $nextTick(() => $el.querySelector('[aria-invalid=&quot;true&quot;]')?.focus())
+                "
+            >
                 <div>
                     <x-mine.input
                         leftIcon="Bullseye"
@@ -699,11 +721,7 @@
                         size="sm"
                     >
                         {{ __('Cancel') }}</x-mine.button>
-                    <x-mine.button
-                        wire:target="editPlan"
-                        class="mine-btn-primary"
-                        size="sm"
-                    >
+                    <x-mine.button wire:target="editPlan" class="mine-btn-primary" size="sm">
                         {{ __('Save') }}</x-mine.button>
                 </div>
             </form>
@@ -724,6 +742,7 @@
                 </h2>
                 <button
                     type="button"
+                    aria-label="{{ __('Close') }}"
                     @click="
                         close();
                         $wire.cancelDelete();
@@ -758,11 +777,7 @@
                         size="sm"
                     >
                         {{ __('Cancel') }}</x-mine.button>
-                    <x-mine.button
-                        wire:target="deletePlan"
-                        class="mine-btn-danger"
-                        size="sm"
-                    >
+                    <x-mine.button wire:target="deletePlan" class="mine-btn-danger" size="sm">
                         {{ __('Delete') }}</x-mine.button>
                 </div>
             </form>
@@ -783,6 +798,7 @@
                 </h2>
                 <button
                     type="button"
+                    aria-label="{{ __('Close') }}"
                     @click="
                         close();
                         $wire.cancelComplete();
@@ -817,11 +833,7 @@
                         size="sm"
                     >
                         {{ __('Cancel') }}</x-mine.button>
-                    <x-mine.button
-                        wire:target="completePlan"
-                        class="mine-btn-primary"
-                        size="sm"
-                    >
+                    <x-mine.button wire:target="completePlan" class="mine-btn-primary" size="sm">
                         {{ __('Complete') }}</x-mine.button>
                 </div>
             </form>
@@ -842,6 +854,7 @@
                 </h2>
                 <button
                     type="button"
+                    aria-label="{{ __('Close') }}"
                     @click="
                         close();
                         $wire.cancelReopen();
@@ -869,11 +882,7 @@
                         size="sm"
                     >
                         {{ __('Cancel') }}</x-mine.button>
-                    <x-mine.button
-                        wire:target="reopenPlan"
-                        class="mine-btn-primary"
-                        size="sm"
-                    >
+                    <x-mine.button wire:target="reopenPlan" class="mine-btn-primary" size="sm">
                         {{ __('Re active') }}</x-mine.button>
                 </div>
             </form>

@@ -33,6 +33,18 @@ it('marks the active nav link with aria-current', function () {
         ->assertSee('class="mine-nav-link-active"', false);
 });
 
+it('renders navigation links without hover prefetch', function () {
+    $this->actingAs(headerUser());
+
+    // Plain wire:navigate only: hover-prefetch would cache the destination
+    // HTML for 30s and swap in a snapshot taken before a mutation landed on
+    // another page (stale data until a manual refresh).
+    $this->get(route('tasks'))
+        ->assertStatus(200)
+        ->assertSee('wire:navigate', false)
+        ->assertDontSee('wire:navigate.hover', false);
+});
+
 it('renders exactly one h1 across header and page', function () {
     $this->actingAs(headerUser());
 

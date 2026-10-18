@@ -40,6 +40,16 @@ final class ToggleTaskDoneAction
 
         $task->update(['done' => $new_status]);
 
+        // A completed plan must not contain undone tasks — un-doning reopens it (R1).
+        if (! $new_status && $task->plan?->done) {
+            $task->plan->update(['done' => false]);
+
+            $this->logger->info('Plan re activated, task un done.', [
+                'user_id' => $user->id,
+                'plan_id' => $task->plan_id,
+            ]);
+        }
+
         RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
 
         $this->logger->info('Task toggled.', [

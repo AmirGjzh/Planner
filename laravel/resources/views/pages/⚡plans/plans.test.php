@@ -674,3 +674,165 @@ it('falls back to a placeholder for missing descriptions', function () {
         ->assertSee(__('No description'))
         ->assertSee('Roadmap detail');
 });
+
+it('shows an error when the edited range excludes an existing task', function () {
+    $user = User::factory()->create();
+    $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+    $category = $user->categories()->create(['name' => 'Work']);
+    $user->tasks()->create([
+        'title' => 'Test task', 'task_date' => '2026-01-15', 'estimated_minutes' => 30,
+        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
+        'plan_id' => $plan->id,
+    ]);
+    RateLimiter::clear('edit-plan:'.$user->id.'|127.0.0.1');
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('editing_id', $plan->id)
+        ->set('edit_name', 'Work')
+        ->set('edit_range', ['start' => '2026-01-01', 'end' => '2026-01-10'])
+        ->call('editPlan')
+        ->assertSet('edit_error', 'range_excludes_tasks');
+});
+
+it('prevents editing a plan owned by another user', function () {
+    $user = User::factory()->create();
+    $other = User::factory()->create();
+    $plan = $other->plans()->create(['name' => 'Private', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('editing_id', $plan->id)
+        ->set('edit_name', 'Hijacked')
+        ->set('edit_range', ['start' => '2026-01-01', 'end' => '2026-01-31'])
+        ->call('editPlan')
+        ->assertNotDispatched('toast');
+
+    expect($plan->fresh()->name)->toBe('Private');
+});
+
+it('prevents deleting a plan owned by another user', function () {
+    $user = User::factory()->create();
+    $other = User::factory()->create();
+    $plan = $other->plans()->create(['name' => 'Private', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('deleting_id', $plan->id)
+        ->call('deletePlan')
+        ->assertNotDispatched('toast');
+
+    expect($other->plans()->whereKey($plan->id)->exists())->toBeTrue();
+});
+
+it('trims spaces and edge half-spaces before creating a plan', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('add_name', "  \u{200C}Work\u{200C}  ")
+        ->set('add_range', ['start' => '2026-01-01', 'end' => '2026-01-31'])
+        ->call('addPlan')
+        ->assertHasNoErrors();
+
+    expect($user->plans()->where('name', 'Work')->exists())->toBeTrue();
+});
+
+it('requires a name when the new plan name is only half-spaces', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('add_name', "\u{200C}\u{200C}")
+        ->set('add_range', ['start' => '2026-01-01', 'end' => '2026-01-31'])
+        ->call('addPlan')
+        ->assertHasErrors('add_name');
+});
+
+it('detects a duplicate plan hidden behind a trailing half-space', function () {
+    $user = User::factory()->create();
+    $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('add_name', "Work\u{200C}")
+        ->set('add_range', ['start' => '2026-02-01', 'end' => '2026-02-28'])
+        ->call('addPlan')
+        ->assertSet('add_error', 'already_exists');
+});
+
+it('trims spaces and edge half-spaces before editing a plan', function () {
+    $user = User::factory()->create();
+    $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('editing_id', $plan->id)
+        ->set('edit_name', "  \u{200C}Renamed\u{200C}  ")
+        ->set('edit_range', ['start' => '2026-01-01', 'end' => '2026-01-31'])
+        ->call('editPlan')
+        ->assertHasNoErrors();
+
+    expect($plan->fresh()->name)->toBe('Renamed');
+});
+
+it('requires a name when the edit name is only half-spaces', function () {
+    $user = User::factory()->create();
+    $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('editing_id', $plan->id)
+        ->set('edit_name', "\u{200C}\u{200C}")
+        ->set('edit_range', ['start' => '2026-01-01', 'end' => '2026-01-31'])
+        ->call('editPlan')
+        ->assertHasErrors('edit_name');
+});
+
+it('trims the plan description and drops an invisible one', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('add_name', 'Work')
+        ->set('add_description', "  \u{200C}Notes\u{200C}  ")
+        ->set('add_range', ['start' => '2026-01-01', 'end' => '2026-01-31'])
+        ->call('addPlan')
+        ->assertHasNoErrors();
+
+    expect($user->plans()->where('description', 'Notes')->exists())->toBeTrue();
+});
+
+it('trims the search term before filtering', function () {
+    $user = User::factory()->create();
+    $user->plans()->create(['name' => 'Work', ...planInCurrentMonth()]);
+    $user->plans()->create(['name' => 'Personal', ...planInCurrentMonth()]);
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('search', '  wor  ')
+        ->assertSee('Work')
+        ->assertDontSee('Personal');
+});
+
+it('breaks load-sort ties by name', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $zebra = $user->plans()->create(['name' => 'Zebra', ...planInCurrentMonth()]);
+    $alpha = $user->plans()->create(['name' => 'Alpha', ...planInCurrentMonth()]);
+    $user->tasks()->create([
+        'title' => 'Z task', 'task_date' => $zebra->start_date->toDateString(), 'estimated_minutes' => 30,
+        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
+        'plan_id' => $zebra->id,
+    ]);
+    $user->tasks()->create([
+        'title' => 'A task', 'task_date' => $alpha->start_date->toDateString(), 'estimated_minutes' => 30,
+        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
+        'plan_id' => $alpha->id,
+    ]);
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('sort', 'load')
+        ->assertSeeInOrder(['Alpha', 'Zebra']);
+});

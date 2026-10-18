@@ -218,3 +218,40 @@ it('logs edit events', function () {
             fn (array $context) => $context['user_id'] === $user->id
         ));
 });
+
+it('rejects a task date outside the plan range on edit', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $plan = $user->plans()->create(['name' => 'Sprint', 'start_date' => '2026-06-01', 'finish_date' => '2026-06-30']);
+    $task = $user->tasks()->create([
+        'title' => 'Test task', 'task_date' => '2026-06-15', 'estimated_minutes' => 30,
+        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
+        'plan_id' => $plan->id,
+    ]);
+    RateLimiter::clear(editTaskRateLimitKey($user));
+
+    $result = app(EditTaskAction::class)->execute(
+        $user, $task, 'Test task', null, '2026-07-05', 30, TaskPriority::Medium, 0, $category->id, $plan->id, editTaskRequest(),
+    );
+
+    expect($result)->toBe(EditTaskResult::DateOutOfRange);
+    expect($task->fresh()->task_date->toDateString())->toBe('2026-06-15');
+});
+
+it('reopens a completed plan when a task is moved into it undone', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $plan = $user->plans()->create(['name' => 'Sprint', 'start_date' => '2026-06-01', 'finish_date' => '2026-06-30', 'done' => true]);
+    $task = $user->tasks()->create([
+        'title' => 'Test task', 'task_date' => '2026-06-15', 'estimated_minutes' => 30,
+        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
+    ]);
+    RateLimiter::clear(editTaskRateLimitKey($user));
+
+    $result = app(EditTaskAction::class)->execute(
+        $user, $task, 'Test task', null, '2026-06-15', 30, TaskPriority::Medium, 0, $category->id, $plan->id, editTaskRequest(),
+    );
+
+    expect($result)->toBe(EditTaskResult::Updated);
+    expect($plan->fresh()->done)->toBeFalse();
+});

@@ -22,6 +22,7 @@
     {{ $attributes->class('w-full rounded-full h-2') }}
     style="background: var({{ $trackVar }});"
     role="progressbar"
+    aria-label="{{ __('Progress') }}"
     aria-valuenow="{{ $progress }}"
     aria-valuemin="0"
     aria-valuemax="{{ $total }}"

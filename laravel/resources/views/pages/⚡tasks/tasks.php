@@ -253,6 +253,7 @@ new class extends Component
             CreateTaskResult::RateLimited => 'rate_limited',
             CreateTaskResult::InvalidCategory => 'invalid_category',
             CreateTaskResult::InvalidPlan => 'invalid_plan',
+            CreateTaskResult::DateOutOfRange => 'date_out_of_range',
             CreateTaskResult::Created => null,
         };
 
@@ -325,6 +326,7 @@ new class extends Component
             EditTaskResult::RateLimited => 'rate_limited',
             EditTaskResult::InvalidCategory => 'invalid_category',
             EditTaskResult::InvalidPlan => 'invalid_plan',
+            EditTaskResult::DateOutOfRange => 'date_out_of_range',
             EditTaskResult::Updated => null,
         };
 

@@ -17,7 +17,7 @@
 @if ($href)
     <a
         href="{{ $href }}"
-        wire:navigate.hover
+        wire:navigate
         role="menuitem"
         tabindex="0"
         @click="close()"

@@ -453,6 +453,7 @@
             <div class="mb-2 flex items-center justify-between">
                 <button
                     type="button"
+                    aria-label="{{ __('Previous') }}"
                     x-on:click="prevMonth()"
                     class="mine-btn-icon mine-text-secondary rounded-lg p-1.5 transition-colors duration-200 focus-visible:outline-none"
                 >
@@ -538,6 +539,7 @@
 
                 <button
                     type="button"
+                    aria-label="{{ __('Next') }}"
                     x-on:click="nextMonth()"
                     class="mine-btn-icon mine-text-secondary rounded-lg p-1.5 transition-colors duration-200 focus-visible:outline-none"
                 >

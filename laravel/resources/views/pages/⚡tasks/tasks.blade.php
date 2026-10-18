@@ -671,6 +671,13 @@
                 </div>
             @endif
 
+            @if ($add_error === 'date_out_of_range')
+                <div class="mb-4">
+                    <x-mine.alert variant="danger" title="{{ __('Task date out of range!') }}">
+                        {{ __('The task date must fall inside the plan range.') }}</x-mine.alert>
+                </div>
+            @endif
+
             <form class="flex flex-col gap-4" wire:submit="addTask">
                 <div>
                     <x-mine.input
@@ -759,11 +766,7 @@
                         size="sm"
                     >
                         {{ __('Cancel') }}</x-mine.button>
-                    <x-mine.button
-                        wire:target="addTask"
-                        class="mine-btn-primary"
-                        size="sm"
-                    >
+                    <x-mine.button wire:target="addTask" class="mine-btn-primary" size="sm">
                         {{ __('Create') }}</x-mine.button>
                 </div>
             </form>
@@ -810,6 +813,13 @@
                 <div class="mb-4">
                     <x-mine.alert variant="danger" title="{{ __('Invalid plan!') }}">
                         {{ __('Please choose a valid plan.') }}</x-mine.alert>
+                </div>
+            @endif
+
+            @if ($edit_error === 'date_out_of_range')
+                <div class="mb-4">
+                    <x-mine.alert variant="danger" title="{{ __('Task date out of range!') }}">
+                        {{ __('The task date must fall inside the plan range.') }}</x-mine.alert>
                 </div>
             @endif
 
@@ -901,11 +911,7 @@
                         size="sm"
                     >
                         {{ __('Cancel') }}</x-mine.button>
-                    <x-mine.button
-                        wire:target="editTask"
-                        class="mine-btn-primary"
-                        size="sm"
-                    >
+                    <x-mine.button wire:target="editTask" class="mine-btn-primary" size="sm">
                         {{ __('Save') }}</x-mine.button>
                 </div>
             </form>
@@ -953,11 +959,7 @@
                         size="sm"
                     >
                         {{ __('Cancel') }}</x-mine.button>
-                    <x-mine.button
-                        wire:target="deleteTask"
-                        class="mine-btn-danger"
-                        size="sm"
-                    >
+                    <x-mine.button wire:target="deleteTask" class="mine-btn-danger" size="sm">
                         {{ __('Delete') }}</x-mine.button>
                 </div>
             </form>
@@ -1012,11 +1014,7 @@
                         size="sm"
                     >
                         {{ __('Cancel') }}</x-mine.button>
-                    <x-mine.button
-                        wire:target="completeTask"
-                        class="mine-btn-primary"
-                        size="sm"
-                    >
+                    <x-mine.button wire:target="completeTask" class="mine-btn-primary" size="sm">
                         {{ __('Complete') }}</x-mine.button>
                 </div>
             </form>
@@ -1071,11 +1069,7 @@
                         size="sm"
                     >
                         {{ __('Cancel') }}</x-mine.button>
-                    <x-mine.button
-                        wire:target="reopenTask"
-                        class="mine-btn-primary"
-                        size="sm"
-                    >
+                    <x-mine.button wire:target="reopenTask" class="mine-btn-primary" size="sm">
                         {{ __('Re active') }}</x-mine.button>
                 </div>
             </form>

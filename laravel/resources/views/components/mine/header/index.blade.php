@@ -32,7 +32,7 @@
             'pr-6' => app()->isLocale('fa'),
             'flex items-center',
         ])>
-            <a wire:navigate.hover href="{{ route('home') }}">
+            <a wire:navigate href="{{ route('home') }}">
                 <x-mine.brand-logo width="100" aria-label="{{ config('app.name') }}" />
             </a>
         </div>
@@ -117,7 +117,7 @@
     </nav>
 
     <div class="mx-auto flex items-center md:hidden">
-        <a wire:navigate.hover href="{{ route('home') }}">
+        <a wire:navigate href="{{ route('home') }}">
             <x-mine.brand-logo width="100" aria-label="{{ config('app.name') }}" />
         </a>
     </div>
@@ -269,7 +269,7 @@
                 'pl-3 md:pl-5' => app()->isLocale('fa'),
                 'w-full h-full pointer-events-none flex items-center justify-end gap-2',
             ])>
-                <a wire:navigate.hover href="{{ route('login') }}" class="pointer-events-auto">
+                <a wire:navigate href="{{ route('login') }}" class="pointer-events-auto">
                     <x-mine.button class="mine-btn-primary sm:mine-btn-ghost" height="h-10" size="sm">
                         <div @class([
                             'pb-1' => app()->isLocale('en'),
@@ -285,7 +285,7 @@
                         </div>
                     </x-mine.button>
                 </a>
-                <a wire:navigate.hover href="{{ route('register') }}" class="pointer-events-auto hidden sm:flex">
+                <a wire:navigate href="{{ route('register') }}" class="pointer-events-auto hidden sm:flex">
                     <x-mine.button class="mine-btn-primary" height="h-10" size="sm">{{ __('Sign up') }}</x-mine.button>
                 </a>
             </div>

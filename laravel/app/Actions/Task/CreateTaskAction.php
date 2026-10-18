@@ -56,7 +56,9 @@ final class CreateTaskAction
             return CreateTaskResult::InvalidCategory;
         }
 
-        if ($planId !== null && ! $user->plans()->whereKey($planId)->exists()) {
+        $plan = $planId === null ? null : $user->plans()->whereKey($planId)->first();
+
+        if ($planId !== null && $plan === null) {
             RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
             $this->logger->warning('Task creation failed, invalid plan.', [
                 'user_id' => $user->id,
@@ -64,6 +66,19 @@ final class CreateTaskAction
             ]);
 
             return CreateTaskResult::InvalidPlan;
+        }
+
+        // A task's date must lie inside its plan's range; ISO Y-m-d compares as strings (R2).
+        // The plan casts are Carbon — compare against the plain date form, not the midnight string.
+        if ($plan !== null && ($taskDate < $plan->start_date->toDateString() || $taskDate > $plan->finish_date->toDateString())) {
+            RateLimiter::hit($rate_limit_key, self::DECAY_SECONDS);
+            $this->logger->warning('Task creation failed, date outside plan range.', [
+                'user_id' => $user->id,
+                'plan_id' => $planId,
+                'task_date' => $taskDate,
+            ]);
+
+            return CreateTaskResult::DateOutOfRange;
         }
 
         $user->tasks()->create([
@@ -76,6 +91,16 @@ final class CreateTaskAction
             'category_id' => $categoryId,
             'plan_id' => $planId,
         ]);
+
+        // A completed plan must not contain undone tasks — adding one reopens it (R1).
+        if ($plan?->done) {
+            $plan->update(['done' => false]);
+
+            $this->logger->info('Plan re activated, undone task added.', [
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+            ]);
+        }
 
         RateLimiter::clear($rate_limit_key);
 

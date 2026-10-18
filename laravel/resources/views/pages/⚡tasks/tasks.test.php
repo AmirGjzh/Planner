@@ -1117,3 +1117,42 @@ it('ignores an add_plan param for a plan owned by another user', function () {
         ->assertSet('add_plan_id', null)
         ->assertNotDispatched('open-modal', id: 'add-task-form');
 });
+
+it('shows a range error when the task date falls outside the plan range', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $plan = $user->plans()->create(['name' => 'Sprint', 'start_date' => '2026-06-01', 'finish_date' => '2026-06-30']);
+    RateLimiter::clear('create-task:'.$user->id.'|127.0.0.1');
+
+    Livewire::actingAs($user)
+        ->test('pages::tasks')
+        ->set('add_title', 'Late task')
+        ->set('add_date', '2026-07-01')
+        ->set('add_estimated_minutes', 30)
+        ->set('add_priority', 'medium')
+        ->set('add_alarm_days', 0)
+        ->set('add_category_id', $category->id)
+        ->set('add_plan_id', $plan->id)
+        ->call('addTask')
+        ->assertSet('add_error', 'date_out_of_range');
+});
+
+it('does not create the task when the date falls outside the plan range', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $plan = $user->plans()->create(['name' => 'Sprint', 'start_date' => '2026-06-01', 'finish_date' => '2026-06-30']);
+    RateLimiter::clear('create-task:'.$user->id.'|127.0.0.1');
+
+    Livewire::actingAs($user)
+        ->test('pages::tasks')
+        ->set('add_title', 'Late task')
+        ->set('add_date', '2026-07-01')
+        ->set('add_estimated_minutes', 30)
+        ->set('add_priority', 'medium')
+        ->set('add_alarm_days', 0)
+        ->set('add_category_id', $category->id)
+        ->set('add_plan_id', $plan->id)
+        ->call('addTask');
+
+    expect($user->tasks()->where('title', 'Late task')->exists())->toBeFalse();
+});

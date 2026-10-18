@@ -41,9 +41,18 @@ it('normalizes plan name casing', function () {
     $user = User::factory()->create();
     RateLimiter::clear(createPlanRateLimitKey($user));
 
-    app(CreatePlanAction::class)->execute($user, 'wOrK pLaN', null, ['start' => '2026-01-01', 'end' => '2026-01-31'], createPlanRequest());
+    app(CreatePlanAction::class)->execute($user, "  \u{200C}wOrK pLaN\u{200C}  ", null, ['start' => '2026-01-01', 'end' => '2026-01-31'], createPlanRequest());
 
     expect($user->plans()->where('name', 'Work plan')->exists())->toBeTrue();
+});
+
+it('strips edge half-spaces from the description at the domain boundary', function () {
+    $user = User::factory()->create();
+    RateLimiter::clear(createPlanRateLimitKey($user));
+
+    app(CreatePlanAction::class)->execute($user, 'Work', "  \u{200C}Notes\u{200C}  ", ['start' => '2026-01-01', 'end' => '2026-01-31'], createPlanRequest());
+
+    expect($user->plans()->where('description', 'Notes')->exists())->toBeTrue();
 });
 
 it('detects duplicate plan name for the same user', function () {
@@ -130,5 +139,44 @@ it('logs creation events', function () {
     Log::shouldHaveReceived('info')
         ->with('Plan created.', Mockery::on(
             fn (array $context) => $context['user_id'] === $user->id && $context['name'] === 'Personal'
+        ));
+});
+
+it('creates the plan with exactly the exists-check and insert queries', function () {
+    $user = User::factory()->create();
+    RateLimiter::clear(createPlanRateLimitKey($user));
+    $this->expectsDatabaseQueryCount(2);
+
+    $result = app(CreatePlanAction::class)->execute($user, 'Work', null, ['start' => '2026-01-01', 'end' => '2026-01-31'], createPlanRequest());
+
+    expect($result)->toBe(CreatePlanResult::Created);
+});
+
+it('clears the rate limiter after a successful create', function () {
+    $user = User::factory()->create();
+    RateLimiter::clear(createPlanRateLimitKey($user));
+
+    app(CreatePlanAction::class)->execute($user, 'Work', null, ['start' => '2026-01-01', 'end' => '2026-01-31'], createPlanRequest());
+
+    expect(RateLimiter::tooManyAttempts(createPlanRateLimitKey($user), 5))->toBeFalse();
+});
+
+it('logs the rate-limited outcome with available_in', function () {
+    Log::spy();
+
+    $user = User::factory()->create();
+    $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+    RateLimiter::clear(createPlanRateLimitKey($user));
+
+    foreach (range(1, 5) as $ignored) {
+        app(CreatePlanAction::class)->execute($user, 'Work', null, ['start' => '2026-02-01', 'end' => '2026-02-28'], createPlanRequest());
+    }
+
+    $result = app(CreatePlanAction::class)->execute($user, 'Work', null, ['start' => '2026-02-01', 'end' => '2026-02-28'], createPlanRequest());
+
+    expect($result)->toBe(CreatePlanResult::RateLimited);
+    Log::shouldHaveReceived('warning')
+        ->with('Plan creation rate limited.', Mockery::on(
+            fn (array $context) => $context['user_id'] === $user->id && $context['available_in'] > 0
         ));
 });

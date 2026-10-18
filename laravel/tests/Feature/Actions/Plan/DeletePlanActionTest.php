@@ -72,3 +72,13 @@ it('logs deletion events', function () {
             fn (array $context) => $context['user_id'] === $user->id && $context['name'] === 'Work'
         ));
 });
+
+it('deletes the plan with exactly the count and delete queries', function () {
+    $user = User::factory()->create();
+    $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
+    $this->expectsDatabaseQueryCount(2);
+
+    $result = app(DeletePlanAction::class)->execute($user, $plan);
+
+    expect($result)->toBe(DeletePlanResult::Deleted);
+});

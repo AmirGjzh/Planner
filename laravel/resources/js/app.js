@@ -237,4 +237,29 @@ Alpine.magic('digits', (el) => (value) =>
     })
 )
 
+// Back/forward must never restore stale data. Livewire navigate keeps an
+// in-memory snapshot of every visited page and swaps it straight back in on a
+// history traversal with no server round-trip — plan progress or task states
+// would freeze at their values from when the user left the page. When a
+// traversal lands on a different page, cancel the snapshot swap (cancelable
+// `livewire:navigate`, docs: history + cached flags) and let the browser load
+// the URL for real — popstate has already updated it, so reload() fetches the
+// destination. Same-page fragment traversals (skip link) keep Livewire's
+// scroll restore: their destination path+query equals the rendered page.
+let lastRenderedPath = window.location.pathname + window.location.search
+
+document.addEventListener('livewire:navigated', () => {
+    lastRenderedPath = window.location.pathname + window.location.search
+})
+
+document.addEventListener('livewire:navigate', (event) => {
+    if (! event.detail?.history || ! event.detail?.cached) return
+
+    const destination = event.detail.url.pathname + event.detail.url.search
+    if (destination === lastRenderedPath) return
+
+    event.preventDefault()
+    window.location.reload()
+})
+
 Livewire.start()

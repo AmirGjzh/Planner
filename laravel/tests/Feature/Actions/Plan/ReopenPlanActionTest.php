@@ -53,3 +53,11 @@ it('logs reopen events', function () {
             fn (array $context) => $context['user_id'] === $user->id && $context['plan_id'] === $plan->id
         ));
 });
+
+it('reopens the plan with exactly the update query', function () {
+    $user = User::factory()->create();
+    $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31', 'done' => true]);
+    $this->expectsDatabaseQueryCount(1);
+
+    app(ReopenPlanAction::class)->execute($user, $plan);
+});
