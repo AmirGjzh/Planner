@@ -95,7 +95,8 @@ it('validates plan name is required', function () {
         ->set('add_name', '')
         ->set('add_range', ['start' => '2026-01-01', 'end' => '2026-01-31'])
         ->call('addPlan')
-        ->assertHasErrors('add_name');
+        ->assertHasErrors(['add_name' => ['required']])
+        ->assertDispatched('focus-first-error');
 });
 
 it('validates plan name max length', function () {
@@ -194,7 +195,8 @@ it('validates edit name is required', function () {
         ->set('edit_name', '')
         ->set('edit_range', ['start' => '2026-03-01', 'end' => '2026-03-31'])
         ->call('editPlan')
-        ->assertHasErrors('edit_name');
+        ->assertHasErrors(['edit_name' => ['required']])
+        ->assertDispatched('focus-first-error');
 });
 
 it('validates edit name max length', function () {
@@ -468,9 +470,10 @@ it('renders the loading spinner over the plan grid', function () {
 it('wraps the plan content in the plans-content island', function () {
     $user = User::factory()->create();
 
+    // The @island directive is only observable through Livewire's fragment marker.
     Livewire::actingAs($user)
         ->test('pages::plans')
-        ->assertSee('plans-content', false);
+        ->assertSee('FRAGMENT:type=island|name=plans-content', false);
 });
 
 it('scopes the date-range calendar to the plans-content island', function () {

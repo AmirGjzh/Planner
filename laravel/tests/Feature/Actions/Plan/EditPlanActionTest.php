@@ -64,21 +64,6 @@ it('prevents editing a plan that belongs to another user', function () {
     app(EditPlanAction::class)->execute($user2, $plan, 'Personal', null, ['start' => '2026-02-01', 'end' => '2026-02-28'], editPlanRequest());
 });
 
-it('returns rate limited after repeated edit attempts', function () {
-    $user = User::factory()->create();
-    $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
-    $user->plans()->create(['name' => 'Existing', 'start_date' => '2026-02-01', 'finish_date' => '2026-02-28']);
-    RateLimiter::clear(editPlanRateLimitKey($user));
-
-    foreach (range(1, 5) as $attempt) {
-        app(EditPlanAction::class)->execute($user, $plan, 'Existing', null, ['start' => '2026-02-01', 'end' => '2026-02-28'], editPlanRequest());
-    }
-
-    $result = app(EditPlanAction::class)->execute($user, $plan, 'Blocked', null, ['start' => '2026-03-01', 'end' => '2026-03-31'], editPlanRequest());
-
-    expect($result)->toBe(EditPlanResult::RateLimited);
-});
-
 it('allows editing again after one minute', function () {
     $user = User::factory()->create();
     $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);

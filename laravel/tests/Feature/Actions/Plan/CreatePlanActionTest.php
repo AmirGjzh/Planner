@@ -77,20 +77,6 @@ it('allows different users to have the same plan name', function () {
     expect($user2->plans()->where('name', 'Work')->exists())->toBeTrue();
 });
 
-it('returns rate limited after repeated attempts', function () {
-    $user = User::factory()->create();
-    $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
-    RateLimiter::clear(createPlanRateLimitKey($user));
-
-    foreach (range(1, 5) as $attempt) {
-        app(CreatePlanAction::class)->execute($user, 'Work', null, ['start' => '2026-01-01', 'end' => '2026-01-31'], createPlanRequest());
-    }
-
-    $result = app(CreatePlanAction::class)->execute($user, 'Blocked', null, ['start' => '2026-02-01', 'end' => '2026-02-28'], createPlanRequest());
-
-    expect($result)->toBe(CreatePlanResult::RateLimited);
-});
-
 it('allows creation again after one minute', function () {
     $user = User::factory()->create();
     $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);

@@ -108,13 +108,7 @@
                             'sm:pl-4!' => app()->isLocale('fa'),
                             'w-full md:w-auto mine-btn-primary flex items-center justify-center gap-2 h-11 px-3.5 rounded-xl cursor-pointer select-none',
                         ])>
-                            <x-mine.icon
-                                name="Filter"
-                                @class([
-                                ])
-                                weight="filled"
-                                size="16"
-                            />
+                            <x-mine.icon name="Filter" weight="filled" size="16" />
                             <p @class([
                                 'pt-1' => app()->isLocale('en'),
                                 'text-sm font-medium',
@@ -153,13 +147,7 @@
                             'sm:pl-4!' => app()->isLocale('fa'),
                             'w-full mine-btn-primary flex items-center justify-center gap-2 h-11 px-3.5 rounded-xl cursor-pointer select-none',
                         ])>
-                            <x-mine.icon
-                                name="Calendar"
-                                @class([
-                                ])
-                                weight="filled"
-                                size="16"
-                            />
+                            <x-mine.icon name="Calendar" weight="filled" size="16" />
                             <p @class([
                                 'pt-1' => app()->isLocale('en'),
                                 'text-sm font-medium',
