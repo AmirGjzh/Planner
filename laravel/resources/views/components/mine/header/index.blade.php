@@ -17,10 +17,10 @@
     ]).')';
 @endphp
 
-<header class="mine-card sticky top-2 z-60 m-2 flex h-16 items-center justify-between overflow-visible!">
+<header class="mine-card sticky top-2 z-60 mx-auto my-2 flex h-16 w-[calc(100%_-_1rem)] max-w-7xl items-center justify-between overflow-visible!">
     <a
         href="#main-content"
-        class="sr-only focus:not-sr-only focus:absolute focus:start-2 focus:top-2 focus:z-70 focus:rounded-xl focus:border-2 focus:border-(--mine-dropdown-border) focus:bg-(--mine-card-bg) focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:shadow-lg"
+        class="sr-only focus:not-sr-only focus:absolute focus:start-2 focus:top-2 focus:z-70 focus:rounded-lg focus:border-2 focus:border-(--mine-dropdown-border) focus:bg-(--mine-card-bg) focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:shadow-lg"
     >
         {{ __('Skip to content') }}
     </a>
@@ -63,7 +63,7 @@
                     'pointer-events-auto',
                 ])
             >
-                <div class="mine-btn-icon flex items-center justify-center rounded-xl px-2 py-2">
+                <div class="mine-btn-icon flex items-center justify-center rounded-lg px-2 py-2">
                     <div class="relative block size-6">
                         <div
                             :style="open
@@ -148,14 +148,14 @@
                         <div @class([
                             'pr-2 md:pr-4' => app()->isLocale('en'),
                             'pl-2 md:pl-4' => app()->isLocale('fa'),
-                            'flex items-center hover:cursor-pointer rounded-xl py-1.5',
+                            'flex items-center hover:cursor-pointer rounded-lg py-1.5',
                         ])>
                             <div @class([
-                                'mine-badge-primary rounded-xl size-11 flex items-center justify-center',
+                                'mine-badge-primary rounded-lg size-11 flex items-center justify-center',
                             ])>
                                 <p class="pt-0.5 text-sm font-semibold" x-text="initials">{{ $initials }}</p>
                             </div>
-                            <div class="hidden items-center rounded-xl px-2 py-2 sm:flex">
+                            <div class="hidden items-center rounded-lg px-2 py-2 sm:flex">
                                 <p
                                     @class([
                                         'mr-2 ml-1' => app()->isLocale('en'),
@@ -193,7 +193,7 @@
                             'pr-2 pl-4' => app()->isLocale('fa'),
                             'flex items-center gap-3 py-2',
                         ])>
-                            <div class="mine-badge-primary flex size-14 shrink-0 items-center justify-center rounded-xl text-sm font-medium">
+                            <div class="mine-badge-primary flex size-14 shrink-0 items-center justify-center rounded-lg text-sm font-medium">
                                 <p class="pt-1 text-lg font-semibold" x-text="initials">{{ $initials }}</p>
                             </div>
                             <div class="flex max-w-60 min-w-0 flex-col justify-between gap-1 truncate">

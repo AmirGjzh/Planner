@@ -37,7 +37,7 @@
 
 <div {{
     $attributes->merge(['role' => $role])->class([
-        'mine-alert-enter flex gap-3 rounded-xl border-2 p-4',
+        'mine-alert-enter flex gap-3 rounded-lg border-2 p-4',
         $style['container'],
     ])
 }}>

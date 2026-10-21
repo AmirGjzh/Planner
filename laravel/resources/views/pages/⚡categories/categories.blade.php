@@ -1,9 +1,9 @@
-<div class="flex flex-1 flex-col px-4 pt-4 pb-6 sm:px-8 md:px-16">
+<div class="flex max-w-7xl flex-1 flex-col px-4 pt-4 pb-2 sm:px-8 sm:pb-6 md:px-16 md:pb-14">
     <x-mine.animate class="mb-6">
         <h1 class="mine-text-primary text-base font-semibold">{{ __('My categories') }}</h1>
     </x-mine.animate>
     @island(name: 'category-content', always: true)
-        <x-mine.animate delay="50" class="mb-6 flex items-center justify-between gap-2 sm:gap-4">
+        <x-mine.animate delay="50" class="mb-6 flex items-center justify-between gap-2">
             <div class="w-full">
                 <x-mine.input
                     wire:model.live.debounce.200ms="search"
@@ -42,7 +42,7 @@
                     <div @class([
                         'sm:pl-3!' => app()->isLocale('en'),
                         'sm:pr-3!' => app()->isLocale('fa'),
-                        'w-full mine-btn-primary flex items-center h-11 px-5 sm:px-4 rounded-xl cursor-pointer select-none',
+                        'w-full mine-btn-primary flex items-center h-11 px-5 sm:px-4 rounded-lg cursor-pointer select-none',
                     ])>
                         <x-mine.icon
                             name="ArrowUp"
@@ -123,9 +123,9 @@
                                 'mine-card w-full flex flex-col justify-between px-4 pt-4 pb-4',
                             ])
                         >
-                            <div class="mb-3 flex items-start justify-between">
+                            <div class="mb-4 flex items-start justify-between">
                                 <div class="flex min-w-0 gap-4">
-                                    <div class="mine-badge-primary flex size-16 shrink-0 items-center justify-center rounded-xl">
+                                    <div class="mine-badge-primary flex size-16 shrink-0 items-center justify-center rounded-lg">
                                         <x-mine.icon name="Folder" weight="filled" size="32" />
                                     </div>
                                     <div class="flex min-w-0 flex-col justify-between py-1">
@@ -142,7 +142,7 @@
                                 </div>
                                 <x-mine.dropdown group="category-actions">
                                     <x-mine.dropdown.trigger aria-label="{{ $category->name }}">
-                                        <div class="mine-btn-icon rounded-xl p-2">
+                                        <div class="mine-btn-icon rounded-lg p-2">
                                             <x-mine.icon name="MoreH" size="18" weight="filled" />
                                         </div>
                                     </x-mine.dropdown.trigger>
@@ -210,7 +210,7 @@
                                     name="Magnifier"
                                     size="40"
                                     weight="filled"
-                                    class="mine-text-secondary mx-auto mb-3"
+                                    class="mine-text-secondary mx-auto mb-2"
                                 />
                                 <p class="mine-text-secondary text-sm font-medium">{{ __('No categories found') }}</p>
                             </x-mine.animate>
@@ -220,7 +220,7 @@
                                     name="Folder"
                                     size="40"
                                     weight="filled"
-                                    class="mine-text-secondary mx-auto mb-3"
+                                    class="mine-text-secondary mx-auto mb-2"
                                 />
                                 <p class="mine-text-secondary text-sm font-medium">{{ __('No categories yet') }}</p>
                             </x-mine.animate>
@@ -239,7 +239,7 @@
         :close-by-escaping="false"
         width="lg"
     >
-        <div class="px-6 py-6 sm:px-8">
+        <div class="px-6 py-6 sm:p-8">
             <div class="mb-6 flex items-center justify-between">
                 <h2 id="add-category-title" class="mine-text-primary text-base font-semibold">
                     {{ __('Add new category') }}
@@ -251,7 +251,7 @@
                         close();
                         $wire.cancelAdd();
                     "
-                    class="mine-btn-icon rounded-xl p-2"
+                    class="mine-btn-icon rounded-lg p-2"
                 >
                     <x-mine.icon name="Xmark" weight="filled" size="16" />
                 </button>
@@ -288,7 +288,7 @@
                         leftIcon="Folder"
                     />
                 </div>
-                <div class="mt-2 flex justify-end gap-4">
+                <div class="mt-2 flex justify-end gap-4 sm:mt-4">
                     <x-mine.button
                         type="button"
                         @click="
@@ -313,7 +313,7 @@
         :close-by-escaping="false"
         width="lg"
     >
-        <div class="px-6 py-6 sm:px-8">
+        <div class="px-6 py-6 sm:p-8">
             <div class="mb-6 flex items-center justify-between">
                 <h2 id="edit-category-title" class="mine-text-primary text-base font-semibold">
                     {{ __('Edit category') }}
@@ -325,7 +325,7 @@
                         close();
                         $wire.cancelEdit();
                     "
-                    class="mine-btn-icon rounded-xl p-2"
+                    class="mine-btn-icon rounded-lg p-2"
                 >
                     <x-mine.icon name="Xmark" weight="filled" size="16" />
                 </button>
@@ -362,7 +362,7 @@
                         leftIcon="Folder"
                     />
                 </div>
-                <div class="mt-2 flex justify-end gap-4">
+                <div class="mt-2 flex justify-end gap-4 sm:mt-4">
                     <x-mine.button
                         type="button"
                         @click="
@@ -387,7 +387,7 @@
         :close-by-escaping="false"
         width="lg"
     >
-        <div class="px-6 py-6 sm:px-8">
+        <div class="px-6 py-6 sm:p-8">
             <div class="mb-6 flex items-center justify-between">
                 <h2 id="delete-category-title" class="mine-text-primary text-base font-semibold">
                     {{ __('Delete category') }}
@@ -399,7 +399,7 @@
                         close();
                         $wire.cancelDelete();
                     "
-                    class="mine-btn-icon rounded-xl p-2"
+                    class="mine-btn-icon rounded-lg p-2"
                 >
                     <x-mine.icon name="Xmark" weight="filled" size="16" />
                 </button>
@@ -418,7 +418,7 @@
             @endif
 
             <form class="flex flex-col gap-4" wire:submit="deleteCategory">
-                <div class="mt-2 flex justify-end gap-4">
+                <div class="mt-2 flex justify-end gap-4 sm:mt-4">
                     <x-mine.button
                         type="button"
                         @click="

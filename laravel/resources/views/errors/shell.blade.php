@@ -81,7 +81,7 @@
 
             <a
                 href="{{ $homeUrl }}"
-                class="mine-btn-primary mt-6 inline-flex h-11 w-full cursor-pointer items-center justify-center rounded-xl px-4 text-base font-medium whitespace-nowrap select-none"
+                class="mine-btn-primary mt-6 inline-flex h-11 w-full cursor-pointer items-center justify-center rounded-lg px-4 text-base font-medium whitespace-nowrap select-none"
             >
                 {{ __('Go to home') }}
             </a>

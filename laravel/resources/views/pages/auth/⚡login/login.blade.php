@@ -1,4 +1,4 @@
-<div class="mine-page-bg flex min-h-dvh items-center justify-center px-4 py-8 sm:px-6">
+<div class="flex flex-1 items-center justify-center px-4 py-8 sm:px-6">
     <x-mine.animate as="div" delay="100" class="mine-card flex w-full max-w-120 flex-col justify-center p-6 sm:p-8">
         <h1 class="mine-text-primary mb-2 text-center text-xl font-semibold tracking-tight">
             {{ __('Welcome back') }}

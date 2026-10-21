@@ -30,7 +30,7 @@
         'justify-center',
         $height,
         'w-full',
-        'rounded-xl',
+        'rounded-lg',
         'px-4',
         match ($size) {
             'sm' => 'text-sm',

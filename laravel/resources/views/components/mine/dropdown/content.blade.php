@@ -36,7 +36,7 @@
         min-w-full w-max '.
             $position.
             ' bg-(--mine-dropdown-bg)
-        rounded-xl
+        rounded-lg
         border-2
         border-(--mine-dropdown-border)
         shadow-lg

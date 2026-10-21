@@ -1,4 +1,4 @@
-<div class="mine-page-bg flex min-h-dvh items-center justify-center px-4 py-8 sm:px-6">
+<div class="flex flex-1 items-center justify-center px-4 py-8 sm:px-6">
     <x-mine.animate as="div" delay="100" class="mine-card flex w-full max-w-120 flex-col justify-center p-6 sm:p-8">
         @if ($sent)
             <h1 class="mine-text-primary mb-2 text-center text-xl font-semibold tracking-tight">
@@ -18,7 +18,7 @@
                     {{ __('The link expires in :count minutes, don\'t forget to check your spam folder.', ['count' => $this->expireMinutes]) }}
                 </x-mine.alert>
 
-                <div class="mt-2">
+                <div class="mt-4">
                     <x-mine.button type="button" wire:click="restart" height="h-12">
                         {{ __('Use a different email') }}</x-mine.button>
                 </div>
@@ -66,7 +66,7 @@
                 >
                 </x-mine.input>
 
-                <div class="mt-2">
+                <div class="mt-4">
                     <x-mine.button wire:target="send" type="submit" height="h-12">
                         {{ __('Send reset link') }}</x-mine.button>
                 </div>

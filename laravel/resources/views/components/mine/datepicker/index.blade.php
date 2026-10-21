@@ -367,7 +367,7 @@
             data-datepicker-trigger
             :data-open="open"
             @class([
-                'group flex items-center justify-between w-full px-4 rounded-xl border-2 transition-[border-color,background-color,box-shadow] duration-200 ease-out cursor-pointer',
+                'group flex items-center justify-between w-full px-4 rounded-lg border-2 transition-[border-color,background-color,box-shadow] duration-200 ease-out cursor-pointer',
                 $height => true,
                 'bg-(--mine-input-bg)' => ! $hasError,
                 'bg-(--mine-input-error-bg)' => $hasError,
@@ -447,7 +447,7 @@
             x-transition:leave="transition ease-in duration-200"
             x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95"
-            class="absolute {{ $positionClasses }} z-50 bg-(--mine-input-bg) rounded-xl border-2 border-(--mine-input-border) shadow-lg p-4"
+            class="absolute {{ $positionClasses }} z-50 bg-(--mine-input-bg) rounded-lg border-2 border-(--mine-input-border) shadow-lg p-4"
             x-cloak
         >
             <div class="mb-2 flex items-center justify-between">

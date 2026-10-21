@@ -29,7 +29,7 @@
         'hover:bg-(--mine-select-bg-hover) text-[var(--mine-text-primary)]/80': state !== $el.dataset.value,
     }"
     @class([
-        'flex items-center rounded-xl px-3 text-sm font-medium cursor-pointer transition-colors duration-200 outline-none focus-visible:ring-4 focus-visible:ring-[var(--mine-select-ring-focus)]',
+        'flex items-center rounded-lg px-3 text-sm font-medium cursor-pointer transition-colors duration-200 outline-none focus-visible:ring-4 focus-visible:ring-[var(--mine-select-ring-focus)]',
         'py-2.5' => $height === 'h-12',
         $height => $height !== 'h-12',
         'opacity-50 cursor-not-allowed' => $disabled,

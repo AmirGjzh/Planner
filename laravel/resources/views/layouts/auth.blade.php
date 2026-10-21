@@ -22,7 +22,7 @@
 </head>
 
 <body class="mine-page-bg flex min-h-dvh flex-col font-sans">
-    {{ $slot }}
+    <main id="main-content" class="flex flex-1 flex-col">{{ $slot }}</main>
     <x-mine.toast />
 </body>
 </html>

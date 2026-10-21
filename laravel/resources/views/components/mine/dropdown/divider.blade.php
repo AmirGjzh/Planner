@@ -9,7 +9,7 @@
         border-2
         border-t
         border-(--mine-separator-border)
-        opacity-20
+        opacity-40
         ',
         ])
     }}

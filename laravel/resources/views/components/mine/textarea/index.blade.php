@@ -14,7 +14,7 @@
 
     <div
         @class([
-            'group flex w-full items-start overflow-hidden rounded-xl border-2 transition-[border-color,background-color,box-shadow] duration-200 ease-out',
+            'group flex w-full items-start overflow-hidden rounded-lg border-2 transition-[border-color,background-color,box-shadow] duration-200 ease-out',
             'bg-[var(--mine-input-bg)]' => ! $errors->has($name),
             'bg-[var(--mine-input-error-bg)]' => $errors->has($name),
             'border-[var(--mine-input-border)]' => ! $errors->has($name),

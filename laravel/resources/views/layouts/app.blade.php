@@ -22,7 +22,8 @@
 
 <body class="mine-page-bg flex min-h-dvh flex-col font-sans">
     <x-mine.header />
-    <main id="main-content" class="flex flex-1 flex-col">{{ $slot }}</main>
+    <main id="main-content" class="mx-auto flex w-full max-w-7xl flex-1 flex-col">{{ $slot }}</main>
+    <x-mine.footer />
     <x-mine.toast />
 </body>
 </html>

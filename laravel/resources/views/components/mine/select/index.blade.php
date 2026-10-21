@@ -215,7 +215,7 @@
             x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95"
             x-on:click.away="handleClickAway($event.target)"
-            class="absolute {{ $positionClasses }} z-50 bg-(--mine-input-bg) rounded-xl border-2 border-(--mine-input-border) shadow-lg"
+            class="absolute {{ $positionClasses }} z-50 bg-(--mine-input-bg) rounded-lg border-2 border-(--mine-input-border) shadow-lg"
         >
             @if ($searchable)
                 <div class="flex items-center gap-2 border-b border-(--mine-input-border) px-4 py-2">

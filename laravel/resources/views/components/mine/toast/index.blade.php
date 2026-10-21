@@ -18,7 +18,7 @@
         >
             <template x-for="toast in toastsFor(key)" :key="toast.id">
                 <div
-                    class="pointer-events-auto relative flex w-max max-w-[calc(100vw-2rem)] min-w-80 items-center gap-3 overflow-hidden rounded-xl border-2 p-3.5"
+                    class="pointer-events-auto relative flex w-max max-w-[calc(100vw-2rem)] min-w-80 items-center gap-3 overflow-hidden rounded-lg border-2 p-3.5"
                     :class="[variantClass(toast).container, toast.leaving ? 'mine-toast-leaving' : 'mine-toast-enter']"
                     @mouseenter="pauseToast(toast)"
                     @mouseleave="resumeToast(toast)"

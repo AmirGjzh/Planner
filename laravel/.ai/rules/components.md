@@ -14,15 +14,33 @@ After moving/renaming a Blade component file (or changing which component an `x-
 
 Blade caches compiled views in `storage/framework/views` keyed on the raw tag string, so stale compiled files keep resolving old paths even after the files have moved.
 
-## The header owns the app shell's landmarks
+## The header owns the app shell's navigation landmarks
 
-`mine/header` is the app layout's only landmark source; keep its structure intact when editing it:
+`mine/header` is the app layout's navigation-landmark source (the footer adds the `contentinfo` landmark — see its own section below); keep its structure intact when editing it:
 
 - The root is `<header>`; both nav blocks (desktop links + mobile dropdown) are `<nav aria-label="{{ __('Main navigation') }}">` — two labelled navs are deliberate, exactly one is visible per viewport.
 - The skip link (`#main-content`, `sr-only`) is the header's first child and pairs with `layouts/app.blade.php`'s `<main id="main-content">`; neither half works alone.
 - The page owns the only `<h1>`: header initials, username, and labels are `<p>` (live `x-text` sync works the same).
 - Icon-only controls carry an explicit `aria-label` (`Menu`) — decorative `<x-mine.icon>` children never name a control (mine.md).
 - Never *mint* an attribute from `{{ }}` **outside** an attribute: `nav-link` once emitted `{{ $active ? 'aria-current="page"' : '' }}` as raw tag content and `e()` turned the quotes into `&quot;`, so `aria-current` shipped broken and invisible to tests — use a literal `@if ($active) aria-current="page" @endif` instead. Value-position interpolation (`class="{{ $x }}"`) is safe; there `e()` only escapes the value.
+
+## The app shell is one centered column
+
+- The header, `<main>`, and the footer each carry `mx-auto max-w-7xl` (layouts/app.blade.php + the two component roots) — the shell is one centered column that goes full-bleed below the cap. Change the cap in **all three** places at once. Header/footer keep the 8px side gutter the `m-2` cards used to have via `my-2` + `w-[calc(100%_-_1rem)]` (the free space resolves into the auto margins = 0.5rem each, exactly the old gutter); `<main>` keeps `w-full` (it never had side margins).
+- Why not `items-center` on the body: the body is a column flex container, so `align-items: center` shrink-wraps every child to content width and collapses `<main>`'s full-bleed page layouts. Auto cross-margins cancel flex stretch too — that's why an explicit width is required alongside `mx-auto`.
+
+## The footer is a themed, state-aware card
+
+`mine/footer` renders the `contentinfo` landmark in `layouts/app.blade.php` after `<main>` — **the auth layout carries no footer** (user decision; it kept the `<main id="main-content" class="flex flex-1 flex-col">` landmark wrapper, and the auth page roots keep `flex-1` instead of `min-h-dvh`, which still centres the card). While the footer is app-layout-only, guests and unverified visitors can never see it (they can't reach app pages) — the guest Sign in/Sign up branch stays in the component for parity but is unreachable.
+
+- Chrome is `mine-card m-2` (header parity); every colour comes from a `--mine-*` theme variable — no slate/hex literals, ever.
+- Logical utilities only (`text-start`, `space-y-`): direction comes from the `<html dir>`; never locale-conditional classes in the footer.
+- The middle (Menu nav + Settings) renders in every state; the Settings column carries the auth actions: a signed-in visitor gets Account settings (→ profile) + a Log out button (`mineLogout` Alpine data in a plain `x-data="{{ $logoutData }}"` echo, `mine-text-error` with the link-style focus ring — header logout parity); a guest gets Sign in / Sign up links. The five quick links use `mine-text-link` with a literal `@if aria-current="page"` (see the attribute-minting rule above); they render for guests and unverified visitors too — the `verified` middleware redirects on click.
+- `:attr` compiles **on component tags only** — on a plain element a `:x-data="$var"` ships through as the literal string and Alpine evaluates `$var` as JS (`ReferenceError`). Plain elements use the direct echo (`x-data="{{ $var }}"`); value-position interpolation is safe (see the attribute-minting rule above). The header's `:x-data` exists because component-tag attributes extract as raw strings.
+- Column headings are `<h2>`: the page owns the only `<h1>`, so the footer must not skip a level.
+- Internal links carry `wire:navigate`; the external GitHub link never does (`target="_blank" rel="noopener noreferrer"`). The GitHub card hovers with background only — card borders never change on hover (css.md).
+- The md 3-column grid's hand-tuned pull-ups (GitHub card `sm:-top-30`, the bottom bar's negative-margin tuck) are deliberate — retune by eye, not by measurement.
+- The © line pairs a literal © glyph (markup) with a translated `:app :year - All rights reserved` segment — no `dir` override, it follows the document direction. The year follows the UI language's calendar: `Jalali::format(now(), 'yyyy')` (Persian digits) for fa, `date('Y')` otherwise; the fa value localizes the app name (پلنر) and — like the EN key — carries no end period. No Alpine state beyond the logout button — the footer is otherwise static.
 
 ## Dropdown menus declare themselves
 

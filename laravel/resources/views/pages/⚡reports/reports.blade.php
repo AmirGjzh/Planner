@@ -36,7 +36,7 @@
                                 <div @class([
                                     'sm:pr-4!' => app()->isLocale('en'),
                                     'sm:pl-4!' => app()->isLocale('fa'),
-                                    'w-full mine-btn-primary flex items-center justify-center gap-2 h-10 px-5 rounded-xl cursor-pointer select-none',
+                                    'w-full mine-btn-primary flex items-center justify-center gap-2 h-10 px-5 rounded-lg cursor-pointer select-none',
                                 ])>
                                     <x-mine.icon name="Calendar" size="16" weight="filled" />
                                     <p @class([

@@ -19,7 +19,7 @@
             inline-flex
             items-center
             justify-center
-            rounded-xl
+            rounded-lg
             focus-visible:ring-4
             focus-visible:ring-(--mine-input-ring-focus)
             focus-visible:outline-none
@@ -52,7 +52,7 @@
             items-center
             justify-center
             cursor-pointer
-            rounded-xl
+            rounded-lg
             focus-visible:ring-4
             focus-visible:ring-(--mine-input-ring-focus)
             focus-visible:outline-none

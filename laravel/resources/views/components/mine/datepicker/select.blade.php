@@ -20,7 +20,7 @@
         "
         :data-open="open"
         data-datepicker-select="{{ $label }}"
-        class="flex cursor-pointer items-center gap-1 rounded-xl border-2 border-(--mine-input-border)/0 bg-(--mine-input-bg) px-3 py-1.5 text-sm font-medium text-[var(--mine-text-primary)]/80 transition-[border-color,box-shadow] duration-200 focus-visible:ring-2 focus-visible:ring-(--mine-input-ring-focus) focus-visible:outline-none data-open:border-(--mine-input-border-focus) data-open:ring-2 data-open:ring-(--mine-input-ring-focus)"
+        class="flex cursor-pointer items-center gap-1 rounded-lg border-2 border-(--mine-input-border)/0 bg-(--mine-input-bg) px-3 py-1.5 text-sm font-medium text-[var(--mine-text-primary)]/80 transition-[border-color,box-shadow] duration-200 focus-visible:ring-2 focus-visible:ring-(--mine-input-ring-focus) focus-visible:outline-none data-open:border-(--mine-input-border-focus) data-open:ring-2 data-open:ring-(--mine-input-ring-focus)"
     >
         <span x-text="{{ $label }}"></span>
     </button>
@@ -33,7 +33,7 @@
         x-transition:leave="transition ease-in duration-100"
         x-transition:leave-start="opacity-100 scale-100"
         x-transition:leave-end="opacity-0 scale-95"
-        class="absolute top-full left-1/2 z-50 mt-1 w-max -translate-x-1/2 rounded-xl border-2 border-(--mine-input-border) bg-(--mine-input-bg) shadow-lg"
+        class="absolute top-full left-1/2 z-50 mt-1 w-max -translate-x-1/2 rounded-lg border-2 border-(--mine-input-border) bg-(--mine-input-bg) shadow-lg"
     >
         @if ($searchable)
             <div class="flex items-center gap-2 border-b border-(--mine-input-border) px-4 py-2">

@@ -1,10 +1,10 @@
-<div class="flex flex-1 flex-col px-4 pt-4 pb-6 sm:px-8 md:px-16">
+<div class="flex max-w-7xl flex-1 flex-col px-4 pt-4 pb-2 sm:px-8 sm:pb-6 md:px-16 md:pb-14">
     <x-mine.animate class="mb-6">
         <h1 class="mine-text-primary text-base font-semibold">{{ __('My plans') }}</h1>
     </x-mine.animate>
     @island(name: 'plans-content', always: true)
-        <x-mine.animate delay="50" class="mb-6 flex flex-col gap-2 sm:gap-4 md:flex-row">
-            <div class="flex w-full items-center justify-between gap-2 sm:gap-4">
+        <x-mine.animate delay="50" class="mb-6 flex flex-col gap-2 md:flex-row">
+            <div class="flex w-full items-center justify-between gap-2">
                 <div class="w-full">
                     <x-mine.input
                         wire:model.live.debounce.200ms="search"
@@ -43,7 +43,7 @@
                         <div @class([
                             'sm:pl-3!' => app()->isLocale('en'),
                             'sm:pr-3!' => app()->isLocale('fa'),
-                            'w-full mine-btn-primary flex items-center h-11 px-5 sm:px-4 rounded-xl cursor-pointer select-none',
+                            'w-full mine-btn-primary flex items-center h-11 px-5 sm:px-4 rounded-lg cursor-pointer select-none',
                         ])>
                             <x-mine.icon
                                 name="ArrowUp"
@@ -106,7 +106,7 @@
                         <div @class([
                             'sm:pr-4!' => app()->isLocale('en'),
                             'sm:pl-4!' => app()->isLocale('fa'),
-                            'w-full md:w-auto mine-btn-primary flex items-center justify-center gap-2 h-11 px-3.5 rounded-xl cursor-pointer select-none',
+                            'w-full md:w-auto mine-btn-primary flex items-center justify-center gap-2 h-11 px-3.5 rounded-lg cursor-pointer select-none',
                         ])>
                             <x-mine.icon name="Filter" weight="filled" size="16" />
                             <p @class([
@@ -145,7 +145,7 @@
                         <div @class([
                             'sm:pr-4!' => app()->isLocale('en'),
                             'sm:pl-4!' => app()->isLocale('fa'),
-                            'w-full mine-btn-primary flex items-center justify-center gap-2 h-11 px-3.5 rounded-xl cursor-pointer select-none',
+                            'w-full mine-btn-primary flex items-center justify-center gap-2 h-11 px-3.5 rounded-lg cursor-pointer select-none',
                         ])>
                             <x-mine.icon name="Calendar" weight="filled" size="16" />
                             <p @class([
@@ -167,7 +167,7 @@
                 </x-mine.dropdown>
             </div>
         </x-mine.animate>
-        <div class="md:flex md:gap-6">
+        <div class="md:flex md:gap-4">
             <div class="relative flex-1">
                 <div wire:loading.delay.short class="absolute inset-0 z-10">
                     <div class="flex h-full w-full items-center justify-center">
@@ -198,7 +198,7 @@
                                     $plan->done => [
                                         'icon' => 'Trophy',
                                         'header_class' => 'mine-badge-secondary',
-                                        'title_class' => 'line-through',
+                                        'title_class' => '',
                                         'status_label' => __('Completed'),
                                         'separator' => 'secondary',
                                         'card' => 'mine-card mine-card-secondary',
@@ -277,33 +277,25 @@
                                 :class="\Illuminate\Support\Arr::toCssClasses([
                                 $config['border-l'] => app()->isLocale('en'),
                                 $config['border-r'] => app()->isLocale('fa'),
-                            ]) . ' self-start ' . $config['card'] . ' flex flex-col px-4 sm:px-6 md:px-8 py-4 sm:pb-5 md:pb-6 sm:pt-6 md:pt-8'"
+                            ]) . ' self-start ' . $config['card'] . ' flex flex-col px-4 sm:px-6 md:px-8 py-4 sm:pb-6 md:pb-6 sm:pt-6 md:pt-8'"
                             >
                                 <div class="mb-8 flex min-w-0 justify-between gap-4">
                                     <div class="flex min-w-0 flex-1">
                                         <div @class([
                                             'mr-4' => app()->isLocale('en'),
                                             'ml-4' => app()->isLocale('fa'),
-                                            'shrink-0 '.$config['header_class'].' rounded-xl size-16 flex justify-center items-center',
+                                            'shrink-0 '.$config['header_class'].' rounded-lg size-16 flex justify-center items-center',
                                         ])>
                                             <x-mine.icon :name="$config['icon']" weight="filled" size="32" />
                                         </div>
-                                        <div class="flex min-w-0 flex-col justify-between gap-2">
+                                        <div class="flex min-w-0 flex-col justify-between gap-2 py-1">
                                             <div class="flex min-w-0 items-center gap-4">
                                                 <h2 @class([
                                                     'pt-1' => app()->isLocale('en'),
-                                                    'text-base font-semibold mine-text-primary truncate min-w-0 '.$config['title_class'],
+                                                    'text-[15px] font-semibold mine-text-primary truncate min-w-0 '.$config['title_class'],
                                                 ])>
                                                     {{ $plan->name }}
                                                 </h2>
-                                                <div class="{{ $config['header_class'] }} rounded-xl h-7 flex justify-center items-center px-3 shrink-0">
-                                                    <p @class([
-                                                        'pt-1' => app()->isLocale('en'),
-                                                        'text-[13px] font-semibold',
-                                                    ])>
-                                                        {{ $config['status_label'] }}
-                                                    </p>
-                                                </div>
                                             </div>
                                             <p class="text-sm font-medium mine-text-secondary min-w-0 line-clamp-2 {{ $config['title_class'] }}">
                                                 {{ $plan->description ?: __('No description') }}
@@ -313,7 +305,7 @@
                                     <div class="flex h-full shrink-0 items-start justify-end">
                                         <x-mine.dropdown group="plan-actions">
                                             <x-mine.dropdown.trigger aria-label="{{ $plan->name }}">
-                                                <div class="mine-btn-icon rounded-xl p-2">
+                                                <div class="mine-btn-icon rounded-lg p-2">
                                                     <x-mine.icon name="MoreH" size="18" weight="filled" />
                                                 </div>
                                             </x-mine.dropdown.trigger>
@@ -365,12 +357,12 @@
                                             <div @class([
                                                 'pl-3 pr-4' => app()->isLocale('en'),
                                                 'pr-3 pl-4' => app()->isLocale('fa'),
-                                                $config['days']['badge'].' rounded-xl h-9 flex justify-center items-center gap-2',
+                                                $config['days']['badge'].' rounded-lg h-8 flex justify-center items-center gap-2',
                                             ])>
                                                 <x-mine.icon name="Clock" size="18" weight="filled" />
                                                 <p @class([
                                                     'pt-1' => app()->isLocale('en'),
-                                                    'text-[13px] font-medium',
+                                                    'text-[12px] font-medium',
                                                 ])>
                                                     {{ app()->isLocale('fa') ? App\Support\PersianNumber::convert($config['days']['value']) : $config['days']['value'] }} {{ $config['days']['label'] }}
                                                 </p>
@@ -381,13 +373,13 @@
                                         <div @class([
                                             'pl-3 pr-4' => app()->isLocale('en'),
                                             'pr-3 pl-4' => app()->isLocale('fa'),
-                                            $config['header_class'].' rounded-xl h-9 flex justify-center items-center shrink-0',
+                                            $config['header_class'].' rounded-lg h-8 flex justify-center items-center shrink-0',
                                         ])>
                                             <x-mine.icon name="Calendar" size="18" weight="filled" />
                                             <p @class([
                                                 'pt-1 ml-2' => app()->isLocale('en'),
                                                 'mr-2' => app()->isLocale('fa'),
-                                                'text-[13px] font-medium',
+                                                'text-[12px] font-medium',
                                             ])>
                                                 {{
                                                     app()->isLocale('fa')
@@ -404,7 +396,7 @@
                                             </div>
                                             <p @class([
                                                 'pt-1' => app()->isLocale('en'),
-                                                'text-[13px] font-medium',
+                                                'text-[12px] font-medium',
                                             ])>
                                                 {{
                                                     app()->isLocale('fa')
@@ -418,8 +410,8 @@
                                 <div class="mb-4 opacity-40">
                                     <x-mine.separator :variant="$config['separator']" />
                                 </div>
-                                <div class="mb-4 flex">
-                                    <div class="flex flex-3 flex-col justify-between">
+                                <div class="mb-4 flex gap-8">
+                                    <div class="flex flex-1 flex-col justify-between">
                                         <p class="mine-text-secondary mb-2 text-[13px] font-medium">
                                             {{ __('Progress') }}
                                         </p>
@@ -433,7 +425,16 @@
                                             class="h-3"
                                         />
                                     </div>
-                                    <div class="flex flex-1 items-center justify-center"></div>
+                                    <div class="flex items-end">
+                                        <div class="{{ $config['header_class'] }} rounded-lg h-7 flex justify-center items-center px-3 shrink-0">
+                                            <p @class([
+                                                'pt-1' => app()->isLocale('en'),
+                                                'text-[13px] font-semibold',
+                                            ])>
+                                                {{ $config['status_label'] }}
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="mb-4 opacity-40">
                                     <x-mine.separator :variant="$config['separator']" />
@@ -538,7 +539,7 @@
         :close-by-escaping="false"
         width="lg"
     >
-        <div class="px-6 py-6 sm:px-8">
+        <div class="px-6 py-6 sm:p-8">
             <div class="mb-6 flex items-center justify-between">
                 <h2 id="add-plan-title" class="mine-text-primary text-base font-semibold">{{ __('Add new plan') }}</h2>
                 <button
@@ -548,7 +549,7 @@
                         close();
                         $wire.cancelAdd();
                     "
-                    class="mine-btn-icon rounded-xl p-2"
+                    class="mine-btn-icon rounded-lg p-2"
                 >
                     <x-mine.icon name="Xmark" weight="filled" size="16" />
                 </button>
@@ -602,7 +603,7 @@
                         leftIcon="PenWriting"
                     />
                 </div>
-                <div class="mt-2 flex justify-end gap-4">
+                <div class="mt-2 flex justify-end gap-4 sm:mt-4">
                     <x-mine.button
                         type="button"
                         @click="
@@ -627,7 +628,7 @@
         :close-by-escaping="false"
         width="lg"
     >
-        <div class="px-6 py-6 sm:px-8">
+        <div class="px-6 py-6 sm:p-8">
             <div class="mb-6 flex items-center justify-between">
                 <h2 id="edit-plan-title" class="mine-text-primary text-base font-semibold">{{ __('Edit plan') }}</h2>
                 <button
@@ -637,7 +638,7 @@
                         close();
                         $wire.cancelEdit();
                     "
-                    class="mine-btn-icon rounded-xl p-2"
+                    class="mine-btn-icon rounded-lg p-2"
                 >
                     <x-mine.icon name="Xmark" weight="filled" size="16" />
                 </button>
@@ -698,7 +699,7 @@
                         leftIcon="PenWriting"
                     />
                 </div>
-                <div class="mt-2 flex justify-end gap-4">
+                <div class="mt-2 flex justify-end gap-4 sm:mt-4">
                     <x-mine.button
                         type="button"
                         @click="
@@ -723,7 +724,7 @@
         :close-by-escaping="false"
         width="lg"
     >
-        <div class="px-6 py-6 sm:px-8">
+        <div class="px-6 py-6 sm:p-8">
             <div class="mb-6 flex items-center justify-between">
                 <h2 id="delete-plan-title" class="mine-text-primary text-base font-semibold">
                     {{ __('Delete plan') }}
@@ -735,7 +736,7 @@
                         close();
                         $wire.cancelDelete();
                     "
-                    class="mine-btn-icon rounded-xl p-2"
+                    class="mine-btn-icon rounded-lg p-2"
                 >
                     <x-mine.icon name="Xmark" weight="filled" size="16" />
                 </button>
@@ -754,7 +755,7 @@
             @endif
 
             <form class="flex flex-col gap-4" wire:submit="deletePlan">
-                <div class="mt-2 flex justify-end gap-4">
+                <div class="mt-2 flex justify-end gap-4 sm:mt-4">
                     <x-mine.button
                         type="button"
                         @click="
@@ -779,7 +780,7 @@
         :close-by-escaping="false"
         width="lg"
     >
-        <div class="px-6 py-6 sm:px-8">
+        <div class="px-6 py-6 sm:p-8">
             <div class="mb-6 flex items-center justify-between">
                 <h2 id="complete-plan-title" class="mine-text-primary text-base font-semibold">
                     {{ __('Complete plan') }}
@@ -791,7 +792,7 @@
                         close();
                         $wire.cancelComplete();
                     "
-                    class="mine-btn-icon rounded-xl p-2"
+                    class="mine-btn-icon rounded-lg p-2"
                 >
                     <x-mine.icon name="Xmark" weight="filled" size="16" />
                 </button>
@@ -810,7 +811,7 @@
             @endif
 
             <form class="flex flex-col gap-4" wire:submit="completePlan">
-                <div class="mt-2 flex justify-end gap-4">
+                <div class="mt-2 flex justify-end gap-4 sm:mt-4">
                     <x-mine.button
                         type="button"
                         @click="
@@ -835,7 +836,7 @@
         :close-by-escaping="false"
         width="lg"
     >
-        <div class="px-6 py-6 sm:px-8">
+        <div class="px-6 py-6 sm:p-8">
             <div class="mb-6 flex items-center justify-between">
                 <h2 id="reopen-plan-title" class="mine-text-primary text-base font-semibold">
                     {{ __('Re active plan') }}
@@ -847,7 +848,7 @@
                         close();
                         $wire.cancelReopen();
                     "
-                    class="mine-btn-icon rounded-xl p-2"
+                    class="mine-btn-icon rounded-lg p-2"
                 >
                     <x-mine.icon name="Xmark" weight="filled" size="16" />
                 </button>
@@ -859,7 +860,7 @@
             </div>
 
             <form class="flex flex-col gap-4" wire:submit="reopenPlan">
-                <div class="mt-2 flex justify-end gap-4">
+                <div class="mt-2 flex justify-end gap-4 sm:mt-4">
                     <x-mine.button
                         type="button"
                         @click="

@@ -71,7 +71,7 @@
             <a
                 wire:navigate
                 href="{{ route('tasks') }}"
-                class="mine-btn-primary relative inline-flex h-10 cursor-pointer items-center justify-center rounded-xl px-4 text-sm font-medium whitespace-nowrap transition duration-200 ease-out select-none"
+                class="mine-btn-primary relative inline-flex h-10 cursor-pointer items-center justify-center rounded-lg px-4 text-sm font-medium whitespace-nowrap transition duration-200 ease-out select-none"
             >
                 <div class="flex items-center gap-2">
                     <p @class([
@@ -95,11 +95,11 @@
                         class="mine-card mine-card-danger flex min-w-50 flex-col p-4"
                     >
                         <h2 class="mine-text-primary mb-4 text-sm font-semibold">{{ $task->title }}</h2>
-                        <div class="mine-badge-danger mb-4 flex h-7 items-center gap-1 self-start rounded-xl px-2">
+                        <div class="mine-badge-danger mb-4 flex h-7 items-center gap-1 self-start rounded-lg px-2">
                             <x-mine.icon name="Fire" size="16" weight="filled" />
                             <p class="text-xs font-medium">{{ $priorityLabel($task->priority->value) }}</p>
                         </div>
-                        <div class="mine-badge-danger mb-4 flex h-7 items-center gap-1 self-start rounded-xl px-2">
+                        <div class="mine-badge-danger mb-4 flex h-7 items-center gap-1 self-start rounded-lg px-2">
                             <x-mine.icon name="Calendar" size="16" weight="filled" />
                             <p class="text-xs font-semibold">{{ __('Overdue') }}</p>
                             @php $daysAgo = (int) $task->task_date->startOfDay()->diffInDays($today); @endphp
@@ -110,7 +110,7 @@
                         <a
                             wire:navigate
                             href="{{ route('tasks', ['search' => $task->title]) }}"
-                            class="mine-btn-danger relative inline-flex h-9 cursor-pointer items-center justify-center rounded-xl px-4 text-sm font-semibold whitespace-nowrap transition duration-200 ease-out select-none"
+                            class="mine-btn-danger relative inline-flex h-9 cursor-pointer items-center justify-center rounded-lg px-4 text-sm font-semibold whitespace-nowrap transition duration-200 ease-out select-none"
                         >
                             <div class="flex items-center gap-2">
                                 <p @class([
@@ -131,11 +131,11 @@
                         class="mine-card mine-card-primary flex min-w-50 flex-col p-4"
                     >
                         <h2 class="mine-text-primary mb-4 text-sm font-semibold">{{ $task->title }}</h2>
-                        <div class="mine-badge-primary mb-4 flex h-7 items-center gap-1 self-start rounded-xl px-2">
+                        <div class="mine-badge-primary mb-4 flex h-7 items-center gap-1 self-start rounded-lg px-2">
                             <x-mine.icon name="Fire" size="16" weight="filled" />
                             <p class="text-xs font-medium">{{ $priorityLabel($task->priority->value) }}</p>
                         </div>
-                        <div class="mine-badge-primary mb-4 flex h-7 items-center gap-1 self-start rounded-xl px-2">
+                        <div class="mine-badge-primary mb-4 flex h-7 items-center gap-1 self-start rounded-lg px-2">
                             <x-mine.icon name="Calendar" size="16" weight="filled" />
                             @php $daysUntil = -(int) $task->task_date->startOfDay()->diffInDays($today); @endphp
                             @if ($daysUntil === 0)
@@ -150,7 +150,7 @@
                         <a
                             wire:navigate
                             href="{{ route('tasks', ['search' => $task->title]) }}"
-                            class="mine-btn-primary relative inline-flex h-9 cursor-pointer items-center justify-center rounded-xl px-4 text-sm font-semibold whitespace-nowrap transition duration-200 ease-out select-none"
+                            class="mine-btn-primary relative inline-flex h-9 cursor-pointer items-center justify-center rounded-lg px-4 text-sm font-semibold whitespace-nowrap transition duration-200 ease-out select-none"
                         >
                             <div class="flex items-center gap-2">
                                 <p @class([

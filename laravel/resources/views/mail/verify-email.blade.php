@@ -94,8 +94,8 @@
         .button {
             display: inline-block;
             margin: 8px 0 20px;
-            padding: 14px 32px;
-            border-radius: 12px;
+            padding: 12px 32px;
+            border-radius: 8px;
             background-color: #173b67;
             background: var(--mine-btn-primary-bg, #173b67);
             color: var(--mine-btn-primary-text, #ffffff);
@@ -117,7 +117,7 @@
         }
 
         .quiet {
-            font-size: 14px;
+            font-size: 12px;
         }
     </style>
 </head>

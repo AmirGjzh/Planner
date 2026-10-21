@@ -49,6 +49,6 @@
     </div>
 
 @else
-    <div class="mine-separator w-full h-px {{ $barClass }}" role="separator" aria-orientation="horizontal"></div>
+    <div class="mine-separator w-full h-[2px] {{ $barClass }}" role="separator" aria-orientation="horizontal"></div>
 
 @endif

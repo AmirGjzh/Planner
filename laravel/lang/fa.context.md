@@ -121,7 +121,17 @@ Reports | Dashboard | Errors | Components).
 "Log out"         → nav submenu item · header user menu; also verify-email notice logout button
 "Menu"            → aria-label · mobile menu toggle
 "Main navigation" → aria-label · nav landmark (desktop + mobile)
+"Footer navigation" → aria-label · footer nav landmark
 "Skip to content" → skip link · accessibility first focus
+
+## Footer
+
+"Plan better, live orderly" → brand tagline · footer brand column (fa value taken from the user's footer skeleton; end periods dropped from the footer copy by user decision)
+"View the project and contribute" → sub-label · footer GitHub card
+"Made with"        → bottom bar · made-with line (first half)
+"for a better future" → bottom bar · made-with line (second half)
+":app :year - All rights reserved" → bottom bar · copyright segment (the © glyph is markup, before this segment; placeholders: app name + year — the component passes the Jalali year `Jalali::format(now(), 'yyyy')` for fa —; the fa value drafts the localized app name پلنر; user-shaped key, fa value drafted for review)
+"love"             → sr-only word for the ♥ glyph · bottom bar
 
 ## Profile
 

@@ -1,11 +1,11 @@
-<div class="flex flex-1 flex-col px-4 pt-4 pb-6 sm:px-8 md:px-16">
+<div class="flex max-w-7xl flex-1 flex-col px-4 pt-4 pb-2 sm:px-8 sm:pb-6 md:px-16 md:pb-14">
     <x-mine.animate class="mb-6">
         <h1 class="mine-text-primary text-base font-semibold">{{ __('My profile') }}</h1>
     </x-mine.animate>
-    <div class="flex flex-col gap-6 md:flex-row">
+    <div class="flex flex-col gap-4 md:flex-row">
         <x-mine.animate
             delay="50"
-            class="mine-card flex flex-1 flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6 md:flex-col md:items-center md:justify-center"
+            class="mine-card flex flex-1 flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between md:flex-col md:items-center md:justify-center md:p-6"
         >
             <div class="flex items-center gap-4 md:flex-col">
                 <div class="mine-badge-primary flex size-20 shrink-0 items-center justify-center rounded-full md:mt-20">
@@ -16,12 +16,12 @@
                     <p class="mine-text-secondary truncate text-sm font-medium">{{ $this->user->email }}</p>
                 </div>
             </div>
-            <div class="mt-4 sm:mt-0 md:mt-auto md:w-full md:px-4">
+            <div class="mt-4 sm:mt-0 md:mt-auto md:w-full">
                 <x-mine.modal.trigger class="w-full" id="change-password-form">
                     <x-mine.button type="button" class="mine-btn-ghost" size="sm">
                         {{ __('Change password') }}</x-mine.button>
                 </x-mine.modal.trigger>
-                <x-mine.modal.trigger class="mt-3 w-full" id="edit-profile-form">
+                <x-mine.modal.trigger class="mt-4 w-full" id="edit-profile-form">
                     <x-mine.button type="button" class="mine-btn-primary" size="sm">
                         {{ __('Edit profile') }}</x-mine.button>
                 </x-mine.modal.trigger>
@@ -29,9 +29,9 @@
         </x-mine.animate>
 
         <div class="flex flex-col md:flex-2">
-            <x-mine.animate delay="100" class="mine-card flex flex-col gap-4 px-4 py-6 sm:p-8">
+            <x-mine.animate delay="100" class="mine-card flex flex-col gap-4 px-6 py-6 sm:p-8">
                 <div class="mb-2">
-                    <h2 class="mine-text-primary px-1 text-sm font-semibold">{{ __('Personal information') }}</h2>
+                    <h2 class="mine-text-primary px-1 text-[15px] font-semibold">{{ __('Personal information') }}</h2>
                 </div>
                 @foreach ([
                     __('Firstname') => $this->user->firstname,
@@ -52,7 +52,7 @@
                     </div>
                 @endforeach
                 <div class="mt-4 mb-2">
-                    <h2 class="mine-text-primary px-1 text-sm font-semibold">{{ __('Preferences') }}</h2>
+                    <h2 class="mine-text-primary px-1 text-[15px] font-semibold">{{ __('Preferences') }}</h2>
                 </div>
                 <div class="flex justify-between px-2">
                     <p class="mine-text-secondary text-sm font-medium">{{ __('Theme') }}</p>
@@ -69,7 +69,7 @@
             </x-mine.animate>
             <x-mine.animate
                 delay="150"
-                class="mine-alert-danger-box mt-6 flex flex-col gap-4 px-4 py-4 sm:flex-row sm:justify-between sm:px-6"
+                class="mine-alert-danger-box mt-4 flex flex-col gap-4 px-4 py-4 sm:flex-row sm:justify-between"
             >
                 <div class="flex items-center justify-center gap-4">
                     <div class="mine-badge-danger flex size-12 items-center justify-center rounded-full">
@@ -96,7 +96,7 @@
         width="xl"
         labelled-by="edit-profile-title"
     >
-        <div class="px-6 py-6 sm:px-8">
+        <div class="px-6 py-6 sm:p-8">
             <div class="mb-6 flex items-center justify-between">
                 <h2 id="edit-profile-title" class="mine-text-primary text-base font-semibold">
                     {{ __('Edit your information') }}
@@ -108,7 +108,7 @@
                         close();
                         $wire.cancelEdit();
                     "
-                    class="mine-btn-icon rounded-xl p-2"
+                    class="mine-btn-icon rounded-lg p-2"
                 >
                     <x-mine.icon name="Xmark" weight="filled" size="16" />
                 </button>
@@ -220,7 +220,7 @@
                         leftIcon="Calendar"
                     />
                 </div>
-                <div class="mt-2 flex justify-end gap-4">
+                <div class="mt-2 flex justify-end gap-4 sm:mt-4">
                     <x-mine.button
                         type="button"
                         @click="
@@ -245,7 +245,7 @@
         width="lg"
         labelled-by="change-password-title"
     >
-        <div class="px-6 py-6 sm:px-8">
+        <div class="px-6 py-6 sm:p-8">
             <div class="mb-6 flex items-center justify-between">
                 <h2 id="change-password-title" class="mine-text-primary text-base font-semibold">
                     {{ __('Change password') }}
@@ -257,7 +257,7 @@
                         close();
                         $wire.cancelChange();
                     "
-                    class="mine-btn-icon rounded-xl p-2"
+                    class="mine-btn-icon rounded-lg p-2"
                 >
                     <x-mine.icon name="Xmark" weight="filled" size="16" />
                 </button>
@@ -320,7 +320,7 @@
                     autocomplete="new-password"
                     leftIcon="Lock"
                 />
-                <div class="mt-2 flex justify-end gap-4">
+                <div class="mt-2 flex justify-end gap-4 sm:mt-4">
                     <x-mine.button
                         type="button"
                         @click="
@@ -350,7 +350,7 @@
         width="lg"
         labelled-by="delete-account-title"
     >
-        <div class="px-6 py-6 sm:px-8">
+        <div class="px-6 py-6 sm:p-8">
             <div class="mb-6 flex items-center justify-between">
                 <h2 id="delete-account-title" class="mine-text-primary text-base font-semibold">
                     {{ __('Delete your account') }}
@@ -362,7 +362,7 @@
                         close();
                         $wire.cancelDelete();
                     "
-                    class="mine-btn-icon rounded-xl p-2"
+                    class="mine-btn-icon rounded-lg p-2"
                 >
                     <x-mine.icon name="Xmark" weight="filled" size="16" />
                 </button>
@@ -409,7 +409,7 @@
                     autocomplete="current-password"
                     leftIcon="Lock"
                 />
-                <div class="mt-2 flex items-center justify-between gap-4">
+                <div class="mt-2 flex items-center justify-between gap-4 sm:mt-4">
                     <x-mine.button
                         type="button"
                         @click="

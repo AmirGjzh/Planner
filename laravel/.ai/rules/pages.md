@@ -25,6 +25,11 @@ Authenticated pages use `App\Livewire\Concerns\HasUser` (a `#[Computed] user()` 
 
 Guest pages (home/login/register/forgot-password/reset-password) have no `HasUser` and use the app/.env locale; `login()`/profile-delete set the locale explicitly only at those auth boundaries where no `HasUser` page has rendered yet — logout runs no per-user locale on its plain HTTP request, so its flash lands at the app locale (the route's comment pins why).
 
+## App pages share one root wrapper
+
+- The authenticated app pages root at `flex flex-1 flex-col px-4 pt-4 pb-2 sm:px-8 sm:pb-6 md:px-16 md:pb-14 max-w-7xl` — profile is the reference, extracted to categories and plans. The `pb-*` scale is the footer clearance; the cap mirrors the shell's `max-w-7xl` `<main>`. Tasks/dashboard/reports still carry the pre-footer root (`pb-6`, no cap) — deferred, tracked in Refactor.md.
+- Auth pages are the exception: the centered-card root `flex flex-1 items-center justify-center px-4 py-8 sm:px-6`, with no `mine-page-bg` on the page (the auth body paints it).
+
 ## Toast contract
 
 - Mutations that stay on the page dispatch directly: `$this->dispatch('toast', variant: ..., title: ...)` — `success|info`, 3000ms, bottom-center.
@@ -43,7 +48,7 @@ Auth forms carry `novalidate` (the browser's native bubbles for `type="email"` a
 
 Auth form rhythm: fields are separated by the form's `gap-4`. Auth headings are `text-xl tracking-tight`; links are `text-sm font-medium` except inside alerts, where an inline link stays `font-semibold` for visibility (deliberate — the app ships Regular/Medium/SemiBold only, never `font-bold`).
 
-The card footer is always the same prompt + link row, `mt-5` below the form (or the last block) — auth cards never render an `OR` separator.
+The card footer is always the same prompt + link row, `mt-5` below the form (or the last block) — auth cards never render an `OR` separator. The primary submit sits in the responsive `mt-2 sm:mt-4` wrapper — profile's action-row pair; the mobile half is part of the profile rhythm, so never flatten it to a single `mt-4`. Login is the one exception: its submit stays a bare form child (`gap-4` only), the checkbox row above it already reading as the action row.
 
 Variable user-supplied text always ships with an overflow guard — an email is an unbreakable token that overflows a card instead of wrapping. At the tail of a line, put `truncate` on the paragraph; mid-sentence, interpolate it as `<span class="inline-block max-w-full truncate align-bottom">` via `{!! __('…') !!}` with `e($email)` (the translation string is ours; the value is escaped) and pin both the classes and the escaping in a test.
 

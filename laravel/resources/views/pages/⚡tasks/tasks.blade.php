@@ -43,7 +43,7 @@
                         <div @class([
                             'sm:pl-3!' => app()->isLocale('en'),
                             'sm:pr-3!' => app()->isLocale('fa'),
-                            'w-full mine-btn-primary flex items-center h-11 px-5 sm:px-4 rounded-xl cursor-pointer select-none',
+                            'w-full mine-btn-primary flex items-center h-11 px-5 sm:px-4 rounded-lg cursor-pointer select-none',
                         ])>
                             <x-mine.icon
                                 name="ArrowUp"
@@ -104,7 +104,7 @@
                         <div @class([
                             'sm:pr-4!' => app()->isLocale('en'),
                             'sm:pl-4!' => app()->isLocale('fa'),
-                            'w-full md:w-auto mine-btn-primary flex items-center justify-center gap-2 h-11 px-3.5 rounded-xl cursor-pointer select-none',
+                            'w-full md:w-auto mine-btn-primary flex items-center justify-center gap-2 h-11 px-3.5 rounded-lg cursor-pointer select-none',
                         ])>
                             <x-mine.icon
                                 name="Filter"
@@ -151,7 +151,7 @@
                         <div @class([
                             'sm:pr-4!' => app()->isLocale('en'),
                             'sm:pl-4!' => app()->isLocale('fa'),
-                            'w-full md:w-auto mine-btn-primary flex items-center justify-center gap-2 h-11 px-3.5 rounded-xl cursor-pointer select-none',
+                            'w-full md:w-auto mine-btn-primary flex items-center justify-center gap-2 h-11 px-3.5 rounded-lg cursor-pointer select-none',
                         ])>
                             <x-mine.icon
                                 name="Filter"
@@ -202,7 +202,7 @@
                         <div @class([
                             'sm:pr-4!' => app()->isLocale('en'),
                             'sm:pl-4!' => app()->isLocale('fa'),
-                            'w-full mine-btn-primary flex items-center justify-center gap-2 h-11 px-3.5 rounded-xl cursor-pointer select-none',
+                            'w-full mine-btn-primary flex items-center justify-center gap-2 h-11 px-3.5 rounded-lg cursor-pointer select-none',
                         ])>
                             <x-mine.icon
                                 name="Folder"
@@ -246,7 +246,7 @@
                         <div @class([
                             'sm:pr-4!' => app()->isLocale('en'),
                             'sm:pl-4!' => app()->isLocale('fa'),
-                            'w-full mine-btn-primary flex items-center justify-center gap-2 h-11 px-3.5 rounded-xl cursor-pointer select-none',
+                            'w-full mine-btn-primary flex items-center justify-center gap-2 h-11 px-3.5 rounded-lg cursor-pointer select-none',
                         ])>
                             <x-mine.icon
                                 name="Bullseye"
@@ -290,7 +290,7 @@
                         <div @class([
                             'sm:pr-4!' => app()->isLocale('en'),
                             'sm:pl-4!' => app()->isLocale('fa'),
-                            'w-full mine-btn-primary flex items-center justify-center gap-2 h-11 px-3.5 rounded-xl cursor-pointer select-none',
+                            'w-full mine-btn-primary flex items-center justify-center gap-2 h-11 px-3.5 rounded-lg cursor-pointer select-none',
                         ])>
                             <x-mine.icon
                                 name="Calendar"
@@ -398,7 +398,7 @@
                                         <div @class([
                                             'mr-4' => app()->isLocale('en'),
                                             'ml-4' => app()->isLocale('fa'),
-                                            'shrink-0 '.$config['header_class'].' rounded-xl size-16 flex justify-center items-center',
+                                            'shrink-0 '.$config['header_class'].' rounded-lg size-16 flex justify-center items-center',
                                         ])>
                                             <x-mine.icon :name="$config['icon']" weight="filled" size="32" />
                                         </div>
@@ -410,7 +410,7 @@
                                                 ])>
                                                     {{ $task->title }}
                                                 </h1>
-                                                <div class="{{ $config['header_class'] }} rounded-xl h-7 flex justify-center items-center px-3 shrink-0">
+                                                <div class="{{ $config['header_class'] }} rounded-lg h-7 flex justify-center items-center px-3 shrink-0">
                                                     <p @class([
                                                         'pt-1' => app()->isLocale('en'),
                                                         'text-[13px] font-semibold',
@@ -427,7 +427,7 @@
                                     <div class="flex h-full shrink-0 items-start justify-end">
                                         <x-mine.dropdown group="task-actions">
                                             <x-mine.dropdown.trigger>
-                                                <div class="mine-btn-icon rounded-xl p-2">
+                                                <div class="mine-btn-icon rounded-lg p-2">
                                                     <x-mine.icon name="MoreH" size="18" weight="filled" />
                                                 </div>
                                             </x-mine.dropdown.trigger>
@@ -478,7 +478,7 @@
                                             <div @class([
                                                 'pl-3 pr-4' => app()->isLocale('en'),
                                                 'pr-3 pl-4' => app()->isLocale('fa'),
-                                                $config['header_class'].' rounded-xl h-9 flex items-center gap-2 justify-center',
+                                                $config['header_class'].' rounded-lg h-9 flex items-center gap-2 justify-center',
                                             ])>
                                                 <x-mine.icon name="Folder" weight="filled" size="18" />
                                                 <p @class([
@@ -492,7 +492,7 @@
                                                 <div @class([
                                                     'pl-3 pr-4' => app()->isLocale('en'),
                                                     'pr-3 pl-4' => app()->isLocale('fa'),
-                                                    $config['header_class'].' rounded-xl h-9 flex items-center gap-2 justify-center',
+                                                    $config['header_class'].' rounded-lg h-9 flex items-center gap-2 justify-center',
                                                 ])>
                                                     <x-mine.icon name="Bullseye" weight="filled" size="18" />
                                                     <p @class([
@@ -508,7 +508,7 @@
                                             <div @class([
                                                 'pl-3 pr-4' => app()->isLocale('en'),
                                                 'pr-3 pl-4' => app()->isLocale('fa'),
-                                                $config['header_class'].' rounded-xl h-9 flex items-center gap-2 justify-center',
+                                                $config['header_class'].' rounded-lg h-9 flex items-center gap-2 justify-center',
                                             ])>
                                                 <x-mine.icon name="Calendar" weight="filled" size="18" />
                                                 <p @class([
@@ -525,7 +525,7 @@
                                             <div @class([
                                                 'pl-3 pr-4' => app()->isLocale('en'),
                                                 'pr-3 pl-4' => app()->isLocale('fa'),
-                                                $config['header_class'].' rounded-xl h-9 flex items-center gap-2 justify-center',
+                                                $config['header_class'].' rounded-lg h-9 flex items-center gap-2 justify-center',
                                             ])>
                                                 <x-mine.icon name="Clock" weight="filled" size="18" />
                                                 <p @class([
@@ -538,7 +538,7 @@
                                             <div @class([
                                                 'pl-3 pr-4' => app()->isLocale('en'),
                                                 'pr-3 pl-4' => app()->isLocale('fa'),
-                                                $config['header_class'].' rounded-xl h-9 flex items-center gap-2 justify-center',
+                                                $config['header_class'].' rounded-lg h-9 flex items-center gap-2 justify-center',
                                             ])>
                                                 <x-mine.icon name="Fire" weight="filled" size="18" />
                                                 <p @class([
@@ -644,7 +644,7 @@
                         close();
                         $wire.cancelAdd();
                     "
-                    class="mine-btn-icon rounded-xl p-2"
+                    class="mine-btn-icon rounded-lg p-2"
                 >
                     <x-mine.icon name="Xmark" weight="filled" size="16" />
                 </button>
@@ -789,7 +789,7 @@
                         close();
                         $wire.cancelEdit();
                     "
-                    class="mine-btn-icon rounded-xl p-2"
+                    class="mine-btn-icon rounded-lg p-2"
                 >
                     <x-mine.icon name="Xmark" weight="filled" size="16" />
                 </button>
@@ -936,7 +936,7 @@
                         close();
                         $wire.cancelDelete();
                     "
-                    class="mine-btn-icon rounded-xl p-2"
+                    class="mine-btn-icon rounded-lg p-2"
                 >
                     <x-mine.icon name="Xmark" weight="filled" size="16" />
                 </button>
@@ -984,7 +984,7 @@
                         close();
                         $wire.cancelComplete();
                     "
-                    class="mine-btn-icon rounded-xl p-2"
+                    class="mine-btn-icon rounded-lg p-2"
                 >
                     <x-mine.icon name="Xmark" weight="filled" size="16" />
                 </button>
@@ -1039,7 +1039,7 @@
                         close();
                         $wire.cancelReopen();
                     "
-                    class="mine-btn-icon rounded-xl p-2"
+                    class="mine-btn-icon rounded-lg p-2"
                 >
                     <x-mine.icon name="Xmark" weight="filled" size="16" />
                 </button>

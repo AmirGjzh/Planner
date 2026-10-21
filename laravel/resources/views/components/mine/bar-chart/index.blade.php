@@ -81,8 +81,8 @@
                                         $pixelHeight = round(($value / $maxTotal) * $height);
 
                                         $roundClasses = collect()
-                                            ->when($index === $firstVisible, fn ($collection) => $collection->push('rounded-b-lg'))
-                                            ->when($index === $lastVisible, fn ($collection) => $collection->push('rounded-t-lg'))
+                                            ->when($index === $firstVisible, fn ($collection) => $collection->push('rounded-b-none'))
+                                            ->when($index === $lastVisible, fn ($collection) => $collection->push('rounded-t-none'))
                                             ->implode(' ');
                                     @endphp
                                     <div
