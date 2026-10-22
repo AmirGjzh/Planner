@@ -200,7 +200,6 @@
                                     $plan->done => [
                                         'icon' => 'Trophy',
                                         'header_class' => 'mine-badge-secondary',
-                                        'title_class' => '',
                                         'status_label' => __('Completed'),
                                         'separator' => 'secondary',
                                         'card' => 'mine-card mine-card-secondary',
@@ -220,7 +219,6 @@
                                     $plan->finish_date->isPast() => [
                                         'icon' => 'Siren2',
                                         'header_class' => 'mine-badge-danger',
-                                        'title_class' => '',
                                         'status_label' => __('Overdue'),
                                         'separator' => 'danger',
                                         'card' => 'mine-card mine-card-danger',
@@ -246,7 +244,6 @@
                                     default => [
                                         'icon' => 'Bullseye',
                                         'header_class' => 'mine-badge-primary',
-                                        'title_class' => '',
                                         'status_label' => __('Active'),
                                         'separator' => 'primary',
                                         'card' => 'mine-card',
@@ -294,12 +291,12 @@
                                             <div class="flex min-w-0 items-center gap-4">
                                                 <h2 @class([
                                                     'pt-1' => app()->isLocale('en'),
-                                                    'text-[15px] font-semibold mine-text-primary truncate min-w-0 '.$config['title_class'],
+                                                    'text-[15px] font-semibold mine-text-primary truncate min-w-0',
                                                 ])>
                                                     {{ $plan->name }}
                                                 </h2>
                                             </div>
-                                            <p class="text-sm font-medium mine-text-secondary min-w-0 line-clamp-2 {{ $config['title_class'] }}">
+                                            <p class="mine-text-secondary line-clamp-2 min-w-0 text-sm font-medium">
                                                 {{ $plan->description ?: __('No description') }}
                                             </p>
                                         </div>
