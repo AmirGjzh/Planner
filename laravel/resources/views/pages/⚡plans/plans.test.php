@@ -610,6 +610,19 @@ it('sorts plans by load using total estimated minutes', function () {
     expect(strpos($html, 'Heavy'))->toBeLessThan(strpos($html, 'Light'));
 });
 
+it('calculates the progress percentage from estimated minutes, not task count', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'General']);
+    $plan = $user->plans()->create(['name' => 'Roadmap', ...planInCurrentMonth()]);
+    $user->tasks()->create(['title' => 'A', 'task_date' => now(), 'estimated_minutes' => 60, 'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'plan_id' => $plan->id, 'category_id' => $category->id, 'done' => true]);
+    $user->tasks()->create(['title' => 'B', 'task_date' => now()->addDay(), 'estimated_minutes' => 20, 'priority' => TaskPriority::Low, 'day_before_alarm' => 0, 'plan_id' => $plan->id, 'category_id' => $category->id]);
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        // 60 of 80 estimated minutes are done (the old task-count math showed 50%).
+        ->assertSee('75%');
+});
+
 it('sorts plans by creation date with latest first', function () {
     $user = User::factory()->create();
     $old = $user->plans()->create(['name' => 'OldPlan', ...planInCurrentMonth()]);

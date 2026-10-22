@@ -140,7 +140,7 @@
         </div>
 
         {{-- Bottom bar --}}
-        <div class="mt-6 -mb-4 flex flex-col items-center justify-between gap-2 border-t-2 border-(--mine-separator-border) pt-6 text-center text-xs font-medium sm:-mt-22 sm:-mb-4 sm:flex-row sm:text-start md:mt-6 md:-mb-4">
+        <div class="mt-6 -mb-4 flex flex-col items-center justify-between gap-2 border-t-2 border-(--mine-separator-border)/40 pt-6 text-center text-xs font-medium sm:-mt-22 sm:-mb-4 sm:flex-row sm:text-start md:mt-6 md:-mb-4">
             <p class="mine-text-secondary text-sm">
                 <span class="mine-text-secondary text-base">©</span>
                 {{ __(':app :year - All rights reserved', ['year' => $copyrightYear, 'app' => config('app.name')]) }}

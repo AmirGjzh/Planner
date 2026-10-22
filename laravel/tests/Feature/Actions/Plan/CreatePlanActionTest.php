@@ -37,13 +37,13 @@ it('creates a plan with description', function () {
     expect($user->plans()->where('name', 'Work')->value('description'))->toBe('A work plan');
 });
 
-it('normalizes plan name casing', function () {
+it('trims, squishes, and preserves the plan name casing at the domain boundary', function () {
     $user = User::factory()->create();
     RateLimiter::clear(createPlanRateLimitKey($user));
 
-    app(CreatePlanAction::class)->execute($user, "  \u{200C}wOrK pLaN\u{200C}  ", null, ['start' => '2026-01-01', 'end' => '2026-01-31'], createPlanRequest());
+    app(CreatePlanAction::class)->execute($user, "  \u{200C}wOrK   pLaN\u{200C}  ", null, ['start' => '2026-01-01', 'end' => '2026-01-31'], createPlanRequest());
 
-    expect($user->plans()->where('name', 'Work plan')->exists())->toBeTrue();
+    expect($user->plans()->where('name', 'wOrK pLaN')->exists())->toBeTrue();
 });
 
 it('strips edge half-spaces from the description at the domain boundary', function () {

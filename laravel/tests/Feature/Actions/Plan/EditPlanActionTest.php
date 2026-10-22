@@ -150,15 +150,15 @@ it('allows a range that still contains every task', function () {
     expect($plan->fresh()->finish_date->toDateString())->toBe('2026-01-15');
 });
 
-it('trims spaces and edge half-spaces, then normalizes the new name', function () {
+it('trims, squishes, and preserves the new name casing', function () {
     $user = User::factory()->create();
     $plan = $user->plans()->create(['name' => 'Work', 'start_date' => '2026-01-01', 'finish_date' => '2026-01-31']);
     RateLimiter::clear(editPlanRateLimitKey($user));
 
-    $result = app(EditPlanAction::class)->execute($user, $plan, "  \u{200C}personal\u{200C}  ", null, ['start' => '2026-01-01', 'end' => '2026-01-31'], editPlanRequest());
+    $result = app(EditPlanAction::class)->execute($user, $plan, "  \u{200C}personal   stuff\u{200C}  ", null, ['start' => '2026-01-01', 'end' => '2026-01-31'], editPlanRequest());
 
     expect($result)->toBe(EditPlanResult::Updated);
-    expect($plan->fresh()->name)->toBe('Personal');
+    expect($plan->fresh()->name)->toBe('personal stuff');
 });
 
 it('updates the plan with exactly the dup, range, and update queries', function () {

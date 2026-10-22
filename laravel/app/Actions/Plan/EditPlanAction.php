@@ -24,9 +24,10 @@ final class EditPlanAction
     {
         abort_unless($user->can('update', $plan), 403);
 
-        // trim() is byte-wise and blind to ZWNJ — strip edge half-spaces with a unicode
-        // regex (profile precedent) so a visually identical name can't dodge the unique index.
-        $name = Str::ucfirst(Str::lower(preg_replace('/^[\s\x{200C}]+|[\s\x{200C}]+$/u', '', trim($name))));
+        // Str::squish trims the edges (Str::trim's charlist covers ZWNJ — a visually identical
+        // name can't dodge the unique index) and collapses internal whitespace runs to one
+        // space. No case folding: the casing the user typed is what gets stored (user decision).
+        $name = Str::squish($name);
 
         $description = $this->nullableString($description);
 

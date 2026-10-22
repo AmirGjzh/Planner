@@ -129,14 +129,14 @@ it('logs the rate-limited outcome with available_in', function () {
         ));
 });
 
-it('trims and normalizes the name at the domain boundary', function () {
+it('trims, squishes, and preserves the name casing at the domain boundary', function () {
     $user = User::factory()->create();
     RateLimiter::clear(createCategoryRateLimitKey($user));
 
-    $result = app(CreateCategoryAction::class)->execute($user, "  \u{200C}work\u{200C}  ", createCategoryRequest());
+    $result = app(CreateCategoryAction::class)->execute($user, "  \u{200C}work   home\u{200C}  ", createCategoryRequest());
 
     expect($result)->toBe(CreateCategoryResult::Created);
-    expect($user->categories()->where('name', 'Work')->exists())->toBeTrue();
+    expect($user->categories()->where('name', 'work home')->exists())->toBeTrue();
 });
 
 it('creates the category with exactly the exists-check and insert queries', function () {

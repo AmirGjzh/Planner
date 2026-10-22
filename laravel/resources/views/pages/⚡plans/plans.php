@@ -82,11 +82,8 @@ new class extends Component
             ->when($search, fn ($q) => $q->whereRaw('LOWER(name) LIKE ?', [Str::lower('%'.$search.'%')]))
             ->when($this->range_filter['start'] ?? null, fn ($q) => $q->where('finish_date', '>=', $this->range_filter['start']))
             ->when($this->range_filter['end'] ?? null, fn ($q) => $q->where('start_date', '<=', $this->range_filter['end']))
-            ->withCount([
-                'tasks',
-                'tasks as tasks_done_count' => fn ($q) => $q->where('done', true),
-            ])
             ->withSum('tasks', 'estimated_minutes')
+            ->withSum(['tasks as tasks_done_sum_estimated_minutes' => fn ($q) => $q->where('done', true)], 'estimated_minutes')
             ->when($this->status_filter === 'active', fn ($q) => $q->where('done', false)->where('finish_date', '>=', now()->toDateString()))
             ->when($this->status_filter === 'completed', fn ($q) => $q->where('done', true))
             ->when($this->status_filter === 'overdue', fn ($q) => $q->where('done', false)->where('finish_date', '<', now()->toDateString()))
@@ -150,7 +147,7 @@ new class extends Component
 
     public function addPlan(CreatePlanAction $action): void
     {
-        $this->add_name = preg_replace('/^[\s\x{200C}]+|[\s\x{200C}]+$/u', '', trim($this->add_name));
+        $this->add_name = Str::squish($this->add_name);
 
         if ($this->add_description !== null) {
             $this->add_description = preg_replace('/^[\s\x{200C}]+|[\s\x{200C}]+$/u', '', trim($this->add_description)) ?: null;
@@ -208,7 +205,7 @@ new class extends Component
 
     public function editPlan(EditPlanAction $action): void
     {
-        $this->edit_name = preg_replace('/^[\s\x{200C}]+|[\s\x{200C}]+$/u', '', trim($this->edit_name));
+        $this->edit_name = Str::squish($this->edit_name);
 
         if ($this->edit_description !== null) {
             $this->edit_description = preg_replace('/^[\s\x{200C}]+|[\s\x{200C}]+$/u', '', trim($this->edit_description)) ?: null;

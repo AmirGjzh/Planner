@@ -145,15 +145,15 @@ it('logs the rate-limited outcome with available_in', function () {
         ));
 });
 
-it('trims and normalizes the new name at the domain boundary', function () {
+it('trims, squishes, and preserves the new name casing at the domain boundary', function () {
     $user = User::factory()->create();
     $category = $user->categories()->create(['name' => 'Work']);
     RateLimiter::clear(editCategoryRateLimitKey($user));
 
-    $result = app(EditCategoryAction::class)->execute($user, $category, "  \u{200C}personal\u{200C}  ", editCategoryRequest());
+    $result = app(EditCategoryAction::class)->execute($user, $category, "  \u{200C}personal   stuff\u{200C}  ", editCategoryRequest());
 
     expect($result)->toBe(EditCategoryResult::Updated);
-    expect($category->fresh()->name)->toBe('Personal');
+    expect($category->fresh()->name)->toBe('personal stuff');
 });
 
 it('updates the category with exactly the guard and update queries', function () {

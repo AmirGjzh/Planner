@@ -192,7 +192,9 @@
                     <div class="grid grid-cols-1 gap-4">
                         @forelse ($this->plans as $plan)
                             @php
-                                $pct = $plan->tasks_count > 0 ? (int) round($plan->tasks_done_count / $plan->tasks_count * 100) : 0;
+                                $totalEst = (int) $plan->tasks_sum_estimated_minutes;
+                                $doneEst = (int) $plan->tasks_done_sum_estimated_minutes;
+                                $pct = $totalEst > 0 ? (int) round($doneEst / $totalEst * 100) : 0;
 
                                 $config = match (true) {
                                     $plan->done => [
@@ -205,9 +207,9 @@
                                         'percent_color' => 'mine-text-secondary-accent',
                                         'span_color' => 'mine-text-secondary-accent',
                                         'progress_variant' => 'gray',
-                                        'progress_total' => $plan->tasks_count ?: 1,
-                                        'progress_value' => $plan->tasks_count ? $plan->tasks_done_count : 1,
-                                        'pct' => $plan->tasks_count > 0 ? $pct : 100,
+                                        'progress_total' => $totalEst ?: 1,
+                                        'progress_value' => $totalEst ? $doneEst : 1,
+                                        'pct' => $totalEst > 0 ? $pct : 100,
                                         'check_badge' => 'mine-badge-secondary',
                                         'xmark_badge' => 'mine-badge-secondary',
                                         'days' => null,

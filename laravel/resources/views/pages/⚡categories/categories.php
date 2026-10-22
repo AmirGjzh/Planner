@@ -74,7 +74,7 @@ new class extends Component
 
     public function addCategory(CreateCategoryAction $action): void
     {
-        $this->add_category = preg_replace('/^[\s\x{200C}]+|[\s\x{200C}]+$/u', '', trim($this->add_category));
+        $this->add_category = Str::squish($this->add_category);
 
         try {
             $this->validate([
@@ -120,7 +120,7 @@ new class extends Component
 
     public function editCategory(EditCategoryAction $action): void
     {
-        $this->edit_name = preg_replace('/^[\s\x{200C}]+|[\s\x{200C}]+$/u', '', trim($this->edit_name));
+        $this->edit_name = Str::squish($this->edit_name);
 
         try {
             $this->validate([
