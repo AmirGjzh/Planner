@@ -1,10 +1,10 @@
-<div class="flex flex-1 flex-col px-4 pt-4 pb-6 sm:px-8 md:px-16">
+<div class="flex max-w-7xl flex-1 flex-col px-4 pt-4 pb-2 sm:px-8 sm:pb-6 md:px-16 md:pb-14">
     <x-mine.animate class="mb-6">
         <h1 class="mine-text-primary text-base font-semibold">{{ __('My tasks') }}</h1>
     </x-mine.animate>
     @island(name: 'tasks-content', always: true)
-        <x-mine.animate delay="50" class="mb-6 flex flex-col gap-2 sm:gap-4">
-            <div class="flex w-full items-center justify-between gap-2 sm:gap-4">
+        <x-mine.animate delay="50" class="mb-4 flex flex-col gap-2 sm:mb-6">
+            <div class="flex w-full items-center justify-between gap-2">
                 <div class="w-full">
                     <x-mine.input
                         wire:model.live.debounce.200ms="search"
@@ -15,6 +15,7 @@
                 <x-mine.modal.trigger id="add-task-form">
                     <x-mine.button
                         type="button"
+                        size="sm"
                         @class([
                             'sm:pr-4!' => app()->isLocale('en'),
                             'sm:pl-4!' => app()->isLocale('fa'),
@@ -26,15 +27,14 @@
                                 name="Plus"
                                 @class([
                                     'mb-1' => app()->isLocale('en'),
-
                                 ])
                                 weight="filled"
                                 size="16"
                             />
-                            <p class="hidden text-sm font-medium sm:inline">
+                            <span class="hidden sm:inline">
                                 <span class="hidden sm:inline md:hidden">{{ __('New') }}</span
                                 ><span class="hidden md:inline">{{ __('New task') }}</span>
-                            </p>
+                            </span>
                         </div>
                     </x-mine.button>
                 </x-mine.modal.trigger>
@@ -99,67 +99,16 @@
                         @endforeach
                     </x-mine.dropdown.content>
                 </x-mine.dropdown>
-                <x-mine.dropdown group="task-filter" class="hidden w-full md:flex md:w-auto">
-                    <x-mine.dropdown.trigger as="div" class="w-full md:w-auto">
-                        <div @class([
-                            'sm:pr-4!' => app()->isLocale('en'),
-                            'sm:pl-4!' => app()->isLocale('fa'),
-                            'w-full md:w-auto mine-btn-primary flex items-center justify-center gap-2 h-11 px-3.5 rounded-lg cursor-pointer select-none',
-                        ])>
-                            <x-mine.icon
-                                name="Filter"
-                                @class([
-                                ])
-                                weight="filled"
-                                size="16"
-                            />
-                            <p @class([
-                                'pt-1' => app()->isLocale('en'),
-                                'text-sm font-medium',
-                            ])>
-                                {{ __('Filter') }}
-                            </p>
-                        </div>
-                    </x-mine.dropdown.trigger>
-                    <x-mine.dropdown.content
-                        class="mt-1!"
-                        placement="bottom-{{ app()->isLocale('en') ? 'end' : 'start' }}"
-                    >
-                        @foreach ([
-                            'all' => __('All'),
-                            'active' => __('Active'),
-                            'completed' => __('Completed'),
-                            'overdue' => __('Overdue'),
-                        ] as $value => $label)
-                            <x-mine.dropdown.item>
-                                <div
-                                    class="w-full rounded-lg py-2 px-4 flex items-center hover:cursor-pointer {{ $status_filter === $value ? 'bg-(--mine-dropdown-item-bg-hover)' : '' }}"
-                                    @click="$wire.$island('tasks-content').$set('status_filter', '{{ $value }}')"
-                                >
-                                    <p class="text-sm font-medium {{ app()->isLocale('en') ? 'pt-1' : '' }} {{ $status_filter === $value ? 'mine-text-link' : 'mine-text-secondary' }}">
-                                        {{ $label }}
-                                    </p>
-                                </div>
-                            </x-mine.dropdown.item>
-                        @endforeach
-                    </x-mine.dropdown.content>
-                </x-mine.dropdown>
             </div>
-            <div class="flex w-full justify-between gap-2 sm:gap-4 md:w-auto">
-                <x-mine.dropdown group="task-filter" class="w-full md:hidden md:w-auto">
+            <div class="flex w-full justify-between gap-2">
+                <x-mine.dropdown group="task-filter" class="w-full md:w-auto">
                     <x-mine.dropdown.trigger as="div" class="w-full md:w-auto">
                         <div @class([
                             'sm:pr-4!' => app()->isLocale('en'),
                             'sm:pl-4!' => app()->isLocale('fa'),
                             'w-full md:w-auto mine-btn-primary flex items-center justify-center gap-2 h-11 px-3.5 rounded-lg cursor-pointer select-none',
                         ])>
-                            <x-mine.icon
-                                name="Filter"
-                                @class([
-                                ])
-                                weight="filled"
-                                size="16"
-                            />
+                            <x-mine.icon name="Filter" weight="filled" size="16" />
                             <p @class([
                                 'pt-1' => app()->isLocale('en'),
                                 'text-sm font-medium hidden sm:block',
@@ -204,13 +153,7 @@
                             'sm:pl-4!' => app()->isLocale('fa'),
                             'w-full mine-btn-primary flex items-center justify-center gap-2 h-11 px-3.5 rounded-lg cursor-pointer select-none',
                         ])>
-                            <x-mine.icon
-                                name="Folder"
-                                @class([
-                                ])
-                                weight="filled"
-                                size="16"
-                            />
+                            <x-mine.icon name="Folder" weight="filled" size="16" />
                             <p @class([
                                 'pt-1' => app()->isLocale('en'),
                                 'text-sm font-medium hidden sm:block',
@@ -248,13 +191,7 @@
                             'sm:pl-4!' => app()->isLocale('fa'),
                             'w-full mine-btn-primary flex items-center justify-center gap-2 h-11 px-3.5 rounded-lg cursor-pointer select-none',
                         ])>
-                            <x-mine.icon
-                                name="Bullseye"
-                                @class([
-                                ])
-                                weight="filled"
-                                size="16"
-                            />
+                            <x-mine.icon name="Bullseye" weight="filled" size="16" />
                             <p @class([
                                 'pt-1' => app()->isLocale('en'),
                                 'text-sm font-medium hidden sm:block',
@@ -292,13 +229,7 @@
                             'sm:pl-4!' => app()->isLocale('fa'),
                             'w-full mine-btn-primary flex items-center justify-center gap-2 h-11 px-3.5 rounded-lg cursor-pointer select-none',
                         ])>
-                            <x-mine.icon
-                                name="Calendar"
-                                @class([
-                                ])
-                                weight="filled"
-                                size="16"
-                            />
+                            <x-mine.icon name="Calendar" weight="filled" size="16" />
                             <p @class([
                                 'pt-1' => app()->isLocale('en'),
                                 'text-sm font-medium hidden sm:block',
@@ -318,7 +249,7 @@
                 </x-mine.dropdown>
             </div>
         </x-mine.animate>
-        <div class="md:flex md:gap-6">
+        <div class="md:flex md:gap-4">
             <div class="relative flex-1">
                 <div wire:loading.delay.short class="absolute inset-0 z-10">
                     <div class="flex h-full w-full items-center justify-center">
@@ -345,8 +276,6 @@
                                     'completed' => [
                                         'icon' => 'ClipboardCheck',
                                         'header_class' => 'mine-badge-secondary',
-                                        'title_class' => 'line-through',
-                                        'status_label' => __('Completed'),
                                         'separator' => 'secondary',
                                         'card' => 'mine-card mine-card-secondary',
                                         'border-l' => 'border-l-6 border-l-(--mine-btn-secondary-bg)',
@@ -356,8 +285,6 @@
                                     'overdue' => [
                                         'icon' => 'ClipboardRemove',
                                         'header_class' => 'mine-badge-danger',
-                                        'title_class' => '',
-                                        'status_label' => __('Overdue'),
                                         'separator' => 'danger',
                                         'card' => 'mine-card mine-card-danger',
                                         'border-l' => 'border-l-6 border-l-(--mine-btn-danger-bg)',
@@ -367,8 +294,6 @@
                                     default => [
                                         'icon' => 'Clipboard',
                                         'header_class' => 'mine-badge-primary',
-                                        'title_class' => '',
-                                        'status_label' => __('Active'),
                                         'separator' => 'primary',
                                         'card' => 'mine-card',
                                         'border-l' => 'border-l-6 border-l-(--mine-btn-primary-bg)',
@@ -391,7 +316,7 @@
                                 :class="\Illuminate\Support\Arr::toCssClasses([
                                 $config['border-l'] => app()->isLocale('en'),
                                 $config['border-r'] => app()->isLocale('fa'),
-                            ]) . ' self-start ' . $config['card'] . ' flex flex-col px-4 sm:px-6 md:px-8 py-4 sm:pb-5 md:pb-6 sm:pt-6 md:pt-8'"
+                            ]) . ' self-start ' . $config['card'] . ' flex flex-col px-4 sm:px-6 md:px-8 py-4 sm:pb-6 md:pb-6 sm:pt-6 md:pt-8'"
                             >
                                 <div class="mb-8 flex min-w-0 justify-between gap-4">
                                     <div class="flex min-w-0 flex-1">
@@ -402,31 +327,23 @@
                                         ])>
                                             <x-mine.icon :name="$config['icon']" weight="filled" size="32" />
                                         </div>
-                                        <div class="flex min-w-0 flex-col justify-between gap-2">
+                                        <div class="flex min-w-0 flex-col justify-between gap-2 py-1">
                                             <div class="flex min-w-0 items-center gap-4">
-                                                <h1 @class([
+                                                <h2 @class([
                                                     'pt-1' => app()->isLocale('en'),
-                                                    'text-base font-semibold mine-text-primary truncate min-w-0 '.$config['title_class'],
+                                                    'text-[15px] font-semibold mine-text-primary truncate min-w-0',
                                                 ])>
                                                     {{ $task->title }}
-                                                </h1>
-                                                <div class="{{ $config['header_class'] }} rounded-lg h-7 flex justify-center items-center px-3 shrink-0">
-                                                    <p @class([
-                                                        'pt-1' => app()->isLocale('en'),
-                                                        'text-[13px] font-semibold',
-                                                    ])>
-                                                        {{ $config['status_label'] }}
-                                                    </p>
-                                                </div>
+                                                </h2>
                                             </div>
-                                            <p class="text-sm font-medium mine-text-secondary line-clamp-2 min-w-0 {{ $config['title_class'] }}">
+                                            <p class="mine-text-secondary line-clamp-2 min-w-0 text-[13px] font-medium">
                                                 {{ $task->description ?: __('No description') }}
                                             </p>
                                         </div>
                                     </div>
                                     <div class="flex h-full shrink-0 items-start justify-end">
                                         <x-mine.dropdown group="task-actions">
-                                            <x-mine.dropdown.trigger>
+                                            <x-mine.dropdown.trigger aria-label="{{ $task->title }}">
                                                 <div class="mine-btn-icon rounded-lg p-2">
                                                     <x-mine.icon name="MoreH" size="18" weight="filled" />
                                                 </div>
@@ -473,17 +390,17 @@
                                     </div>
                                 </div>
                                 <div class="flex flex-col justify-between">
-                                    <div class="flex flex-col gap-x-2 gap-y-4">
-                                        <div class="flex gap-2">
+                                    <div class="mb-4 flex flex-col gap-2">
+                                        <div class="flex flex-wrap items-center gap-2">
                                             <div @class([
                                                 'pl-3 pr-4' => app()->isLocale('en'),
                                                 'pr-3 pl-4' => app()->isLocale('fa'),
-                                                $config['header_class'].' rounded-lg h-9 flex items-center gap-2 justify-center',
+                                                $config['header_class'].' rounded-lg h-8 flex items-center gap-2 justify-center',
                                             ])>
                                                 <x-mine.icon name="Folder" weight="filled" size="18" />
                                                 <p @class([
                                                     'pt-1' => app()->isLocale('en'),
-                                                    'text-[13px] font-medium',
+                                                    'text-[12px] font-medium',
                                                 ])>
                                                     {{ $task->category->name }}
                                                 </p>
@@ -492,28 +409,28 @@
                                                 <div @class([
                                                     'pl-3 pr-4' => app()->isLocale('en'),
                                                     'pr-3 pl-4' => app()->isLocale('fa'),
-                                                    $config['header_class'].' rounded-lg h-9 flex items-center gap-2 justify-center',
+                                                    $config['header_class'].' rounded-lg h-8 flex items-center gap-2 justify-center',
                                                 ])>
                                                     <x-mine.icon name="Bullseye" weight="filled" size="18" />
                                                     <p @class([
                                                         'pt-1' => app()->isLocale('en'),
-                                                        'text-[13px] font-medium',
+                                                        'text-[12px] font-medium',
                                                     ])>
                                                         {{ $task->plan->name }}
                                                     </p>
                                                 </div>
                                             @endif
                                         </div>
-                                        <div class="mb-4 flex gap-2">
+                                        <div class="flex flex-wrap items-center gap-2">
                                             <div @class([
                                                 'pl-3 pr-4' => app()->isLocale('en'),
                                                 'pr-3 pl-4' => app()->isLocale('fa'),
-                                                $config['header_class'].' rounded-lg h-9 flex items-center gap-2 justify-center',
+                                                $config['header_class'].' rounded-lg h-8 flex items-center gap-2 justify-center',
                                             ])>
                                                 <x-mine.icon name="Calendar" weight="filled" size="18" />
                                                 <p @class([
                                                     'pt-1' => app()->isLocale('en'),
-                                                    'text-[13px] font-medium',
+                                                    'text-[12px] font-medium',
                                                 ])>
                                                     {{
                                                         app()->isLocale('fa')
@@ -525,12 +442,12 @@
                                             <div @class([
                                                 'pl-3 pr-4' => app()->isLocale('en'),
                                                 'pr-3 pl-4' => app()->isLocale('fa'),
-                                                $config['header_class'].' rounded-lg h-9 flex items-center gap-2 justify-center',
+                                                $config['header_class'].' rounded-lg h-8 flex items-center gap-2 justify-center',
                                             ])>
                                                 <x-mine.icon name="Clock" weight="filled" size="18" />
                                                 <p @class([
                                                     'pt-1' => app()->isLocale('en'),
-                                                    'text-[13px] font-medium',
+                                                    'text-[12px] font-medium',
                                                 ])>
                                                     {{ app()->isLocale('fa') ? App\Support\PersianNumber::convert($task->estimated_minutes) : $task->estimated_minutes }} {{ __('min') }}
                                                 </p>
@@ -538,12 +455,12 @@
                                             <div @class([
                                                 'pl-3 pr-4' => app()->isLocale('en'),
                                                 'pr-3 pl-4' => app()->isLocale('fa'),
-                                                $config['header_class'].' rounded-lg h-9 flex items-center gap-2 justify-center',
+                                                $config['header_class'].' rounded-lg h-8 flex items-center gap-2 justify-center',
                                             ])>
                                                 <x-mine.icon name="Fire" weight="filled" size="18" />
                                                 <p @class([
                                                     'pt-1' => app()->isLocale('en'),
-                                                    'text-[13px] font-medium',
+                                                    'text-[12px] font-medium',
                                                 ])>
                                                     {{ $priorityLabel }}
                                                 </p>
@@ -635,11 +552,12 @@
         :close-by-escaping="false"
         width="lg"
     >
-        <div class="px-6 py-6 sm:px-8">
+        <div class="px-6 py-6 sm:p-8">
             <div class="mb-6 flex items-center justify-between">
                 <h2 id="add-task-title" class="mine-text-primary text-base font-semibold">{{ __('Add new task') }}</h2>
                 <button
                     type="button"
+                    aria-label="{{ __('Close') }}"
                     @click="
                         close();
                         $wire.cancelAdd();
@@ -649,6 +567,18 @@
                     <x-mine.icon name="Xmark" weight="filled" size="16" />
                 </button>
             </div>
+
+            @if ($this->categories->isEmpty())
+                <div class="mb-4">
+                    <x-mine.alert variant="warning" title="{{ __('No categories yet!') }}">
+                        {!!
+                            __('First create a category from :link.', [
+                                'link' => '<a href="'.route('categories').'" wire:navigate class="mine-text-link">'.__('here').'</a>',
+                            ])
+                        !!}
+                    </x-mine.alert>
+                </div>
+            @endif
 
             @if ($add_error === 'rate_limited')
                 <div class="mb-4">
@@ -678,7 +608,15 @@
                 </div>
             @endif
 
-            <form class="flex flex-col gap-4" wire:submit="addTask">
+            <form
+                class="flex flex-col gap-4"
+                wire:submit="addTask"
+                novalidate
+                x-data
+                x-on:focus-first-error.window="
+                    $nextTick(() => $el.querySelector('[aria-invalid=&quot;true&quot;]')?.focus())
+                "
+            >
                 <div>
                     <x-mine.input
                         label="{{ __('Task title') }}"
@@ -689,27 +627,27 @@
                 </div>
                 <div>
                     <x-mine.datepicker
+                        label="{{ __('Task date') }}"
+                        wire:model="add_date"
+                        leftIcon="Calendar"
                         mode="single"
                         position="bottom-{{ app()->isLocale('en') ? 'end' : 'start' }}"
-                        wire:model="add_date"
-                        label="{{ __('Task date') }}"
-                        leftIcon="Calendar"
                     />
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <x-mine.input
-                        leftIcon="Clock"
                         label="{{ __('Estimated minutes') }}"
                         wire:model="add_estimated_minutes"
                         type="number"
                         placeholder="{{ __('e.g. 30') }}"
+                        leftIcon="Clock"
                     />
                     <x-mine.input
-                        leftIcon="Bell"
                         label="{{ __('Days before alarm') }}"
                         wire:model="add_alarm_days"
                         type="number"
                         placeholder="{{ __('e.g. 1') }}"
+                        leftIcon="Bell"
                     />
                 </div>
                 <x-mine.select
@@ -749,13 +687,13 @@
                 </x-mine.select>
                 <div>
                     <x-mine.textarea
-                        leftIcon="PenWriting"
                         label="{{ __('Task description') }}"
                         wire:model="add_description"
                         placeholder="{{ __('Your task description') }}"
+                        leftIcon="PenWriting"
                     />
                 </div>
-                <div class="mt-2 flex justify-end gap-4">
+                <div class="mt-2 flex justify-end gap-4 sm:mt-4">
                     <x-mine.button
                         type="button"
                         @click="
@@ -780,11 +718,12 @@
         :close-by-escaping="false"
         width="lg"
     >
-        <div class="px-6 py-6 sm:px-8">
+        <div class="px-6 py-6 sm:p-8">
             <div class="mb-6 flex items-center justify-between">
                 <h2 id="edit-task-title" class="mine-text-primary text-base font-semibold">{{ __('Edit task') }}</h2>
                 <button
                     type="button"
+                    aria-label="{{ __('Close') }}"
                     @click="
                         close();
                         $wire.cancelEdit();
@@ -794,6 +733,18 @@
                     <x-mine.icon name="Xmark" weight="filled" size="16" />
                 </button>
             </div>
+
+            @if ($this->categories->isEmpty())
+                <div class="mb-4">
+                    <x-mine.alert variant="warning" title="{{ __('No categories yet!') }}">
+                        {!!
+                            __('First create a category from :link.', [
+                                'link' => '<a href="'.route('categories').'" wire:navigate class="mine-text-link">'.__('here').'</a>',
+                            ])
+                        !!}
+                    </x-mine.alert>
+                </div>
+            @endif
 
             @if ($edit_error === 'rate_limited')
                 <div class="mb-4">
@@ -823,38 +774,46 @@
                 </div>
             @endif
 
-            <form class="flex flex-col gap-4" wire:submit="editTask">
+            <form
+                class="flex flex-col gap-4"
+                wire:submit="editTask"
+                novalidate
+                x-data
+                x-on:focus-first-error.window="
+                    $nextTick(() => $el.querySelector('[aria-invalid=&quot;true&quot;]')?.focus())
+                "
+            >
                 <div>
                     <x-mine.input
-                        leftIcon="Clipboard"
                         label="{{ __('Task title') }}"
                         wire:model="edit_title"
                         placeholder="{{ __('Your task title') }}"
+                        leftIcon="Clipboard"
                     />
                 </div>
                 <div>
                     <x-mine.datepicker
+                        label="{{ __('Task date') }}"
+                        wire:model="edit_date"
                         leftIcon="Calendar"
                         mode="single"
                         position="bottom-{{ app()->isLocale('en') ? 'end' : 'start' }}"
-                        wire:model="edit_date"
-                        label="{{ __('Task date') }}"
                     />
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <x-mine.input
-                        leftIcon="Clock"
                         label="{{ __('Estimated minutes') }}"
                         wire:model="edit_estimated_minutes"
                         type="number"
                         placeholder="{{ __('e.g. 30') }}"
+                        leftIcon="Clock"
                     />
                     <x-mine.input
-                        leftIcon="Bell"
                         label="{{ __('Days before alarm') }}"
                         wire:model="edit_alarm_days"
                         type="number"
                         placeholder="{{ __('e.g. 1') }}"
+                        leftIcon="Bell"
                     />
                 </div>
                 <x-mine.select
@@ -894,13 +853,13 @@
                 </x-mine.select>
                 <div>
                     <x-mine.textarea
-                        leftIcon="PenWriting"
                         label="{{ __('Task description') }}"
                         wire:model="edit_description"
                         placeholder="{{ __('Your task description') }}"
+                        leftIcon="PenWriting"
                     />
                 </div>
-                <div class="mt-2 flex justify-end gap-4">
+                <div class="mt-2 flex justify-end gap-4 sm:mt-4">
                     <x-mine.button
                         type="button"
                         @click="
@@ -925,13 +884,14 @@
         :close-by-escaping="false"
         width="lg"
     >
-        <div class="px-6 py-6 sm:px-8">
+        <div class="px-6 py-6 sm:p-8">
             <div class="mb-6 flex items-center justify-between">
                 <h2 id="delete-task-title" class="mine-text-primary text-base font-semibold">
                     {{ __('Delete task') }}
                 </h2>
                 <button
                     type="button"
+                    aria-label="{{ __('Close') }}"
                     @click="
                         close();
                         $wire.cancelDelete();
@@ -948,7 +908,7 @@
             </div>
 
             <form class="flex flex-col gap-4" wire:submit="deleteTask">
-                <div class="mt-2 flex justify-end gap-4">
+                <div class="mt-2 flex justify-end gap-4 sm:mt-4">
                     <x-mine.button
                         type="button"
                         @click="
@@ -973,13 +933,14 @@
         :close-by-escaping="false"
         width="lg"
     >
-        <div class="px-6 py-6 sm:px-8">
+        <div class="px-6 py-6 sm:p-8">
             <div class="mb-6 flex items-center justify-between">
                 <h2 id="complete-task-title" class="mine-text-primary text-base font-semibold">
                     {{ __('Complete task') }}
                 </h2>
                 <button
                     type="button"
+                    aria-label="{{ __('Close') }}"
                     @click="
                         close();
                         $wire.cancelComplete();
@@ -1003,7 +964,7 @@
             @endif
 
             <form class="flex flex-col gap-4" wire:submit="completeTask">
-                <div class="mt-2 flex justify-end gap-4">
+                <div class="mt-2 flex justify-end gap-4 sm:mt-4">
                     <x-mine.button
                         type="button"
                         @click="
@@ -1028,13 +989,14 @@
         :close-by-escaping="false"
         width="lg"
     >
-        <div class="px-6 py-6 sm:px-8">
+        <div class="px-6 py-6 sm:p-8">
             <div class="mb-6 flex items-center justify-between">
                 <h2 id="reopen-task-title" class="mine-text-primary text-base font-semibold">
                     {{ __('Re active task') }}
                 </h2>
                 <button
                     type="button"
+                    aria-label="{{ __('Close') }}"
                     @click="
                         close();
                         $wire.cancelReopen();
@@ -1058,7 +1020,7 @@
             @endif
 
             <form class="flex flex-col gap-4" wire:submit="reopenTask">
-                <div class="mt-2 flex justify-end gap-4">
+                <div class="mt-2 flex justify-end gap-4 sm:mt-4">
                     <x-mine.button
                         type="button"
                         @click="

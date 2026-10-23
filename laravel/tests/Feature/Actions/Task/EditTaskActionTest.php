@@ -41,6 +41,23 @@ it('updates a task successfully', function () {
     expect($task->fresh()->day_before_alarm)->toBe(2);
 });
 
+it('trims, squishes, and preserves the new title casing at the domain boundary', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $task = $user->tasks()->create([
+        'title' => 'Original', 'task_date' => '2026-06-01', 'estimated_minutes' => 30,
+        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
+    ]);
+    RateLimiter::clear(editTaskRateLimitKey($user));
+
+    $result = app(EditTaskAction::class)->execute(
+        $user, $task, "  \u{200C}wOrK   repo\u{200C}  ", null, '2026-06-15', 60, TaskPriority::High, 2, $category->id, null, editTaskRequest(),
+    );
+
+    expect($result)->toBe(EditTaskResult::Updated);
+    expect($task->fresh()->title)->toBe('wOrK repo');
+});
+
 it('updates a task with a plan assigned', function () {
     $user = User::factory()->create();
     $category = $user->categories()->create(['name' => 'Work']);

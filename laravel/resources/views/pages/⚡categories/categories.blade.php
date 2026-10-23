@@ -3,7 +3,7 @@
         <h1 class="mine-text-primary text-base font-semibold">{{ __('My categories') }}</h1>
     </x-mine.animate>
     @island(name: 'category-content', always: true)
-        <x-mine.animate delay="50" class="mb-6 flex items-center justify-between gap-2">
+        <x-mine.animate delay="50" class="mb-4 sm:mb-6 flex items-center justify-between gap-2">
             <div class="w-full">
                 <x-mine.input
                     wire:model.live.debounce.200ms="search"

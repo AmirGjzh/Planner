@@ -128,12 +128,13 @@ new class extends Component
     {
         $userId = auth()->id();
         $today = now();
+        $search = trim($this->search);
 
         return Task::query()
             ->select(['id', 'title', 'description', 'task_date', 'estimated_minutes', 'priority', 'done', 'day_before_alarm', 'plan_id', 'category_id', 'user_id', 'created_at'])
             ->with('category:id,name', 'plan:id,name')
             ->where('user_id', $userId)
-            ->when($this->search, fn ($q) => $q->whereRaw('LOWER(title) LIKE ?', [Str::lower('%'.$this->search.'%')]))
+            ->when($search, fn ($q) => $q->whereRaw('LOWER(title) LIKE ?', [Str::lower('%'.$search.'%')]))
             ->when($this->range_filter['start'] ?? null, fn ($q) => $q->where('task_date', '>=', $this->range_filter['start']))
             ->when($this->range_filter['end'] ?? null, fn ($q) => $q->where('task_date', '<=', $this->range_filter['end']))
             ->when($this->status_filter === 'active', fn ($q) => $q->where('done', false)->where('task_date', '>=', $today->toDateString()))
@@ -141,11 +142,15 @@ new class extends Component
             ->when($this->status_filter === 'overdue', fn ($q) => $q->where('done', false)->where('task_date', '<', $today->toDateString()))
             ->when($this->category_filter, fn ($q) => $q->whereIn('category_id', $this->category_filter))
             ->when($this->plan_filter, fn ($q) => $q->whereIn('plan_id', $this->plan_filter))
-            ->when($this->sort === 'date', fn ($q) => $q->orderBy('task_date'))
-            ->when($this->sort === 'priority', fn ($q) => $q->orderByRaw("CASE priority WHEN 'high' THEN 0 WHEN 'medium' THEN 1 WHEN 'low' THEN 2 ELSE 3 END"))
-            ->when(in_array($this->sort, ['estimated', 'load'], true), fn ($q) => $q->orderByDesc('estimated_minutes'))
-            ->when($this->sort === 'state', fn ($q) => $q->orderByRaw('CASE WHEN done = 0 AND task_date >= ? THEN 0 WHEN done = 0 THEN 1 ELSE 2 END', [$today->toDateString()]))
-            ->when($this->sort === 'latest', fn ($q) => $q->latest())
+            // Every sort carries a deterministic tiebreaker (plans precedent): ties (same date,
+            // priority, …) would otherwise shuffle between pages. An unknown ?sort= renders the
+            // default order instead of no ORDER BY at all.
+            ->when($this->sort === 'date', fn ($q) => $q->orderBy('task_date')->orderBy('id'))
+            ->when($this->sort === 'priority', fn ($q) => $q->orderByRaw("CASE priority WHEN 'high' THEN 0 WHEN 'medium' THEN 1 WHEN 'low' THEN 2 ELSE 3 END")->orderBy('id'))
+            ->when(in_array($this->sort, ['estimated', 'load'], true), fn ($q) => $q->orderByDesc('estimated_minutes')->orderBy('id'))
+            ->when($this->sort === 'state', fn ($q) => $q->orderByRaw('CASE WHEN done = 0 AND task_date >= ? THEN 0 WHEN done = 0 THEN 1 ELSE 2 END', [$today->toDateString()])->orderBy('task_date')->orderBy('id'))
+            ->when($this->sort === 'latest', fn ($q) => $q->latest()->orderByDesc('id'))
+            ->when(! in_array($this->sort, ['date', 'priority', 'estimated', 'load', 'state', 'latest'], true), fn ($q) => $q->orderBy('id'))
             ->paginate(6)->onEachSide(1);
     }
 
@@ -225,6 +230,8 @@ new class extends Component
 
     public function addTask(CreateTaskAction $action): void
     {
+        $this->add_title = Str::squish($this->add_title);
+
         $this->validate([
             'add_title' => $this->rules()['add_title'],
             'add_description' => $this->rules()['add_description'],
@@ -295,6 +302,8 @@ new class extends Component
 
     public function editTask(EditTaskAction $action): void
     {
+        $this->edit_title = Str::squish($this->edit_title);
+
         $this->validate([
             'edit_title' => $this->rules()['edit_title'],
             'edit_description' => $this->rules()['edit_description'],
@@ -398,6 +407,8 @@ new class extends Component
         $this->complete_error = match ($result) {
             ToggleTaskDoneResult::RateLimited => 'rate_limited',
             ToggleTaskDoneResult::Toggled => null,
+            // Unreachable when completing (the cascade only fires on un-done) — kept for a total match.
+            ToggleTaskDoneResult::Reactivated => null,
         };
 
         if ($this->complete_error) {
@@ -431,6 +442,7 @@ new class extends Component
         $this->reopen_error = match ($result) {
             ToggleTaskDoneResult::RateLimited => 'rate_limited',
             ToggleTaskDoneResult::Toggled => null,
+            ToggleTaskDoneResult::Reactivated => null,
         };
 
         if ($this->reopen_error) {
@@ -446,6 +458,17 @@ new class extends Component
             duration: 3000,
             position: 'bottom-center'
         );
+
+        // The un-done cascade may have reopened the plan — surface it (the R1 side effect used
+        // to be silent here; the copy key already existed).
+        if ($result === ToggleTaskDoneResult::Reactivated) {
+            $this->dispatch('toast',
+                title: __('Your plan re activated'),
+                variant: 'info',
+                duration: 3000,
+                position: 'bottom-center'
+            );
+        }
     }
 
     public function cancelReopen(): void

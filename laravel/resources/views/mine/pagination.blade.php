@@ -50,7 +50,7 @@
     {{-- The animate wrapper lives inside the view (and inside hasPages()) so single-page lists
          render nothing — a caller-side wrapper would leave its margin behind. No wire:key: the
          island morph reuses the node, so the bar reveals once and stays anchored across flips. --}}
-    <x-mine.animate class="mt-6 w-full">
+    <x-mine.animate class="mt-4 w-full sm:mt-6">
         <nav aria-label="{{ __('Pagination') }}" class="mine-card flex h-16 w-full items-center px-3 md:ps-5">
             {{-- Mobile view --}}
             <div class="flex w-full justify-between md:hidden">

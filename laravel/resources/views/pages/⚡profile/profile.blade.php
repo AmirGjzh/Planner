@@ -210,14 +210,14 @@
                 </div>
                 <div>
                     <x-mine.datepicker
+                        label="{{ __('Birthday') }}"
+                        wire:model="birthday"
+                        leftIcon="Calendar"
                         mode="single"
                         selectable-months
                         selectable-years
                         position="top-{{ app()->isLocale('en') ? 'end' : 'start' }}"
                         :years-range="[-100, 0]"
-                        wire:model="birthday"
-                        label="{{ __('Birthday') }}"
-                        leftIcon="Calendar"
                     />
                 </div>
                 <div class="mt-2 flex justify-end gap-4 sm:mt-4">

@@ -35,6 +35,11 @@ final class CreateTaskAction
     ): CreateTaskResult {
         abort_unless($user->can('create', Task::class), 403);
 
+        // Str::squish trims the edges (Str::trim's charlist covers ZWNJ — a stray half-space
+        // can't render the title invisible) and collapses internal whitespace runs to one
+        // space. No case folding: the casing the user typed is what gets stored (user decision).
+        $title = Str::squish($title);
+
         $rate_limit_key = $this->rateLimitKey($user, $request);
 
         if (RateLimiter::tooManyAttempts($rate_limit_key, self::MAX_ATTEMPTS)) {

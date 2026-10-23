@@ -31,6 +31,19 @@ it('creates a task successfully', function () {
     expect($user->tasks()->where('title', 'Test task')->exists())->toBeTrue();
 });
 
+it('trims, squishes, and preserves the title casing at the domain boundary', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    RateLimiter::clear(createTaskRateLimitKey($user));
+
+    $result = app(CreateTaskAction::class)->execute(
+        $user, "  \u{200C}wOrK   repo\u{200C}  ", null, '2026-06-01', 30, TaskPriority::Medium, 0, $category->id, null, createTaskRequest(),
+    );
+
+    expect($result)->toBe(CreateTaskResult::Created);
+    expect($user->tasks()->where('title', 'wOrK repo')->exists())->toBeTrue();
+});
+
 it('creates a task with all optional fields', function () {
     $user = User::factory()->create();
     $category = $user->categories()->create(['name' => 'Work']);

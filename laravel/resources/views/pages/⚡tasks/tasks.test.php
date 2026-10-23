@@ -1156,3 +1156,87 @@ it('does not create the task when the date falls outside the plan range', functi
 
     expect($user->tasks()->where('title', 'Late task')->exists())->toBeFalse();
 });
+
+it('squishes the title before creating a task', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    RateLimiter::clear('create-task:'.$user->id.'|127.0.0.1');
+
+    Livewire::actingAs($user)
+        ->test('pages::tasks')
+        ->set('add_title', "  \u{200C}wOrK   repo\u{200C}  ")
+        ->set('add_date', now()->format('Y-m-d'))
+        ->set('add_estimated_minutes', 30)
+        ->set('add_priority', 'medium')
+        ->set('add_alarm_days', 0)
+        ->set('add_category_id', $category->id)
+        ->call('addTask');
+
+    expect($user->tasks()->where('title', 'wOrK repo')->exists())->toBeTrue();
+});
+
+it('trims the search term once in the query', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $user->tasks()->create([
+        'title' => 'Write docs', 'task_date' => now()->toDateString(), 'estimated_minutes' => 30,
+        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
+    ]);
+
+    Livewire::actingAs($user)
+        ->test('pages::tasks')
+        ->set('search', '  docs  ')
+        ->assertSee('Write docs');
+});
+
+it('renders with an unknown sort value', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::tasks')
+        ->set('sort', 'bogus')
+        ->assertStatus(200)
+        ->assertSee('My tasks');
+});
+
+it('toasts the plan reactivation when un-doning a task reopens its plan', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+    $plan = $user->plans()->create([
+        'name' => 'Sprint', 'start_date' => now()->subMonth()->toDateString(),
+        'finish_date' => now()->addMonth()->toDateString(), 'done' => true,
+    ]);
+    $task = $user->tasks()->create([
+        'title' => 'Done task', 'task_date' => now()->toDateString(), 'estimated_minutes' => 30,
+        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
+        'plan_id' => $plan->id, 'done' => true,
+    ]);
+    RateLimiter::clear('toggle-task:'.$user->id.'|127.0.0.1');
+
+    Livewire::actingAs($user)
+        ->test('pages::tasks')
+        ->set('reopening_id', $task->id)
+        ->call('reopenTask')
+        ->assertDispatched('toast', title: __('Your task re activated'), variant: 'info')
+        ->assertDispatched('toast', title: __('Your plan re activated'), variant: 'info');
+
+    expect($plan->fresh()->done)->toBeFalse();
+});
+
+it('links to the categories page when the user has no categories', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::tasks')
+        ->assertSee(__('No categories yet!'))
+        ->assertSee(route('categories'), false);
+});
+
+it('hides the categories cross-link when categories exist', function () {
+    $user = User::factory()->create();
+    $user->categories()->create(['name' => 'Work']);
+
+    Livewire::actingAs($user)
+        ->test('pages::tasks')
+        ->assertDontSee(__('No categories yet!'));
+});

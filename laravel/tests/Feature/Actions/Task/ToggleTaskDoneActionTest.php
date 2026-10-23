@@ -132,8 +132,9 @@ it('reopens a completed plan when its task is un-done', function () {
     ]);
     RateLimiter::clear(toggleTaskRateLimitKey($user));
 
-    app(ToggleTaskDoneAction::class)->execute($user, $task, toggleTaskRequest());
+    $result = app(ToggleTaskDoneAction::class)->execute($user, $task, toggleTaskRequest());
 
+    expect($result)->toBe(ToggleTaskDoneResult::Reactivated);
     expect($task->fresh()->done)->toBeFalse();
     expect($plan->fresh()->done)->toBeFalse();
 });

@@ -45,17 +45,34 @@ Blade caches compiled views in `storage/framework/views` keyed on the raw tag st
 
 ## Dropdown menus declare themselves
 
-`dropdown/content` carries `role="menu"` because `dropdown.trigger` announces `aria-haspopup="menu"` — keep the pair in sync; `dropdown/divider` is already `role="separator"` and items render `menuitem`/`menuitemcheckbox`. When a menu gains non-item children (the header's profile card is one), re-run the open-menu axe pass in `HeaderJourneyTest` before shipping.
+`dropdown/content` carries `role="menu"` because `dropdown.trigger` announces `aria-haspopup="menu"` — keep the pair in sync; `dropdown/divider` is already `role="separator"` and items render `menuitem`/`menuitemcheckbox`. When a menu gains non-item children (the header's profile card is one), re-run the open-menu axe pass in `HeaderJourneyTest` before shipping. An icon-only trigger (the card action menus are all MoreH-only) has no implicit name — the usage site labels it with the entity it acts on: `aria-label="{{ $task->title }}"`, `$plan->name`, `$category->name`.
+
+## Dropdown placement is overflow-driven, per dropdown
+
+`dropdown/content`'s `placement` is physical (`bottom-start`/`bottom-end` → `left-0`/`right-0`), and the menu must never overflow a page edge — so each dropdown's placement is picked by where its trigger sits, not by one uniform locale rule. RTL (fa) mirrors the toolbar, so a trigger lands on the opposite physical edge and the alignment flips with it. Two formulas encode this:
+
+- A trigger on the outer/trailing edge opens its menu toward the page interior: `placement="bottom-{{ app()->isLocale('en') ? 'end' : 'start' }}"`.
+- A trigger on the leading edge (the tasks toolbar's Filter + Category, first in a `justify-between` row) opens the other way: `placement="bottom-{{ app()->isLocale('fa') ? 'end' : 'start' }}"`.
+
+The current map (EN value; fa mirrors): categories — Sort `end`; plans — Sort, Filter, Calendar `end`; tasks — Sort, Plan, Calendar `end`, Filter + Category `start`.
+
+Do not "unify" these to a single formula — the mixed formulas are intentional (a uniform parity pass once regressed the two leading-edge tasks dropdowns). Re-check overflow at 390px in both locales before changing any placement.
+
+## Selects keep their ARIA inside the popup
+
+The `x-mine.select` wrapper div carries no ARIA role — the inner `<ul>` is the `role="listbox"` and each `<li>` is the `role="option"`. A `listbox` role on the wrapper made the trigger an illegal listbox child and turned the whole label+button wrapper into an unnamed ARIA input (axe `aria-required-children` + `aria-input-field-name` fired on every visible select once `TasksJourneyTest` opened a modal). The keyboard handlers bind to the x-data root, not to a role — don't move or re-roled either piece.
 
 ## Modals name their dialog
 
 - `x-mine.modal` renders `role="dialog" aria-modal="true"` inside an `x-teleport` — pass `labelled-by="<heading-id>"` and put that `id` on the dialog's heading (which lives in the slot) so the dialog has an accessible name; an unset prop renders nothing. The open-dialog axe pass in `DeleteAccountJourneyTest` is the contract.
 - Credential and destructive forms use `:close-by-clicking-away="false"` and `:close-by-escaping="false"` — the explicit Cancel/Close button owns dismissal. The shared modal deliberately has no focus trap (app-wide pattern; if that changes, change it once here for every dialog at once).
+- Modal bodies are `px-6 py-6 sm:p-8` and footers are `mt-2 flex justify-end gap-4 sm:mt-4` — fleet-wide (plans/categories/tasks); don't invent per-page padding or drop the `sm:` footer step.
 
 ## Button label size and control height
 
 - `x-mine.button` renders label size from the `size` prop (`md` → `text-base`, the default; `sm` → `text-sm`); `height` stays orthogonal (default `h-11`). Callers pick `size="sm"` and pass plain slot text — never force the size with a `class="… text-sm"` override (it fights the component's own `text-base` in the cascade) and never wrap the label in `<p class="text-sm">` (`<p>` is flow content, and the slot already sits inside the button's `<span>`).
 - Control height: the components default to `h-11`; the auth cards (login/register/forgot/reset/verify) deliberately pass `h-12`. That split is the convention — don't "unify" it and don't invent other heights.
+- Card text runs on a three-tier scale: titles at `text-[15px]`; secondary text — descriptions, counters (Progress label, task-count), and link labels (View-tasks) — at `text-[13px]` (`font-medium`); and status badges (Completed/Overdue/Active pills) plus numeric count pills at `text-[12px]`, with card meta badges at `h-8`. Don't push secondary text down to 12px (that's the badge tier) or titles down to 13px.
 
 ## No component text renders font-normal
 

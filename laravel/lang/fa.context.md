@@ -228,6 +228,9 @@ Reports | Dashboard | Errors | Components).
 "View tasks"                                              → link · category row → filtered tasks; also plan card → filtered tasks
 "No categories found"                                     → empty state · search/filter yielded nothing
 "No categories yet"                                       → empty state · no data yet; also empty select option on task form
+"No categories yet!"                                      → inline alert title · warning · no category on task add/edit (F4 dead-end remedy)
+"First create a category from :link."                     → inline alert body · F4 remedy · :link = the "here" anchor → /categories
+"here"                                                    → link word inside the F4 alert body's :link anchor
 "Add new category"                                        → modal heading · create category modal
 "Duplicate category!"                                     → inline alert title · danger · duplicate name (add + edit)
 "You have a category with this name."                     → inline alert body · duplicate category name

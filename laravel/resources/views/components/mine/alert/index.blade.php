@@ -46,8 +46,8 @@
     </div>
     <div class="pt-0.5">
         @if ($title)
-            <h3 class="text-sm font-semibold {{ $style['title'] }}">{{ $title }}</h3>
+            <h3 class="text-[14px] font-semibold {{ $style['title'] }}">{{ $title }}</h3>
         @endif
-        <div class="mine-text-secondary mt-1 text-sm font-medium">{{ $slot }}</div>
+        <div class="mine-text-secondary mt-1 text-[13px] font-medium">{{ $slot }}</div>
     </div>
 </div>

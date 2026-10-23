@@ -40,9 +40,12 @@ final class ToggleTaskDoneAction
 
         $task->update(['done' => $new_status]);
 
+        $plan_reactivated = false;
+
         // A completed plan must not contain undone tasks — un-doning reopens it (R1).
         if (! $new_status && $task->plan?->done) {
             $task->plan->update(['done' => false]);
+            $plan_reactivated = true;
 
             $this->logger->info('Plan re activated, task un done.', [
                 'user_id' => $user->id,
@@ -58,7 +61,9 @@ final class ToggleTaskDoneAction
             'new_status' => $new_status,
         ]);
 
-        return ToggleTaskDoneResult::Toggled;
+        // The cascade is surfaced so the page can toast the plan reactivation (user decision —
+        // the silent side effect used to leave the user staring at a suddenly-active plan).
+        return $plan_reactivated ? ToggleTaskDoneResult::Reactivated : ToggleTaskDoneResult::Toggled;
     }
 
     private function rateLimitKey(User $user, Request $request): string

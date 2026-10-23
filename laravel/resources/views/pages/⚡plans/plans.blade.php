@@ -3,7 +3,7 @@
         <h1 class="mine-text-primary text-base font-semibold">{{ __('My plans') }}</h1>
     </x-mine.animate>
     @island(name: 'plans-content', always: true)
-        <x-mine.animate delay="50" class="mb-6 flex flex-col gap-2 md:flex-row">
+        <x-mine.animate delay="50" class="mb-4 flex flex-col gap-2 sm:mb-6 md:flex-row">
             <div class="flex w-full items-center justify-between gap-2">
                 <div class="w-full">
                     <x-mine.input
@@ -296,7 +296,7 @@
                                                     {{ $plan->name }}
                                                 </h2>
                                             </div>
-                                            <p class="mine-text-secondary line-clamp-2 min-w-0 text-sm font-medium">
+                                            <p class="mine-text-secondary line-clamp-2 min-w-0 text-[13px] font-medium">
                                                 {{ $plan->description ?: __('No description') }}
                                             </p>
                                         </div>
@@ -425,10 +425,10 @@
                                         />
                                     </div>
                                     <div class="flex items-end">
-                                        <div class="{{ $config['header_class'] }} rounded-lg h-7 flex justify-center items-center px-3 shrink-0">
+                                        <div class="{{ $config['header_class'] }} rounded-lg h-8 flex justify-center items-center px-3 shrink-0">
                                             <p @class([
                                                 'pt-1' => app()->isLocale('en'),
-                                                'text-[13px] font-semibold',
+                                                'text-[12px] font-semibold',
                                             ])>
                                                 {{ $config['status_label'] }}
                                             </p>
@@ -464,7 +464,7 @@
                                             class="w-full"
                                         >
                                             <x-mine.button type="button" class="{{ $config['add_class'] }}">
-                                                <div class="font-md flex items-center justify-center gap-2 text-sm">
+                                                <div class="flex items-center justify-center gap-2 text-sm font-medium">
                                                     <x-mine.icon
                                                         name="Plus"
                                                         size="16"
@@ -513,8 +513,8 @@
                                 <x-mine.animate class="col-span-full py-12 text-center">
                                     <x-mine.icon
                                         name="Bullseye"
-                                        size="40"
                                         weight="filled"
+                                        size="40"
                                         class="mine-text-secondary mx-auto mb-3"
                                     />
                                     <p class="mine-text-secondary text-sm font-medium">{{ __('No plans yet') }}</p>
@@ -587,11 +587,11 @@
                 </div>
                 <div>
                     <x-mine.datepicker
+                        label="{{ __('Plan range') }}"
+                        wire:model="add_range"
                         leftIcon="Calendar"
                         mode="range"
                         position="bottom-{{ app()->isLocale('en') ? 'end' : 'start' }}"
-                        wire:model="add_range"
-                        label="{{ __('Plan range') }}"
                     />
                 </div>
                 <div>
@@ -675,19 +675,19 @@
             >
                 <div>
                     <x-mine.input
-                        leftIcon="Bullseye"
                         label="{{ __('Plan name') }}"
                         wire:model="edit_name"
                         placeholder="{{ __('Your plan name') }}"
+                        leftIcon="Bullseye"
                     />
                 </div>
                 <div>
                     <x-mine.datepicker
+                        label="{{ __('Plan range') }}"
+                        wire:model="edit_range"
                         leftIcon="Calendar"
                         mode="range"
                         position="bottom-{{ app()->isLocale('en') ? 'end' : 'start' }}"
-                        wire:model="edit_range"
-                        label="{{ __('Plan range') }}"
                     />
                 </div>
                 <div>

@@ -192,15 +192,17 @@
     x-on:keydown.escape.prevent="close()"
     @if ($disabled) aria-disabled="true" @endif
     @if ($invalid) aria-invalid="true" @endif
-    role="listbox"
+    {{-- No ARIA role on the wrapper: the inner <ul> is the listbox. A role here would make the
+         trigger (role=button) an illegal listbox child and demand an accessible name (axe
+         aria-required-children + aria-input-field-name, caught by TasksJourneyTest). --}}
     {{ $attributes->class(['relative w-full']) }}
 >
     @if ($label)
-        <x-mine.input.label> {{ $label }} </x-mine.input.label>
+    <x-mine.input.label> {{ $label }} </x-mine.input.label>
     @endif
 
     @if ($name)
-        <input type="hidden" name="{{ $name }}" x-bind:value="state" />
+    <input type="hidden" name="{{ $name }}" x-bind:value="state" />
     @endif
 
     <div class="relative">
@@ -218,17 +220,17 @@
             class="absolute {{ $positionClasses }} z-50 bg-(--mine-input-bg) rounded-lg border-2 border-(--mine-input-border) shadow-lg"
         >
             @if ($searchable)
-                <div class="flex items-center gap-2 border-b border-(--mine-input-border) px-4 py-2">
-                    <x-mine.icon name="Magnifier" weight="filled" size="20" class="shrink-0 text-(--mine-input-icon)" />
-                    <input
-                        x-model="search"
-                        data-select-search
-                        type="text"
-                        aria-label="{{ __('Search...') }}"
-                        placeholder="{{ __('Search...') }}"
-                        class="h-8 w-full bg-transparent text-sm font-medium text-[var(--mine-text-primary)]/80 placeholder:font-medium placeholder:text-(--mine-input-placeholder) focus:outline-none focus-visible:outline-none"
-                    />
-                </div>
+            <div class="flex items-center gap-2 border-b border-(--mine-input-border) px-4 py-2">
+                <x-mine.icon name="Magnifier" weight="filled" size="20" class="shrink-0 text-(--mine-input-icon)" />
+                <input
+                    x-model="search"
+                    data-select-search
+                    type="text"
+                    aria-label="{{ __('Search...') }}"
+                    placeholder="{{ __('Search...') }}"
+                    class="h-8 w-full bg-transparent text-sm font-medium text-[var(--mine-text-primary)]/80 placeholder:font-medium placeholder:text-(--mine-input-placeholder) focus:outline-none focus-visible:outline-none"
+                />
+            </div>
             @endif
 
             <ul class="mine-scrollbar max-h-60 overflow-y-auto p-1" role="listbox">
@@ -245,6 +247,6 @@
     </div>
 
     @if ($name)
-        <x-mine.input.error :name="$name" />
+    <x-mine.input.error :name="$name" />
     @endif
 </div>
