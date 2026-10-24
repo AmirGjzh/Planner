@@ -9,6 +9,14 @@ Planner is a personal task-planner web app: tasks, categories, and plans with a 
 3. **`grep -rin '<keyword>' .ai/rules`** — catches rules a path match alone misses.
 4. Only then plan or edit code, and follow every matching rule.
 
+## Plan / Build mode (mandatory)
+
+Every session starts in **PLAN** mode. No file may be created, edited, or deleted until the user switches to **BUILD** by saying `build`. Approving a plan in prose is not a switch — the word is.
+
+- **PLAN — read-only:** reading and searching files, `git status|diff|log`, read-only artisan (`route:list`, `config:show`, `--help`), running tests (`php artisan test`), `vendor/bin/pint --test` (check-only), starting the dev containers. Present the plan in chat and wait for `build`.
+- **BUILD — everything:** all of the above plus file edits, `pint` (write mode), `make:` generators, `migrate`, tinker, and installs — still subject to every coding rule below.
+- **Announce the mode** when it changes and at the start of each task. If a task needs file writes while in PLAN, say so and wait. A lone `plan` from the user switches back and drops any in-flight edits.
+
 ## Stack (verify before relying on an API)
 
 | Concern | Version |

@@ -44,6 +44,13 @@ Auth forms carry `novalidate` (the browser's native bubbles for `type="email"` a
 - The form binds the listener itself: `<form x-data x-on:focus-first-error.window>` runs `$nextTick(() => $el.querySelector('[aria-invalid="true"]')?.focus())`, so the first invalid field inside that form receives focus.
 - Never rely on the browser's own focus for invalid fields on these pages.
 
+## Every reachable validation rule carries its message
+
+- There is no `lang/fa/validation.php`, so a rule without a `messages()` entry renders the framework's English `validation.php` text in **every** locale. `messages()` maps `'field.rule' => __('Sentence.')` for every rule a user can actually fail, mirroring `rules()` order (add-side, then edit-side).
+- Each sentence is an ordinary `fa.json` key: added inside the page's block with its `fa.context.md` annotation in the same change (lang.md's parity rule).
+- Skip type rules the input shape makes unreachable: `string`/`integer`/`array` on typed properties (`?string`/`?int`/`?array`) never fire — Livewire coerces before validation — so a message there is a dead key; every existing page omits them.
+- Pin with `assertSee('The sentence.')` beside `assertHasErrors([… => ['rule']])` — `UserFactory` sets `locale => 'en'`, so `__()` renders the key text in tests, never the Persian value.
+
 ## Auth form rhythm and overflow guards
 
 Auth form rhythm: fields are separated by the form's `gap-4`. Auth headings are `text-xl tracking-tight`; links are `text-sm font-medium` except inside alerts, where an inline link stays `font-semibold` for visibility (deliberate — the app ships Regular/Medium/SemiBold only, never `font-bold`).

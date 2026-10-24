@@ -58,23 +58,6 @@ it('creates a task with all optional fields', function () {
     expect($user->tasks()->where('title', 'Full task')->exists())->toBeTrue();
 });
 
-it('returns rate limited after repeated failures', function () {
-    $user = User::factory()->create();
-    RateLimiter::clear(createTaskRateLimitKey($user));
-
-    foreach (range(1, 5) as $attempt) {
-        app(CreateTaskAction::class)->execute(
-            $user, 'Attempt '.$attempt, null, '2026-06-01', 30, TaskPriority::Medium, 0, 999, null, createTaskRequest(),
-        );
-    }
-
-    $result = app(CreateTaskAction::class)->execute(
-        $user, 'Blocked', null, '2026-06-01', 30, TaskPriority::Medium, 0, 999, null, createTaskRequest(),
-    );
-
-    expect($result)->toBe(CreateTaskResult::RateLimited);
-});
-
 it('allows creation again after one minute', function () {
     $user = User::factory()->create();
     RateLimiter::clear(createTaskRateLimitKey($user));

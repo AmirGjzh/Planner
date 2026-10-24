@@ -317,6 +317,8 @@ Reports | Dashboard | Errors | Components).
 "Plan range is required."                                              → validation message · range required (add + edit)
 "Start date is required."                                              → validation message · range start required (add + edit)
 "End date is required."                                                → validation message · range end required (add + edit)
+"Start date must be in YYYY-MM-DD format."                             → validation message · range start format (add + edit)
+"End date must be in YYYY-MM-DD format."                               → validation message · range end format (add + edit)
 "End date must be after the start date."                               → validation message · range order (add + edit)
 
 ## Tasks
@@ -370,6 +372,16 @@ Reports | Dashboard | Errors | Components).
 "Task title cannot exceed 255 characters."        → validation message · title max
 "Task description cannot exceed 5000 characters." → validation message · description max
 "Task date is required."                          → validation message · date required
+"Task date must be in YYYY-MM-DD format."         → validation message · date format (add + edit)
+"Estimated minutes is required."                  → validation message · estimated minutes required (add + edit)
+"Estimated minutes must be at least 1."           → validation message · estimated minutes min (add + edit)
+"Estimated minutes cannot exceed 1440."           → validation message · estimated minutes max (add + edit)
+"Alarm days is required."                         → validation message · alarm days required (add + edit)
+"Alarm days cannot be negative."                  → validation message · alarm days min (add + edit)
+"Alarm days cannot exceed 365."                   → validation message · alarm days max (add + edit)
+"Priority is required."                           → validation message · priority required (add + edit)
+"Selected priority is invalid."                   → validation message · priority enum (add + edit)
+"Category is required."                           → validation message · category required (add + edit)
 "No tasks yet"                                    → empty state · no data yet
 "No tasks found"                                  → empty state · search/filter yielded nothing
 "min"                                             → unit text · duration display (task card + Minutes support)

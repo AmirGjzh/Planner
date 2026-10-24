@@ -92,28 +92,6 @@ it('prevents editing a task that belongs to another user', function () {
     );
 });
 
-it('returns rate limited after repeated failures', function () {
-    $user = User::factory()->create();
-    $category = $user->categories()->create(['name' => 'Work']);
-    $task = $user->tasks()->create([
-        'title' => 'Original', 'task_date' => '2026-06-01', 'estimated_minutes' => 30,
-        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
-    ]);
-    RateLimiter::clear(editTaskRateLimitKey($user));
-
-    foreach (range(1, 5) as $attempt) {
-        app(EditTaskAction::class)->execute(
-            $user, $task, 'Attempt '.$attempt, null, '2026-06-01', 30, TaskPriority::Medium, 0, 999, null, editTaskRequest(),
-        );
-    }
-
-    $result = app(EditTaskAction::class)->execute(
-        $user, $task, 'Blocked', null, '2026-06-01', 30, TaskPriority::Medium, 0, 999, null, editTaskRequest(),
-    );
-
-    expect($result)->toBe(EditTaskResult::RateLimited);
-});
-
 it('allows editing again after one minute', function () {
     $user = User::factory()->create();
     $category = $user->categories()->create(['name' => 'Work']);

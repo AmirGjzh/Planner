@@ -12,6 +12,7 @@ Localization conventions for `lang/**`.
 - App strings use capitalized natural-language keys in `lang/fa.json`, consumed via `__('My tasks')` / `__(':count days ago', ['count' => ...])`.
 - Do **not** use `lang/*/*.php` short keys (`__('messages.welcome')`) for app strings.
 - `lang/en/` holds only framework-provided files.
+- Validation messages are sentence keys too: each page's `messages()` maps `'field.rule' => __('…')` (the coverage contract lives in pages.md). There is deliberately no `lang/fa/validation.php` — `lang/en/validation.php` is fallback-only, and a rule missing from `messages()` serves its English text in every locale.
 
 ## Keep fa.json grouped into page blocks
 

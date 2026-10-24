@@ -110,6 +110,23 @@ it('validates plan name max length', function () {
         ->assertHasErrors('add_name');
 });
 
+it('validates plan range date format', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('add_name', 'Sprint')
+        ->set('add_range', ['start' => '01/05/2026', 'end' => '01/31/2026'])
+        ->call('addPlan')
+        ->assertHasErrors([
+            'add_range.start' => ['date_format'],
+            'add_range.end' => ['date_format'],
+        ])
+        ->assertSee('Start date must be in YYYY-MM-DD format.')
+        ->assertSee('End date must be in YYYY-MM-DD format.')
+        ->assertDispatched('focus-first-error');
+});
+
 it('validates Calendar is required', function () {
     $user = User::factory()->create();
 

@@ -2,6 +2,7 @@
 
 use App\Enums\TaskPriority;
 use App\Models\Category;
+use App\Models\Task;
 use App\Models\User;
 use App\Support\Jalali;
 use Carbon\Carbon;
@@ -13,12 +14,12 @@ function taskDate(string $offset = '0 days'): string
     return now()->modify($offset)->format('Y-m-d');
 }
 
-function makeTask(User $user, string $title, array $overrides = []): void
+function makeTask(User $user, string $title, array $overrides = []): Task
 {
     $category = $user->categories()->where('name', 'Work')->first()
         ?? $user->categories()->create(['name' => 'Work']);
 
-    $user->tasks()->create(array_merge([
+    return $user->tasks()->create(array_merge([
         'title' => $title,
         'task_date' => taskDate(),
         'estimated_minutes' => 30,
@@ -56,18 +57,24 @@ it('shows empty state when no tasks exist', function () {
         ->assertSee('No tasks yet');
 });
 
-it('shows active, overdue and completed status badges', function () {
+it('pins the reopen action on the completed card and the complete action on the rest', function () {
     $user = User::factory()->create();
     makeTask($user, 'Active task');
     makeTask($user, 'Overdue task', ['task_date' => taskDate('-1 days')]);
     makeTask($user, 'Completed task', ['done' => true]);
 
-    Livewire::actingAs($user)
+    $html = Livewire::actingAs($user)
         ->test('pages::tasks')
         ->set('range_filter', wideRange())
         ->assertSee('Active task')
         ->assertSee('Overdue task')
-        ->assertSee('Completed task');
+        ->assertSee('Completed task')
+        ->html();
+
+    // The card's status badge was removed (UC-08) — the action button pins the state now:
+    // only the done card wires reopen, the two undone cards wire complete.
+    expect(substr_count($html, "reopening_id', "))->toBe(1)
+        ->and(substr_count($html, "completing_id', "))->toBe(2);
 });
 
 it('creates a new task', function () {
@@ -142,7 +149,8 @@ it('validates task title is required', function () {
         ->set('add_priority', 'medium')
         ->set('add_category_id', 1)
         ->call('addTask')
-        ->assertHasErrors('add_title');
+        ->assertHasErrors(['add_title' => ['required']])
+        ->assertDispatched('focus-first-error');
 });
 
 it('validates task title max length', function () {
@@ -172,10 +180,11 @@ it('validates task date format', function () {
         ->set('add_priority', 'medium')
         ->set('add_category_id', 1)
         ->call('addTask')
-        ->assertHasErrors('add_date');
+        ->assertHasErrors('add_date')
+        ->assertSee('Task date must be in YYYY-MM-DD format.');
 });
 
-it('validates estimated minutes is required', function () {
+it('validates estimated minutes min', function () {
     $user = User::factory()->create();
 
     Livewire::actingAs($user)
@@ -187,7 +196,8 @@ it('validates estimated minutes is required', function () {
         ->set('add_priority', 'medium')
         ->set('add_category_id', 1)
         ->call('addTask')
-        ->assertHasErrors('add_estimated_minutes');
+        ->assertHasErrors(['add_estimated_minutes' => ['min']])
+        ->assertSee('Estimated minutes must be at least 1.');
 });
 
 it('validates estimated minutes max', function () {
@@ -202,7 +212,8 @@ it('validates estimated minutes max', function () {
         ->set('add_priority', 'medium')
         ->set('add_category_id', 1)
         ->call('addTask')
-        ->assertHasErrors('add_estimated_minutes');
+        ->assertHasErrors('add_estimated_minutes')
+        ->assertSee('Estimated minutes cannot exceed 1440.');
 });
 
 it('validates alarm days min', function () {
@@ -217,7 +228,8 @@ it('validates alarm days min', function () {
         ->set('add_priority', 'medium')
         ->set('add_category_id', 1)
         ->call('addTask')
-        ->assertHasErrors('add_alarm_days');
+        ->assertHasErrors('add_alarm_days')
+        ->assertSee('Alarm days cannot be negative.');
 });
 
 it('validates alarm days max', function () {
@@ -232,7 +244,8 @@ it('validates alarm days max', function () {
         ->set('add_priority', 'medium')
         ->set('add_category_id', 1)
         ->call('addTask')
-        ->assertHasErrors('add_alarm_days');
+        ->assertHasErrors('add_alarm_days')
+        ->assertSee('Alarm days cannot exceed 365.');
 });
 
 it('validates priority is valid', function () {
@@ -247,7 +260,8 @@ it('validates priority is valid', function () {
         ->set('add_priority', 'urgent')
         ->set('add_category_id', 1)
         ->call('addTask')
-        ->assertHasErrors('add_priority');
+        ->assertHasErrors('add_priority')
+        ->assertSee('Selected priority is invalid.');
 });
 
 it('validates category is required', function () {
@@ -262,7 +276,27 @@ it('validates category is required', function () {
         ->set('add_priority', 'medium')
         ->set('add_category_id', null)
         ->call('addTask')
-        ->assertHasErrors('add_category_id');
+        ->assertHasErrors('add_category_id')
+        ->assertSee('Category is required.');
+});
+
+it('validates estimated minutes, alarm days and priority are required', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::tasks')
+        ->set('add_estimated_minutes', null)
+        ->set('add_alarm_days', null)
+        ->set('add_priority', null)
+        ->call('addTask')
+        ->assertHasErrors([
+            'add_estimated_minutes' => ['required'],
+            'add_alarm_days' => ['required'],
+            'add_priority' => ['required'],
+        ])
+        ->assertSee('Estimated minutes is required.')
+        ->assertSee('Alarm days is required.')
+        ->assertSee('Priority is required.');
 });
 
 it('returns rate limited on create after too many attempts', function () {
@@ -376,7 +410,9 @@ it('validates edit title is required', function () {
         ->set('edit_priority', 'medium')
         ->set('edit_category_id', $category->id)
         ->call('editTask')
-        ->assertHasErrors('edit_title');
+        ->assertHasErrors(['edit_title' => ['required']])
+        ->assertSee('Task title is required.')
+        ->assertDispatched('focus-first-error');
 });
 
 it('returns rate limited on edit after too many attempts', function () {
@@ -458,11 +494,7 @@ it('shows invalid plan error on edit', function () {
 
 it('deletes a task', function () {
     $user = User::factory()->create();
-    $category = $user->categories()->create(['name' => 'Work']);
-    $task = $user->tasks()->create([
-        'title' => 'Test task', 'task_date' => taskDate(), 'estimated_minutes' => 30,
-        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
-    ]);
+    $task = makeTask($user, 'Test task');
 
     Livewire::actingAs($user)
         ->test('pages::tasks')
@@ -476,11 +508,7 @@ it('deletes a task', function () {
 
 it('completes a task', function () {
     $user = User::factory()->create();
-    $category = $user->categories()->create(['name' => 'Work']);
-    $task = $user->tasks()->create([
-        'title' => 'Test task', 'task_date' => taskDate(), 'estimated_minutes' => 30,
-        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
-    ]);
+    $task = makeTask($user, 'Test task');
     RateLimiter::clear('toggle-task:'.$user->id.'|127.0.0.1');
 
     Livewire::actingAs($user)
@@ -496,11 +524,7 @@ it('completes a task', function () {
 
 it('reopens a completed task', function () {
     $user = User::factory()->create();
-    $category = $user->categories()->create(['name' => 'Work']);
-    $task = $user->tasks()->create([
-        'title' => 'Test task', 'task_date' => taskDate(), 'estimated_minutes' => 30,
-        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id, 'done' => true,
-    ]);
+    $task = makeTask($user, 'Test task', ['done' => true]);
     RateLimiter::clear('toggle-task:'.$user->id.'|127.0.0.1');
 
     Livewire::actingAs($user)
@@ -515,11 +539,7 @@ it('reopens a completed task', function () {
 
 it('returns rate limited on complete after too many toggles', function () {
     $user = User::factory()->create();
-    $category = $user->categories()->create(['name' => 'Work']);
-    $task = $user->tasks()->create([
-        'title' => 'Test task', 'task_date' => taskDate(), 'estimated_minutes' => 30,
-        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
-    ]);
+    $task = makeTask($user, 'Test task');
     RateLimiter::clear('toggle-task:'.$user->id.'|127.0.0.1');
 
     foreach (range(1, 20) as $i) {
@@ -539,11 +559,7 @@ it('returns rate limited on complete after too many toggles', function () {
 
 it('returns rate limited on reopen after too many toggles', function () {
     $user = User::factory()->create();
-    $category = $user->categories()->create(['name' => 'Work']);
-    $task = $user->tasks()->create([
-        'title' => 'Test task', 'task_date' => taskDate(), 'estimated_minutes' => 30,
-        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id, 'done' => true,
-    ]);
+    $task = makeTask($user, 'Test task', ['done' => true]);
     RateLimiter::clear('toggle-task:'.$user->id.'|127.0.0.1');
 
     foreach (range(1, 20) as $i) {
@@ -564,11 +580,7 @@ it('returns rate limited on reopen after too many toggles', function () {
 it('prevents completing a task owned by another user', function () {
     $user = User::factory()->create();
     $other = User::factory()->create();
-    $category = $other->categories()->create(['name' => 'Work']);
-    $task = $other->tasks()->create([
-        'title' => 'Private', 'task_date' => taskDate(), 'estimated_minutes' => 30,
-        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
-    ]);
+    $task = makeTask($other, 'Private');
 
     Livewire::actingAs($user)
         ->test('pages::tasks')
@@ -582,11 +594,7 @@ it('prevents completing a task owned by another user', function () {
 it('prevents editing a task owned by another user', function () {
     $user = User::factory()->create();
     $other = User::factory()->create();
-    $category = $other->categories()->create(['name' => 'Work']);
-    $task = $other->tasks()->create([
-        'title' => 'Private', 'task_date' => taskDate(), 'estimated_minutes' => 30,
-        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
-    ]);
+    $task = makeTask($other, 'Private');
 
     Livewire::actingAs($user)
         ->test('pages::tasks')
@@ -595,7 +603,7 @@ it('prevents editing a task owned by another user', function () {
         ->set('edit_date', taskDate())
         ->set('edit_estimated_minutes', 30)
         ->set('edit_priority', 'medium')
-        ->set('edit_category_id', $category->id)
+        ->set('edit_category_id', $task->category_id)
         ->call('editTask')
         ->assertNotDispatched('toast');
 
@@ -605,11 +613,7 @@ it('prevents editing a task owned by another user', function () {
 it('prevents deleting a task owned by another user', function () {
     $user = User::factory()->create();
     $other = User::factory()->create();
-    $category = $other->categories()->create(['name' => 'Work']);
-    $task = $other->tasks()->create([
-        'title' => 'Private', 'task_date' => taskDate(), 'estimated_minutes' => 30,
-        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
-    ]);
+    $task = makeTask($other, 'Private');
 
     Livewire::actingAs($user)
         ->test('pages::tasks')
@@ -696,9 +700,10 @@ it('renders the loading spinner over the task grid', function () {
 it('wraps search, filters and grid in the tasks-content island', function () {
     $user = User::factory()->create();
 
+    // The @island directive is only observable through Livewire's fragment marker.
     Livewire::actingAs($user)
         ->test('pages::tasks')
-        ->assertSee('tasks-content', false);
+        ->assertSee('FRAGMENT:type=island|name=tasks-content', false);
 });
 
 it('scopes category, plan and date-range filters to the tasks-content island', function () {
@@ -1135,24 +1140,6 @@ it('shows a range error when the task date falls outside the plan range', functi
         ->set('add_plan_id', $plan->id)
         ->call('addTask')
         ->assertSet('add_error', 'date_out_of_range');
-});
-
-it('does not create the task when the date falls outside the plan range', function () {
-    $user = User::factory()->create();
-    $category = $user->categories()->create(['name' => 'Work']);
-    $plan = $user->plans()->create(['name' => 'Sprint', 'start_date' => '2026-06-01', 'finish_date' => '2026-06-30']);
-    RateLimiter::clear('create-task:'.$user->id.'|127.0.0.1');
-
-    Livewire::actingAs($user)
-        ->test('pages::tasks')
-        ->set('add_title', 'Late task')
-        ->set('add_date', '2026-07-01')
-        ->set('add_estimated_minutes', 30)
-        ->set('add_priority', 'medium')
-        ->set('add_alarm_days', 0)
-        ->set('add_category_id', $category->id)
-        ->set('add_plan_id', $plan->id)
-        ->call('addTask');
 
     expect($user->tasks()->where('title', 'Late task')->exists())->toBeFalse();
 });

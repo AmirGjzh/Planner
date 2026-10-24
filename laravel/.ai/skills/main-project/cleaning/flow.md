@@ -26,6 +26,7 @@ Runs first, every cycle; also catches cross-topic fallout from earlier passes.
 - **CSS:** every `@utility` in `resources/css/mine.css` must appear in views, JS, or tests.
 - **PHP:** unreferenced classes, private methods, params, imports, enum cases. Route names must be checked for dynamic consumers first (`route($x['route'])`, `:route="'profile'"`, `routeIs`, the framework `verified` middleware) before being called dead. Convention-registered code is referenced by name, not import — artisan commands, auto-discovered policies, framework-registered providers/middleware, `require`d support files.
 - **Files/orphans:** empty dirs, stray `.bak`/`.orig`, TODO/FIXME, published `resources/views/vendor/*` overrides nothing renders, images/fonts nothing references.
+- **Pairs:** a Blade `x-on:<event>.window` listener and the server `$this->dispatch('<event>')` that feeds it are one contract — sweep both halves; an orphan listener means the dispatch never shipped (UC-8 cleanup: tasks shipped the `focus-first-error` listener with no dispatch).
 
 ### Code (non-tests)
 

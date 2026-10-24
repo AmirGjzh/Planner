@@ -593,6 +593,8 @@
                         mode="range"
                         position="bottom-{{ app()->isLocale('en') ? 'end' : 'start' }}"
                     />
+                    <x-mine.input.error name="add_range.start" />
+                    <x-mine.input.error name="add_range.end" />
                 </div>
                 <div>
                     <x-mine.textarea
@@ -689,6 +691,8 @@
                         mode="range"
                         position="bottom-{{ app()->isLocale('en') ? 'end' : 'start' }}"
                     />
+                    <x-mine.input.error name="edit_range.start" />
+                    <x-mine.input.error name="edit_range.end" />
                 </div>
                 <div>
                     <x-mine.textarea

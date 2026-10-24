@@ -15,6 +15,7 @@ use App\Models\Plan;
 use App\Models\Task;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -63,8 +64,6 @@ new class extends Component
     public ?string $edit_error = null;
 
     public ?int $deleting_id = null;
-
-    public ?string $delete_error = null;
 
     public ?int $completing_id = null;
 
@@ -142,9 +141,8 @@ new class extends Component
             ->when($this->status_filter === 'overdue', fn ($q) => $q->where('done', false)->where('task_date', '<', $today->toDateString()))
             ->when($this->category_filter, fn ($q) => $q->whereIn('category_id', $this->category_filter))
             ->when($this->plan_filter, fn ($q) => $q->whereIn('plan_id', $this->plan_filter))
-            // Every sort carries a deterministic tiebreaker (plans precedent): ties (same date,
-            // priority, …) would otherwise shuffle between pages. An unknown ?sort= renders the
-            // default order instead of no ORDER BY at all.
+            // Deterministic tiebreakers (plans precedent): ties would otherwise shuffle between
+            // pages; an unknown ?sort= falls back to orderBy('id') instead of no ORDER BY.
             ->when($this->sort === 'date', fn ($q) => $q->orderBy('task_date')->orderBy('id'))
             ->when($this->sort === 'priority', fn ($q) => $q->orderByRaw("CASE priority WHEN 'high' THEN 0 WHEN 'medium' THEN 1 WHEN 'low' THEN 2 ELSE 3 END")->orderBy('id'))
             ->when(in_array($this->sort, ['estimated', 'load'], true), fn ($q) => $q->orderByDesc('estimated_minutes')->orderBy('id'))
@@ -232,16 +230,22 @@ new class extends Component
     {
         $this->add_title = Str::squish($this->add_title);
 
-        $this->validate([
-            'add_title' => $this->rules()['add_title'],
-            'add_description' => $this->rules()['add_description'],
-            'add_date' => $this->rules()['add_date'],
-            'add_estimated_minutes' => $this->rules()['add_estimated_minutes'],
-            'add_alarm_days' => $this->rules()['add_alarm_days'],
-            'add_priority' => $this->rules()['add_priority'],
-            'add_category_id' => $this->rules()['add_category_id'],
-            'add_plan_id' => $this->rules()['add_plan_id'],
-        ]);
+        try {
+            $this->validate([
+                'add_title' => $this->rules()['add_title'],
+                'add_description' => $this->rules()['add_description'],
+                'add_date' => $this->rules()['add_date'],
+                'add_estimated_minutes' => $this->rules()['add_estimated_minutes'],
+                'add_alarm_days' => $this->rules()['add_alarm_days'],
+                'add_priority' => $this->rules()['add_priority'],
+                'add_category_id' => $this->rules()['add_category_id'],
+                'add_plan_id' => $this->rules()['add_plan_id'],
+            ]);
+        } catch (ValidationException $exception) {
+            $this->dispatch('focus-first-error');
+
+            throw $exception;
+        }
 
         $result = $action->execute(
             $this->user,
@@ -304,16 +308,22 @@ new class extends Component
     {
         $this->edit_title = Str::squish($this->edit_title);
 
-        $this->validate([
-            'edit_title' => $this->rules()['edit_title'],
-            'edit_description' => $this->rules()['edit_description'],
-            'edit_date' => $this->rules()['edit_date'],
-            'edit_estimated_minutes' => $this->rules()['edit_estimated_minutes'],
-            'edit_alarm_days' => $this->rules()['edit_alarm_days'],
-            'edit_priority' => $this->rules()['edit_priority'],
-            'edit_category_id' => $this->rules()['edit_category_id'],
-            'edit_plan_id' => $this->rules()['edit_plan_id'],
-        ]);
+        try {
+            $this->validate([
+                'edit_title' => $this->rules()['edit_title'],
+                'edit_description' => $this->rules()['edit_description'],
+                'edit_date' => $this->rules()['edit_date'],
+                'edit_estimated_minutes' => $this->rules()['edit_estimated_minutes'],
+                'edit_alarm_days' => $this->rules()['edit_alarm_days'],
+                'edit_priority' => $this->rules()['edit_priority'],
+                'edit_category_id' => $this->rules()['edit_category_id'],
+                'edit_plan_id' => $this->rules()['edit_plan_id'],
+            ]);
+        } catch (ValidationException $exception) {
+            $this->dispatch('focus-first-error');
+
+            throw $exception;
+        }
 
         $task = $this->user->tasks()->findOrFail($this->editing_id);
 
@@ -375,10 +385,6 @@ new class extends Component
 
         $result = $action->execute($this->user, $task);
 
-        $this->delete_error = match ($result) {
-            DeleteTaskResult::Deleted => null,
-        };
-
         if ($result === DeleteTaskResult::Deleted) {
             $this->deleting_id = null;
             unset($this->tasks);
@@ -394,7 +400,6 @@ new class extends Component
 
     public function cancelDelete(): void
     {
-        $this->delete_error = null;
         $this->resetValidation();
     }
 
@@ -507,6 +512,30 @@ new class extends Component
             'add_title.max' => __('Task title cannot exceed 255 characters.'),
             'add_description.max' => __('Task description cannot exceed 5000 characters.'),
             'add_date.required' => __('Task date is required.'),
+            'add_date.date_format' => __('Task date must be in YYYY-MM-DD format.'),
+            'add_estimated_minutes.required' => __('Estimated minutes is required.'),
+            'add_estimated_minutes.min' => __('Estimated minutes must be at least 1.'),
+            'add_estimated_minutes.max' => __('Estimated minutes cannot exceed 1440.'),
+            'add_alarm_days.required' => __('Alarm days is required.'),
+            'add_alarm_days.min' => __('Alarm days cannot be negative.'),
+            'add_alarm_days.max' => __('Alarm days cannot exceed 365.'),
+            'add_priority.required' => __('Priority is required.'),
+            'add_priority.enum' => __('Selected priority is invalid.'),
+            'add_category_id.required' => __('Category is required.'),
+            'edit_title.required' => __('Task title is required.'),
+            'edit_title.max' => __('Task title cannot exceed 255 characters.'),
+            'edit_description.max' => __('Task description cannot exceed 5000 characters.'),
+            'edit_date.required' => __('Task date is required.'),
+            'edit_date.date_format' => __('Task date must be in YYYY-MM-DD format.'),
+            'edit_estimated_minutes.required' => __('Estimated minutes is required.'),
+            'edit_estimated_minutes.min' => __('Estimated minutes must be at least 1.'),
+            'edit_estimated_minutes.max' => __('Estimated minutes cannot exceed 1440.'),
+            'edit_alarm_days.required' => __('Alarm days is required.'),
+            'edit_alarm_days.min' => __('Alarm days cannot be negative.'),
+            'edit_alarm_days.max' => __('Alarm days cannot exceed 365.'),
+            'edit_priority.required' => __('Priority is required.'),
+            'edit_priority.enum' => __('Selected priority is invalid.'),
+            'edit_category_id.required' => __('Category is required.'),
         ];
     }
 };

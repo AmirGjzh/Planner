@@ -374,14 +374,18 @@ new class extends Component
             'add_description.max' => __('Plan description cannot exceed 5000 characters.'),
             'add_range.required' => __('Plan range is required.'),
             'add_range.start.required' => __('Start date is required.'),
+            'add_range.start.date_format' => __('Start date must be in YYYY-MM-DD format.'),
             'add_range.end.required' => __('End date is required.'),
+            'add_range.end.date_format' => __('End date must be in YYYY-MM-DD format.'),
             'add_range.end.after' => __('End date must be after the start date.'),
             'edit_name.required' => __('Plan name is required.'),
             'edit_name.max' => __('Plan name cannot exceed 255 characters.'),
             'edit_description.max' => __('Plan description cannot exceed 5000 characters.'),
             'edit_range.required' => __('Plan range is required.'),
             'edit_range.start.required' => __('Start date is required.'),
+            'edit_range.start.date_format' => __('Start date must be in YYYY-MM-DD format.'),
             'edit_range.end.required' => __('End date is required.'),
+            'edit_range.end.date_format' => __('End date must be in YYYY-MM-DD format.'),
             'edit_range.end.after' => __('End date must be after the start date.'),
         ];
     }
