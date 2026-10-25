@@ -13,15 +13,7 @@
             {{ __('The link expires in :count minutes, don\'t forget to check your spam folder.', ['count' => app()->isLocale('en') ? $expireMinutes : \App\Support\PersianNumber::convert($expireMinutes)]) }}
         </p>
 
-        <form
-            wire:submit="resend"
-            novalidate
-            class="flex flex-col gap-4"
-            x-data
-            x-on:focus-first-error.window="
-                $nextTick(() => $el.querySelector('[aria-invalid=&quot;true&quot;]')?.focus())
-            "
-        >
+        <form wire:submit="resend" novalidate class="flex flex-col gap-4">
             @if ($resend_error === 'rate_limited')
                 <x-mine.alert variant="warning" title="{{ __('Too many verification emails!') }}">
                     {{ __('Try again in a minute.') }}</x-mine.alert>

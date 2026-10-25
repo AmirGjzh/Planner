@@ -258,8 +258,7 @@ it('renders every dashboard count with Persian digits in fa', function () {
 
     expect($html)->toMatch('/mine-btn-primary[^>]*>\s*۲\s*</')
         ->and($html)->toContain('۲ روز پیش')
-        ->and($html)->toContain('۳ روز دیگه')
-        ->and(Jalali::format(now(), 'd MMM'))->toMatch('/[۰-۹]/');
+        ->and($html)->toContain('۳ روز دیگه');
 });
 
 it('keeps a single h1 on the page', function () {

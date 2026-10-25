@@ -21,7 +21,7 @@ Scope of a topic's cleaning pass = the files its refactor/implementation commits
 
 Runs first, every cycle; also catches cross-topic fallout from earlier passes.
 
-- **Lang:** extract every key from `lang/fa.json` and search `resources/views`, `app`, `tests` for it. Beware dynamic keys: the theme-name keys are consumed through `__(ucfirst($name))` over `config('themes.name')` and live without a literal.
+- **Lang:** extract every key from `lang/fa.json` and search `resources/views`, `app`, `tests` for it. Beware dynamic keys: the theme-name keys are consumed through `__(ucfirst($name))` over `config('themes.name')` and live without a literal. Beware escaped keys too: a PHP call site escapes the apostrophe (`don't` → `don\'t`), so the literal key never matches its consumer — re-grep with the escaped form before calling a key orphaned (UC-9/10 cleanup: apostrophe keys false-flagged).
 - **Components:** every `resources/views/components/mine/*` directory must have a `x-mine.<name>` (or `x-mine.<dir>.<sub>`) reference outside its own file.
 - **CSS:** every `@utility` in `resources/css/mine.css` must appear in views, JS, or tests.
 - **PHP:** unreferenced classes, private methods, params, imports, enum cases. Route names must be checked for dynamic consumers first (`route($x['route'])`, `:route="'profile'"`, `routeIs`, the framework `verified` middleware) before being called dead. Convention-registered code is referenced by name, not import — artisan commands, auto-discovered policies, framework-registered providers/middleware, `require`d support files.
