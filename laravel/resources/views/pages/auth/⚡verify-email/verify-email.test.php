@@ -26,6 +26,13 @@ it('renders the notice with the emailed account and resend button', function () 
         ->assertSee('Log out');
 });
 
+it('renders the expiry hint with Persian digits in the user locale', function () {
+    $user = resendUser(['locale' => 'fa']);
+
+    Livewire::actingAs($user)->test('pages::auth.verify-email')
+        ->assertSee('لینک ۶۰ دقیقه اعتبار داره');
+});
+
 it('wires the resend form with novalidate and a scoped busy target', function () {
     $user = resendUser();
 

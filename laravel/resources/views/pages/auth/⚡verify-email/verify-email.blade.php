@@ -8,8 +8,9 @@
             {{ __('Open the verification link in your :email inbox', ['email' => $this->user->email]) }}
         </p>
 
+        @php $expireMinutes = (int) config('auth.verification.expire', 60); @endphp
         <p class="mine-text-secondary mb-6 text-center text-sm font-medium">
-            {{ __('The link expires in :count minutes, don\'t forget to check your spam folder.', ['count' => (int) config('auth.verification.expire', 60)]) }}
+            {{ __('The link expires in :count minutes, don\'t forget to check your spam folder.', ['count' => app()->isLocale('en') ? $expireMinutes : \App\Support\PersianNumber::convert($expireMinutes)]) }}
         </p>
 
         <form

@@ -44,7 +44,7 @@ it('renders the Persian copy with rtl direction', function () {
     expect($html)
         ->toContain('dir="rtl"')
         ->toContain('ایمیلت رو تأیید کن')
-        ->toContain('این لینک تأیید 60 دقیقه');
+        ->toContain('این لینک تأیید ۶۰ دقیقه');
 });
 
 it('sends the notification in the user saved locale', function () {

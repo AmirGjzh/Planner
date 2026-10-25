@@ -88,7 +88,7 @@ it('shows priority, overdue and due-in badges', function () {
         ->assertSee('High')
         ->assertSee('Low')
         ->assertSee('Overdue')
-        ->assertSee('Due in');
+        ->assertSee('in 2 days');
 });
 
 it('labels tasks due today and tomorrow', function () {
@@ -237,4 +237,66 @@ it('maps minutes to the correct workload level thresholds', function () {
     expect(WorkloadLevel::forMinutes(241)->value)->toBe('heavy');
     expect(WorkloadLevel::forMinutes(360)->value)->toBe('heavy');
     expect(WorkloadLevel::forMinutes(361)->value)->toBe('very_heavy');
+});
+
+it('renders the attention count badge with the number of in-window tasks', function () {
+    $user = User::factory()->create();
+    dashboardTask($user, 'First attention task');
+    dashboardTask($user, 'Second attention task');
+
+    $html = Livewire::actingAs($user)->test('pages::dashboard')->html();
+
+    expect($html)->toMatch('/mine-btn-primary[^>]*>\s*2\s*</');
+});
+
+it('renders every dashboard count with Persian digits in fa', function () {
+    $user = User::factory()->create(['locale' => 'fa']);
+    dashboardTask($user, 'کار گذشته', ['task_date' => now()->subDays(2)->format('Y-m-d')]);
+    dashboardTask($user, 'کار آینده', ['task_date' => now()->addDays(3)->format('Y-m-d'), 'day_before_alarm' => 4]);
+
+    $html = Livewire::actingAs($user)->test('pages::dashboard')->html();
+
+    expect($html)->toMatch('/mine-btn-primary[^>]*>\s*۲\s*</')
+        ->and($html)->toContain('۲ روز پیش')
+        ->and($html)->toContain('۳ روز دیگه')
+        ->and(Jalali::format(now(), 'd MMM'))->toMatch('/[۰-۹]/');
+});
+
+it('keeps a single h1 on the page', function () {
+    $user = User::factory()->create();
+
+    $html = Livewire::actingAs($user)->test('pages::dashboard')->html();
+
+    expect(substr_count($html, '<h1'))->toBe(1);
+});
+
+it('orders attention cards by date with a deterministic id tiebreak', function () {
+    $user = User::factory()->create();
+    dashboardTask($user, 'Later task', ['task_date' => now()->addDays(3)->format('Y-m-d'), 'day_before_alarm' => 3]);
+    dashboardTask($user, 'Sooner task', ['task_date' => now()->format('Y-m-d')]);
+    dashboardTask($user, 'Tie task', ['task_date' => now()->format('Y-m-d')]);
+
+    $html = Livewire::actingAs($user)->test('pages::dashboard')->html();
+
+    expect(strpos($html, 'Sooner task'))->toBeLessThan(strpos($html, 'Tie task'))
+        ->and(strpos($html, 'Tie task'))->toBeLessThan(strpos($html, 'Later task'));
+});
+
+it('pins the canonical root variant line and the card-title overflow guard', function () {
+    $user = User::factory()->create();
+    dashboardTask($user, 'Contract task');
+
+    Livewire::actingAs($user)
+        ->test('pages::dashboard')
+        ->assertSee('flex max-w-7xl flex-1 flex-col px-4 pt-4 pb-4 sm:px-8 sm:pb-6 md:px-16 md:pb-14', false)
+        ->assertSee('truncate min-w-0', false);
+});
+
+it('runs exactly two queries on render', function () {
+    $user = User::factory()->create();
+    dashboardTask($user, 'Counted task');
+
+    $this->expectsDatabaseQueryCount(2);
+
+    Livewire::actingAs($user)->test('pages::dashboard')->assertStatus(200);
 });

@@ -137,7 +137,7 @@
 
                                 <a class="button" href="{{ $url }}">{{ __('Reset Password') }}</a>
 
-                                <p class="hint">{{ __('This password reset link will expire in :count minutes.', ['count' => $expireMinutes]) }}</p>
+                                <p class="hint">{{ __('This password reset link will expire in :count minutes.', ['count' => app()->isLocale('en') ? $expireMinutes : \App\Support\PersianNumber::convert($expireMinutes)]) }}</p>
 
                                 <p class="quiet">{{ __('If you didn\'t request a password reset, no further action is required.') }}</p>
                             </div>

@@ -142,3 +142,12 @@ it('starts the week on Saturday when locale is fa', function () {
     expect($week[0]['day'])->toBe(Jalali::format($saturday, 'EEEE'));
     expect($week[0]['day'])->toBe('شنبه');
 });
+
+it('runs exactly one query', function () {
+    $user = User::factory()->create();
+    workloadTask($user, 30, now()->toDateString());
+
+    $this->expectsDatabaseQueryCount(1);
+
+    app(WeeklyWorkloadAction::class)->execute($user);
+});

@@ -167,7 +167,7 @@ All use cases are delivered, tested, and accepted. Files and structure reference
 
 **Goal:** Show total estimated time per day for the current week with a workload level, fully localized for `fa`.
 
-**Delivered:** `app/Actions/Dashboard/WeeklyWorkloadAction.php`, `app/Enums/WorkloadLevel.php`, `Minutes::format()` (shared, locale-aware), `<x-mine.horizontal-scroll>` (with `todayIndex` centering via `getBoundingClientRect` — LTR/RTL-safe), workload grid on the dashboard.
+**Delivered:** `app/Actions/Dashboard/WeeklyWorkloadAction.php`, `app/Enums/WorkloadLevel.php`, `Minutes::format()` (shared, locale-aware), `<x-mine.horizontal-scroll>` (with `todayIndex` centering via `getBoundingClientRect` — LTR/RTL-safe), workload grid on the dashboard; the page root in the canonical `max-w-7xl` wrapper (UC-09/10 refactor).
 
 **Key decisions:** week start is locale-aware — en Sunday, fa Saturday (Jalali, `Carbon::SATURDAY`); grid **includes** completed tasks (total planned effort); one `GROUP BY task_date` query, `#[Computed]`; level thresholds Light ≤120 / Moderate ≤240 / Heavy ≤360 / Very Heavy >360 minutes; localized labels/ranges via `__()` (enum stays language-agnostic); per-level dot/text classes are literal Tailwind classes in a `$workloadMeta` match; "Today" uses the datepicker primary fill, not the green success theme.
 
@@ -179,9 +179,9 @@ All use cases are delivered, tested, and accepted. Files and structure reference
 
 **Goal:** Show overdue tasks and tasks whose alarm window started (`task_date - day_before_alarm <= today`), excluding completed, fully localized.
 
-**Delivered:** `app/Actions/Dashboard/AttentionTasksAction.php`, attention list on the dashboard with count badge, overdue/upcoming card themes (`mine-card-danger` / `mine-card-secondary`), localized due/overdue labels, "View task" deep-link to `/tasks` filtered by title, directionally-flipped arrow icon per locale.
+**Delivered:** `app/Actions/Dashboard/AttentionTasksAction.php`, attention list on the dashboard with count badge, overdue/upcoming card themes (`mine-card-danger` / `mine-card-primary`), localized due/overdue labels, "View task" deep-link to `/tasks` filtered by title, directionally-flipped arrow icon per locale; card/header actions are `x-mine.button` link-buttons with title overflow guards on the 15px card tier (UC-09/10 refactor).
 
-**Key decisions:** window math via SQLite `DATE(task_date, '-' || day_before_alarm || ' days')` — per-task modifier, not a fixed window; overdue always included; `day_before_alarm = 0` gates to `task_date = today`; due/overdue labels use `diffInDays()` + `startOfDay()` for consistent boundaries and pluralization.
+**Key decisions:** the scan is bounded at the alarm horizon (`task_date <= today + 365` — `day_before_alarm`'s validated max) with the exact per-task window math (`task_date − day_before_alarm <= today`) trimmed in PHP — portable across SQLite/MariaDB, no date-interval SQL; ordering is `ORDER BY task_date, id` (deterministic same-date cards); overdue always included; `day_before_alarm = 0` gates to `task_date = today`; due/overdue labels use `diffInDays()` + `startOfDay()` for consistent boundaries and pluralization.
 
 **Tests:** action, shared-dashboard Livewire, and access coverage.
 

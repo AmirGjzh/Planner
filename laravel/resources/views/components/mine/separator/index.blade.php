@@ -49,6 +49,10 @@
     </div>
 
 @else
-    <div class="mine-separator w-full h-[2px] {{ $barClass }}" role="separator" aria-orientation="horizontal"></div>
+    <div
+        {{ $attributes->merge(['class' => 'mine-separator w-full h-[2px] '.$barClass]) }}
+        role="separator"
+        aria-orientation="horizontal"
+    ></div>
 
 @endif

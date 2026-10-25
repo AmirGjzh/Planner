@@ -260,7 +260,7 @@ Description: The user sees tasks that need attention: overdue tasks and tasks ap
 Main Flow:
 1. The user opens the dashboard.
 2. The system finds tasks that are not done and where `task_date - day_before_alarm <= today` (this includes overdue tasks).
-3. The tasks appear in a "Tasks needing attention" list ordered by date, each with a due/overdue label ("Due today", "Due tomorrow", "Due in X days", "X days ago").
+3. The tasks appear in a "Tasks needing attention" list ordered by date, each with a due/overdue label ("Due today", "Due tomorrow", "in X days", "X days ago").
 
 Future versions may send these notifications via email.
 

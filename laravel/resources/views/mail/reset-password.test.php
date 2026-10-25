@@ -37,7 +37,7 @@ it('renders the Persian copy with rtl direction', function () {
     expect($html)
         ->toContain('dir="rtl"')
         ->toContain('بازیابی رمز عبور')
-        ->toContain('این لینک بازیابی 60 دقیقه');
+        ->toContain('این لینک بازیابی ۶۰ دقیقه');
 });
 
 it('sends the notification in the user saved locale', function () {

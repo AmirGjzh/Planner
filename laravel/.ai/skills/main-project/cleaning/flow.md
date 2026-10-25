@@ -67,7 +67,7 @@ Runs first, every cycle; also catches cross-topic fallout from earlier passes.
 
 - No hardcoded user-facing strings in touched views — `__('Natural language key')` only.
 - Exception: a locale-conditional native word rendered only by its own locale's branch (the fa `'کار'` count word on category cards, `'فارسی'` in the locale switcher) is a deliberate copy decision, not a violation — copy stays user-owned; every other string goes through `__()`.
-- `lang/fa.json`: no duplicate or orphan keys; `:count` placeholders stay Western-digit; framework files in `lang/en/` untouched.
+- `lang/fa.json`: no duplicate or orphan keys; `:count` placeholders stay plain (digits are converted at the call site — Western in en, Persian in fa, see `.ai/rules/lang.md`); framework files in `lang/en/` untouched.
 - Locale-sensitive behavior (Sunday/Saturday week start, RTL, per-account locale) is a contract — sweep only, never "fix".
 
 ### Docs & repo sync

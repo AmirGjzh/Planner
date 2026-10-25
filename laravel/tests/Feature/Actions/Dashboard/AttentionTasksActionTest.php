@@ -79,3 +79,32 @@ it('orders the attention list by task date ascending', function () {
 
     expect($tasks->pluck('title')->all())->toBe(['Soon', 'Later']);
 });
+
+it('breaks same-date ties by id', function () {
+    $user = User::factory()->create();
+    attentionTask($user, 'First tie');
+    attentionTask($user, 'Second tie');
+
+    $tasks = app(AttentionTasksAction::class)->execute($user);
+
+    expect($tasks->pluck('title')->all())->toBe(['First tie', 'Second tie']);
+});
+
+it('keeps the alarm-horizon boundary in window and bounds the scan at it', function () {
+    $user = User::factory()->create();
+    attentionTask($user, 'Boundary task', ['task_date' => now()->addDays(365)->format('Y-m-d'), 'day_before_alarm' => 365]);
+    attentionTask($user, 'Beyond horizon', ['task_date' => now()->addDays(400)->format('Y-m-d'), 'day_before_alarm' => 365]);
+
+    $tasks = app(AttentionTasksAction::class)->execute($user);
+
+    expect($tasks->pluck('title')->all())->toBe(['Boundary task']);
+});
+
+it('runs exactly one query', function () {
+    $user = User::factory()->create();
+    attentionTask($user, 'Counted');
+
+    $this->expectsDatabaseQueryCount(1);
+
+    app(AttentionTasksAction::class)->execute($user);
+});

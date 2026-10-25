@@ -418,8 +418,7 @@ Reports | Dashboard | Errors | Components).
 ":count days ago"                                           → badge text · overdue age, plural (attention list)
 "Due today"                                                 → badge text · due-today chip
 "Due tomorrow"                                              → badge text · due-tomorrow chip
-"Due in"                                                    → badge prefix · due countdown (attention list)
-":count days"                                               → badge value · due countdown (attention list)
+"in :count days"                                            → badge text · due countdown (attention list)
 "No tasks need your attention right now."                   → empty state · attention card
 "This week's workload"                                      → section heading · workload card
 "Estimated workload based on task duration."                → supporting text · workload card subtitle
