@@ -33,26 +33,14 @@ final class Jalali
      */
     public static function weekBounds(CarbonInterface $date): array
     {
-        $calendar = IntlCalendar::createInstance(config('app.timezone'), 'fa_IR@calendar=persian');
-
-        if ($calendar === null) {
-            throw new RuntimeException('Unable to create the Persian (Jalali) calendar.');
-        }
-
+        $calendar = self::calendar();
         $calendar->setTime($date->getTimestampMs());
         $calendar->set(IntlCalendar::FIELD_DAY_OF_WEEK, $calendar->getFirstDayOfWeek());
 
-        $toDateString = function () use ($calendar): string {
-            return Carbon::createFromTimestamp(
-                (int) ($calendar->getTime() / 1000),
-                config('app.timezone'),
-            )->startOfDay()->toDateString();
-        };
-
-        $start = $toDateString();
+        $start = self::calendarDate($calendar);
 
         $calendar->add(IntlCalendar::FIELD_DAY_OF_WEEK, 6);
-        $end = $toDateString();
+        $end = self::calendarDate($calendar);
 
         return ['start' => $start, 'end' => $end];
     }
@@ -62,28 +50,34 @@ final class Jalali
      */
     public static function monthBounds(CarbonInterface $date): array
     {
+        $calendar = self::calendar();
+        $calendar->setTime($date->getTimestampMs());
+        $calendar->set(IntlCalendar::FIELD_DAY_OF_MONTH, 1);
+        $start = self::calendarDate($calendar);
+
+        $calendar->add(IntlCalendar::FIELD_MONTH, 1);
+        $calendar->add(IntlCalendar::FIELD_DATE, -1);
+        $end = self::calendarDate($calendar);
+
+        return ['start' => $start, 'end' => $end];
+    }
+
+    private static function calendar(): IntlCalendar
+    {
         $calendar = IntlCalendar::createInstance(config('app.timezone'), 'fa_IR@calendar=persian');
 
         if ($calendar === null) {
             throw new RuntimeException('Unable to create the Persian (Jalali) calendar.');
         }
 
-        $calendar->setTime($date->getTimestampMs());
+        return $calendar;
+    }
 
-        $toDateString = function () use ($calendar): string {
-            return Carbon::createFromTimestamp(
-                (int) ($calendar->getTime() / 1000),
-                config('app.timezone'),
-            )->startOfDay()->toDateString();
-        };
-
-        $calendar->set(IntlCalendar::FIELD_DAY_OF_MONTH, 1);
-        $start = $toDateString();
-
-        $calendar->add(IntlCalendar::FIELD_MONTH, 1);
-        $calendar->add(IntlCalendar::FIELD_DATE, -1);
-        $end = $toDateString();
-
-        return ['start' => $start, 'end' => $end];
+    private static function calendarDate(IntlCalendar $calendar): string
+    {
+        return Carbon::createFromTimestamp(
+            (int) ($calendar->getTime() / 1000),
+            config('app.timezone'),
+        )->startOfDay()->toDateString();
     }
 }

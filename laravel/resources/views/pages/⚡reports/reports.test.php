@@ -82,6 +82,8 @@ it('renders preset stats when the range state is malformed', function () {
         ['start' => now()->toDateString(), 'end' => null],   // mid-selection calendar state
         ['start' => now()->toDateString()],                  // missing end
         ['start' => 'not-a-date', 'end' => now()->toDateString()],
+        ['start' => '2025-02-31', 'end' => now()->toDateString()],  // rolled date — shape passes, parse-back fails
+        ['start' => 20250231, 'end' => now()->toDateString()],       // not a string at all
         ['nonsense' => true],                                // wrong shape entirely
     ] as $malformed) {
         $component->set('range_filter', $malformed);

@@ -51,6 +51,8 @@
             if (! this.scroller) return;
 
             const max = this.scroller.scrollWidth - this.scroller.clientWidth;
+            // RTL scrollers expose a negative scrollLeft — normalize it to one
+            // unsigned distance so a single threshold math serves both directions.
             const position = this.isRtl() ? -this.scroller.scrollLeft : this.scroller.scrollLeft;
 
             this.canPrev = position > 4;

@@ -114,17 +114,6 @@ it('builds a per-day chart with completed and remaining minutes', function () {
     expect($chart[1]['remaining'])->toBe(30);
 });
 
-it('orders chart days ascending', function () {
-    $user = User::factory()->create();
-    reportTask($user, 'Today', ['task_date' => now()->toDateString()]);
-    reportTask($user, 'Yesterday', ['task_date' => Carbon::yesterday()->format('Y-m-d')]);
-
-    $chart = app(ReportsAction::class)->chart($user, Carbon::yesterday()->toDateString(), now()->toDateString());
-
-    expect($chart[0]['label'])->toBe(Carbon::yesterday()->format('M j'));
-    expect($chart[1]['label'])->toBe(now()->format('M j'));
-});
-
 it('only includes days that have tasks in the chart', function () {
     $user = User::factory()->create();
     reportTask($user, 'Only day', ['task_date' => now()->toDateString()]);

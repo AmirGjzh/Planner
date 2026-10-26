@@ -186,7 +186,6 @@
                 @else
                     <x-mine.bar-chart
                         :items="$this->chart"
-                        label-key="label"
                         :series="[
                             ['key' => 'completed', 'class' => 'bg-(--mine-btn-primary-bg)', 'label' => __('Completed')],
                             ['key' => 'remaining', 'class' => 'bg-(--mine-btn-danger-bg)', 'label' => __('Remaining')],

@@ -66,6 +66,9 @@
                                 }
                             }
 
+                            // flex-col-reverse renders the series bottom-up: the first visible
+                            // segment sits on the axis (never rounded) and the last one caps
+                            // the bar (rounded top only).
                             $firstVisible = $visibleIndexes[0] ?? null;
                             $lastVisible = $visibleIndexes === [] ? null : $visibleIndexes[count($visibleIndexes) - 1];
                         @endphp
@@ -82,7 +85,7 @@
 
                                         $roundClasses = collect()
                                             ->when($index === $firstVisible, fn ($collection) => $collection->push('rounded-b-none'))
-                                            ->when($index === $lastVisible, fn ($collection) => $collection->push('rounded-t-none'))
+                                            ->when($index === $lastVisible, fn ($collection) => $collection->push('rounded-t-lg'))
                                             ->implode(' ');
                                     @endphp
                                     <div
