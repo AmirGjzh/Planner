@@ -27,7 +27,7 @@ Guest pages (home/login/register/forgot-password/reset-password) have no `HasUse
 
 ## App pages share one root wrapper
 
-- The authenticated app pages root at `flex max-w-7xl flex-1 flex-col px-4 pt-4 pb-2 sm:px-8 sm:pb-6 md:px-16 md:pb-14` — profile is the reference, extracted to categories and plans. The `pb-*` scale is the footer clearance; the cap mirrors the shell's `max-w-7xl` `<main>`. Dashboard is the one deliberate variant: `pb-4` instead of `pb-2` (the user's design decision in the UC-9/10 finalize — every other segment is identical, and its test pins the variant line). Reports still carries the pre-footer root (`pb-6`, no cap) — deferred, tracked in Refactor.md (tasks joined the canonical root in UC-08).
+- The authenticated app pages root at `flex max-w-7xl flex-1 flex-col px-4 pt-4 pb-2 sm:px-8 sm:pb-6 md:px-16 md:pb-14` — profile is the reference, extracted to categories and plans. The `pb-*` scale is the footer clearance; the cap mirrors the shell's `max-w-7xl` `<main>`. Dashboard is the one deliberate variant: `pb-4` instead of `pb-2` (the user's design decision in the UC-9/10 finalize — every other segment is identical, and its test pins the variant line). Reports joined the canonical root in UC-11 (tasks in UC-08), so no page stays parked — reports' test pins its line like dashboard's.
 - Auth pages are the exception: the centered-card root `flex flex-1 items-center justify-center px-4 py-8 sm:px-6`, with no `mine-page-bg` on the page (the auth body paints it).
 
 ## Toast contract

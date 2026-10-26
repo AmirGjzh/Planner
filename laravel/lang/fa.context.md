@@ -383,7 +383,7 @@ Reports | Dashboard | Errors | Components).
 "Selected priority is invalid."                   → validation message · priority enum (add + edit)
 "Category is required."                           → validation message · category required (add + edit)
 "No tasks yet"                                    → empty state · no data yet
-"No tasks found"                                  → empty state · search/filter yielded nothing
+"No tasks found"                                  → empty state · search/filter yielded nothing (incl. the reports range)
 "min"                                             → unit text · duration display (task card + Minutes support)
 "hour"                                            → unit text · duration display (Minutes support)
 "and"                                             → unit text · duration join word (Minutes support)

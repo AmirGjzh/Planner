@@ -65,6 +65,39 @@ it('ignores unknown presets', function () {
         ->assertSet('preset', 'this_week');
 });
 
+it('renders preset stats when the range state is malformed', function () {
+    $user = User::factory()->create();
+    $category = $user->categories()->create(['name' => 'Work']);
+
+    $user->tasks()->create([
+        'title' => 'This week', 'task_date' => now()->format('Y-m-d'), 'estimated_minutes' => 45,
+        'category_id' => $category->id, 'done' => false,
+    ]);
+
+    $component = Livewire::actingAs($user)
+        ->test('pages::reports')
+        ->call('selectPreset', 'custom');
+
+    foreach ([
+        ['start' => now()->toDateString(), 'end' => null],   // mid-selection calendar state
+        ['start' => now()->toDateString()],                  // missing end
+        ['start' => 'not-a-date', 'end' => now()->toDateString()],
+        ['nonsense' => true],                                // wrong shape entirely
+    ] as $malformed) {
+        $component->set('range_filter', $malformed);
+
+        // `custom` carries no server bounds, so an unusable range resolves to
+        // this week — which still contains the task above.
+        expect($component->instance()->stats['total_tasks'])->toBe(1);
+        expect($component->instance()->chart)->toBeArray();
+    }
+
+    // A tampered preset resolves to this week too instead of crashing the bounds match.
+    $component->set('preset', 'yesterday')->set('range_filter', null);
+
+    expect($component->instance()->stats['total_tasks'])->toBe(1);
+});
+
 it('shows the calendar only for the custom preset', function () {
     $user = User::factory()->create();
 
@@ -186,6 +219,10 @@ it('shows zero stats when the range has no data', function () {
     expect($stats['completion_rate'])->toBe(0);
     expect($stats['estimated_time'])->toBe('0m');
     expect($stats['total_plans'])->toBe(0);
+
+    // No days have tasks, so the chart card swaps its bars for the empty state.
+    expect($component->instance()->chart)->toBe([]);
+    $component->assertSee('No tasks found')->assertDontSeeHtml('border-t border-dashed');
 });
 
 it('builds a per-day chart from estimated minutes, only for days with tasks', function () {
@@ -249,4 +286,20 @@ it('uses Jalali bounds and localized stats when locale is fa', function () {
     expect($component->instance()->stats['estimated_time'])->toBe('۳۰ دقیقه');
 
     $component->assertSee('۳۰ دقیقه');
+});
+
+it('runs exactly three queries on render', function () {
+    $user = User::factory()->create();
+
+    $this->expectsDatabaseQueryCount(3);
+
+    Livewire::actingAs($user)->test('pages::reports')->assertStatus(200);
+});
+
+it('pins the canonical root line', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::reports')
+        ->assertSee('flex max-w-7xl flex-1 flex-col px-4 pt-4 pb-2 sm:px-8 sm:pb-6 md:px-16 md:pb-14', false);
 });

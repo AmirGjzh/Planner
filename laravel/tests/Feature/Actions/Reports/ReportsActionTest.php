@@ -153,3 +153,22 @@ it('accepts an inverted range in the chart', function () {
     expect($chart)->toHaveCount(1);
     expect($chart[0]['label'])->toBe(now()->format('M j'));
 });
+
+it('runs exactly two queries in the summary', function () {
+    $user = User::factory()->create();
+    reportTask($user, 'Counted');
+    reportPlan($user, 'Counted plan', now()->toDateString(), now()->addDays(2)->toDateString());
+
+    $this->expectsDatabaseQueryCount(2);
+
+    app(ReportsAction::class)->summary($user, now()->toDateString(), now()->toDateString());
+});
+
+it('runs exactly one query in the chart', function () {
+    $user = User::factory()->create();
+    reportTask($user, 'Counted');
+
+    $this->expectsDatabaseQueryCount(1);
+
+    app(ReportsAction::class)->chart($user, now()->toDateString(), now()->toDateString());
+});

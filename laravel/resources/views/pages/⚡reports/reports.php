@@ -12,6 +12,12 @@ new class extends Component
 {
     use HasUser;
 
+    /**
+     * The presets that own server-side calendar bounds. `custom` is the only
+     * other UI value and carries its own client-written range.
+     */
+    private const BOUNDED_PRESETS = ['this_week', 'last_week', 'this_month', 'last_month'];
+
     public string $preset = 'this_week';
 
     public ?array $range_filter = null;
@@ -27,7 +33,7 @@ new class extends Component
 
     public function selectPreset(string $preset): void
     {
-        if (! in_array($preset, ['this_week', 'last_week', 'this_month', 'last_month', 'custom'], true)) {
+        if (! in_array($preset, [...self::BOUNDED_PRESETS, 'custom'], true)) {
             return;
         }
 
@@ -55,15 +61,39 @@ new class extends Component
     }
 
     /**
+     * `range_filter` is written straight from the calendar on the client, so
+     * the pair is only trusted once it round-trips as two real dates. Anything
+     * else — the mid-selection `end: null`, a tampered payload — resolves to
+     * the active preset's bounds instead of reaching the Action as a malformed
+     * range (which would TypeError on the `string` parameters).
+     *
      * @return array{start: string, end: string}
      */
     private function range(): array
     {
-        return $this->range_filter ?? $this->presetRange('this_week');
+        $range = $this->range_filter;
+
+        if (is_array($range) && $this->isDate($range['start'] ?? null) && $this->isDate($range['end'] ?? null)) {
+            return ['start' => $range['start'], 'end' => $range['end']];
+        }
+
+        return $this->presetRange($this->preset);
     }
 
+    /**
+     * Bounds for a bounded preset. The preset itself is client-writable public
+     * state, so anything outside the four (`custom` has no server bounds, nor
+     * does a tampered value) falls back to this week — keeping the `match`
+     * arms below total and the page renderable on every payload.
+     *
+     * @return array{start: string, end: string}
+     */
     private function presetRange(string $preset): array
     {
+        if (! in_array($preset, self::BOUNDED_PRESETS, true)) {
+            $preset = 'this_week';
+        }
+
         $today = now();
 
         if (app()->isLocale('fa')) {
@@ -93,6 +123,22 @@ new class extends Component
                 'end' => $today->copy()->subMonth()->endOfMonth()->toDateString(),
             ],
         };
+    }
+
+    /**
+     * A date string the queries can use as-is: `Y-m-d` shape that round-trips
+     * through a real parse, so rolled-over values (`2025-02-31`) and anything
+     * non-date never reach the range filters.
+     */
+    private function isDate(mixed $value): bool
+    {
+        if (! is_string($value) || preg_match('/^\d{4}-\d{2}-\d{2}$/', $value) !== 1) {
+            return false;
+        }
+
+        $parsed = DateTimeImmutable::createFromFormat('Y-m-d', $value);
+
+        return $parsed !== false && $parsed->format('Y-m-d') === $value;
     }
 
     public function formatMinutes(int $minutes): string
