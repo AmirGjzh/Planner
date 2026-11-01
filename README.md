@@ -2,12 +2,16 @@
 
 A personal task planner that keeps you in control of your day. Assign each task to a day, group tasks into categories and plans, and see at a glance how much work every day actually carries — before you overbook yourself.
 
-> Built with Laravel 13, Livewire 4, and Tailwind CSS — everything runs in Docker, so you don't need PHP or Node installed locally.
+> Built with **Laravel 13**, **Livewire 4**, **Tailwind CSS 4**, **PHP 8.4**, **MariaDB 12**, and **Redis 8** — everything runs in Docker, so you don't need PHP or Node installed locally.
+
+---
 
 ## 📸 Screenshots
 
 ![Planner — desktop](laravel/resources/images/screenshots/screenshot-1.png)
 ![Planner — mobile](laravel/resources/images/screenshots/screenshot-2.png)
+
+---
 
 ## ✨ Features
 
@@ -15,203 +19,153 @@ A personal task planner that keeps you in control of your day. Assign each task 
 - **Tasks needing attention** — overdue tasks and tasks whose alarm window has started surface on the dashboard with "due today / tomorrow / in X days" labels.
 - **Categories & plans** — tasks belong to a category and optionally a plan; watch plan progress climb as you check tasks off.
 - **Day & range views** — browse a single day or any custom date range, with search, combined filters, and sorting.
-- **Performance reports** — completion rate, estimated time, plan progress, and a per-day workload chart for any period.
+- **Performance reports** — completion rate, estimated time, plan totals, and a per-day workload chart for any period.
 - **Persian & English** — switch anytime; Persian brings the Jalali calendar, Persian digits, and full RTL layout.
-- **Color themes** — swap anytime from your profile.
+- **Color themes** — 8 swappable color themes (amber, chocolate, forest, gol-goli, magic, midnight, ocean, saffron) selectable from your profile.
 
-## 🚀 Getting Started
+---
 
-You only need **Docker with Docker Compose** (any recent version) and **Git** — nothing else touches your machine, the app runs entirely in containers.
+# 🚀 Part 1: Using Planner (Production Setup Locally)
 
-### Set it up
+You only need **Docker with Docker Compose** (any recent version) and **Git** — nothing else touches your machine, the app runs entirely in containers. *(Note: `./planner` is a bash script; on Windows, run it via Git Bash or WSL).*
+
+### 1. Set it up
 
 **1. Clone the project**
-
 ```bash
 git clone <your-repo-url> planner
 cd planner
 ```
 
 **2. Create your settings file**
-
 ```bash
 cp laravel/.env.production laravel/.env
 ```
 
-**3. Add the secrets** — open `laravel/.env` and fill these (leave everything else as-is). If any is missing, the start command stops immediately and tells you which one:
-
-- `APP_KEY` — the security key. Generate one with:
-
+**3. Add the secrets** — open `laravel/.env` and fill in these values (leave everything else as-is). If any secret is missing, the start command stops immediately and tells you:
+- `APP_KEY` — generate one with:
   ```bash
   printf 'base64:%s\n' "$(openssl rand -base64 32)"
   ```
-
-- `DB_PASSWORD`, `MARIADB_ROOT_PASSWORD`, `REDIS_PASSWORD` — invent any passwords you like.
+- `DB_PASSWORD`, `MARIADB_ROOT_PASSWORD`, `REDIS_PASSWORD` — invent any secure passwords you like.
 
 **4. Start it up**
-
 ```bash
 ./planner up
 ```
-
 > [!TIP]
-> The first run is slower than usual — Docker downloads base images and builds the app. Later starts are fast.
+> The first run is slower than usual while Docker downloads base images and builds the app. Later starts are instantaneous.
 
-### Make sure it's healthy
+### 2. Create Your Account & Log In
 
-- `./planner ps` — every service (`php-fpm`, `queue`, `nginx`, `mariadb`, `redis`, `mailpit`) is `Up` / `running` / `healthy`
-- **http://localhost** loads the app
-- You can register an account, verify it through Mailpit, and log in
-- **http://localhost/up** returns `200`
+1. Open **http://localhost** in your browser.
+2. Click **Register** and create an account.
+3. The app will send an email verification link. Open **http://localhost:8025** (Mailpit) in another tab, click the verification email, and confirm your account.
+4. Log in and start planning!
 
-## ▶️ Usage
+### 3. Make sure it's healthy
 
-- Open **http://localhost**, log in, and use it day to day.
-- Other devices on your network work too — use your computer's IP instead of `localhost` (e.g. `http://192.168.1.20`).
-- Your data is safe — updating, restarting, or rebuilding never deletes it.
-- Emails the app sends land in Mailpit — browse them at **http://localhost:8025**.
+- `./planner ps` — every service (`php-fpm`, `queue`, `nginx`, `mariadb`, `redis`, `mailpit`) is `Up` / `running` / `healthy`.
+- **http://localhost/up** returns `200`.
 
-**Stop, start, and reset** — every command below keeps your data safe:
+### Everyday Commands & Troubleshooting
 
 | Command | What it does | When to use it |
 |---|---|---|
-| `./planner start` | Turns the app back on, right where it was | After you paused it with `stop` |
-| `./planner stop` | Pauses the app and frees resources | Long breaks — starts back up fast |
+| `./planner start` | Turns the app back on, right where it was | After pausing with `stop` |
+| `./planner stop` | Pauses the app and frees system resources | Long breaks — starts back up fast |
 | `./planner up` | Starts the app from the already-built version | A plain start, e.g. after `down` |
-| `./planner down` | Stops everything and removes temporary stuff | A clean slate; `up` brings it back |
-| `./planner build && ./planner up` | Builds the newest code, then starts it | After every update |
+| `./planner down` | Stops everything and removes temporary containers | A clean slate; `up` brings it back |
+| `./planner build && ./planner up` | Builds the newest code, then starts it | After every `git pull` update |
+| `./planner logs` | Follows real-time container logs | Troubleshooting startup or runtime errors |
 
-**A few things worth keeping in mind:**
-
-- `start` / `stop` are your everyday pair. `down` / `up` are the rare, "cold" pair.
-- `up` alone never pulls in new code — that's what `build` is for. Run `build` first after every update.
-- After your computer restarts, the app comes back up by itself.
-- Run `./planner` with no arguments to see the full command list anytime.
-
-**Updating:**
-
-```bash
-git pull
-./planner build && ./planner up
-```
-
-Then repeat the health check above — your data stays untouched.
+- Other devices on your local network can access the app too — use your computer's local IP instead of `localhost` (e.g. `http://192.168.1.20`).
+- Your data is safe in Docker volumes — updating, restarting, or rebuilding never deletes it.
+- **Updating:** `git pull` followed by `./planner build && ./planner up`.
 
 > [!WARNING]
-> Never run `./planner down -v` — the `-v` deletes your saved data.
+> Never run `./planner down -v` — the `-v` flag deletes your saved database and storage volumes.
 
-## 🧑‍💻 Developing This App
+---
 
-Development also runs in Docker — one container has PHP, Composer, and Node all set up. You need **Docker with Docker Compose**, **Git**, and an internet connection for the first run. Your code lives in the normal project folder and is shared live with the container, so every edit shows up instantly.
+# 🧑‍💻 Part 2: Developing This App
 
-### Set it up
+Development also runs in Docker — one container (`planner-workspace`) holds PHP 8.4, Composer, and Node. Your code lives in the normal project folder and is shared live with the container, so every file edit reflects instantly.
 
-**1. Clone the project** (same as above)
+### 1. Set it up
 
+**1. Clone & copy dev env:**
 ```bash
 git clone <your-repo-url> planner
 cd planner
-```
-
-**2. Create your settings file**
-
-```bash
 cp laravel/.env.development laravel/.env
 ```
 
-**3. Add the same secrets** as production (`APP_KEY`, `DB_PASSWORD`, `MARIADB_ROOT_PASSWORD`, `REDIS_PASSWORD`) — set `APP_KEY` before the first start; the container won't run without it.
-
-**4. Start the dev containers**
-
+**2. Add secrets & start containers:**
+Fill the same secrets (`APP_KEY`, `DB_PASSWORD`, `MARIADB_ROOT_PASSWORD`, `REDIS_PASSWORD`) in `laravel/.env`, then:
 ```bash
 ./planner-dev up
 ```
 
-**5. Open a shell inside the container**
-
+**3. Open a shell inside the container & install dependencies:**
 ```bash
 ./planner-dev shell
 ```
-
-**6. Install the dependencies** — run these once per fresh clone, inside that shell (they land in `vendor/` and `node_modules/` on the shared folder, so they persist between restarts):
-
+Inside the container terminal (at `/var/www`), run once:
 ```bash
 composer install
 npm install
 ```
 
-**7. Optional — AI tooling setup** (also inside the shell)
-
+**4. Optional — AI tooling setup** (inside the container shell):
 ```bash
 php artisan boost:install
 ```
+*This repo ships [Laravel Boost](https://laravel.com/docs/boost) as a dev dependency; run this if you use AI coding agents with the project. Skip it otherwise.*
 
-This repo ships [Laravel Boost](https://laravel.com/docs/boost) as a dev dependency; run this if you use AI coding agents with the project. Skip it otherwise.
-
-**8. Optional — browser tests** (also inside the shell)
-
+**5. Optional — browser tests** (inside the container shell):
 ```bash
 npx playwright install chromium
 ```
+*Only needed if you run the opt-in `composer test:browser` suite — skip it otherwise. This downloads Chromium into a named Docker volume that survives restarts.*
 
-Only needed if you run the opt-in `composer test:browser` suite — skip it otherwise. This is a one-time download into a named Docker volume (it survives restarts; the system libraries are already baked into the toolchain image). If `playwright` was just added or bumped, rebuild the image first (`./planner-dev build && ./planner-dev up`).
+### 2. Start developing
 
-> [!NOTE]
-> If a fresh clone ever needs more one-time installs (new packages, extra tooling), they'll get their own step here.
-
-Nothing starts automatically after this — the container is waiting for you to start the servers yourself.
-
-### Start developing
-
-The easy way — one command starts the app server, the queue worker, and Vite together:
-
+The easiest way — one command starts the app server (`artisan serve`), the queue listener, and Vite live-reload together:
 ```bash
 composer run dev
 ```
+Then open **http://localhost:8000**, register an account, and verify via Mailpit at **http://localhost:8025**.
 
-Then open **http://localhost:8000** and register an account to try the real features. (**http://localhost:8000/up** should return `200`.) Any email the app sends (e.g. the verification link a new account needs, or a password reset) lands in Mailpit — browse it at **http://localhost:8025**.
+### Day-to-Day Development
 
-Prefer running things one at a time? Use a second terminal inside the container (`./planner-dev shell`):
+- **Edit & Refresh:** Modify code in `laravel/app/`, `laravel/resources/`, etc. — changes appear instantly.
+- **Database changes:** Run `php artisan migrate` inside the container shell after pulling schema changes.
+- **Seed demo data:** `php artisan db:seed --class=SampleDataSeeder` populates a screenshot-ready demo account with categories, plans, and tasks across 27 days.
+- **Tests:** Run `composer test` (fast in-memory SQLite feature tests) or `composer test:browser` (opt-in Playwright browser suite).
+- **Code Style:** Run `vendor/bin/pint --format agent` on modified PHP/Blade files before finishing.
 
-```bash
-php artisan serve --host=0.0.0.0 --port=8000   # the 0.0.0.0 is required inside Docker
-npm run dev                                     # optional — Vite live reload (already binds 0.0.0.0)
-```
+### 📚 Internal Project Documentation & Conventions
+This repository includes structured specifications, domain design, and strict architectural rules committed under `laravel/.ai/`:
+- [Docs Map (`SKILL.md`)](laravel/.ai/skills/main-project/SKILL.md) — guide to phase documents, docker setups, and git workflow.
+- [Project Rules Index](laravel/.ai/rules/index.md) — area-scoped architectural rules (actions, auth, models, tests, UI).
+- [Coding Standards](laravel/.ai/skills/main-project/standards/coding.md) — cross-cutting rules and patterns for every change.
+- [Project Guideline](laravel/.ai/guidelines/main-project.md) — core project rules and session guidelines.
 
-### Day-to-day
+### Dev Commands Table
 
-```bash
-./planner-dev up
-./planner-dev shell
-composer run dev
-```
-
-Edit code, refresh the browser — changes show up instantly, no rebuild needed. After a database change, run `php artisan migrate` inside the container. Run the tests anytime with `composer test` — they're fast and don't even touch the database. The opt-in browser suite (`composer test:browser`) drives a real headless Chromium through the journeys; a failed assertion saves a debug screenshot to `laravel/tests/Browser/Screenshots/`.
-
-**Stop, start, and reset** — same safety rules as production:
-
-| Command | What it does | When to use it |
-|---|---|---|
-| `./planner-dev start` | Turns dev back on, right where it was | After you paused it with `stop` |
-| `./planner-dev stop` | Pauses dev and frees resources | Long breaks |
-| `./planner-dev up` | Starts dev from the already-built setup | A plain start — e.g. after `down` |
-| `./planner-dev down` | Stops everything and removes temporary stuff | A clean slate; `up` brings it back |
-| `./planner-dev build && ./planner-dev up` | Rebuilds the tool container, then starts | Only after a setup change (rare) |
-| `./planner-dev shell` | Opens a terminal in the workspace container | Your daily entry point |
-
-Run `./planner-dev` with no arguments to see the full list anytime.
+| Command | What it does |
+|---|---|
+| `./planner-dev up` | Starts workspace, MariaDB, Redis, and Mailpit |
+| `./planner-dev shell` | Opens an interactive bash terminal inside the workspace container |
+| `./planner-dev down` | Stops dev containers |
+| `composer run dev` | Starts server, queue, and Vite together |
+| `php artisan test` | Runs the test suite |
 
 > [!WARNING]
-> Never run `./planner-dev down -v` — the `-v` deletes your database.
+> Never run `./planner-dev down -v` — the `-v` deletes your dev database.
 
-### One settings file for both
-
-Your `laravel/` folder only ever holds one settings file at a time — whichever environment you're currently running. Switch by copying the matching template:
-
-- Dev: `cp laravel/.env.development laravel/.env`
-- Prod: `cp laravel/.env.production laravel/.env`
-
-Each setup keeps its own database, so switching never mixes data.
+---
 
 ## 👤 Author
 

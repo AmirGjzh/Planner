@@ -13,7 +13,7 @@ Name normalization is `Str::squish()` — edge trim plus internal whitespace col
 
 ## Search is case-insensitive and collation-independent
 
-Use `whereRaw('LOWER(name) LIKE ?', [Str::lower('%'.$term.'%')])` — a plain `LIKE` won't match reliably across collations. The term is `trim()`med once in the computed: storage canonicalizes names, so search must trim too (covers both keystrokes and `?search=` URL entries).
+Use `whereRaw('LOWER(name) LIKE ?', [Str::lower('%'.$term.'%')])` — a plain `LIKE` won't match reliably across collations. The term is `Str::squish()`ed once in the computed (edge trim + internal whitespace collapse — `"  project    x "` matches the stored `Project X`): storage canonicalizes names, so search must canonicalize the term too (covers both keystrokes and `?search=` URL entries).
 
 ## Create/Edit buckets count duplicate attempts; Delete stays unthrottled
 

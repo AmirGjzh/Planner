@@ -1,6 +1,6 @@
 ---
 name: main-project
-description: "Activate at the start of every session — project context, UC numbering, implementation status, key decisions, and the docs map (phases, docker, git workflow, cleaning flow, agentic environment) for Planner."
+description: "Activate at the start of every session — project context, UC numbering, implementation status, key decisions, and the docs map (phases, docker, git workflow, coding standards, agentic environment) for Planner."
 license: MIT
 metadata:
   author: planner-team
@@ -18,9 +18,9 @@ Activate at the start of every session (or lazily when working on Planner). It p
 
 - the **UC map** and implementation status below,
 - the **key decisions** that must not regress,
-- pointers to the phase, docker, git, cleaning, and agentic-environment docs.
+- pointers to the phase, docker, git, coding-standards, and agentic-environment docs.
 
-Pair it with the project rules in `.ai/rules/` (see the mandatory ritual in the guideline: read `rules/index.md` and every matching rule file before planning or editing).
+Pair it with the project rules in [`.ai/rules/`](../../rules/index.md) (see the mandatory ritual in the [guideline](../../guidelines/main-project.md): read `rules/index.md` and every matching rule file before planning or editing).
 
 ## UC Numbering (Topological Order)
 
@@ -41,37 +41,37 @@ Pair it with the project rules in `.ai/rules/` (see the mandatory ritual in the 
 ## Implementation Status
 
 - **Completed:** UC-01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11
-- Working/verified state is summarized per use case in `phases/phase-4-implementation.md`.
+- Working/verified state is summarized per use case in [phases/phase-4-implementation.md](phases/phase-4-implementation.md).
 
 ## Docs Map
 
-| Path | Contents |
+| Doc | Contents |
 | --- | --- |
-| `phases/phase-0-vision-scope.md` | Vision & scope |
-| `phases/phase-1-requirements.md` | Requirements (UCs, NFRs, acceptance criteria, MoSCoW) |
-| `phases/phase-2-domain-design.md` | Conceptual domain design + per-UC flows |
-| `phases/phase-3-detailed-design.md` | Data model & architecture (schema, patterns, error/logging policy) |
-| `phases/phase-4-implementation.md` | Implementation process (build/test/refactor/doc/accept) + delivered scope |
-| `docker/shared-conventions.md` | Shared docker conventions (healthchecks, env contract, wrappers) |
-| `docker/development.md` | Dev workspace stack, runbook, troubleshooting |
-| `docker/production.md` | Prod nginx/php-fpm/mariadb/redis stack, runbook, troubleshooting |
-| `git-setup/workflow.md` | Two-remote git workflow (public `origin` / private `private`) |
-| `cleaning/flow.md` | Per-UC cleaning cycle: rules, subjobs, gate |
-| `agentic/setup.md` | Agentic environment: Boost install, opencode MCP bridge, skills via skills.sh, project rules |
+| [phases/phase-0-vision-scope.md](phases/phase-0-vision-scope.md) | Vision & scope |
+| [phases/phase-1-requirements.md](phases/phase-1-requirements.md) | Requirements (UCs, NFRs, acceptance criteria, MoSCoW) |
+| [phases/phase-2-domain-design.md](phases/phase-2-domain-design.md) | Conceptual domain design + per-UC flows |
+| [phases/phase-3-detailed-design.md](phases/phase-3-detailed-design.md) | Data model & architecture (schema, patterns, error/logging policy) |
+| [phases/phase-4-implementation.md](phases/phase-4-implementation.md) | Implementation process (build/test/refactor/doc/accept) + delivered scope |
+| [docker/shared-conventions.md](docker/shared-conventions.md) | Shared docker conventions (healthchecks, env contract, wrappers) — read first |
+| [docker/development.md](docker/development.md) | Dev workspace stack, runbook, troubleshooting |
+| [docker/production.md](docker/production.md) | Prod nginx/php-fpm/mariadb/redis stack, runbook, troubleshooting |
+| [git-setup/workflow.md](git-setup/workflow.md) | Two-remote git workflow (public `origin` / private `private`) |
+| [standards/coding.md](standards/coding.md) | Coding standards: cross-cutting rules and patterns for every change |
+| [agentic/setup.md](agentic/setup.md) | Agentic environment: Boost install, MCP bridge, skills, project rules |
 
 ## Key Decisions
 
-Project-wide decisions that must not regress; per-UC scope decisions live in `phases/phase-4-implementation.md` under each UC's Key decisions.
+Project-wide decisions that must not regress; per-UC scope decisions live in [phases/phase-4-implementation.md](phases/phase-4-implementation.md) under each UC's Key decisions.
 
 - **Build order is topological:** Plan CRUD (UC-07) before Task CRUD (UC-08); Reports (UC-11) last.
 - **UC specs** live in Phase-2 (design-time); delivered scope + durable decisions in Phase-4; the dated per-UC implementation journal was moved to git history.
-- **Locale-aware week:** en starts Sunday, fa starts Saturday (Jalali); enforced across the dashboard grid and report presets (see `.ai/rules/dashboard.md`, `.ai/rules/tests.md`).
+- **Locale-aware week:** en starts Sunday, fa starts Saturday (Jalali); enforced across the dashboard grid and report presets (see [`dashboard.md`](../../rules/dashboard.md), [`tests.md`](../../rules/tests.md)).
 - **Per-user language preference:** `users.locale` (fa/en) set on the profile page (UC-03); the shared `HasUser` trait's `boot()` applies it app-wide on every Livewire request. Guest pages use the app/.env locale; only auth boundaries set the locale explicitly.
-- **Rate limiting is action-level**, keys via `Str::transliterate('kebab-prefix:identifier')`, guest vs authenticated shapes; cleared on success (see `.ai/rules/actions.md`).
+- **Rate limiting is action-level**, keys via `Str::transliterate('kebab-prefix:identifier')`, guest vs authenticated shapes; cleared on success (see [`actions.md`](../../rules/actions.md)).
 - **Soft-delete only for User** with credential obfuscation (`deleted-user-{id}`); other entities use restrict-on-delete.
 - **Ownership enforced in Actions, not Livewire** — frontend-agnostic defense in depth.
-- **Three font weights only:** Vazirmatn ships 400/500/600 (Regular/Medium/SemiBold) everywhere — the web faces in `resources/css/app.css` and the same trio embedded in the reset mail; `font-bold` never appears in markup (see `.ai/rules/css.md`, `.ai/rules/auth.md`).
+- **Three font weights only:** Vazirmatn ships 400/500/600 (Regular/Medium/SemiBold) everywhere — the web faces in `resources/css/app.css` and the same trio embedded in the reset mail; `font-bold` never appears in markup (see [`css.md`](../../rules/css.md), [`auth.md`](../../rules/auth.md)).
 
 ## How to Use
 
-Reference the relevant phase file and the matching `.ai/rules/*.md` before implementing. Always check UC numbering before starting work. For generic Laravel/Livewire/Tailwind/testing patterns, use the corresponding boost agent skills and the `search-docs` MCP tool; this skill only carries Planner-specific knowledge.
+Reference the relevant phase file and the matching [`.ai/rules/*.md`](../../rules/index.md) before implementing — plus the [coding standards](standards/coding.md) for the cross-cutting quality bar. Always check UC numbering before starting work. For generic Laravel/Livewire/Tailwind/testing patterns, use the corresponding boost agent skills and the `search-docs` MCP tool; this skill only carries Planner-specific knowledge.

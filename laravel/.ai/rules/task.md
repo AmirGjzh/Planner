@@ -11,7 +11,7 @@ Audit decision for task CRUD (UC-08), partially mirroring the category rules (UC
 ## Titles are squished, never case-folded
 
 - Titles normalize with `Str::squish()` on both layers: the page canonicalizes `add_title`/`edit_title` before validation (whitespace-only must hit the `required` message) and `CreateTaskAction`/`EditTaskAction` squish again at the domain boundary (the category/plan pattern). Edge trim covers ZWNJ (`Str::trim`'s charlist — a half-space-only title would otherwise render invisible and slip past `required`), internal whitespace runs collapse to one space, and the casing the user typed is stored — tasks have no per-user uniqueness requirement, so there is nothing case-folding could buy. Descriptions pass through exactly as typed (multi-line text — no trimming, no collapsing).
-- Search: `whereRaw('LOWER(title) LIKE ?', [Str::lower('%'.$term.'%')])` in the Livewire page; the term is `trim()`med once in the computed (categories/plans parity — `"hello "` must still match).
+- Search: `whereRaw('LOWER(title) LIKE ?', [Str::lower('%'.$term.'%')])` in the Livewire page; the term is `Str::squish()`ed once in the computed (categories/plans parity — `"hello "` and `"  hello  "` must still match).
 
 ## Every sort carries a deterministic tiebreaker
 

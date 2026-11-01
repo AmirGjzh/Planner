@@ -45,7 +45,7 @@ Blade caches compiled views in `storage/framework/views` keyed on the raw tag st
 
 ## Dropdown menus declare themselves
 
-`dropdown/content` carries `role="menu"` because `dropdown.trigger` announces `aria-haspopup="menu"` — keep the pair in sync; `dropdown/divider` is already `role="separator"` and items render `menuitem`/`menuitemcheckbox`. When a menu gains non-item children (the header's profile card is one), re-run the open-menu axe pass in `HeaderJourneyTest` before shipping. An icon-only trigger (the card action menus are all MoreH-only) has no implicit name — the usage site labels it with the entity it acts on: `aria-label="{{ $task->title }}"`, `$plan->name`, `$category->name`.
+`dropdown/content` carries a `role` prop that defaults to `menu`, because `dropdown.trigger` announces `aria-haspopup="menu"` — keep the pair in sync; `dropdown/divider` is already `role="separator"` and items render `menuitem`/`menuitemcheckbox`. A panel that does **not** host menu items passes `role=""` (no role — a plain popover): a `menu` must own `menuitem` children, and a calendar's buttons trip axe `aria-required-children` (critical) when the panel opens. That is the calendar-hosting trio — reports' custom range and the plans/tasks mobile calendar dropdowns — each gated by an open-popover axe assertion in its journey test (plans/tasks resize into the `md:hidden` trigger's range first); `tests/Unit/DropdownContentRoleTest.php` pins both render modes. When a menu gains non-item children (the header's profile card is one), re-run the open-menu axe pass in `HeaderJourneyTest` before shipping. An icon-only trigger (the card action menus are all MoreH-only) has no implicit name — the usage site labels it with the entity it acts on: `aria-label="{{ $task->title }}"`, `$plan->name`, `$category->name`.
 
 ## Dropdown placement is overflow-driven, per dropdown
 
@@ -65,7 +65,8 @@ The `x-mine.select` wrapper div carries no ARIA role — the inner `<ul>` is the
 ## Modals name their dialog
 
 - `x-mine.modal` renders `role="dialog" aria-modal="true"` inside an `x-teleport` — pass `labelled-by="<heading-id>"` and put that `id` on the dialog's heading (which lives in the slot) so the dialog has an accessible name; an unset prop renders nothing. The open-dialog axe pass in `DeleteAccountJourneyTest` is the contract.
-- Credential and destructive forms use `:close-by-clicking-away="false"` and `:close-by-escaping="false"` — the explicit Cancel/Close button owns dismissal. The shared modal deliberately has no focus trap (app-wide pattern; if that changes, change it once here for every dialog at once).
+- Credential and destructive forms use `:close-by-clicking-away="false"` and `:close-by-escaping="false"` — the explicit Cancel/Close button owns dismissal. Escape/click-away semantics are per-dialog props and must not change with the focus behavior below.
+- The modal **traps focus while open** — hand-rolled in `x-mine.modal` (Livewire ships no Alpine trap plugin, and no new dep was added): `open()` records the trigger element and focuses the dialog container (`id="{modalId}-dialog"`, `tabindex="-1"`), the window-level Tab handler cycles within the dialog's visible focusables (nothing focusable lives outside it — no `mine` component teleports out of a dialog), and `close()` returns focus to the recorded trigger when it is still in the DOM. Every modal must keep its explicit `id` prop — the dialog element derives from it. The focus trip + restore is pinned in `CategoriesJourneyTest`.
 - Modal bodies are `px-6 py-6 sm:p-8` and footers are `mt-2 flex justify-end gap-4 sm:mt-4` — fleet-wide (plans/categories/tasks); don't invent per-page padding or drop the `sm:` footer step.
 
 ## Button label size and control height

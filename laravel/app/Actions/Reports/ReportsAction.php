@@ -3,9 +3,7 @@
 namespace App\Actions\Reports;
 
 use App\Models\User;
-use App\Support\Jalali;
 use App\Support\Minutes;
-use Carbon\Carbon;
 
 final class ReportsAction
 {
@@ -58,9 +56,7 @@ final class ReportsAction
             ->orderBy('day')
             ->get()
             ->map(fn ($row) => [
-                'label' => app()->isLocale('fa')
-                    ? Jalali::format(Carbon::parse($row->day), 'd MMM')
-                    : Carbon::parse($row->day)->format('M j'),
+                'day' => (string) $row->day,
                 'completed' => (int) $row->completed,
                 'remaining' => (int) $row->remaining,
             ])

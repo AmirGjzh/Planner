@@ -1,5 +1,7 @@
 # Phase 1 – Requirements Analysis
 
+**See also:** [domain design](phase-2-domain-design.md) · [detailed design](phase-3-detailed-design.md) · [delivered scope](phase-4-implementation.md) · [docs map](../SKILL.md)
+
 ## 1.1 – User Stories
 
 The stories below are grouped by use case (UC-01 … UC-11), in topological order.
@@ -44,7 +46,7 @@ As a user, I want to view a specific plan and see all tasks assigned to it so th
 
 #### Plan Progress
 
-As a user, I want to see the progress of a plan as a percentage (completed/total tasks) and watch it update in real time as I mark tasks done or not done, so that I always know how close I am to finishing a project.
+As a user, I want to see the progress of a plan as a percentage (the estimated minutes of done tasks ÷ the plan's total estimated minutes — time-weighted, not a task count) and watch it update in real time as I mark tasks done or not done, so that I always know how close I am to finishing a project.
 
 #### Plan Invariants
 
@@ -74,7 +76,7 @@ As a user, I want to see overdue tasks and tasks whose alarm window (`task_date 
 
 ### UC-11 – Reports
 
-As a user, I want to select a time range and see my performance — tasks created, completed, completion rate, estimated time, plan progress, and a per-day workload chart — so that I can analyze my performance.
+As a user, I want to select a time range and see my performance — tasks created, completed, completion rate, estimated time, total/completed plans, and a per-day workload chart — so that I can analyze my performance.
 
 ## 1.2 – Non-Functional Requirements
 
@@ -119,7 +121,7 @@ As a user, I want to select a time range and see my performance — tasks create
 
 The acceptance criteria are grouped by use case (UC-01 … UC-11), in topological order.
 
-> **Rate limiting:** write and auth actions are rate-limited per-Action with the key shapes in `.ai/rules/actions.md`. This applies to UC-01, 02, 03 (profile update and password change), 04 (account delete), 06, 07, and 08; UC-05 (logout) is exempt from *per-Action* limiting — its route still carries the uniform `->block(10, 10)` every web route has (`.ai/rules/routes.md`).
+> **Rate limiting:** write and auth actions are rate-limited per-Action with the key shapes in [`.ai/rules/actions.md`](../../../rules/actions.md). This applies to UC-01, 02, 03 (profile update and password change), 04 (account delete), 06, 07, and 08; UC-05 (logout) is exempt from *per-Action* limiting — its route still carries the uniform `->block(10, 10)` every web route has ([`.ai/rules/routes.md`](../../../rules/routes.md)).
 
 ### UC-01 – Login
 
@@ -240,7 +242,7 @@ The acceptance criteria are grouped by use case (UC-01 … UC-11), in topologica
 
 **Given** a plan has tasks with some marked as done,
 **When** the user views the plan list or plan details,
-**Then** the progress is displayed as a percentage (completed tasks / total tasks × 100).
+**Then** the progress is displayed as a percentage (done tasks' estimated minutes / total estimated minutes × 100 — time-weighted).
 **And** when the user marks a task in the plan as done or not done,
 **Then** the plan progress is recalculated and updated in the UI immediately.
 
@@ -301,6 +303,8 @@ The acceptance criteria are grouped by use case (UC-01 … UC-11), in topologica
 **And** the data is scoped to the authenticated user only.
 
 ## 1.4 – Requirements Prioritization (MoSCoW)
+
+> **Delivery status:** this is the baseline MoSCoW as written at phase-1. Every Must and Should item below — including profile editing (UC-03) and account deletion (UC-04) under "Could Have" — is now delivered; only the admin panel remains open. Current state lives in [phase-4-implementation.md](phase-4-implementation.md).
 
 ### Must Have (MVP Critical)
 

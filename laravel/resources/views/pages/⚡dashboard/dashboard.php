@@ -5,9 +5,10 @@ use App\Actions\Dashboard\WeeklyWorkloadAction;
 use App\Livewire\Concerns\HasUser;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-new class extends Component
+new #[Layout('layouts::app', ['title' => 'Dashboard'])] class extends Component
 {
     use HasUser;
 

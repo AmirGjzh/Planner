@@ -3,7 +3,7 @@
         <h1 class="mine-text-primary text-base font-semibold">{{ __('My categories') }}</h1>
     </x-mine.animate>
     @island(name: 'category-content', always: true)
-        <x-mine.animate delay="50" class="mb-4 sm:mb-6 flex items-center justify-between gap-2">
+        <x-mine.animate delay="50" class="mb-4 flex items-center justify-between gap-2 sm:mb-6">
             <div class="w-full">
                 <x-mine.input
                     wire:model.live.debounce.200ms="search"
@@ -136,7 +136,7 @@
                                             {{ $category->name }}
                                         </h2>
                                         <p class="mine-text-secondary text-[13px] font-medium">
-                                            {{ $category->tasks_count ? (app()->isLocale('en') ? $category->tasks_count : App\Support\PersianNumber::convert($category->tasks_count)) : __('No') }} {{ app()->isLocale('fa') ? 'کار' : Str::plural('Task', $category->tasks_count) }}
+                                            {{ $category->tasks_count ? App\Support\PersianNumber::localize($category->tasks_count) : __('No') }} {{ app()->isLocale('fa') ? 'کار' : Str::plural('Task', $category->tasks_count) }}
                                         </p>
                                     </div>
                                 </div>

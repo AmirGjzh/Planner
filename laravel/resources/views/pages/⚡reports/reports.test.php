@@ -261,6 +261,10 @@ it('builds a per-day chart from estimated minutes, only for days with tasks', fu
     expect($chart[1]['remaining'])->toBe(30);
 
     $component->assertSeeHtml('border-t border-dashed');
+
+    // Every bar carries an accessible name: role="img" + the title content.
+    $component->assertSeeHtml('role="img"', false);
+    $component->assertSeeHtml('aria-label="Completed: 45m, Remaining: 0m"', false);
 });
 
 it('uses Jalali bounds and localized stats when locale is fa', function () {

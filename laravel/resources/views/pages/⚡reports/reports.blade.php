@@ -1,7 +1,5 @@
 @php
-    $fa = fn (int|string|float|null $value): string => app()->isLocale('fa')
-        ? \App\Support\PersianNumber::convert($value)
-        : (string) $value;
+    $fa = fn (int|string|float|null $value): string => \App\Support\PersianNumber::localize($value);
 @endphp
 <div class="flex max-w-7xl flex-1 flex-col px-4 pt-4 pb-2 sm:px-8 sm:pb-6 md:px-16 md:pb-14">
     <x-mine.animate class="mb-6">
@@ -50,6 +48,7 @@
                                 </div>
                             </x-mine.dropdown.trigger>
                             <x-mine.dropdown.content
+                                role=""
                                 class="mt-1! flex justify-center"
                                 placement="bottom-{{ app()->isLocale('en') ? 'end' : 'start' }}"
                             >
@@ -68,62 +67,26 @@
                     {{ __('Tasks Summary') }}
                 </h2></x-mine.animate>
             <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
-                <x-mine.animate
-                    stagger="50"
-                    data-anim-index="0"
-                    class="mine-card flex items-center justify-between p-4"
-                >
-                    <div class="flex flex-col justify-between gap-4">
-                        <p class="mine-text-secondary text-[13px] font-medium">{{ __('Total Tasks') }}</p>
-                        <p class="mine-text-primary text-sm font-semibold">{{ $fa($this->stats['total_tasks']) }}</p>
-                    </div>
-                    <div class="mine-badge-primary flex size-12 items-center justify-center rounded-full">
-                        <x-mine.icon name="Clipboard" weight="filled" size="24" />
-                    </div>
-                </x-mine.animate>
-                <x-mine.animate
-                    stagger="50"
-                    data-anim-index="1"
-                    class="mine-card flex items-center justify-between p-4"
-                >
-                    <div class="flex flex-col justify-between gap-4">
-                        <p class="mine-text-secondary text-[13px] font-medium">{{ __('Completed Tasks') }}</p>
-                        <p class="mine-text-primary text-sm font-semibold">
-                            {{ $fa($this->stats['completed_tasks']) }}
-                        </p>
-                    </div>
-                    <div class="mine-badge-primary flex size-12 items-center justify-center rounded-full">
-                        <x-mine.icon name="ClipboardCheck" weight="filled" size="24" />
-                    </div>
-                </x-mine.animate>
-                <x-mine.animate
-                    stagger="50"
-                    data-anim-index="2"
-                    class="mine-card flex items-center justify-between p-4"
-                >
-                    <div class="flex flex-col justify-between gap-4">
-                        <p class="mine-text-secondary text-[13px] font-medium">{{ __('Completion Rate') }}</p>
-                        <p class="mine-text-primary text-sm font-semibold">
-                            {{ $fa($this->stats['completion_rate']) }}%
-                        </p>
-                    </div>
-                    <div class="mine-badge-primary flex size-12 items-center justify-center rounded-full">
-                        <x-mine.icon name="Pie2" weight="filled" size="24" />
-                    </div>
-                </x-mine.animate>
-                <x-mine.animate
-                    stagger="50"
-                    data-anim-index="3"
-                    class="mine-card flex items-center justify-between p-4"
-                >
-                    <div class="flex flex-col justify-between gap-4">
-                        <p class="mine-text-secondary text-[13px] font-medium">{{ __('Estimated Time') }}</p>
-                        <p class="mine-text-primary text-sm font-semibold">{{ $fa($this->stats['estimated_time']) }}</p>
-                    </div>
-                    <div class="mine-badge-primary flex size-12 items-center justify-center rounded-full">
-                        <x-mine.icon name="Clock" weight="filled" size="24" />
-                    </div>
-                </x-mine.animate>
+                @foreach ([
+                    ['label' => __('Total Tasks'), 'value' => $fa($this->stats['total_tasks']), 'icon' => 'Clipboard'],
+                    ['label' => __('Completed Tasks'), 'value' => $fa($this->stats['completed_tasks']), 'icon' => 'ClipboardCheck'],
+                    ['label' => __('Completion Rate'), 'value' => $fa($this->stats['completion_rate']).'%', 'icon' => 'Pie2'],
+                    ['label' => __('Estimated Time'), 'value' => $fa($this->stats['estimated_time']), 'icon' => 'Clock'],
+                ] as $index => $card)
+                    <x-mine.animate
+                        stagger="50"
+                        :data-anim-index="$index"
+                        class="mine-card flex items-center justify-between p-4"
+                    >
+                        <div class="flex flex-col justify-between gap-4">
+                            <p class="mine-text-secondary text-[13px] font-medium">{{ $card['label'] }}</p>
+                            <p class="mine-text-primary text-sm font-semibold">{{ $card['value'] }}</p>
+                        </div>
+                        <div class="mine-badge-primary flex size-12 items-center justify-center rounded-full">
+                            <x-mine.icon :name="$card['icon']" weight="filled" size="24" />
+                        </div>
+                    </x-mine.animate>
+                @endforeach
             </div>
         </div>
         <div class="mb-10 flex flex-col">
@@ -132,36 +95,25 @@
                     {{ __('Plans Summary') }}
                 </h2></x-mine.animate>
             <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
-                <x-mine.animate
-                    delay="100"
-                    stagger="50"
-                    data-anim-index="0"
-                    class="mine-card flex items-center justify-between p-4"
-                >
-                    <div class="flex flex-col justify-between gap-4">
-                        <p class="mine-text-secondary text-[13px] font-medium">{{ __('Total Plans') }}</p>
-                        <p class="mine-text-primary text-sm font-semibold">{{ $fa($this->stats['total_plans']) }}</p>
-                    </div>
-                    <div class="mine-badge-primary flex size-12 items-center justify-center rounded-full">
-                        <x-mine.icon name="Bullseye" weight="filled" size="24" />
-                    </div>
-                </x-mine.animate>
-                <x-mine.animate
-                    delay="100"
-                    stagger="50"
-                    data-anim-index="1"
-                    class="mine-card flex items-center justify-between p-4"
-                >
-                    <div class="flex flex-col justify-between gap-4">
-                        <p class="mine-text-secondary text-[13px] font-medium">{{ __('Completed Plans') }}</p>
-                        <p class="mine-text-primary text-sm font-semibold">
-                            {{ $fa($this->stats['completed_plans']) }}
-                        </p>
-                    </div>
-                    <div class="mine-badge-primary flex size-12 items-center justify-center rounded-full">
-                        <x-mine.icon name="Trophy" weight="filled" size="24" />
-                    </div>
-                </x-mine.animate>
+                @foreach ([
+                    ['label' => __('Total Plans'), 'value' => $fa($this->stats['total_plans']), 'icon' => 'Bullseye'],
+                    ['label' => __('Completed Plans'), 'value' => $fa($this->stats['completed_plans']), 'icon' => 'Trophy'],
+                ] as $index => $card)
+                    <x-mine.animate
+                        delay="100"
+                        stagger="50"
+                        :data-anim-index="$index"
+                        class="mine-card flex items-center justify-between p-4"
+                    >
+                        <div class="flex flex-col justify-between gap-4">
+                            <p class="mine-text-secondary text-[13px] font-medium">{{ $card['label'] }}</p>
+                            <p class="mine-text-primary text-sm font-semibold">{{ $card['value'] }}</p>
+                        </div>
+                        <div class="mine-badge-primary flex size-12 items-center justify-center rounded-full">
+                            <x-mine.icon :name="$card['icon']" weight="filled" size="24" />
+                        </div>
+                    </x-mine.animate>
+                @endforeach
             </div>
         </div>
         <div class="flex flex-col">

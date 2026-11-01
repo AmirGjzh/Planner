@@ -40,6 +40,32 @@ it('has no smoke or accessibility issues on the plans page', function () {
     assertNoAccessibilityIssuesExceptContrast($page);
 });
 
+it('opens the mobile calendar dropdown with no accessibility issues', function () {
+    $page = visit('/login');
+
+    $page->fill('email', 'amir@example.com')
+        ->fill('password', 'current-password')
+        ->click('Sign in')
+        ->assertPathIs('/dashboard');
+
+    $page->click('amir')
+        ->click('Plans')
+        ->assertPathIs('/plans')
+        ->wait(1);
+
+    // The calendar lives behind the mobile-only trigger (md:hidden), so gate it
+    // between the sm and md breakpoints where the trigger renders.
+    $page->resize(700, 900)
+        ->click('Calendar')
+        ->wait(1)
+        ->assertSee('Reset');
+
+    // The open panel hosts a calendar, not menu items — axe must pass expanded.
+    assertNoAccessibilityIssuesExceptContrast($page);
+
+    $page->assertNoSmoke();
+});
+
 it('opens the add plan modal with no accessibility issues', function () {
     $page = visit('/login');
 

@@ -1162,11 +1162,15 @@ it('squishes the title before creating a task', function () {
     expect($user->tasks()->where('title', 'wOrK repo')->exists())->toBeTrue();
 });
 
-it('trims the search term once in the query', function () {
+it('trims and collapses the search term once in the query', function () {
     $user = User::factory()->create();
     $category = $user->categories()->create(['name' => 'Work']);
     $user->tasks()->create([
         'title' => 'Write docs', 'task_date' => now()->toDateString(), 'estimated_minutes' => 30,
+        'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
+    ]);
+    $user->tasks()->create([
+        'title' => 'Project X', 'task_date' => now()->toDateString(), 'estimated_minutes' => 30,
         'priority' => TaskPriority::Medium, 'day_before_alarm' => 0, 'category_id' => $category->id,
     ]);
 
@@ -1174,6 +1178,11 @@ it('trims the search term once in the query', function () {
         ->test('pages::tasks')
         ->set('search', '  docs  ')
         ->assertSee('Write docs');
+
+    Livewire::actingAs($user)
+        ->test('pages::tasks')
+        ->set('search', '  project    x ')
+        ->assertSee('Project X');
 });
 
 it('renders with an unknown sort value', function () {

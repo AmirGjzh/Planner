@@ -836,15 +836,22 @@ it('trims the plan description and drops an invisible one', function () {
     expect($user->plans()->where('description', 'Notes')->exists())->toBeTrue();
 });
 
-it('trims the search term before filtering', function () {
+it('trims and collapses the search term before filtering', function () {
     $user = User::factory()->create();
     $user->plans()->create(['name' => 'Work', ...planInCurrentMonth()]);
     $user->plans()->create(['name' => 'Personal', ...planInCurrentMonth()]);
+    $user->plans()->create(['name' => 'Project X', ...planInCurrentMonth()]);
 
     Livewire::actingAs($user)
         ->test('pages::plans')
         ->set('search', '  wor  ')
         ->assertSee('Work')
+        ->assertDontSee('Personal');
+
+    Livewire::actingAs($user)
+        ->test('pages::plans')
+        ->set('search', '  project    x ')
+        ->assertSee('Project X')
         ->assertDontSee('Personal');
 });
 

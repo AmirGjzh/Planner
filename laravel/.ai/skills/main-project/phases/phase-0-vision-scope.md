@@ -1,5 +1,7 @@
 # Phase 0 – Vision and Scope
 
+**See also:** [requirements](phase-1-requirements.md) · [domain design](phase-2-domain-design.md) · [docs map](../SKILL.md)
+
 ## 0.1 – Product Vision
 
 A task management system designed to make planning easier. It enables users to categorize tasks, organize them into plans or projects, assign them to specific days, control daily workload, view completed and incomplete tasks across different days, and generate performance reports over selected time periods.

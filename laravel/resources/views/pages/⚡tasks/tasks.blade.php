@@ -162,7 +162,7 @@
                             </p>
                             @if (count($category_filter) > 0)
                                 <span class="mine-badge-primary rounded-full px-1.5 pt-1 pb-0.5 text-xs font-semibold">
-                                    {{ app()->isLocale('en') ? count($category_filter) : App\Support\PersianNumber::convert(count($category_filter)) }}
+                                    {{ App\Support\PersianNumber::localize(count($category_filter)) }}
                                 </span>
                             @endif
                         </div>
@@ -200,7 +200,7 @@
                             </p>
                             @if (count($plan_filter) > 0)
                                 <span class="mine-badge-primary rounded-full px-1.5 pt-1 pb-0.5 text-xs font-semibold">
-                                    {{ app()->isLocale('en') ? count($plan_filter) : App\Support\PersianNumber::convert(count($plan_filter)) }}
+                                    {{ App\Support\PersianNumber::localize(count($plan_filter)) }}
                                 </span>
                             @endif
                         </div>
@@ -239,6 +239,7 @@
                         </div>
                     </x-mine.dropdown.trigger>
                     <x-mine.dropdown.content
+                        role=""
                         class="mt-1! flex justify-center"
                         placement="bottom-{{ app()->isLocale('en') ? 'end' : 'start' }}"
                     >
@@ -449,7 +450,7 @@
                                                     'pt-1' => app()->isLocale('en'),
                                                     'text-[12px] font-medium',
                                                 ])>
-                                                    {{ app()->isLocale('fa') ? App\Support\PersianNumber::convert($task->estimated_minutes) : $task->estimated_minutes }} {{ __('min') }}
+                                                    {{ App\Support\PersianNumber::localize($task->estimated_minutes) }} {{ __('min') }}
                                                 </p>
                                             </div>
                                             <div @class([

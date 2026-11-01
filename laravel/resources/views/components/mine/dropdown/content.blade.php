@@ -1,5 +1,8 @@
 @props([
     'placement' => 'bottom-end',
+    // '' renders no role: a plain popover panel, used where the content hosts a
+    // calendar (a menu must own menuitem children — axe aria-required-children).
+    'role' => 'menu',
 ])
 
 @php
@@ -13,7 +16,7 @@
 @endphp
 
 <div
-    role="menu"
+    @if ($role) role="{{ $role }}" @endif
     x-show="open"
     x-transition:enter="transition ease-out duration-200"
     x-transition:enter-start="opacity-0 scale-95"

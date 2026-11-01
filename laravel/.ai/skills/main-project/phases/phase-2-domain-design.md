@@ -1,5 +1,7 @@
 # Phase 2 – Conceptual Domain Design
 
+**See also:** [requirements](phase-1-requirements.md) · [detailed design](phase-3-detailed-design.md) · [delivered scope](phase-4-implementation.md) · [docs map](../SKILL.md)
+
 ## 2.1 Domain Entities
 
 We have these main entities in the system.
@@ -77,7 +79,7 @@ Note: Category and Plan have no direct relationship. They are independent organi
 
 A Use Case represents a complete scenario of interaction between a user and the system. Below they are written in a structured, step-by-step manner, ordered by dependency (topological order).
 
-Each use case is implemented by a dedicated module (listed under "Module"). Each module maps to an `app/Actions/<Domain>/` folder — modules communicate through those Action classes (see Phase-3). A View / Presentation layer renders them via Laravel Blade + Livewire. Overdue detection is provided by the Task Management module (status + filter) and counted by the Reporting module.
+Each use case is implemented by a dedicated module (listed under "Module"). Each module maps to an `app/Actions/<Domain>/` folder — modules communicate through those Action classes (see [phase 3](phase-3-detailed-design.md)). A View / Presentation layer renders them via Laravel Blade + Livewire. Overdue detection is provided by the Task Management module (status + filter) and surfaced by the Attention module (UC-10).
 
 ### 2.3.1 UC-01 – Login
 
@@ -113,7 +115,7 @@ Description: A new user creates an account to manage personal tasks.
 Main Flow:
 1. The user clicks Register on the homepage.
 2. The registration form is displayed.
-3. The user enters required information (email or username, password, password confirmation).
+3. The user enters required information (username, email, password, password confirmation).
 4. The system validates the data:
    - Email format
    - Unique username and email
@@ -215,7 +217,7 @@ Main Flow:
 2. To create a plan, the user fills in the name, optional description, start date, and end date, then submits.
 3. To edit a plan, the user modifies the name, description, or date range and saves.
 4. To delete a plan, the user clicks Delete. Deletion is blocked if the plan still has tasks assigned (restrict on delete).
-5. Each plan shows its task count and progress percentage (completed tasks / total tasks × 100).
+5. Each plan shows its task count and progress percentage (done tasks' estimated minutes / total estimated minutes × 100 — time-weighted, not a task count).
 6. The user can view all tasks assigned to a plan.
 7. When a task in a plan is marked as done or not done, the plan progress is recalculated and updated.
 

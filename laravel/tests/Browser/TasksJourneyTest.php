@@ -41,6 +41,32 @@ it('has no smoke or accessibility issues on the tasks page', function () {
     assertNoAccessibilityIssuesExceptContrast($page);
 });
 
+it('opens the mobile calendar dropdown with no accessibility issues', function () {
+    $page = visit('/login');
+
+    $page->fill('email', 'amir@example.com')
+        ->fill('password', 'current-password')
+        ->click('Sign in')
+        ->assertPathIs('/dashboard');
+
+    $page->click('amir')
+        ->click('Tasks')
+        ->assertPathIs('/tasks')
+        ->wait(1);
+
+    // The calendar lives behind the mobile-only trigger (md:hidden), so gate it
+    // between the sm and md breakpoints where the trigger's label renders.
+    $page->resize(700, 900)
+        ->click('Calendar')
+        ->wait(1)
+        ->assertSee('Reset');
+
+    // The open panel hosts a calendar, not menu items — axe must pass expanded.
+    assertNoAccessibilityIssuesExceptContrast($page);
+
+    $page->assertNoSmoke();
+});
+
 it('creates a task through the add modal', function () {
     $this->user->categories()->create(['name' => 'Work']);
 

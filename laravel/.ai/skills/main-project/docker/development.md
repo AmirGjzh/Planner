@@ -2,7 +2,9 @@
 
 > Reference documentation. Read this before touching anything under `docker/`,
 > `laravel/compose.development.yml`, or the `.env.*` templates. Shared conventions
-> (secrets, healthchecks, wrappers) live in `docker/shared-conventions.md`.
+> (secrets, healthchecks, wrappers) live in [shared-conventions.md](shared-conventions.md).
+
+**See also:** [shared conventions](shared-conventions.md) · [production](production.md) · [docs map](../SKILL.md)
 
 ## Purpose and Audience
 
@@ -211,7 +213,9 @@ Keep the credential values in sync between compose interpolation and the workspa
 7. Start servers: `php artisan serve --host=0.0.0.0 --port=8000` (the `0.0.0.0` is required),
    `npm run dev`, optional `php artisan queue:listen --tries=1`. Or `composer run dev` for all
    three.
-8. First DB use: `php artisan migrate`, `php artisan db:seed` (optional dev account).
+8. First DB use: `php artisan migrate`, then optionally `php artisan db:seed --class=SampleDataSeeder`
+   for a screenshot-ready demo account (categories, plans, tasks across many days). Plain
+   `php artisan db:seed` runs only the no-op `UserSeeder` — it creates no account.
 9. Check: browser → `http://localhost:8000`; `http://localhost:8000/up` returns 200.
 
 ## Day-to-Day Operations

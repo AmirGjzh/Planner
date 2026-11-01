@@ -3,7 +3,9 @@
 > Reference documentation. Read this before touching anything under `docker/`,
 > `laravel/compose.production.yml`, `.dockerignore`, or the `.env.*` templates. Shared
 > conventions (secrets, healthchecks, wrappers, the seeding decision) live in
-> `docker/shared-conventions.md`.
+> [shared-conventions.md](shared-conventions.md).
+
+**See also:** [shared conventions](shared-conventions.md) · [development](development.md) · [docs map](../SKILL.md)
 
 ## Purpose and Audience
 
@@ -188,9 +190,10 @@ AES-256-CBC), then `php artisan migrate --seed --force` **unless `SKIP_MIGRATE=1
 - **`SKIP_MIGRATE=1` is set only on the queue service**: php-fpm migrates + seeds on its own
   boot and the queue starts only after php-fpm is healthy, so the worker skips the redundant
   run. php-fpm itself never sets it — the web tier remains the boot-time migrator.
-- **Seeds on every php-fpm boot** — see the seeding decision in `shared-conventions.md`. `UserSeeder` is a
-  no-op today, but this line must be revisited before that ever creates real users
-  (a known-credential dev seed must not reach production).
+- **Seeds on every php-fpm boot** — `DatabaseSeeder`'s call list is empty today, so nothing is
+  seeded (see the seeding decision in [shared-conventions.md](shared-conventions.md)). The
+  known-credential demo data lives in `SampleDataSeeder`, deliberately outside that list; never
+  add it to `DatabaseSeeder` before this stack runs against real users.
 - `migrate --force` is idempotent; `optimize` bakes config/routes/views, which is why
   "edit `.env`, recreate php-fpm + queue" is sufficient for env changes.
 
@@ -243,10 +246,10 @@ These ship with the app; `docker/` alone is not enough.
   route is redeclared with the same `block` because the default one is registered by
   Livewire itself. Uses the cache-lock redis connection. Exists because sessions moved to a
   durable store where stale concurrent writes are a real risk.
-- **`.gitignore` / `composer.json` / `storage/framework/views/.gitignore`**: un-ignores
-  `laravel/.env.production` (committed) and replaces the blanket `/storage/framework` ignore
-  with per-directory `.gitignore` files — keeps the storage skeleton in git → in the image →
-  the named volume auto-populates with `www-data` ownership.
+- **`.gitignore` / `storage/framework/*/.gitignore`**: `laravel/.env.production` stays tracked in
+  git despite the root `.env.*` ignore rule (tracked files win) — no `!` negation is used — and
+  `storage/framework` has no blanket ignore; per-directory `.gitignore` files keep the skeleton
+  in git → in the image → the named volume auto-populates with `www-data` ownership.
 - **`config/queue.php` + `ResetPasswordNotification`**: redis-backed queue (env-driven
   connection, tests force `sync`); the notification implements `ShouldQueue` so password-reset
   mail is delivered by the worker, with terminal failures recorded in `failed_jobs`.

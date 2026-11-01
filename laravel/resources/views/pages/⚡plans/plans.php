@@ -15,11 +15,12 @@ use App\Support\Jalali;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-new class extends Component
+new #[Layout('layouts::app', ['title' => 'Plans'])] class extends Component
 {
     use HasUser, WithPagination;
 
@@ -74,7 +75,7 @@ new class extends Component
     #[Computed]
     public function plans()
     {
-        $search = trim($this->search);
+        $search = Str::squish($this->search);
 
         return Plan::query()
             ->select(['id', 'name', 'description', 'start_date', 'finish_date', 'done', 'user_id', 'created_at'])

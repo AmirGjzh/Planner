@@ -22,7 +22,7 @@ Conventions for the themed error pages under `resources/views/errors/`.
 - The 500 page renders fixed copy only — **never** `$exception->getMessage()` (it can carry internals); a feature test pins the non-leak.
 - No JS, no Livewire, no toast: the shell is a standalone document with a css-only `@vite` — it has to keep rendering when everything else is broken.
 - The entrance animation is the **CSS-only twin** of `x-mine.animate` (same `opacity 0→1` + `translateY(16px)`, `0.35s ease-out` with the auth pages' `delay="100"` mirrored as a `100ms both` fill, defined inline in the shell): the Alpine reveal starts hidden and would leave a no-JS page invisible. The `prefers-reduced-motion` neutralization mirrors the mine.css convention.
-- The big status number renders through `PersianNumber::convert` in fa (the pagination view's `app()->isLocale('en') ? … : convert(…)` pattern) — `۴۰۴`, not `404`.
+- The big status number renders through `PersianNumber::localize` (the single digit idiom — `۴۰۴`, not `404`).
 
 ## The link is auth-aware
 

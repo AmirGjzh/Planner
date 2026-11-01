@@ -43,7 +43,7 @@
     [$previousIcon, $nextIcon] = app()->isLocale('en') ? ['Left', 'Right'] : ['Right', 'Left'];
 
     // Persian digits in fa; English digits pass through untouched.
-    $num = fn ($value) => app()->isLocale('en') ? $value : \App\Support\PersianNumber::convert($value);
+    $num = fn ($value) => \App\Support\PersianNumber::localize($value);
 @endphp
 
 @if ($paginator->hasPages())

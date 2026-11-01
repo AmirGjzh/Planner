@@ -363,15 +363,22 @@ it('filters categories case-insensitively', function () {
         ->assertDontSee('Personal');
 });
 
-it('trims the search term before filtering', function () {
+it('trims and collapses the search term before filtering', function () {
     $user = User::factory()->create();
     $user->categories()->create(['name' => 'Work']);
     $user->categories()->create(['name' => 'Personal']);
+    $user->categories()->create(['name' => 'Project X']);
 
     Livewire::actingAs($user)
         ->test('pages::categories')
         ->set('search', '  wor  ')
         ->assertSee('Work')
+        ->assertDontSee('Personal');
+
+    Livewire::actingAs($user)
+        ->test('pages::categories')
+        ->set('search', '  project    x ')
+        ->assertSee('Project X')
         ->assertDontSee('Personal');
 });
 

@@ -55,8 +55,8 @@ final class UpdateProfileAction
         try {
             $user->update([
                 'username' => $username,
-                'firstname' => $this->nullableString($firstname),
-                'lastname' => $this->nullableString($lastname),
+                'firstname' => $this->nullableSquish($firstname),
+                'lastname' => $this->nullableSquish($lastname),
                 'theme' => $theme,
                 'locale' => $locale,
                 'gender' => $gender,
@@ -90,12 +90,12 @@ final class UpdateProfileAction
         return Str::transliterate('update-profile:'.$user->id.'|'.$request->ip());
     }
 
-    private function nullableString(?string $value): ?string
+    private function nullableSquish(?string $value): ?string
     {
-        // trim() is byte-wise: ZWNJ (e2 80 8c) shares its tail byte with ی (db 8c), so a
-        // half-space in the mask would corrupt Persian text. Strip edge half-spaces with a
-        // unicode regex instead — a stray leading/trailing نیم‌فاصله is invisible in storage.
-        $value = is_string($value) ? preg_replace('/^[\s\x{200C}]+|[\s\x{200C}]+$/u', '', trim($value)) : null;
+        // squish() collapses whitespace runs; its Str::trim base strips every edge
+        // invisible character incl. نیم‌فاصله/ZWNJ (unicode-aware — a byte-wise trim
+        // would corrupt Persian text), so a stray edge half-space never reaches storage.
+        $value = is_string($value) ? Str::squish($value) : null;
 
         return filled($value) ? $value : null;
     }

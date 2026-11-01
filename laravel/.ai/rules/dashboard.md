@@ -35,4 +35,4 @@ If either side shifts, the dashboard grid and the "This week" report preset sile
 
 ## Every rendered count is digit-localized
 
-Numbers the dashboard renders — the attention count badge and the `:count` replacements in `:count days ago` / `in :count days` — pass through the Blade header's `$digit` closure: identity in `en`, `PersianNumber::convert()` in `fa` (the `pagination.blade.php` `$num` precedent). A raw `count()` or int reaching `{{ }}` fails the fa-digit pin in `dashboard.test.php`. Dates need no `$digit`: `Jalali::format` renders through the `fa_IR` locale (Persian digits) and `Minutes::format` is already fa-aware.
+Numbers the dashboard renders — the attention count badge and the `:count` replacements in `:count days ago` / `in :count days` — pass through the Blade header's `$digit` closure, whose body is `PersianNumber::localize()` (the `pagination.blade.php` `$num` precedent). A raw `count()` or int reaching `{{ }}` fails the fa-digit pin in `dashboard.test.php`. Dates need no `$digit`: `Jalali::format` renders through the `fa_IR` locale (Persian digits) and `Minutes::format` is already fa-aware.

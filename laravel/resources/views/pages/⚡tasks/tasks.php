@@ -17,11 +17,12 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-new class extends Component
+new #[Layout('layouts::app', ['title' => 'Tasks'])] class extends Component
 {
     use HasUser, WithPagination;
 
@@ -127,7 +128,7 @@ new class extends Component
     {
         $userId = auth()->id();
         $today = now();
-        $search = trim($this->search);
+        $search = Str::squish($this->search);
 
         return Task::query()
             ->select(['id', 'title', 'description', 'task_date', 'estimated_minutes', 'priority', 'done', 'day_before_alarm', 'plan_id', 'category_id', 'user_id', 'created_at'])

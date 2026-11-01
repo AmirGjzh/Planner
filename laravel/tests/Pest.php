@@ -33,11 +33,13 @@ pest()->extend(TestCase::class)
 | `--headed` is not available here.
 |
 | Axe runs through `assertNoAccessibilityIssuesExceptContrast()` below:
-| every axe rule applies except `color-contrast`, which is switched off
-| while the theme palettes are frozen in this stage of the project (the
-| saffron orange sits at ~4.2:1 against the card white — a known, deferred
-| WCAG miss, not a test blocker). Drop the `script()` call to re-enable it
-| once the themes resume.
+| every axe rule applies except `color-contrast`, which stays off for this
+| suite: the palettes were audited contrast-on across every theme and
+| surface during finalization (see Refactor.md, Step 7), but journeys also
+| open modals, popovers and calendars over scrims — layered states that
+| audit deliberately did not cover, and axe's contrast rule is unreliable
+| over translucent backgrounds. Flip the `script()` call to re-enable it if
+| a future pass audits those states too.
 |
 */
 

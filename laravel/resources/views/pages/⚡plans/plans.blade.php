@@ -157,6 +157,7 @@
                         </div>
                     </x-mine.dropdown.trigger>
                     <x-mine.dropdown.content
+                        role=""
                         class="mt-1! flex justify-center"
                         placement="bottom-{{ app()->isLocale('en') ? 'end' : 'start' }}"
                     >
@@ -363,7 +364,7 @@
                                                     'pt-1' => app()->isLocale('en'),
                                                     'text-[12px] font-medium',
                                                 ])>
-                                                    {{ app()->isLocale('fa') ? App\Support\PersianNumber::convert($config['days']['value']) : $config['days']['value'] }} {{ $config['days']['label'] }}
+                                                    {{ App\Support\PersianNumber::localize($config['days']['value']) }} {{ $config['days']['label'] }}
                                                 </p>
                                             </div>
                                         </div>
@@ -415,7 +416,7 @@
                                             {{ __('Progress') }}
                                         </p>
                                         <p class="text-2xl font-semibold {{ $config['percent_color'] }} mb-2">
-                                            {{ app()->isLocale('fa') ? App\Support\PersianNumber::convert($config['pct']) : $config['pct'] }}%
+                                            {{ App\Support\PersianNumber::localize($config['pct']) }}%
                                         </p>
                                         <x-mine.progress
                                             total="{{ $config['progress_total'] }}"

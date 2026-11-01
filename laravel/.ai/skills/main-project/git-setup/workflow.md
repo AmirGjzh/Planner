@@ -1,5 +1,7 @@
 # Two-Remote Git Workflow
 
+**See also:** [docs map](../SKILL.md) · [coding standards](../standards/coding.md) — the agent never runs git commands itself; every change stays in the working tree for you to review and commit.
+
 This project uses two GitHub repositories:
 
 * **Public Repository** → `origin` → `github.com/AmirGjzh/Planner`

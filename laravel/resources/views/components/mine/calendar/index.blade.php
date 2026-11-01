@@ -277,7 +277,7 @@
         </div>
 
         <div class="mt-3 flex w-full justify-center">
-            <x-mine.button class="mine-btn-primary h-10! text-sm!" type="button" x-on:click="reset()">
+            <x-mine.button height="h-10" size="sm" class="mine-btn-primary" type="button" x-on:click="reset()">
                 {{ __('Reset') }}
             </x-mine.button>
         </div>

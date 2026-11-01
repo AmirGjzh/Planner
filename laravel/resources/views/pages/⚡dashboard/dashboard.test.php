@@ -145,7 +145,7 @@ it('renders localized strings and Jalali dates in fa', function () {
 
     Livewire::actingAs($user)
         ->test('pages::dashboard')
-        ->assertSee('تسک‌ های نیازمند توجه')
+        ->assertSee('کارهای نیازمند توجه')
         ->assertSee('حجم کار این هفته')
         ->assertSee('امروز')
         ->assertSee(Jalali::format(now(), 'd MMM'));

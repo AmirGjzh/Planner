@@ -4,7 +4,7 @@ Planner is a personal task-planner web app: tasks, categories, and plans with a 
 
 ## Session Ritual (mandatory, in order)
 
-1. **Activate the `main-project` skill** — it holds the UC numbering, implementation status, phase docs, docker docs, and key decisions.
+1. **Activate the `main-project` skill** — it holds the UC numbering, implementation status, phase docs, docker docs, coding standards, and key decisions.
 2. **Read `.ai/rules/index.md`**, then read every rule file whose `paths` glob matches the files you will touch.
 3. **`grep -rin '<keyword>' .ai/rules`** — catches rules a path match alone misses.
 4. Only then plan or edit code, and follow every matching rule.
@@ -51,7 +51,7 @@ Vite dev binds `0.0.0.0` (no flag). If the UI doesn't reflect a frontend change,
 
 ## Coding rules (non-negotiable)
 
-- Follow every matching rule in `.ai/rules` before writing code.
+- Follow every matching rule in `.ai/rules` before writing code; cross-cutting quality patterns (dead-code sweeps, comments, tests, i18n, docs sync, gate) live in the [coding standards](../skills/main-project/standards/coding.md).
 - **Never touch git.** Do not run `git add`, `git commit`, `git push`, `git restore --staged`, or any other index/staging/branch command — all git work is done by the user. Leave every change in the working tree for them to review and stage themselves.
 - **New file? Decide both ignore files.** `.gitignore` keeps the repo clean — secrets, local env, and generated files stay untracked; shared config (e.g. `pint.json`) stays committed. The root `.dockerignore` keeps images clean — dev-only tooling (`AGENTS.md`, `.ai/`, `phpunit.xml`, `pint.json`, …) never enters the build context; anything the image needs must not be listed. Check both whenever you add or bring in a file.
 - Use the boost agent skills for Laravel/Livewire/Tailwind/testing patterns and the `search-docs` MCP tool for exact API syntax.
@@ -62,7 +62,7 @@ Vite dev binds `0.0.0.0` (no flag). If the UI doesn't reflect a frontend change,
 
 ## Docs map
 
-The full docs map (phases, docker, git workflow, agentic environment) lives in the `main-project` skill. `.ai/` is the committed, authoritative docs; `.agents/skills/main-project` is a symlink that mirrors it automatically — edit `.ai/` only.
+The full docs map (phases, docker, git workflow, coding standards, agentic environment) lives in the `main-project` skill. `.ai/` is the committed, authoritative docs; `.agents/skills/main-project` is a symlink that mirrors it automatically — edit `.ai/` only.
 
 ## Reply style
 

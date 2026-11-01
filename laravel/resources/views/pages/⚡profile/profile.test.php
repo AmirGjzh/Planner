@@ -253,6 +253,25 @@ it('stores blank optional fields as null', function () {
         ->and($user->birthday)->toBeNull();
 });
 
+it('collapses internal whitespace and strips edge half-spaces from names', function () {
+    $user = profileUser([
+        'firstname' => 'Amir',
+        'lastname' => 'Planner',
+    ]);
+
+    Livewire::actingAs($user)
+        ->test('pages::profile')
+        ->set('firstname', '  Amir   Reza  ')
+        ->set('lastname', " \u{200C}Planner\u{200C} ")
+        ->call('editProfile')
+        ->assertHasNoErrors();
+
+    $user->refresh();
+
+    expect($user->firstname)->toBe('Amir Reza')
+        ->and($user->lastname)->toBe('Planner');
+});
+
 it('shows username taken error', function () {
     profileUser([
         'username' => 'taken_user',

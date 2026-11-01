@@ -10,7 +10,7 @@
 
         @php $expireMinutes = (int) config('auth.verification.expire', 60); @endphp
         <p class="mine-text-secondary mb-6 text-center text-sm font-medium">
-            {{ __('The link expires in :count minutes, don\'t forget to check your spam folder.', ['count' => app()->isLocale('en') ? $expireMinutes : \App\Support\PersianNumber::convert($expireMinutes)]) }}
+            {{ __('The link expires in :count minutes, don\'t forget to check your spam folder.', ['count' => \App\Support\PersianNumber::localize($expireMinutes)]) }}
         </p>
 
         <form wire:submit="resend" novalidate class="flex flex-col gap-4">

@@ -1,7 +1,7 @@
 @php
     $today = now()->startOfDay();
 
-    $digit = fn ($value) => app()->isLocale('en') ? $value : \App\Support\PersianNumber::convert($value);
+    $digit = fn ($value) => \App\Support\PersianNumber::localize($value);
 
     $levelLabel = fn (\App\Enums\WorkloadLevel $level): string => match ($level) {
         \App\Enums\WorkloadLevel::None => __('No tasks'),

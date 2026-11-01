@@ -28,9 +28,7 @@
     $gutterClass = $isFa ? 'ps-22' : 'ps-12';
     $startClass = $isFa ? 'start-22' : 'start-12';
 
-    $fa = fn (string $value): string => $isFa
-        ? \App\Support\PersianNumber::convert($value)
-        : $value;
+    $fa = fn (string $value): string => \App\Support\PersianNumber::localize($value);
 
     $gridLineRows = [];
     foreach ($gridlines as $fraction) {
@@ -59,6 +57,8 @@
                                 $series,
                             );
 
+                            $barTitle = implode(', ', $titleParts);
+
                             $visibleIndexes = [];
                             foreach ($series as $index => $seriesItem) {
                                 if ((int) ($item[$seriesItem['key']] ?? 0) > 0) {
@@ -75,7 +75,9 @@
                         <div
                             class="flex shrink-0 items-end"
                             style="height: {{ $height }}px; width: {{ $barWidth }}px"
-                            title="{{ implode(', ', $titleParts) }}"
+                            title="{{ $barTitle }}"
+                            role="img"
+                            aria-label="{{ $barTitle }}"
                         >
                             <div class="flex w-full flex-col-reverse" style="height: {{ $height }}px">
                                 @foreach ($series as $index => $seriesItem)

@@ -107,7 +107,7 @@ it('builds a per-day chart with completed and remaining minutes', function () {
     $chart = app(ReportsAction::class)->chart($user, Carbon::yesterday()->toDateString(), now()->toDateString());
 
     expect($chart)->toHaveCount(2);
-    expect($chart[0]['label'])->toBe(Carbon::yesterday()->format('M j'));
+    expect($chart[0]['day'])->toBe(Carbon::yesterday()->toDateString());
     expect($chart[0]['completed'])->toBe(45);
     expect($chart[0]['remaining'])->toBe(0);
     expect($chart[1]['completed'])->toBe(90);
@@ -140,7 +140,7 @@ it('accepts an inverted range in the chart', function () {
     $chart = app(ReportsAction::class)->chart($user, now()->addDays(2)->toDateString(), now()->subDays(2)->toDateString());
 
     expect($chart)->toHaveCount(1);
-    expect($chart[0]['label'])->toBe(now()->format('M j'));
+    expect($chart[0]['day'])->toBe(now()->toDateString());
 });
 
 it('runs exactly two queries in the summary', function () {

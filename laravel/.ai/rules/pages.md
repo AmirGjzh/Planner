@@ -44,6 +44,12 @@ Auth forms carry `novalidate` (the browser's native bubbles for `type="email"` a
 - The form binds the listener itself: `<form x-data x-on:focus-first-error.window>` runs `$nextTick(() => $el.querySelector('[aria-invalid="true"]')?.focus())`, so the first invalid field inside that form receives focus.
 - Never rely on the browser's own focus for invalid fields on these pages.
 
+## Page-layer canonicalization runs before validation
+
+- Stored text fields get squished on the component before `$this->validate()` — profile's `firstname`/`lastname` — so the rules and the action both see the stored form (internal whitespace runs collapse to one space; `Str::trim`'s charlist strips edge ZWNJ). Whitespace-only input becomes `''`, which the nullable rules accept and `UpdateProfileAction::nullableSquish()` nulls.
+- List-page search terms are `Str::squish()`ed once in the `#[Computed]` query (categories, plans, tasks): `"  project    x "` matches the stored `Project X`, and edge trim covers `?search=` URL entries. Storage canonicalizes names, so search only canonicalizes the term.
+- The username pattern is space-free by construction (`/^[a-zA-Z][a-zA-Z0-9_-]{2,29}$/` on register and profile alike), so no squish is needed there — the regex rejects padded input before anything stores it.
+
 ## Every reachable validation rule carries its message
 
 - There is no `lang/fa/validation.php`, so a rule without a `messages()` entry renders the framework's English `validation.php` text in **every** locale. `messages()` maps `'field.rule' => __('Sentence.')` for every rule a user can actually fail, mirroring `rules()` order (add-side, then edit-side).

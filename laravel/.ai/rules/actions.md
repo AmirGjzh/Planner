@@ -41,7 +41,7 @@ All query/filter logic stays as Eloquent builder chains inside the Action.
 
 - Every Action is a `final class` with a single public entry method (`execute(...)`, or domain-named like `ReportsAction::summary()`/`chart()`).
 - Params: primitives and—when IP rate-limiting applies—a `Request`. Only injected dependency: `LoggerInterface` (constructor property promotion).
-- Returns plain values or `XxxResult` enums.
+- Returns plain values or `XxxResult` enums — raw domain data only: display formatting (localized labels, formatted dates) is the page layer's job (`ReportsAction::chart()` returns raw `Y-m-d` days; the page's `chart()` `#[Computed]` turns them into locale-aware labels).
 - The project has no `app/Events`, listeners, or DTO/data classes — route results through the owning page Livewire component, never through events. Queues are fire-and-forget side effects only: currently the reset and verification notifications (`ShouldQueue`), dispatched inside the owning Action under its `try/catch`; never dispatch a job to produce or deliver a page result.
 
 ## Indexed date filters

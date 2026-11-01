@@ -1,7 +1,9 @@
 # Docker Shared Conventions
 
-Applies to both the development and production stacks. Read this first — `development.md`
-and `production.md` reference it instead of repeating it.
+Applies to both the development and production stacks. Read this first — [development.md](development.md)
+and [production.md](production.md) reference it instead of repeating it.
+
+**See also:** [development](development.md) · [production](production.md) · [docs map](../SKILL.md)
 
 > Reference documentation. Point of truth is the actual files under `docker/`,
 > `laravel/compose.*.yml`, and the `.env.*` templates; this file describes them.
@@ -81,9 +83,11 @@ per stack, so nothing cross-contaminates.
 `docker/production/entrypoint.sh` runs `migrate --seed --force` on every php-fpm boot, so
 production **does seed**. The queue service sets `SKIP_MIGRATE=1`, so its entrypoint skips
 both migrate and seed (php-fpm — which it waits for — already did them).
-`database/seeders/UserSeeder.php` is currently an empty no-op
-placeholder, so seeding has no effect today; if that seeder ever creates real users, revisit
-this line before deploying (a known-credential dev seed must not reach production).
+`database/seeders/DatabaseSeeder.php` has an **empty call list**, so the boot seed runs nothing
+today. `UserSeeder` is an empty placeholder (not wired in), and `SampleDataSeeder` — the
+known-credential demo dataset — is deliberately kept outside the call graph and run by hand in
+development only. Before the call list ever gains a seeder that creates real users, revisit this
+line (a known-credential dev seed must not reach production).
 
 ## Shared context worth knowing
 

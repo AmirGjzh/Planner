@@ -70,7 +70,7 @@
     <main class="w-full max-w-md">
         <div class="mine-card mine-error-in p-8 text-center">
             <p aria-hidden="true" class="mine-text-secondary text-5xl font-semibold">
-                {{ app()->isLocale('en') ? $status : \App\Support\PersianNumber::convert($status) }}
+                {{ \App\Support\PersianNumber::localize($status) }}
             </p>
 
             <h1 class="mt-6 text-lg font-semibold">{{ $title }}</h1>

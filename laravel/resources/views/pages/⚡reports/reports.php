@@ -6,9 +6,10 @@ use App\Support\Jalali;
 use App\Support\Minutes;
 use Carbon\Carbon;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-new class extends Component
+new #[Layout('layouts::app', ['title' => 'Reports'])] class extends Component
 {
     use HasUser;
 
@@ -52,12 +53,33 @@ new class extends Component
         return app(ReportsAction::class)->summary($this->user, $range['start'], $range['end']);
     }
 
+    /**
+     * The Action returns raw `Y-m-d` days; labels are display copy, so the
+     * locale split (Jalali `d MMM` in fa, Gregorian `M j` in en) lives here
+     * and the bar-chart only ever sees finished rows.
+     */
     #[Computed]
     public function chart(): array
     {
         $range = $this->range();
 
-        return app(ReportsAction::class)->chart($this->user, $range['start'], $range['end']);
+        return array_map(
+            fn (array $row) => [
+                'label' => $this->dayLabel($row['day']),
+                'completed' => $row['completed'],
+                'remaining' => $row['remaining'],
+            ],
+            app(ReportsAction::class)->chart($this->user, $range['start'], $range['end']),
+        );
+    }
+
+    private function dayLabel(string $day): string
+    {
+        $date = Carbon::parse($day);
+
+        return app()->isLocale('fa')
+            ? Jalali::format($date, 'd MMM')
+            : $date->format('M j');
     }
 
     /**

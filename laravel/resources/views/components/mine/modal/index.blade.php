@@ -42,6 +42,7 @@
         modalId: @js($modalId),
         closeEventName: @js($closeEventName),
         openEventName: @js($openEventName),
+        returnFocus: null,
 
         init() {
             window.addEventListener(this.closeEventName, (e) => {
@@ -58,13 +59,21 @@
         },
 
         open() {
+            const active = document.activeElement
+            this.returnFocus = active && active !== document.body ? active : null
             this.isOpen = true
             document.body.style.overflow = 'hidden'
+            this.$nextTick(() => document.getElementById(this.modalId + '-dialog')?.focus({ preventScroll: true }))
         },
 
         close() {
             this.isOpen = false
             document.body.style.overflow = ''
+            const target = this.returnFocus
+            this.returnFocus = null
+            if (target && target.isConnected) {
+                target.focus({ preventScroll: true })
+            }
         },
 
         handleBackdropClick(event) {
@@ -73,19 +82,59 @@
             }
         },
 
-        handleEscapeKey(event) {
+        // Escape keeps its original semantics; Tab is trapped inside the dialog
+        // while open (hand-rolled — no Alpine trap plugin ships with Livewire).
+        handleKeydown(event) {
             if (event.key === 'Escape' && this.closeByEscaping) {
                 this.close()
+
+                return
+            }
+
+            if (event.key !== 'Tab' || ! this.isOpen) {
+                return
+            }
+
+            const dialog = document.getElementById(this.modalId + '-dialog')
+            if (! dialog) {
+                return
+            }
+
+            const focusables = Array.from(dialog.querySelectorAll(
+                `a[href], button:not([disabled]), input:not([disabled]):not([type='hidden']), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])`
+            )).filter((el) => el.getClientRects().length > 0)
+
+            if (focusables.length === 0) {
+                event.preventDefault()
+
+                return
+            }
+
+            const first = focusables[0]
+            const last = focusables[focusables.length - 1]
+            const active = document.activeElement
+            const activeIsInside = active && focusables.includes(active)
+
+            if (event.shiftKey) {
+                if (! activeIsInside || active === first) {
+                    event.preventDefault()
+                    last.focus()
+                }
+            } else if (! activeIsInside || active === last) {
+                event.preventDefault()
+                first.focus()
             }
         },
     }"
-    x-on:keydown.window="handleEscapeKey($event)"
+    x-on:keydown.window="handleKeydown($event)"
     {{ $attributes->merge(['class' => 'inline-block overscroll-contain']) }}
 >
     <template x-teleport="body">
         <div
+            id="{{ $modalId }}-dialog"
+            tabindex="-1"
             x-show="isOpen"
-            class="fixed inset-0 z-100 overflow-y-auto"
+            class="fixed inset-0 z-100 overflow-y-auto focus:outline-none"
             role="dialog"
             aria-modal="true"
             @if ($labelledBy) aria-labelledby="{{ $labelledBy }}" @endif

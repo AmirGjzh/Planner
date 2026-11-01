@@ -26,3 +26,9 @@ config('themes.vars')[$theme ?? auth()->user()?->theme ?? config('themes.default
 - Every theme JSON must define `mine-page-bg` and `mine-btn-primary-bg` — the theme-color meta and `php artisan themes:favicons` read them.
 - Keep that fallback pointing at a present theme file (`forest`).
 - Never remove a theme from the array without also removing its json/vars — `Rule::in` and the dropdown must stay in sync.
+
+## Every key must be a full-set member and a live consumer
+
+- All theme JSONs ship the **identical key set** — a key joins or leaves every theme at once (editing one file alone breaks the set-parity lock).
+- A key exists only while something **consumes** it as a custom property (`var(--key)` or Tailwind v4's `(--key)` shorthand) somewhere in `resources/` or `app/` — emitting it into `:root` is not consumption. `color-scheme` is the one exception: `theme-vars` reads it as the CSS `color-scheme` property.
+- Both contracts are pinned in `tests/Unit/ThemeTest.php` (set parity + the product-source token scan); removing a dead key means removing it from all eight files in the same change.

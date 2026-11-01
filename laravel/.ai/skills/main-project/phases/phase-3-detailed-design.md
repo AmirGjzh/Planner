@@ -1,5 +1,7 @@
 # Phase 3 – Detailed Design
 
+**See also:** [requirements](phase-1-requirements.md) · [domain design](phase-2-domain-design.md) · [delivered scope](phase-4-implementation.md) · [project rules](../../../rules/index.md) · [docs map](../SKILL.md)
+
 Phase 3 covers these areas of design:
 
 1. **Logical Data Model** — Tables, columns, keys, constraints, enums, factories, seeders
@@ -12,13 +14,13 @@ Phase 3 covers these areas of design:
 
 ### Overview
 
-The database layer consists of models, migrations, enums, factories, and a seeder. All entities are user-scoped — each user owns their own tasks, categories, and plans.
+The database layer consists of models, migrations, enums, factories, and seeders. All entities are user-scoped — each user owns their own tasks, categories, and plans.
 
 ### Entity Summary
 
 | Entity | Table | Primary Key | Soft Delete | Factory | Seeder |
 |--------|-------|-------------|-------------|---------|--------|
-| User | `users` | `id` | Yes | `UserFactory` | `UserSeeder` |
+| User | `users` | `id` | Yes | `UserFactory` | — (see [Seeders](#seeders)) |
 | Category | `categories` | `id` | No | `CategoryFactory` | — |
 | Task | `tasks` | `id` | No | `TaskFactory` | — |
 | Plan | `plans` | `id` | No | `PlanFactory` | — |
@@ -166,15 +168,16 @@ Used by `User.gender` column with automatic cast.
 
 | Factory | Key Details |
 |---------|-------------|
-| `UserFactory` | Cached `Hash::make('password')`, `UserGender::cases()` for gender, fixed `locale='en'` (deterministic tests), random theme from the 8 present themes |
-| `CategoryFactory` | `fake()->unique()->word()` for name, inline `User::factory()` |
+| `UserFactory` | Cached `Hash::make('password')`, `UserGender::cases()` for gender, fixed `locale='en'` (deterministic tests), random theme from `config('themes.name')` |
+| `CategoryFactory` | `fake()->word()` for name, inline `User::factory()` |
 | `TaskFactory` | `task_date` ≥ today, `estimated_minutes` 1–1200, `TaskPriority::cases()` for priority, nested User/Plan/Category factories |
 | `PlanFactory` | `start_date` ±1 month, `finish_date` closure depends on `start_date` + up to 3 months |
 
 ### Seeders
 
-- `DatabaseSeeder` — calls `UserSeeder`
-- `UserSeeder` — currently empty (admin user placeholder for after auth/roles)
+- `DatabaseSeeder` — empty call list: `migrate --seed` runs **no** seeders (production boots this way, see [shared-conventions](../docker/shared-conventions.md))
+- `UserSeeder` — empty no-op placeholder, not wired into `DatabaseSeeder` (admin user for a future auth/roles phase)
+- `SampleDataSeeder` — screenshot-ready demo dataset (one account with categories, plans, tasks across many days), deliberately **outside** `DatabaseSeeder`'s call graph; run by hand: `php artisan db:seed --class=SampleDataSeeder`
 
 ---
 
@@ -187,7 +190,7 @@ This section defines the conventions and patterns to follow during implementatio
 ```
 app/
 ├── Actions/           # Domain actions, grouped by domain
-│   ├── Auth/          #   Login, Register, Email Verification, Password Reset, Logout, DeleteAccount
+│   ├── Auth/          #   Login, Register, Email Verification, Password Reset, Password Change, Logout, DeleteAccount
 │   ├── Category/
 │   ├── Dashboard/     #   WeeklyWorkloadAction, AttentionTasksAction
 │   ├── Plan/
@@ -196,7 +199,7 @@ app/
 │   └── Task/
 ├── Enums/             # Backed enums: XxxResult, TaskPriority, UserGender, WorkloadLevel
 ├── Http/
-│   └── Controllers/   # Base Controller.php only (no route controllers — Livewire pages)
+│   └── Middleware/    # ExpireSessionsOnPasswordChange (drives session eviction)
 ├── Livewire/
 │   └── Concerns/      # HasUser trait (shared, applies users.locale via boot())
 ├── Models/            # Eloquent models
@@ -255,7 +258,7 @@ Every use case maps to one `app/Actions/<Domain>/` folder. There is no separate 
 |----|----------|------------------|------------------|
 | 01 | Login | Authentication (`LoginUserAction`, `ForgotPasswordAction`, `ResetPasswordAction`) | Verify credentials, send/reset password links, session-hint + intended-URL handling, password-change session eviction, rate-limit attempts |
 | 02 | Register | Authentication (`RegisterUserAction`, `VerifyEmailAction`, `ResendVerificationAction`) | Create account, enforce unique username/email, verify/resend verification email, gate unverified access |
-| 03 | View and Edit Profile | Profile (`UpdateProfileAction`) | Read/update profile fields, rate-limit updates |
+| 03 | View and Edit Profile | Profile (`UpdateProfileAction`) + Auth (`ChangePasswordAction`) | Read/update profile fields, change password, rate-limit both |
 | 04 | Delete Account | Account (`DeleteAccountAction`) | Verify password, obfuscate credentials, soft-delete |
 | 05 | Logout | Authentication (`LogoutUserAction`) | Invalidate session, regenerate CSRF token |
 | 06 | Manage Categories | Category Management (Create/Edit/DeleteCategoryAction) | Category CRUD, delete protection check |
@@ -288,7 +291,7 @@ This section defines the conventions for handling errors and logging. Actual exc
 
 ### Domain Outcome Convention
 
-Expected business-rule failures are **not** exceptions — Actions return an `XxxResult` enum covering every outcome (success, failure, rate-limited) and the page reacts to the result. `app/Exceptions` holds Laravel's defaults; no custom domain exception classes. Delete-protection is enforced by policies (`$user->can('delete', $category)`) and the DB `restrictOnDelete` constraint, then reported through the Action's result enum.
+Expected business-rule failures are **not** exceptions — Actions return an `XxxResult` enum covering every outcome (success, failure, rate-limited) and the page reacts to the result. `app/Exceptions` holds Laravel's defaults; no custom domain exception classes. Delete-protection is enforced by the delete Action's task-count check (returning e.g. `HasTasks`) plus the DB `restrictOnDelete` constraint; policies only authorize ownership.
 
 ### Errors per Use Case
 
@@ -321,9 +324,9 @@ Expected business-rule failures are **not** exceptions — Actions return an `Xx
 | `warning` | Failed attempts (validation failures, unauthorized access) |
 | `error` | Unexpected system errors, database failures, service exceptions |
 
-- Use `Log::info()`, `Log::warning()`, `Log::error()` inside Actions (via the injected `LoggerInterface`).
+- Use the injected `LoggerInterface` — `$this->logger->info(...)`, `->warning(...)`, `->error(...)` — never the `Log` facade.
 - Do not log in Livewire pages — delegate to the Action layer.
-- Local development uses stack logging; production uses daily files.
+- Both stacks log through the `stack` channel backed by `single` files (`LOG_CHANNEL=stack`, `LOG_STACK=single`); prod runs `LOG_LEVEL=info`, dev `debug`. The `daily` channel exists in `config/logging.php` but is unused.
 
 ### Error Visibility for Users
 

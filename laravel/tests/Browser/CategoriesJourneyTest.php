@@ -66,3 +66,39 @@ it('creates a category through the add modal', function () {
     ]);
     $page->assertNoSmoke();
 });
+
+it('traps focus inside an open modal and restores it on close', function () {
+    $page = visit('/login');
+
+    $page->fill('email', 'amir@example.com')
+        ->fill('password', 'current-password')
+        ->click('Sign in')
+        ->assertPathIs('/dashboard');
+
+    $page->click('amir')
+        ->click('Categories')
+        ->assertPathIs('/categories')
+        ->click('New category')
+        ->wait(1);
+
+    // Opening moves focus onto the dialog container itself.
+    $page->assertScript('document.activeElement.id', 'add-category-form-dialog');
+
+    // Tab cycles through the dialog's controls and never escapes it.
+    for ($i = 0; $i < 8; $i++) {
+        $page->keys(':root', 'Tab')
+            ->assertScript('document.getElementById("add-category-form-dialog").contains(document.activeElement)', true);
+    }
+
+    // Escape is disabled for this form dialog (close-by-escaping=false) and must not close it.
+    $page->keys(':root', 'Escape')
+        ->wait(1)
+        ->assertScript('document.getElementById("add-category-form-dialog").style.display !== "none"', true);
+
+    // The explicit Cancel button owns dismissal and returns focus to the trigger.
+    $page->click('Cancel')
+        ->wait(1)
+        ->assertScript('document.activeElement.matches("button") && document.activeElement.textContent.includes("New category")', true);
+
+    $page->assertNoSmoke();
+});

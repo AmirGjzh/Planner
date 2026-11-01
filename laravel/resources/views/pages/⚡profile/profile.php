@@ -8,13 +8,15 @@ use App\Enums\DeleteAccountResult;
 use App\Enums\UpdateProfileResult;
 use App\Enums\UserGender;
 use App\Livewire\Concerns\HasUser;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Symfony\Component\Intl\Countries;
 
-new class extends Component
+new #[Layout('layouts::app', ['title' => 'Profile'])] class extends Component
 {
     use HasUser;
 
@@ -79,6 +81,11 @@ new class extends Component
         // applies the locale on the next request), so the save flashes the toast
         // and re-lands on /profile with navigate: false instead of live-updating.
         $need_reload = ($this->theme !== $this->user->theme || $this->locale !== $this->user->locale);
+
+        // Canonicalize the names before validation so the rules and the action both
+        // see the stored form (internal whitespace runs collapse to one space).
+        $this->firstname = Str::squish($this->firstname);
+        $this->lastname = Str::squish($this->lastname);
 
         try {
             $data = $this->validate();

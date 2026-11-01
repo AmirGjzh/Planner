@@ -17,8 +17,7 @@ Reports | Dashboard | Errors | Components).
   alert title, inline alert body, toast title, modal heading, table header, sort option, filter
   option, status label, stat label, badge text, card label, chart label, workload label, workload
   legend, empty state, placeholder text, paginator text, paginator button, error page title,
-  error page body, email subject, email heading, email body, email button, email hint, unit text,
-  unused.
+  error page body, email subject, email heading, email body, email button, email hint, unit text.
 
 
 ## Login

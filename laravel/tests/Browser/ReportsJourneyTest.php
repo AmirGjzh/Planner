@@ -65,8 +65,13 @@ it('opens the custom range calendar and returns to a preset', function () {
         ->assertSee('Date range')
         ->click('Date range')
         ->wait(1)
-        ->assertSee('Reset')
-        ->click('This week')
+        ->assertSee('Reset');
+
+    // The open custom-range panel hosts a calendar, not menu items — axe must
+    // pass with the dropdown expanded (the role split this gates).
+    assertNoAccessibilityIssuesExceptContrast($page);
+
+    $page->click('This week')
         ->wait(1)
         ->assertDontSee('Date range');
 

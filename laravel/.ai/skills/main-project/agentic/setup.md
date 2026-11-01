@@ -1,20 +1,29 @@
-# Agentic Development Environment
+# Agentic & AI Developer Environment
 
-How this project's AI-agent environment is set up: Laravel Boost, the OpenCode MCP bridge, the skills ecosystem, and project rules. `AGENTS.md` and `boost.json` reference the pieces described here.
+How this project's optional AI-assisted development environment is set up: [Laravel Boost](https://github.com/laravel/boost), Model Context Protocol (MCP) integration, Boost skills, and project rules. *(AI tooling is entirely optional; the application and its test suite require only Docker and Composer).*
+
+**See also:** [project rules](../../../rules/index.md) · [coding standards](../standards/coding.md) · [dev stack](../docker/development.md) · [docs map](../SKILL.md)
+
+## Contents
+
+- [Where everything runs](#where-everything-runs)
+- [Laravel Boost & MCP Server](#laravel-boost--mcp-server)
+- [Skills & Guidelines](#skills--guidelines)
+- [Project rules](#project-rules)
+- [Verification checklist](#verification-checklist)
 
 ## Where everything runs
 
-- **opencode (the agent) runs on the host**, launched from the `laravel/` directory so it discovers the project config, skills, and MCP server.
-- **PHP, Composer, and the app run inside the dev `workspace` container.** The host has no `php`, and MariaDB/Redis live on the Docker network, so every Artisan command is executed inside the container:
+- **PHP, Composer, and the app run inside the dev `workspace` container.** The host has no local `php`, and MariaDB/Redis live on the Docker network, so every Artisan command is executed inside the container:
 
 ```bash
-./planner-dev up      # start workspace + mariadb + redis (required for the MCP bridge)
+./planner-dev up      # start workspace + mariadb + redis
 ./planner-dev shell   # open a shell in the container (cwd = /var/www = laravel/)
 ```
 
-## Laravel Boost
+## Laravel Boost & MCP Server
 
-[Boost](https://github.com/laravel/boost) is Laravel's agent toolkit: AI guidelines, agent skills, and an MCP server with app introspection tools plus a >17,000-document Laravel search API.
+[Boost](https://github.com/laravel/boost) is Laravel's developer toolkit: AI guidelines, agent skills, and an MCP server with app introspection tools plus a >17,000-document Laravel documentation search API.
 
 ### Install (one-time)
 
@@ -23,30 +32,24 @@ composer require laravel/boost --dev
 php artisan boost:install
 ```
 
-In the interactive installer select:
-
-- Agent: **OpenCode**
-- Features: **guidelines**, **skills**, and **MCP**
-
-`boost:install` (and later `boost:update`) generate the OpenCode integration according to Boost's OpenCode agent contract:
+During setup, select the features you need (guidelines, skills, and MCP). `boost:install` and `boost:update` generate local integration files according to your chosen MCP client (e.g. OpenCode, Claude Desktop, Cursor, or any MCP-compatible environment):
 
 | Piece | File | Where |
 | --- | --- | --- |
 | Configuration | `boost.json` | `laravel/` (gitignored) |
 | AI guidelines | `AGENTS.md` | `laravel/` (gitignored) |
 | Boost skills | `.agents/skills/<skill>/` | `laravel/` (gitignored) |
-| Custom skill mirror | `.agents/skills/main-project` → `.ai/skills/main-project` | symlink |
-| MCP server config | `opencode.json` (see below) | `laravel/` (gitignored) |
+| Project skill mirror | `.agents/skills/main-project` → `.ai/skills/main-project` | symlink |
+| MCP server config | Client-specific config (e.g. `opencode.json`) | `laravel/` (gitignored) |
 
-Everything generated is per-developer and gitignored. The committed, authoritative copy is `.ai/`: custom guidelines in `.ai/guidelines/`, project rules in `.ai/rules/`, and the custom skill in `.ai/skills/`.
+Generated configuration is per-developer and gitignored. The committed, authoritative source of truth is under `.ai/`: custom guidelines in [`../../../guidelines/main-project.md`](../../../guidelines/main-project.md), project rules in [`../../../rules/index.md`](../../../rules/index.md), and the project skill in [`../SKILL.md`](../SKILL.md).
 
-### MCP server (`opencode.json`)
+### Running the MCP Server in Docker
 
-Boost registers the `laravel-boost` MCP server in `opencode.json` under the `mcp` key. For this host (no PHP) the command is patched to a Docker bridge so the server runs inside the workspace container:
+Because PHP runs inside the dev container rather than on the host, any MCP client configuration invoking `laravel-boost` should be routed through a Docker bridge so the server executes inside the workspace container:
 
 ```json
 {
-    "$schema": "https://opencode.ai/config.json",
     "mcp": {
         "laravel-boost": {
             "type": "local",
@@ -69,77 +72,43 @@ Boost registers the `laravel-boost` MCP server in `opencode.json` under the `mcp
 ```
 
 Notes:
+- `-T` disables the TTY so stdio stays clean for the MCP protocol.
+- The workspace container must be running (`./planner-dev up`).
+- `boost:update` or `boost:install` may overwrite client config back to plain `["php", "artisan", "boost:mcp"]` — re-apply the Docker wrapper if your client runs on the host.
 
-- `-T` disables the TTY so stdio stays clean for the MCP protocol; `opencode` is started from `laravel/` so the compose file resolves.
-- The workspace container must be up (`./planner-dev up`); if it is down, the MCP tools error out while the rest of the app works.
-- `boost:update`/`boost:install` rewrites this file back to plain `["php", "artisan", "boost:mcp"]`, so **re-apply the Docker bridge after every Boost resource update**.
-
-Tools exposed (`laravel-boost`): Application Info, Database Connections, Database Query, Database Schema, Get Absolute URL, Last Error, Read Log Entries, Record Rule, and Search Docs (the version-aware Laravel documentation query).
+Tools exposed by `laravel-boost`: Application Info, Database Connections, Database Query, Database Schema, Get Absolute URL, Last Error, Read Log Entries, Record Rule, and Search Docs.
 
 ### Keeping resources up to date
 
 ```bash
 ./planner-dev shell
-php artisan boost:update        # refresh guidelines/skills for installed versions
-php artisan boost:update --discover   # also publish for newly installed packages
+php artisan boost:update        # refresh guidelines/skills for installed package versions
+php artisan boost:update --discover   # discover tooling for newly added packages
 ```
 
-## Skills
+## Skills & Guidelines
 
-Skills are on-demand knowledge modules the agent loads when relevant.
+Skills are on-demand knowledge modules. This project includes Boost's standard development skills plus the Planner-specific project skill:
 
-### Boost skills
-
-Installed automatically based on the packages in `composer.json` plus Boost's always-on skills:
-
-- `infer-conventions` — sweeps the code and bootstraps `.ai/rules`
 - `laravel-best-practices`, `livewire-development`, `tailwindcss-development`, `testing-best-practices` (Pest)
-- `main-project` — the project skill, mirrored from `.ai/skills/main-project`
-
-Custom skills live in `.ai/skills/<name>/SKILL.md` and are copied into `.agents/skills/` by `boost:update`. To override a Boost skill, create `.ai/skills/<name>/SKILL.md` with the matching name.
-
-### skills.sh (personal/third-party skills)
-
-Personally selected skills are installed from the [skills.sh](https://skills.sh/) registry:
-
-```bash
-npx skills add <owner/repo> --skill <name>        # project-scoped
-npx skills add <owner/repo> --skill <name> -g     # global (any project)
-```
-
-Currently installed project skills: `accessibility`, `emil-design-eng`, `web-design-guidelines`, `web-quality-audit` (`find-skills` is installed globally in `~/.agents/skills/`).
-
-How skills are discovered by opencode:
-
-| Scope | Path | Committed? |
-| --- | --- | --- |
-| Project | `.agents/skills/<name>/SKILL.md` | no (`.agents` gitignored) |
-| Project (alt) | `.opencode/skills/`, `.claude/skills/` | no |
-| User/global | `~/.agents/skills/`, `~/.config/opencode/skills/` | n/a |
-| Project (shared) | `.ai/skills/<name>/` via Boost copy | yes |
+- `main-project` — the project skill mirrored from [`../SKILL.md`](../SKILL.md)
 
 Rules of thumb:
-
-- **Restart opencode** after adding skills — they are only discovered at session start.
-- **Project skills load only when opencode starts from `laravel/`**; starting from the repo root (`Planner/`) skips them (and the MCP server) entirely.
-- Keep project-specific/team skills in `.ai/skills/`; keep personal skills in project `.agents/skills/` or global scope.
-
-Some third-party skills ship scripts with hardcoded install paths (e.g. `ui-ux-pro-max` referenced `${CLAUDE_PLUGIN_ROOT}`); patch the skill's `SKILL.md` to the local path after install — `boost:update`/`skills update` may overwrite such edits.
+- **Restart your AI assistant/MCP client** after adding or updating skills so they load into context.
+- `.ai/skills/` is the committed source; `.agents/skills/` is its gitignored copy — edit `.ai/` only (see the [docs rule](../../../rules/main-project.md)).
 
 ## Project rules
 
-Rules are durable, committed project conventions that agents must follow. See `AGENTS.md` (session ritual) and `.ai/rules/index.md`.
+Rules are durable, committed project conventions. See [`AGENTS.md`](../../../../AGENTS.md) (session ritual, if generated) and [`.ai/rules/index.md`](../../../rules/index.md) for the full rule map; cross-cutting quality patterns live in the [coding standards](../standards/coding.md).
 
-- Record new rules through the `record-rule` MCP tool (it creates/updates the rule file **and** the index).
-- Bootstrap years of conventions in one pass with the `infer-conventions` skill.
-- Rules are enabled by default; disable by setting `BOOST_RULES_ENABLED=false` (removes the tool).
+- Record new rules through the `record-rule` MCP tool when available.
+- Rules are enabled by default; disable by setting `BOOST_RULES_ENABLED=false`.
 
 ## Verification checklist
 
-After setup, confirm in a fresh session:
+If you use an MCP-enabled assistant, confirm in a fresh session:
 
-1. `opencode` is started in `laravel/` with the workspace container up.
-2. The `laravel-boost` MCP server loads (tools listed above appear as available).
-3. `main-project` + boost skills + personal skills are discoverable.
-4. `AGENTS.md` instructions load (mandatory ritual: activate `main-project`, read `.ai/rules/index.md`).
-5. Probe `search-docs` once to confirm version-aware Laravel docs queries work.
+1. The workspace container is running (`./planner-dev up`).
+2. The `laravel-boost` MCP server loads successfully.
+3. The `main-project` skill and Boost skills are discoverable.
+4. `search-docs` responds with version-aware Laravel documentation queries.

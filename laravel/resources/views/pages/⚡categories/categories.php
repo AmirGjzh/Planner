@@ -11,11 +11,12 @@ use App\Models\Category;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-new class extends Component
+new #[Layout('layouts::app', ['title' => 'Categories'])] class extends Component
 {
     use HasUser, WithPagination;
 
@@ -49,7 +50,7 @@ new class extends Component
     #[Computed]
     public function categories()
     {
-        $search = trim($this->search);
+        $search = Str::squish($this->search);
 
         return Category::query()
             ->select(['id', 'name', 'user_id', 'created_at'])
