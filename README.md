@@ -150,6 +150,7 @@ This repository includes structured specifications, domain design, and strict ar
 - [Docs Map (`SKILL.md`)](laravel/.ai/skills/main-project/SKILL.md) — guide to phase documents, docker setups, and git workflow.
 - [Project Rules Index](laravel/.ai/rules/index.md) — area-scoped architectural rules (actions, auth, models, tests, UI).
 - [Coding Standards](laravel/.ai/skills/main-project/standards/coding.md) — cross-cutting rules and patterns for every change.
+- [Deployment Guide](laravel/.ai/skills/main-project/deployment/guide.md) — VPS deployment runbook (hardened host, Cloudflare, TLS, mail, operations).
 - [Project Guideline](laravel/.ai/guidelines/main-project.md) — core project rules and session guidelines.
 
 ### Dev Commands Table

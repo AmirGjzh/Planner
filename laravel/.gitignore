@@ -35,3 +35,7 @@ Thumbs.db
 
 # Browser-test failure screenshots (pest-plugin-browser)
 /tests/Browser/Screenshots
+
+# Deployment artifacts (mounted into nginx; never committed)
+/certs
+/cloudflare-ips.conf

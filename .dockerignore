@@ -49,6 +49,10 @@ laravel/scripts
 laravel/storage/pail
 laravel/tests
 
+# ---- Deployment artifacts (never in an image) ----
+laravel/certs
+laravel/cloudflare-ips.conf
+
 # ---- Editor / OS / tooling cruft (any depth) ----
 .idea
 .vscode

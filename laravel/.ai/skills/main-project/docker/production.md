@@ -523,9 +523,9 @@ see their `.env`); `up -d --build` on a dirty tree.
 
 Recorded so future-me knows these were conscious decisions, not oversights:
 
-- **TLS/HTTPS**: no domain, LAN-local, plain HTTP. When TLS appears: nginx gains `listen 443`
-  + certs + `443:443` in compose, and `SESSION_SECURE_COOKIE=true` (or `null` behind a
-  trusted TLS proxy).
+- **TLS/HTTPS**: no domain, LAN-local, plain HTTP. The public-server path (domain,
+  Cloudflare, origin certificate, 443 vhost) lives in the
+  [deployment guide](../deployment/guide.md).
 - **Automated backups**: none; the manual one-liner is in Day-to-Day Operations (personal LAN
   app, small data).
 - **Multi-instance scaling / load balancing / monitoring**: single host; healthchecks are the

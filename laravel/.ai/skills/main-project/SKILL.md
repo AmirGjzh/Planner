@@ -55,6 +55,7 @@ Pair it with the project rules in [`.ai/rules/`](../../rules/index.md) (see the 
 | [docker/shared-conventions.md](docker/shared-conventions.md) | Shared docker conventions (healthchecks, env contract, wrappers) — read first |
 | [docker/development.md](docker/development.md) | Dev workspace stack, runbook, troubleshooting |
 | [docker/production.md](docker/production.md) | Prod nginx/php-fpm/mariadb/redis stack, runbook, troubleshooting |
+| [deployment/guide.md](deployment/guide.md) | VPS deployment: hardened host, Cloudflare, TLS, mail, backups, operations |
 | [git-setup/workflow.md](git-setup/workflow.md) | Two-remote git workflow (public `origin` / private `private`) |
 | [standards/coding.md](standards/coding.md) | Coding standards: cross-cutting rules and patterns for every change |
 | [agentic/setup.md](agentic/setup.md) | Agentic environment: Boost install, MCP bridge, skills, project rules |
